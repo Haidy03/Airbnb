@@ -1,0 +1,346 @@
+<div class="edit-property-container">
+  
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner-border text-danger" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="loading-text">Loading property data...</p>
+  </div>
+
+  <!-- Edit Form -->
+  <div *ngIf="!isLoading">
+    <!-- Header -->
+    <div class="header-section">
+      <button class="back-btn" routerLink="/host/my-properties">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <h1 class="page-title">Edit listing</h1>
+    </div>
+
+    <!-- Property Title Preview -->
+    <div class="property-preview">
+      <i class="bi bi-pencil-square"></i>
+      <span>{{ property.title }}</span>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-section">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
+      </div>
+      <p class="progress-text">Step {{ currentStep }} of {{ totalSteps }}</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="propertyForm" (ngSubmit)="onSubmit()" class="property-form">
+      
+      <!-- Step 1: Basic Information -->
+      <div *ngIf="currentStep === 1" class="form-step">
+        <h2 class="step-title">Update your listing details</h2>
+        <p class="step-description">Make changes to your property information</p>
+
+        <div class="form-group">
+          <label class="form-label">Property Title *</label>
+          <input 
+            type="text" 
+            class="form-control"
+            formControlName="title"
+            placeholder="e.g. Cozy Apartment with Nile View"
+            [class.is-invalid]="propertyForm.get('title')?.invalid && propertyForm.get('title')?.touched">
+          <div class="error-message" *ngIf="propertyForm.get('title')?.invalid && propertyForm.get('title')?.touched">
+            {{ getErrorMessage('title') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description *</label>
+          <textarea 
+            class="form-control textarea-large"
+            formControlName="description"
+            rows="6"
+            placeholder="Describe your property..."
+            [class.is-invalid]="propertyForm.get('description')?.invalid && propertyForm.get('description')?.touched"></textarea>
+          <div class="char-counter">
+            {{ propertyForm.get('description')?.value?.length || 0 }} / 2000
+          </div>
+          <div class="error-message" *ngIf="propertyForm.get('description')?.invalid && propertyForm.get('description')?.touched">
+            {{ getErrorMessage('description') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Property Type *</label>
+          <div class="property-type-grid">
+            <div 
+              *ngFor="let type of propertyTypes" 
+              class="type-card"
+              [class.selected]="propertyForm.get('propertyType')?.value === type.value"
+              (click)="propertyForm.patchValue({propertyType: type.value})">
+              <i class="bi bi-house-door"></i>
+              <span>{{ type.label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Property Details -->
+      <div *ngIf="currentStep === 2" class="form-step">
+        <h2 class="step-title">Update property details</h2>
+        <p class="step-description">Keep your listing information accurate</p>
+
+        <div class="details-grid">
+          <div class="form-group">
+            <label class="form-label">Price per Night ($) *</label>
+            <div class="input-with-icon">
+              <i class="bi bi-currency-dollar"></i>
+              <input 
+                type="number" 
+                class="form-control"
+                formControlName="pricePerNight"
+                placeholder="150"
+                min="1"
+                [class.is-invalid]="propertyForm.get('pricePerNight')?.invalid && propertyForm.get('pricePerNight')?.touched">
+            </div>
+            <div class="error-message" *ngIf="propertyForm.get('pricePerNight')?.invalid && propertyForm.get('pricePerNight')?.touched">
+              {{ getErrorMessage('pricePerNight') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Max Guests *</label>
+            <div class="input-with-icon">
+              <i class="bi bi-people"></i>
+              <input 
+                type="number" 
+                class="form-control"
+                formControlName="maxGuests"
+                placeholder="4"
+                min="1"
+                max="50"
+                [class.is-invalid]="propertyForm.get('maxGuests')?.invalid && propertyForm.get('maxGuests')?.touched">
+            </div>
+            <div class="error-message" *ngIf="propertyForm.get('maxGuests')?.invalid && propertyForm.get('maxGuests')?.touched">
+              {{ getErrorMessage('maxGuests') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Bedrooms *</label>
+            <div class="input-with-icon">
+              <i class="bi bi-door-closed"></i>
+              <input 
+                type="number" 
+                class="form-control"
+                formControlName="bedrooms"
+                placeholder="2"
+                min="0"
+                [class.is-invalid]="propertyForm.get('bedrooms')?.invalid && propertyForm.get('bedrooms')?.touched">
+            </div>
+            <div class="error-message" *ngIf="propertyForm.get('bedrooms')?.invalid && propertyForm.get('bedrooms')?.touched">
+              {{ getErrorMessage('bedrooms') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Bathrooms *</label>
+            <div class="input-with-icon">
+              <i class="bi bi-droplet"></i>
+              <input 
+                type="number" 
+                class="form-control"
+                formControlName="bathrooms"
+                placeholder="2"
+                min="0"
+                [class.is-invalid]="propertyForm.get('bathrooms')?.invalid && propertyForm.get('bathrooms')?.touched">
+            </div>
+            <div class="error-message" *ngIf="propertyForm.get('bathrooms')?.invalid && propertyForm.get('bathrooms')?.touched">
+              {{ getErrorMessage('bathrooms') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Location -->
+      <div *ngIf="currentStep === 3" class="form-step">
+        <h2 class="step-title">Update location</h2>
+        <p class="step-description">Keep your address information current</p>
+
+        <div class="form-group">
+          <label class="form-label">Address *</label>
+          <input 
+            type="text" 
+            class="form-control"
+            formControlName="address"
+            placeholder="123 Main Street"
+            [class.is-invalid]="propertyForm.get('address')?.invalid && propertyForm.get('address')?.touched">
+          <div class="error-message" *ngIf="propertyForm.get('address')?.invalid && propertyForm.get('address')?.touched">
+            {{ getErrorMessage('address') }}
+          </div>
+        </div>
+
+        <div class="location-grid">
+          <div class="form-group">
+            <label class="form-label">City *</label>
+            <input 
+              type="text" 
+              class="form-control"
+              formControlName="city"
+              placeholder="Cairo"
+              [class.is-invalid]="propertyForm.get('city')?.invalid && propertyForm.get('city')?.touched">
+            <div class="error-message" *ngIf="propertyForm.get('city')?.invalid && propertyForm.get('city')?.touched">
+              {{ getErrorMessage('city') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Country *</label>
+            <input 
+              type="text" 
+              class="form-control"
+              formControlName="country"
+              placeholder="Egypt"
+              [class.is-invalid]="propertyForm.get('country')?.invalid && propertyForm.get('country')?.touched">
+            <div class="error-message" *ngIf="propertyForm.get('country')?.invalid && propertyForm.get('country')?.touched">
+              {{ getErrorMessage('country') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="location-grid">
+          <div class="form-group">
+            <label class="form-label">Latitude (Optional)</label>
+            <input 
+              type="number" 
+              class="form-control"
+              formControlName="latitude"
+              placeholder="30.0444"
+              step="0.000001">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Longitude (Optional)</label>
+            <input 
+              type="number" 
+              class="form-control"
+              formControlName="longitude"
+              placeholder="31.2357"
+              step="0.000001">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Amenities & Photos -->
+      <div *ngIf="currentStep === 4" class="form-step">
+        <h2 class="step-title">Update amenities and photos</h2>
+        <p class="step-description">Keep your listing fresh and attractive</p>
+
+        <!-- Amenities -->
+        <div class="amenities-section">
+          <h3 class="section-subtitle">Amenities</h3>
+          <div class="amenities-grid">
+            <div 
+              *ngFor="let amenity of amenitiesList"
+              class="amenity-card"
+              [class.selected]="isAmenitySelected(amenity.id)"
+              (click)="toggleAmenity(amenity.id)">
+              <i class="bi" [ngClass]="amenity.icon"></i>
+              <span>{{ amenity.name }}</span>
+              <i class="bi bi-check-circle check-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing Images -->
+        <div class="images-section" *ngIf="existingImages.length > 0">
+          <h3 class="section-subtitle">Current Photos</h3>
+          <div class="images-preview">
+            <div *ngFor="let image of existingImages" class="preview-item">
+              <img [src]="image.imageUrl" alt="Property image">
+              <button type="button" class="remove-btn" (click)="removeExistingImage(image.id)">
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+              <button 
+                type="button" 
+                class="primary-btn" 
+                *ngIf="!image.isPrimary"
+                (click)="setPrimaryImage(image.id)">
+                Set as Cover
+              </button>
+              <div *ngIf="image.isPrimary" class="primary-badge">Cover Photo</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add New Images -->
+        <div class="images-section">
+          <h3 class="section-subtitle">Add New Photos</h3>
+          <p class="section-description">Upload additional photos to showcase your property</p>
+          
+          <div class="upload-area">
+            <input 
+              type="file" 
+              id="imageUpload"
+              accept="image/jpeg,image/jpg,image/png"
+              multiple
+              (change)="onNewImageSelect($event)"
+              style="display: none;">
+            
+            <label for="imageUpload" class="upload-label">
+              <i class="bi bi-cloud-upload"></i>
+              <span class="upload-text">Click to upload new photos</span>
+              <span class="upload-hint">JPG, JPEG or PNG (Max 5MB each)</span>
+            </label>
+          </div>
+
+          <!-- New Images Preview -->
+          <div *ngIf="newImagePreviewUrls.length > 0" class="images-preview">
+            <div *ngFor="let url of newImagePreviewUrls; let i = index" class="preview-item">
+              <img [src]="url" alt="New image">
+              <button type="button" class="remove-btn" (click)="removeNewImage(i)">
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+              <div class="new-badge">New</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="btn-secondary"
+          *ngIf="currentStep > 1"
+          (click)="previousStep()">
+          <i class="bi bi-arrow-left"></i>
+          Back
+        </button>
+
+        <button 
+          type="button" 
+          class="btn-primary"
+          *ngIf="currentStep < totalSteps"
+          (click)="nextStep()">
+          Next
+          <i class="bi bi-arrow-right"></i>
+        </button>
+
+        <button 
+          type="submit" 
+          class="btn-primary"
+          *ngIf="currentStep === totalSteps"
+          [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">
+            <i class="bi bi-check-circle"></i>
+            Update Listing
+          </span>
+          <span *ngIf="isSubmitting">
+            <span class="spinner-border spinner-border-sm"></span>
+            Updating...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

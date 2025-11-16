@@ -1,0 +1,98 @@
+<!-- ============================================ -->
+<!-- src/app/host/components/host-dashboard/host-dashboard.component.html -->
+<!-- ============================================ -->
+
+<div class="dashboard-wrapper">
+  
+  <!-- Sticky Tabs Section -->
+  <div class="sticky-tabs-container">
+    <div class="tabs-wrapper">
+      <button 
+        class="tab-btn"
+        [class.active]="activeTab === 'today'"
+        (click)="activeTab = 'today'">
+        Today
+      </button>
+      <button 
+        class="tab-btn"
+        [class.active]="activeTab === 'upcoming'"
+        (click)="activeTab = 'upcoming'">
+        Upcoming
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="dashboard-content">
+    
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="spinner-border text-danger" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="loading-text">Loading your dashboard...</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="!isLoading" class="content-container">
+      
+      <!-- Today Tab Content -->
+      <div *ngIf="activeTab === 'today'" class="tab-content">
+        
+        <!-- Empty State for Today -->
+        <div class="empty-state-today">
+          <div class="empty-icon">
+            <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+              <path d="M48 8C25.9 8 8 25.9 8 48s17.9 40 40 40 40-17.9 40-40S70.1 8 48 8zm0 72c-17.6 0-32-14.4-32-32s14.4-32 32-32 32 14.4 32 32-14.4 32-32 32z" fill="#DDDDDD"/>
+              <path d="M58.3 35.7L44 50V28c0-2.2-1.8-4-4-4s-4 1.8-4 4v28c0 1.1.4 2.1 1.2 2.8.8.8 1.8 1.2 2.8 1.2h20c2.2 0 4-1.8 4-4s-1.8-4-4-4H46l14.3-14.3c1.6-1.6 1.6-4.1 0-5.7-1.6-1.5-4.1-1.5-5.7 0z" fill="#DDDDDD"/>
+            </svg>
+          </div>
+          <h2 class="empty-title">You don't have any reservations</h2>
+          <p class="empty-description">
+            To get booked, you'll need to<br>
+            complete and publish your listing.
+          </p>
+          <a routerLink="/host/my-properties" class="btn-complete-listing">
+            Complete your listing
+          </a>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="tips-card">
+          <div class="tips-header">
+            <i class="bi bi-lightbulb-fill"></i>
+            <h3>New to Airbnb?</h3>
+          </div>
+          <p class="tips-text">
+            Discover tips and best practices shared by top-rated hosts.
+          </p>
+          <a href="#" class="tips-link">
+            Get started
+            <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Upcoming Tab Content -->
+      <div *ngIf="activeTab === 'upcoming'" class="tab-content">
+        
+        <!-- Empty State for Upcoming -->
+        <div class="empty-state-today">
+          <div class="empty-icon">
+            <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+              <path d="M76 16h-8V8c0-2.2-1.8-4-4-4s-4 1.8-4 4v8H36V8c0-2.2-1.8-4-4-4s-4 1.8-4 4v8h-8c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V24c0-4.4-3.6-8-8-8zm0 64H20V36h56v44z" fill="#DDDDDD"/>
+            </svg>
+          </div>
+          <h2 class="empty-title">You don't have any upcoming reservations</h2>
+          <p class="empty-description">
+            Reservations that haven't started yet will show up here.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
