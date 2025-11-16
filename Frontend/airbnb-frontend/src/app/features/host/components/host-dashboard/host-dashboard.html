@@ -1,98 +1,152 @@
-<!-- ============================================ -->
-<!-- src/app/host/components/host-dashboard/host-dashboard.component.html -->
-<!-- ============================================ -->
-
-<div class="dashboard-wrapper">
+<div class="today-page">
   
-  <!-- Sticky Tabs Section -->
-  <div class="sticky-tabs-container">
-    <div class="tabs-wrapper">
-      <button 
-        class="tab-btn"
-        [class.active]="activeTab === 'today'"
-        (click)="activeTab = 'today'">
-        Today
-      </button>
-      <button 
-        class="tab-btn"
-        [class.active]="activeTab === 'upcoming'"
-        (click)="activeTab = 'upcoming'">
-        Upcoming
-      </button>
-    </div>
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'today'"
+      (click)="setActiveTab('today')">
+      Today
+    </button>
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'upcoming'"
+      (click)="setActiveTab('upcoming')">
+      Upcoming
+    </button>
   </div>
 
-  <!-- Main Content -->
-  <div class="dashboard-content">
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Today Tab Content -->
+  <div *ngIf="!loading() && activeTab() === 'today'" class="tab-content">
     
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="loading-container">
-      <div class="spinner-border text-danger" role="status">
-        <span class="visually-hidden">Loading...</span>
+    <!-- Empty State - No reservations today -->
+    <div *ngIf="todayBookings().length === 0" class="empty-state">
+      <div class="empty-illustration">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+          <!-- Book illustration -->
+          <rect x="30" y="25" width="60" height="70" rx="3" fill="#E0E0E0"/>
+          <rect x="35" y="30" width="50" height="60" rx="2" fill="#F5F5F5"/>
+          <line x1="45" y1="40" x2="75" y2="40" stroke="#BDBDBD" stroke-width="2"/>
+          <line x1="45" y1="50" x2="75" y2="50" stroke="#BDBDBD" stroke-width="2"/>
+          <line x1="45" y1="60" x2="70" y2="60" stroke="#BDBDBD" stroke-width="2"/>
+          <!-- Bookmark -->
+          <path d="M60 30 L65 35 L60 40 L55 35 Z" fill="#FF385C"/>
+        </svg>
       </div>
-      <p class="loading-text">Loading your dashboard...</p>
+      
+      <h2 class="empty-title">You don't have any reservations</h2>
+      <p class="empty-description">
+        To get booked, you'll need to<br>
+        complete and publish your listing.
+      </p>
+      
+      <button class="complete-listing-btn" (click)="completeYourListing()">
+        Complete your listing
+      </button>
     </div>
 
-    <!-- Dashboard Content -->
-    <div *ngIf="!isLoading" class="content-container">
-      
-      <!-- Today Tab Content -->
-      <div *ngIf="activeTab === 'today'" class="tab-content">
+    <!-- Bookings List - When there are reservations -->
+    <div *ngIf="todayBookings().length > 0" class="bookings-list">
+      <div *ngFor="let booking of todayBookings()" class="booking-card">
         
-        <!-- Empty State for Today -->
-        <div class="empty-state-today">
-          <div class="empty-icon">
-            <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
-              <path d="M48 8C25.9 8 8 25.9 8 48s17.9 40 40 40 40-17.9 40-40S70.1 8 48 8zm0 72c-17.6 0-32-14.4-32-32s14.4-32 32-32 32 14.4 32 32-14.4 32-32 32z" fill="#DDDDDD"/>
-              <path d="M58.3 35.7L44 50V28c0-2.2-1.8-4-4-4s-4 1.8-4 4v28c0 1.1.4 2.1 1.2 2.8.8.8 1.8 1.2 2.8 1.2h20c2.2 0 4-1.8 4-4s-1.8-4-4-4H46l14.3-14.3c1.6-1.6 1.6-4.1 0-5.7-1.6-1.5-4.1-1.5-5.7 0z" fill="#DDDDDD"/>
-            </svg>
-          </div>
-          <h2 class="empty-title">You don't have any reservations</h2>
-          <p class="empty-description">
-            To get booked, you'll need to<br>
-            complete and publish your listing.
-          </p>
-          <a routerLink="/host/my-properties" class="btn-complete-listing">
-            Complete your listing
-          </a>
+        <div class="booking-image">
+          <img [src]="booking.propertyImage" [alt]="booking.propertyTitle">
         </div>
 
-        <!-- Tips Section -->
-        <div class="tips-card">
-          <div class="tips-header">
-            <i class="bi bi-lightbulb-fill"></i>
-            <h3>New to Airbnb?</h3>
+        <div class="booking-info">
+          <div class="booking-header">
+            <span class="event-badge" [class.check-in]="getEventType(booking) === 'check-in'"
+                                      [class.check-out]="getEventType(booking) === 'check-out'">
+              {{ getEventType(booking) === 'check-in' ? 'Check-in' : 'Check-out' }}
+            </span>
+            <span class="booking-time">
+              {{ getEventType(booking) === 'check-in' ? booking.checkInTime : booking.checkOutTime }}
+            </span>
           </div>
-          <p class="tips-text">
-            Discover tips and best practices shared by top-rated hosts.
-          </p>
-          <a href="#" class="tips-link">
-            Get started
-            <i class="bi bi-arrow-right"></i>
-          </a>
+
+          <h3 class="guest-name">{{ booking.guestName }}</h3>
+          <p class="property-title">{{ booking.propertyTitle }}</p>
+          <p class="booking-dates">{{ formatDateRange(booking.checkInDate, booking.checkOutDate) }}</p>
+          <p class="guest-count">{{ booking.numberOfGuests }} {{ booking.numberOfGuests === 1 ? 'guest' : 'guests' }}</p>
         </div>
 
+        <div class="booking-actions">
+          <button class="action-btn" [routerLink]="['/host/messages']">
+            <span class="btn-icon">💬</span>
+            Message
+          </button>
+          <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">
+            View details
+          </button>
+        </div>
       </div>
-
-      <!-- Upcoming Tab Content -->
-      <div *ngIf="activeTab === 'upcoming'" class="tab-content">
-        
-        <!-- Empty State for Upcoming -->
-        <div class="empty-state-today">
-          <div class="empty-icon">
-            <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
-              <path d="M76 16h-8V8c0-2.2-1.8-4-4-4s-4 1.8-4 4v8H36V8c0-2.2-1.8-4-4-4s-4 1.8-4 4v8h-8c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V24c0-4.4-3.6-8-8-8zm0 64H20V36h56v44z" fill="#DDDDDD"/>
-            </svg>
-          </div>
-          <h2 class="empty-title">You don't have any upcoming reservations</h2>
-          <p class="empty-description">
-            Reservations that haven't started yet will show up here.
-          </p>
-        </div>
-
-      </div>
-
     </div>
   </div>
 
+  <!-- Upcoming Tab Content -->
+  <div *ngIf="!loading() && activeTab() === 'upcoming'" class="tab-content">
+    
+    <!-- Empty State - No upcoming reservations -->
+    <div *ngIf="upcomingBookings().length === 0" class="empty-state">
+      <div class="empty-illustration">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+          <rect x="30" y="25" width="60" height="70" rx="3" fill="#E0E0E0"/>
+          <rect x="35" y="30" width="50" height="60" rx="2" fill="#F5F5F5"/>
+          <line x1="45" y1="40" x2="75" y2="40" stroke="#BDBDBD" stroke-width="2"/>
+          <line x1="45" y1="50" x2="75" y2="50" stroke="#BDBDBD" stroke-width="2"/>
+          <line x1="45" y1="60" x2="70" y2="60" stroke="#BDBDBD" stroke-width="2"/>
+          <path d="M60 30 L65 35 L60 40 L55 35 Z" fill="#FF385C"/>
+        </svg>
+      </div>
+      
+      <h2 class="empty-title">You don't have any reservations</h2>
+      <p class="empty-description">
+        To get booked, you'll need to<br>
+        complete and publish your listing.
+      </p>
+      
+      <button class="complete-listing-btn" (click)="completeYourListing()">
+        Complete your listing
+      </button>
+    </div>
+
+    <!-- Upcoming Bookings List -->
+    <div *ngIf="upcomingBookings().length > 0" class="bookings-list">
+      <div *ngFor="let booking of upcomingBookings()" class="booking-card">
+        
+        <div class="booking-image">
+          <img [src]="booking.propertyImage" [alt]="booking.propertyTitle">
+        </div>
+
+        <div class="booking-info">
+          <div class="booking-header">
+            <span class="event-badge check-in">Confirmed</span>
+            <span class="booking-time">Check-in: {{ booking.checkInTime }}</span>
+          </div>
+
+          <h3 class="guest-name">{{ booking.guestName }}</h3>
+          <p class="property-title">{{ booking.propertyTitle }}</p>
+          <p class="booking-dates">{{ formatDateRange(booking.checkInDate, booking.checkOutDate) }}</p>
+          <p class="guest-count">{{ booking.numberOfGuests }} {{ booking.numberOfGuests === 1 ? 'guest' : 'guests' }}</p>
+        </div>
+
+        <div class="booking-actions">
+          <button class="action-btn" [routerLink]="['/host/messages']">
+            <span class="btn-icon">💬</span>
+            Message
+          </button>
+          <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">
+            View details
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ 
 </div>
