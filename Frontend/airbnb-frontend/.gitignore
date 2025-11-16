@@ -122,3 +122,11 @@ x86/
 *.db
 *.db-shm
 *.db-wal
+
+
+**/obj/
+**/Debug/
+*.cache
+*.props
+project.assets.json
+project.nuget.cache
