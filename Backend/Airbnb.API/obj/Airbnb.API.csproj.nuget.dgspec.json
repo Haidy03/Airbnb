@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Ard Al Jood\\source\\repos\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {}
+    "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Ard Al Jood\\source\\repos\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {
+    "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Ard Al Jood\\source\\repos\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
+        "projectUniqueName": "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
         "projectName": "Airbnb.API",
-        "projectPath": "C:\\Users\\Ard Al Jood\\source\\repos\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
+        "projectPath": "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
         "packagesPath": "C:\\Users\\Ard Al Jood\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Ard Al Jood\\source\\repos\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\obj\\",
+        "outputPath": "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -51,9 +51,33 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[10.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.9, )"
             }
           },
           "imports": [
