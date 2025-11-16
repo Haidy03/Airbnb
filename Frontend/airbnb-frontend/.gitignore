@@ -103,3 +103,22 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+
+## Visual Studio cache/options
+.vs/
+*.suo
+*.user
+
+## IDE specific files
+.vscode/
+*.db
+*.db-shm
+*.db-wal
