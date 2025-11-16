@@ -1,50 +1,16 @@
 import { Routes } from '@angular/router';
+import { HostLayoutComponent } from './layouts/host-layout/host-layout';
+import { HostDashboardComponent } from './features/host/components/host-dashboard/host-dashboard';
 
 export const routes: Routes = [
-
-    // Host Routes
   {
     path: 'host',
+    component: HostLayoutComponent,
     children: [
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./features/host/components/host-dashboard/host-dashboard')
-          .then(m => m.HostDashboard)
-      },
-      {
-        path: 'my-properties',
-        loadComponent: () => import('./features/host/components/my-properties/my-properties')
-          .then(m => m.MyProperties)
-      },
-      {
-        path: 'add-property',
-        loadComponent: () => import('./features/host/components/add-property/add-property')
-          .then(m => m.AddProperty)
-      },
-      {
-        path: 'edit-property/:id',
-        loadComponent: () => import('./features/host/components/edit-property/edit-property')
-          .then(m => m.EditProperty)
-      },
-      {
-        path: '',
-        redirectTo: 'my-properties',
-        pathMatch: 'full'
-      }
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: HostDashboardComponent },
+      // Add more routes here as we build them
     ]
   },
-  
-  // Default redirect
-  {
-    path: '',
-    redirectTo: 'host/my-properties',
-    pathMatch: 'full'
-  },
-  
-  // 404
-  {
-    path: '**',
-    redirectTo: 'host/my-properties'
-  }
+  { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' }
 ];
-

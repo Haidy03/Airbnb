@@ -1,120 +1,186 @@
-import { PropertyImage } from './image.model';
-import { Amenity } from './amenity.model';
-
-export enum PropertyType {
-  Apartment = 1,
-  House = 2,
-  Villa = 3,
-  Studio = 4,
-  Guesthouse = 5,
-  Hotel = 6
-}
-
 export interface Property {
   id: string;
   hostId: string;
   title: string;
   description: string;
   propertyType: PropertyType;
-  propertyTypeName: string;
-  pricePerNight: number;
-  maxGuests: number;
-  bedrooms: number;
-  bathrooms: number;
-  address: string;
-  city: string;
-  country: string;
-  latitude?: number;
-  longitude?: number;
-  isActive: boolean;
+  roomType: RoomType;
+  
+  // Location
+  location: PropertyLocation;
+  
+  // Capacity
+  capacity: PropertyCapacity;
+  
+  // Amenities
+  amenities: string[]; // Array of amenity IDs
+  
+  // Images
   images: PropertyImage[];
-  amenities: Amenity[];
-  averageRating: number;
-  totalReviews: number;
-  totalBookings: number;
+  coverImage: string; // URL of main image
+  
+  // Pricing
+  pricing: PropertyPricing;
+  
+  // Availability
+  availability: PropertyAvailability;
+  
+  // Rules & Policies
+  houseRules: HouseRules;
+  
+  // Status
+  status: PropertyStatus;
+  isInstantBook: boolean;
+  
+  // Metadata
   createdAt: Date;
   updatedAt: Date;
+  publishedAt?: Date;
+  
+  // Stats
+  stats: PropertyStats;
 }
 
-export interface CreatePropertyRequest {
-  title: string;
-  description: string;
-  propertyType: PropertyType;
-  pricePerNight: number;
-  maxGuests: number;
-  bedrooms: number;
-  bathrooms: number;
+export interface PropertyLocation {
   address: string;
+  street?: string;
   city: string;
+  state: string;
   country: string;
-  latitude?: number;
-  longitude?: number;
-  amenityIds: string[];
+  zipCode: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
 }
 
-export interface UpdatePropertyRequest {
-  title: string;
-  description: string;
-  propertyType: PropertyType;
-  pricePerNight: number;
-  maxGuests: number;
+export interface PropertyCapacity {
+  guests: number;
   bedrooms: number;
+  beds: number;
   bathrooms: number;
-  address: string;
-  city: string;
-  country: string;
-  latitude?: number;
-  longitude?: number;
-  amenityIds: string[];
 }
 
-export interface HostDashboardStats {
-  totalProperties: number;
-  activeProperties: number;
-  inactiveProperties: number;
-  totalBookings: number;
-  pendingBookings: number;
-  confirmedBookings: number;
-  totalEarnings: number;
-  thisMonthEarnings: number;
-  averageRating: number;
-  topProperties: PropertyStats[];
+export interface PropertyImage {
+  id: string;
+  url: string;
+  caption?: string;
+  order: number;
+  isMain: boolean;
+}
+
+export interface PropertyPricing {
+  basePrice: number; // per night
+  currency: string;
+  weekendPrice?: number;
+  weeklyDiscount?: number; // percentage
+  monthlyDiscount?: number; // percentage
+  cleaningFee?: number;
+  serviceFee?: number;
+  taxRate?: number;
+  securityDeposit?: number;
+}
+
+export interface PropertyAvailability {
+  minNights: number;
+  maxNights: number;
+  advanceNotice: number; // days
+  preparationTime: number; // days
+  availabilityWindow: number; // months
+  blockedDates: Date[];
+  customPricing: CustomPricingRule[];
+}
+
+export interface CustomPricingRule {
+  id: string;
+  startDate: Date;
+  endDate: Date;
+  price: number;
+  reason?: string;
+}
+
+export interface HouseRules {
+  checkInTime: string; // "15:00"
+  checkOutTime: string; // "11:00"
+  smokingAllowed: boolean;
+  petsAllowed: boolean;
+  eventsAllowed: boolean;
+  childrenAllowed: boolean;
+  quietHours?: {
+    start: string;
+    end: string;
+  };
+  additionalRules?: string[];
 }
 
 export interface PropertyStats {
-  propertyId: string;
-  title: string;
   totalBookings: number;
-  totalRevenue: number;
+  totalEarnings: number;
   averageRating: number;
-  imageUrl: string;
+  totalReviews: number;
+  responseRate: number;
+  acceptanceRate: number;
+  viewsLastMonth: number;
+  occupancyRate: number;
 }
 
-// Property Type Helper
-export function getPropertyTypeName(type: PropertyType): string {
-  switch (type) {
-    case PropertyType.Apartment:
-      return 'Apartment';
-    case PropertyType.House:
-      return 'House';
-    case PropertyType.Villa:
-      return 'Villa';
-    case PropertyType.Studio:
-      return 'Studio';
-    case PropertyType.Guesthouse:
-      return 'Guesthouse';
-    case PropertyType.Hotel:
-      return 'Hotel';
-    default:
-      return 'Unknown';
-  }
+// Enums
+export enum PropertyType {
+  HOUSE = 'house',
+  APARTMENT = 'apartment',
+  CONDO = 'condo',
+  VILLA = 'villa',
+  CABIN = 'cabin',
+  COTTAGE = 'cottage',
+  TOWNHOUSE = 'townhouse',
+  BUNGALOW = 'bungalow',
+  LOFT = 'loft',
+  GUESTHOUSE = 'guesthouse',
+  HOTEL = 'hotel',
+  RESORT = 'resort',
+  BOAT = 'boat',
+  CAMPER = 'camper',
+  OTHER = 'other'
 }
 
-export const PROPERTY_TYPES = [
-  { value: PropertyType.Apartment, label: 'Apartment' },
-  { value: PropertyType.House, label: 'House' },
-  { value: PropertyType.Villa, label: 'Villa' },
-  { value: PropertyType.Studio, label: 'Studio' },
-  { value: PropertyType.Guesthouse, label: 'Guesthouse' },
-  { value: PropertyType.Hotel, label: 'Hotel' }
-];
+export enum RoomType {
+  ENTIRE_PLACE = 'entire_place',
+  PRIVATE_ROOM = 'private_room',
+  SHARED_ROOM = 'shared_room',
+  HOTEL_ROOM = 'hotel_room'
+}
+
+export enum PropertyStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  UNLISTED = 'unlisted',
+  UNDER_REVIEW = 'under_review',
+  BLOCKED = 'blocked'
+}
+
+// DTOs for API
+export interface CreatePropertyDto {
+  title: string;
+  description: string;
+  propertyType: PropertyType;
+  roomType: RoomType;
+  location: PropertyLocation;
+  capacity: PropertyCapacity;
+  amenities: string[];
+  pricing: PropertyPricing;
+  houseRules: HouseRules;
+}
+
+export interface UpdatePropertyDto extends Partial<CreatePropertyDto> {
+  id: string;
+}
+
+export interface PropertyFilters {
+  status?: PropertyStatus;
+  propertyType?: PropertyType;
+  city?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: 'createdAt' | 'earnings' | 'rating' | 'bookings';
+  sortOrder?: 'asc' | 'desc';
+}
