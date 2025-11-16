@@ -1,5 +1,3 @@
-// src/app/features/host/models/mock-data.ts
-
 import { Property, PropertyType, RoomType, PropertyStatus } from './property.model';
 import { Booking, BookingStatus, PaymentStatus } from './booking.model';
 import { HostDashboardStats } from './host-stats.model';
