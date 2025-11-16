@@ -1,0 +1,230 @@
+airbnb-frontend/
+│
+├── node_modules/                     # Dependencies (generated)
+│
+├── public/                           # Static assets
+│   ├── favicon.ico
+│   └── images/
+│       ├── logo.svg
+│       └── placeholder.png
+│
+├── src/
+│   │
+│   ├── app/
+│   │   │
+│   │   ├── core/                     # Core Module (Singleton Services)
+│   │   │   │
+│   │   │   ├── guards/              # Route Guards
+│   │   │   │   ├── auth.guard.ts
+│   │   │   │   └── host.guard.ts
+│   │   │   │
+│   │   │   ├── interceptors/        # HTTP Interceptors
+│   │   │   │   ├── auth.interceptor.ts
+│   │   │   │   ├── error.interceptor.ts
+│   │   │   │   └── loading.interceptor.ts
+│   │   │   │
+│   │   │   ├── services/            # Global Services
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   ├── api.service.ts
+│   │   │   │   ├── toast.service.ts
+│   │   │   │   └── storage.service.ts
+│   │   │   │
+│   │   │   └── models/              # Global Models/Interfaces
+│   │   │       ├── user.model.ts
+│   │   │       ├── api-response.model.ts
+│   │   │       └── auth-response.model.ts
+│   │   │
+│   │   ├── shared/                   # Shared Module (Reusable Components)
+│   │   │   │
+│   │   │   ├── components/          # Shared Components
+│   │   │   │   ├── navbar/
+│   │   │   │   │   ├── navbar.component.ts
+│   │   │   │   │   ├── navbar.component.html
+│   │   │   │   │   └── navbar.component.css
+│   │   │   │   │
+│   │   │   │   ├── footer/
+│   │   │   │   │   ├── footer.component.ts
+│   │   │   │   │   ├── footer.component.html
+│   │   │   │   │   └── footer.component.css
+│   │   │   │   │
+│   │   │   │   ├── loading-spinner/
+│   │   │   │   │   ├── loading-spinner.component.ts
+│   │   │   │   │   ├── loading-spinner.component.html
+│   │   │   │   │   └── loading-spinner.component.css
+│   │   │   │   │
+│   │   │   │   ├── error-message/
+│   │   │   │   │   ├── error-message.component.ts
+│   │   │   │   │   ├── error-message.component.html
+│   │   │   │   │   └── error-message.component.css
+│   │   │   │   │
+│   │   │   │   └── confirmation-modal/
+│   │   │   │       ├── confirmation-modal.component.ts
+│   │   │   │       ├── confirmation-modal.component.html
+│   │   │   │       └── confirmation-modal.component.css
+│   │   │   │
+│   │   │   ├── directives/          # Shared Directives
+│   │   │   │   ├── click-outside.directive.ts
+│   │   │   │   └── auto-focus.directive.ts
+│   │   │   │
+│   │   │   └── pipes/               # Shared Pipes
+│   │   │       ├── date-format.pipe.ts
+│   │   │       ├── currency-format.pipe.ts
+│   │   │       └── truncate.pipe.ts
+│   │   │
+│   │   ├── features/                 # Feature Modules
+│   │   │   │
+│   │   │   ├── auth/                # Authentication Feature
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── login/
+│   │   │   │   │   │   ├── login.component.ts
+│   │   │   │   │   │   ├── login.component.html
+│   │   │   │   │   │   └── login.component.css
+│   │   │   │   │   │
+│   │   │   │   │   └── register/
+│   │   │   │   │       ├── register.component.ts
+│   │   │   │   │       ├── register.component.html
+│   │   │   │   │       └── register.component.css
+│   │   │   │   │
+│   │   │   │   ├── services/
+│   │   │   │   │   └── auth.service.ts
+│   │   │   │   │
+│   │   │   │   └── models/
+│   │   │   │       ├── login.model.ts
+│   │   │   │       └── register.model.ts
+│   │   │   │
+│   │   │   ├── host/                # Host Feature 
+│   │   │   │   │
+│   │   │   │   ├── components/
+│   │   │   │   │   │
+│   │   │   │   │   ├── host-dashboard/
+│   │   │   │   │   │   ├── host-dashboard.component.ts
+│   │   │   │   │   │   ├── host-dashboard.component.html
+│   │   │   │   │   │   └── host-dashboard.component.css
+│   │   │   │   │   │
+│   │   │   │   │   ├── add-property/
+│   │   │   │   │   │   ├── add-property.component.ts
+│   │   │   │   │   │   ├── add-property.component.html
+│   │   │   │   │   │   └── add-property.component.css
+│   │   │   │   │   │
+│   │   │   │   │   ├── edit-property/
+│   │   │   │   │   │   ├── edit-property.component.ts
+│   │   │   │   │   │   ├── edit-property.component.html
+│   │   │   │   │   │   └── edit-property.component.css
+│   │   │   │   │   │
+│   │   │   │   │   ├── my-properties/
+│   │   │   │   │   │   ├── my-properties.component.ts
+│   │   │   │   │   │   ├── my-properties.component.html
+│   │   │   │   │   │   └── my-properties.component.css
+│   │   │   │   │   │
+│   │   │   │   │   ├── property-details/
+│   │   │   │   │   │   ├── property-details.component.ts
+│   │   │   │   │   │   ├── property-details.component.html
+│   │   │   │   │   │   └── property-details.component.css
+│   │   │   │   │   │
+│   │   │   │   │   ├── host-calendar/
+│   │   │   │   │   │   ├── host-calendar.component.ts
+│   │   │   │   │   │   ├── host-calendar.component.html
+│   │   │   │   │   │   └── host-calendar.component.css
+│   │   │   │   │   │
+│   │   │   │   │   ├── host-bookings/
+│   │   │   │   │   │   ├── host-bookings.component.ts
+│   │   │   │   │   │   ├── host-bookings.component.html
+│   │   │   │   │   │   └── host-bookings.component.css
+│   │   │   │   │   │
+│   │   │   │   │   └── host-messages/
+│   │   │   │   │       ├── host-messages.component.ts
+│   │   │   │   │       ├── host-messages.component.html
+│   │   │   │   │       └── host-messages.component.css
+│   │   │   │   │
+│   │   │   │   ├── services/
+│   │   │   │   │   ├── property.service.ts          
+│   │   │   │   │   ├── booking.service.ts
+│   │   │   │   │   ├── file-upload.service.ts
+│   │   │   │   │   └── host-stats.service.ts
+│   │   │   │   │
+│   │   │   │   └── models/
+│   │   │   │       ├── property.model.ts            
+│   │   │   │       ├── amenity.model.ts             
+│   │   │   │       ├── image.model.ts               
+│   │   │   │       ├── mock-data.ts                 
+│   │   │   │       ├── booking.model.ts
+│   │   │   │       └── host-stats.model.ts
+│   │   │   │
+│   │   │   ├── guest/               # Guest Feature 
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── home/
+│   │   │   │   │   ├── search/
+│   │   │   │   │   ├── property-list/
+│   │   │   │   │   ├── property-detail/
+│   │   │   │   │   ├── booking-form/
+│   │   │   │   │   └── guest-trips/
+│   │   │   │   │
+│   │   │   │   ├── services/
+│   │   │   │   │   ├── search.service.ts
+│   │   │   │   │   └── booking.service.ts
+│   │   │   │   │
+│   │   │   │   └── models/
+│   │   │   │       ├── search.model.ts
+│   │   │   │       └── trip.model.ts
+│   │   │   │
+│   │   │   └── admin/               # Admin Feature 
+│   │   │       ├── components/
+│   │   │       │   ├── admin-dashboard/
+│   │   │       │   ├── users-management/
+│   │   │       │   └── properties-management/
+│   │   │       │
+│   │   │       ├── services/
+│   │   │       │   └── admin.service.ts
+│   │   │       │
+│   │   │       └── models/
+│   │   │           └── admin.model.ts
+│   │   │
+│   │   ├── layouts/                  # Layout Components
+│   │   │   ├── host-layout/
+│   │   │   │   ├── host-layout.component.ts
+│   │   │   │   ├── host-layout.component.html
+│   │   │   │   └── host-layout.component.css
+│   │   │   │
+│   │   │   └── guest-layout/
+│   │   │       ├── guest-layout.component.ts
+│   │   │       ├── guest-layout.component.html
+│   │   │       └── guest-layout.component.css
+│   │   │
+│   │   ├── app.component.ts          # Root Component 
+│   │   ├── app.component.html        # 
+│   │   ├── app.component.css         # 
+│   │   ├── app.config.ts             # App Configuration
+│   │   └── app.routes.ts             # Routing Configuration 
+│   │
+│   ├── assets/                       # Static Assets
+│   │   ├── images/
+│   │   │   ├── logo.svg
+│   │   │   ├── airbnb-logo.svg
+│   │   │   └── placeholders/
+│   │   │
+│   │   ├── icons/
+│   │   │   └── amenities/
+│   │   │
+│   │   └── fonts/
+│   │
+│   ├── environments/                 # Environment Configuration 
+│   │   ├── environment.ts            # Development
+│   │   └── environment.prod.ts       # Production
+│   │
+│   ├── styles/                       # Global Styles
+│   │   ├── _variables.css           # CSS Variables
+│   │   ├── _mixins.css              # CSS Mixins
+│   │   ├── _reset.css               # CSS Reset
+│   │   └── _utilities.css           # Utility Classes
+│   │
+│   ├── index.html                    # Main HTML
+│   ├── main.ts                       # Entry Point
+│   └── styles.css                    # Global Styles 
+│
+├── .gitignore                        # Git Ignore
+├── angular.json                      # Angular Configuration 
+├── package.json                      # Dependencies 
+├── package-lock.json                 # Dependencies Lock
+├── tsconfig.json                     # TypeScript Configuration
+├── tsconfig.app.json                 # App TypeScript Config
+└── README.md                         # Project Documentation
