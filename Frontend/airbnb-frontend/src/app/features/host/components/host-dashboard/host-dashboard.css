@@ -1,0 +1,262 @@
+/* ============================================ */
+/* src/app/host/components/host-dashboard/host-dashboard.component.css */
+/* ============================================ */
+
+/* Airbnb Colors */
+:host {
+  --airbnb-red: #FF385C;
+  --airbnb-red-dark: #E31C5F;
+  --airbnb-black: #222222;
+  --airbnb-gray: #717171;
+  --airbnb-light-gray: #F7F7F7;
+  --airbnb-border: #DDDDDD;
+}
+
+/* Dashboard Wrapper */
+.dashboard-wrapper {
+  min-height: calc(100vh - 80px);
+  background: white;
+}
+
+/* ============================================ */
+/* STICKY TABS */
+/* ============================================ */
+
+.sticky-tabs-container {
+  position: sticky;
+  top: 80px; /* ارتفاع الـ Navbar */
+  background: white;
+  z-index: 50;
+  border-bottom: 1px solid var(--airbnb-border);
+}
+
+.tabs-wrapper {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80px;
+  display: flex;
+  gap: 0;
+}
+
+@media (max-width: 768px) {
+  .tabs-wrapper {
+    padding: 0 24px;
+  }
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 20px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--airbnb-gray);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-btn:hover {
+  color: var(--airbnb-black);
+}
+
+.tab-btn.active {
+  color: var(--airbnb-black);
+  font-weight: 600;
+  border-bottom-color: var(--airbnb-black);
+}
+
+/* ============================================ */
+/* DASHBOARD CONTENT */
+/* ============================================ */
+
+.dashboard-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 80px 80px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 32px 24px 60px;
+  }
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: var(--airbnb-gray);
+  font-size: 16px;
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Content Container */
+.content-container {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ============================================ */
+/* EMPTY STATE */
+/* ============================================ */
+
+.empty-state-today {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.empty-icon {
+  margin-bottom: 32px;
+}
+
+.empty-icon svg {
+  width: 96px;
+  height: 96px;
+}
+
+.empty-title {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--airbnb-black);
+  margin: 0 0 16px 0;
+}
+
+.empty-description {
+  font-size: 16px;
+  color: var(--airbnb-gray);
+  line-height: 1.6;
+  margin: 0 0 32px 0;
+  max-width: 400px;
+}
+
+.btn-complete-listing {
+  display: inline-block;
+  padding: 14px 24px;
+  background: white;
+  color: var(--airbnb-black);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--airbnb-black);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-complete-listing:hover {
+  background: var(--airbnb-light-gray);
+}
+
+/* ============================================ */
+/* TIPS CARD */
+/* ============================================ */
+
+.tips-card {
+  background: linear-gradient(135deg, #FFF4ED 0%, #FFF0F5 100%);
+  border: 1px solid #FFE4E1;
+  border-radius: 16px;
+  padding: 32px;
+  margin-top: 40px;
+}
+
+.tips-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tips-header i {
+  font-size: 28px;
+  color: #FF6B35;
+}
+
+.tips-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--airbnb-black);
+  margin: 0;
+}
+
+.tips-text {
+  font-size: 16px;
+  color: var(--airbnb-gray);
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.tips-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--airbnb-black);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: underline;
+  transition: gap 0.2s ease;
+}
+
+.tips-link:hover {
+  gap: 12px;
+}
+
+.tips-link i {
+  font-size: 16px;
+}
+
+/* ============================================ */
+/* RESPONSIVE */
+/* ============================================ */
+
+@media (max-width: 768px) {
+  .empty-title {
+    font-size: 22px;
+  }
+
+  .empty-description {
+    font-size: 14px;
+  }
+
+  .tips-card {
+    padding: 24px;
+  }
+
+  .tips-header h3 {
+    font-size: 18px;
+  }
+
+  .tips-text {
+    font-size: 14px;
+  }
+}
