@@ -1,73 +1,133 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { PropertyService } from '../../services/property';
-import { HostDashboardStats } from '../../models/property.model';
+import { Router, RouterLink } from '@angular/router';
+import { BookingService } from '../../services/booking';
+import { Booking, BookingStatus } from '../../models/booking.model';
 
 @Component({
   selector: 'app-host-dashboard',
+  standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './host-dashboard.html',
-  styleUrl: './host-dashboard.css',
+  styleUrls: ['./host-dashboard.css']
 })
-export class HostDashboard implements OnInit {
-  stats!: HostDashboardStats;
-  isLoading = true;
-  currentDate = new Date();
+export class HostDashboardComponent implements OnInit {
+  // Active tab: 'today' or 'upcoming'
+  activeTab = signal<'today' | 'upcoming'>('today');
   
-  // Tab Selection
-  activeTab: 'today' | 'upcoming' = 'today';
+  // Bookings data
+  todayBookings = signal<Booking[]>([]);
+  upcomingBookings = signal<Booking[]>([]);
+  loading = signal<boolean>(true);
 
-  // For greeting message
-  greetingMessage = '';
-  hostName = 'Host'; // لما Authentication يخلص هناخده من الـ Token
-
-  constructor(private propertyService: PropertyService) {}
+  constructor(
+    private bookingService: BookingService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.setGreetingMessage();
-    this.loadDashboardStats();
+    this.loadTodayBookings();
   }
 
-  loadDashboardStats(): void {
-    this.isLoading = true;
-    this.propertyService.getHostDashboardStats('host-1').subscribe({
-      next: (data) => {
-        this.stats = data;
-        this.isLoading = false;
+  /**
+   * Switch between Today and Upcoming tabs
+   */
+  setActiveTab(tab: 'today' | 'upcoming'): void {
+    this.activeTab.set(tab);
+    if (tab === 'upcoming') {
+      this.loadUpcomingBookings();
+    }
+  }
+
+  /**
+   * Load today's bookings (check-ins and check-outs)
+   */
+  loadTodayBookings(): void {
+    this.loading.set(true);
+    
+    this.bookingService.getAllBookings().subscribe({
+      next: (bookings) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Filter bookings for today (check-ins or check-outs)
+        const todayBookings = bookings.filter(booking => {
+          const checkIn = new Date(booking.checkInDate);
+          const checkOut = new Date(booking.checkOutDate);
+          checkIn.setHours(0, 0, 0, 0);
+          checkOut.setHours(0, 0, 0, 0);
+          
+          return (checkIn.getTime() === today.getTime() || 
+                  checkOut.getTime() === today.getTime()) &&
+                 (booking.status === BookingStatus.CONFIRMED || 
+                  booking.status === BookingStatus.CHECKED_IN);
+        });
+
+        this.todayBookings.set(todayBookings);
+        this.loading.set(false);
       },
-      error: (error) => {
-        console.error('Error loading dashboard stats:', error);
-        this.isLoading = false;
+      error: (err) => {
+        console.error('Error loading bookings:', err);
+        this.loading.set(false);
       }
     });
   }
 
-  setGreetingMessage(): void {
-    const hour = this.currentDate.getHours();
-    if (hour < 12) {
-      this.greetingMessage = 'Good morning';
-    } else if (hour < 18) {
-      this.greetingMessage = 'Good afternoon';
-    } else {
-      this.greetingMessage = 'Good evening';
-    }
+  /**
+   * Load upcoming bookings
+   */
+  loadUpcomingBookings(): void {
+    this.loading.set(true);
+    
+    this.bookingService.getUpcomingBookings().subscribe({
+      next: (bookings) => {
+        this.upcomingBookings.set(bookings);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading upcoming bookings:', err);
+        this.loading.set(false);
+      }
+    });
   }
 
-  getMonthName(): string {
-    return this.currentDate.toLocaleString('default', { month: 'long' });
+  /**
+   * Navigate to complete listing
+   */
+  completeYourListing(): void {
+    this.router.navigate(['/host/properties/add']);
   }
 
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
+  /**
+   * Get booking event type
+   */
+  getEventType(booking: Booking): 'check-in' | 'check-out' {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkIn = new Date(booking.checkInDate);
+    checkIn.setHours(0, 0, 0, 0);
+    
+    return checkIn.getTime() === today.getTime() ? 'check-in' : 'check-out';
   }
 
-  getImageUrl(url: string): string {
-    return url || 'https://via.placeholder.com/400x300?text=No+Image';
+  /**
+   * Format date
+   */
+  formatDate(date: Date): string {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric'
+    }).format(new Date(date));
+  }
+
+  /**
+   * Format date range
+   */
+  formatDateRange(checkIn: Date, checkOut: Date): string {
+    const checkInFormatted = this.formatDate(checkIn);
+    const checkOutFormatted = this.formatDate(checkOut);
+    return `${checkInFormatted} - ${checkOutFormatted}`;
   }
 }
