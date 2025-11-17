@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Ard Al Jood\\source\\repos\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {}
+    "D:\\Graduation Project\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Ard Al Jood\\source\\repos\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {
+    "D:\\Graduation Project\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Ard Al Jood\\source\\repos\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
+        "projectUniqueName": "D:\\Graduation Project\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
         "projectName": "Airbnb.API",
-        "projectPath": "C:\\Users\\Ard Al Jood\\source\\repos\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-        "packagesPath": "C:\\Users\\Ard Al Jood\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Ard Al Jood\\source\\repos\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\obj\\",
+        "projectPath": "D:\\Graduation Project\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
+        "packagesPath": "C:\\Users\\mosaad\\.nuget\\packages\\",
+        "outputPath": "D:\\Graduation Project\\Airbnb\\Backend\\Airbnb.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Ard Al Jood\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\mosaad\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,7 +26,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -54,6 +53,26 @@
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[10.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.11, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.11, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[10.0.1, )"
+            },
+            "Swashbuckle.AspNetCore.Filters": {
+              "target": "Package",
+              "version": "[10.0.0, )"
             }
           },
           "imports": [
@@ -75,7 +94,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

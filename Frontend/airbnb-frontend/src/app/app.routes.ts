@@ -33,18 +33,30 @@ export const routes: Routes = [
       }
     ]
   },
-  
+
   // Default redirect
   {
     path: '',
-    redirectTo: 'host/my-properties',
+    redirectTo: 'search',
     pathMatch: 'full'
   },
-  
-  // 404
+
+  {
+    path: 'search',
+    loadComponent: () =>
+      import('./features/guest/components/search/components/search-results/search-results')
+        .then(m => m.SearchResults)
+  },
+
+  {
+    path: 'property/:id',
+    loadComponent: () =>
+      import('./features/guest/components/search/components/property-details/property-details')
+        .then(m => m.PropertyDetails)
+  },
+
   {
     path: '**',
-    redirectTo: 'host/my-properties'
+    redirectTo: 'search'
   }
 ];
-
