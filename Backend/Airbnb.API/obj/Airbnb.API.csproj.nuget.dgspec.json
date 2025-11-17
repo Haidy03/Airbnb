@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {}
+    "C:\\Haidy\\Projects\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {
+    "C:\\Haidy\\Projects\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
+        "projectUniqueName": "C:\\Haidy\\Projects\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
         "projectName": "Airbnb.API",
-        "projectPath": "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-        "packagesPath": "C:\\Users\\Ard Al Jood\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\obj\\",
+        "projectPath": "C:\\Haidy\\Projects\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
+        "packagesPath": "C:\\Users\\haidy\\.nuget\\packages\\",
+        "outputPath": "C:\\Haidy\\Projects\\Airbnb\\Backend\\Airbnb.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Ard Al Jood\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\haidy\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -99,7 +99,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
