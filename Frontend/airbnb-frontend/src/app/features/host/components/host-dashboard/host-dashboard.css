@@ -1,262 +1,372 @@
-/* ============================================ */
-/* src/app/host/components/host-dashboard/host-dashboard.component.css */
-/* ============================================ */
-
-/* Airbnb Colors */
-:host {
-  --airbnb-red: #FF385C;
-  --airbnb-red-dark: #E31C5F;
-  --airbnb-black: #222222;
-  --airbnb-gray: #717171;
-  --airbnb-light-gray: #F7F7F7;
-  --airbnb-border: #DDDDDD;
-}
-
-/* Dashboard Wrapper */
-.dashboard-wrapper {
-  min-height: calc(100vh - 80px);
-  background: white;
-}
-
-/* ============================================ */
-/* STICKY TABS */
-/* ============================================ */
-
-.sticky-tabs-container {
-  position: sticky;
-  top: 80px; /* ارتفاع الـ Navbar */
-  background: white;
-  z-index: 50;
-  border-bottom: 1px solid var(--airbnb-border);
-}
-
-.tabs-wrapper {
-  max-width: 1280px;
+.today-page {
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 0 80px;
+  padding: 0;
+}
+
+/* Tab Navigation */
+.tab-navigation {
   display: flex;
-  gap: 0;
+  justify-content: center;
+  gap: 16px;
+  padding: 32px 24px;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* To stay above content */
 }
 
-@media (max-width: 768px) {
-  .tabs-wrapper {
-    padding: 0 24px;
-  }
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  padding: 20px 24px;
+.tab-button {
+  padding: 12px 24px;
   font-size: 16px;
-  font-weight: 500;
-  color: var(--airbnb-gray);
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-  border-bottom: 2px solid transparent;
-}
-
-.tab-btn:hover {
-  color: var(--airbnb-black);
-}
-
-.tab-btn.active {
-  color: var(--airbnb-black);
   font-weight: 600;
-  border-bottom-color: var(--airbnb-black);
+  color: #222222;
+  background: #F7F7F7;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-/* ============================================ */
-/* DASHBOARD CONTENT */
-/* ============================================ */
-
-.dashboard-content {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 48px 80px 80px;
+.tab-button:hover {
+  background: #EBEBEB;
 }
 
-@media (max-width: 768px) {
-  .dashboard-content {
-    padding: 32px 24px 60px;
-  }
+.tab-button.active {
+  background: #222222;
+  color: white;
 }
 
 /* Loading State */
-.loading-container {
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 100px 24px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #F7F7F7;
+  border-top: 3px solid #222222;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Tab Content */
+.tab-content {
+  min-height: 500px;
+  padding: 0 24px 40px;
+}
+
+/* Empty State */
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
-}
-
-.loading-text {
-  margin-top: 16px;
-  color: var(--airbnb-gray);
-  font-size: 16px;
-}
-
-.spinner-border {
-  width: 3rem;
-  height: 3rem;
-}
-
-/* Content Container */
-.content-container {
-  animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-/* ============================================ */
-/* EMPTY STATE */
-/* ============================================ */
-
-.empty-state-today {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 80px 24px;
   text-align: center;
-  padding: 80px 20px;
 }
 
-.empty-icon {
+.empty-illustration {
   margin-bottom: 32px;
 }
 
-.empty-icon svg {
-  width: 96px;
-  height: 96px;
+.empty-illustration svg {
+  width: 120px;
+  height: 120px;
 }
 
 .empty-title {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 600;
-  color: var(--airbnb-black);
-  margin: 0 0 16px 0;
+  color: #222222;
+  margin: 0 0 12px 0;
+  line-height: 1.3;
 }
 
 .empty-description {
   font-size: 16px;
-  color: var(--airbnb-gray);
-  line-height: 1.6;
+  color: #717171;
   margin: 0 0 32px 0;
-  max-width: 400px;
-}
-
-.btn-complete-listing {
-  display: inline-block;
-  padding: 14px 24px;
-  background: white;
-  color: var(--airbnb-black);
-  font-size: 16px;
-  font-weight: 600;
-  text-decoration: none;
-  border: 1px solid var(--airbnb-black);
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.btn-complete-listing:hover {
-  background: var(--airbnb-light-gray);
-}
-
-/* ============================================ */
-/* TIPS CARD */
-/* ============================================ */
-
-.tips-card {
-  background: linear-gradient(135deg, #FFF4ED 0%, #FFF0F5 100%);
-  border: 1px solid #FFE4E1;
-  border-radius: 16px;
-  padding: 32px;
-  margin-top: 40px;
-}
-
-.tips-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.tips-header i {
-  font-size: 28px;
-  color: #FF6B35;
-}
-
-.tips-header h3 {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--airbnb-black);
-  margin: 0;
-}
-
-.tips-text {
-  font-size: 16px;
-  color: var(--airbnb-gray);
-  margin: 0 0 20px 0;
   line-height: 1.5;
 }
 
-.tips-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--airbnb-black);
+.complete-listing-btn {
+  padding: 14px 24px;
   font-size: 16px;
   font-weight: 600;
-  text-decoration: underline;
-  transition: gap 0.2s ease;
+  color: white;
+  background: #222222;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.tips-link:hover {
+.complete-listing-btn:hover {
+  background: #000000;
+  transform: scale(1.02);
+}
+
+/* Bookings List */
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 32px 0;
+}
+
+/* Booking Card */
+.booking-card {
+  display: grid;
+  grid-template-columns: 240px 1fr auto;
+  gap: 24px;
+  padding: 24px;
+  background: white;
+  border: 1px solid #DDDDDD;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.booking-card:hover {
+  border-color: #222222;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Booking Image */
+.booking-image {
+  width: 240px;
+  height: 180px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.booking-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Booking Info */
+.booking-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.booking-header {
+  display: flex;
+  align-items: center;
   gap: 12px;
+  margin-bottom: 4px;
 }
 
-.tips-link i {
+.event-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.event-badge.check-in {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.event-badge.check-out {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.booking-time {
+  font-size: 14px;
+  color: #717171;
+}
+
+.guest-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #222222;
+  margin: 0;
+}
+
+.property-title {
+  font-size: 15px;
+  color: #222222;
+  margin: 0;
+  font-weight: 500;
+}
+
+.booking-dates {
+  font-size: 14px;
+  color: #717171;
+  margin: 0;
+}
+
+.guest-count {
+  font-size: 14px;
+  color: #717171;
+  margin: 0;
+}
+
+/* Booking Actions */
+.booking-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background: #222222;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  background: #000000;
+  transform: scale(1.02);
+}
+
+.action-btn.secondary {
+  background: white;
+  color: #222222;
+  border: 1px solid #DDDDDD;
+}
+
+.action-btn.secondary:hover {
+  background: #F7F7F7;
+  border-color: #222222;
+}
+
+.btn-icon {
   font-size: 16px;
 }
 
-/* ============================================ */
-/* RESPONSIVE */
-/* ============================================ */
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .booking-card {
+    grid-template-columns: 200px 1fr auto;
+    gap: 20px;
+  }
+
+  .booking-image {
+    width: 200px;
+    height: 150px;
+  }
+}
 
 @media (max-width: 768px) {
+  .today-page {
+    padding: 0;
+  }
+
+  .tab-navigation {
+    padding: 24px 16px;
+    gap: 12px;
+  }
+
+  .tab-button {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+
+  .tab-content {
+    padding: 0 16px 32px;
+  }
+
+  .empty-state {
+    padding: 60px 16px;
+  }
+
+  .empty-title {
+    font-size: 24px;
+  }
+
+  .empty-description {
+    font-size: 15px;
+  }
+
+  .bookings-list {
+    gap: 16px;
+    padding: 24px 0;
+  }
+
+  .booking-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .booking-image {
+    width: 100%;
+    height: 200px;
+  }
+
+  .booking-actions {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .action-btn {
+    flex: 1;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-navigation {
+    padding: 20px 12px;
+  }
+
+  .tab-button {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
   .empty-title {
     font-size: 22px;
   }
 
-  .empty-description {
-    font-size: 14px;
+  .empty-illustration svg {
+    width: 100px;
+    height: 100px;
   }
 
-  .tips-card {
-    padding: 24px;
+  .booking-card {
+    padding: 16px;
   }
 
-  .tips-header h3 {
+  .guest-name {
     font-size: 18px;
   }
 
-  .tips-text {
-    font-size: 14px;
+  .booking-actions {
+    flex-direction: column;
   }
 }

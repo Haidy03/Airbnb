@@ -1,0 +1,30 @@
+﻿namespace Airbnb.API.DTOs.Booking
+{
+    public class BookingResponseDto
+    {
+        public int Id { get; set; }
+        public int PropertyId { get; set; }
+        public string PropertyTitle { get; set; } = string.Empty;
+        public string PropertyImage { get; set; } = string.Empty;
+
+        public string GuestId { get; set; } = string.Empty;
+        public string GuestName { get; set; } = string.Empty;
+        public string GuestEmail { get; set; } = string.Empty;
+        public string? GuestPhone { get; set; }
+
+        public DateTime CheckInDate { get; set; }
+        public DateTime CheckOutDate { get; set; }
+        public int NumberOfGuests { get; set; }
+        public int NumberOfNights { get; set; }
+
+        public decimal PricePerNight { get; set; }
+        public decimal CleaningFee { get; set; }
+        public decimal TotalPrice { get; set; }
+
+        public string Status { get; set; } = string.Empty;
+        public string? SpecialRequests { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+        public DateTime? ConfirmedAt { get; set; }
+    }
+}

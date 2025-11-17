@@ -1,0 +1,165 @@
+<!-- src/app/features/host/components/host-messages/host-messages.component.html -->
+
+<div class="messages-page">
+  
+  <!-- Messages Sidebar -->
+  <div class="messages-sidebar">
+    
+    <!-- Header -->
+    <div class="sidebar-header">
+      <h1 class="page-title">Messages</h1>
+      
+      <div class="header-actions">
+        <!-- Search Button -->
+        <button class="icon-btn" title="Search">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="9" r="7"/>
+            <path d="M14 14l4 4"/>
+          </svg>
+        </button>
+
+        <!-- Settings Button -->
+        <button class="icon-btn" (click)="openSettings()" title="Settings">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="10" cy="10" r="3"/>
+            <path d="M10 1v2m0 14v2M4.22 4.22l1.42 1.42m8.72 8.72l1.42 1.42M1 10h2m14 0h2M4.22 15.78l1.42-1.42m8.72-8.72l1.42-1.42"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <button 
+        class="filter-tab"
+        [class.active]="activeFilter() === 'all'"
+        (click)="setFilter('all')">
+        All
+        <span class="tab-icon">▼</span>
+      </button>
+      <button 
+        class="filter-tab"
+        [class.active]="activeFilter() === 'unread'"
+        (click)="setFilter('unread')">
+        Unread
+      </button>
+    </div>
+
+    <!-- Messages List -->
+    <div class="messages-list">
+      
+      <!-- Loading State -->
+      <div *ngIf="loading()" class="loading-state">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading() && filteredMessages().length === 0" class="empty-state">
+        <div class="empty-icon">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <rect x="8" y="16" width="48" height="36" rx="4" stroke="#222222" stroke-width="2"/>
+            <path d="M8 20L32 36L56 20" stroke="#222222" stroke-width="2"/>
+          </svg>
+        </div>
+        
+        <h3 class="empty-title">We couldn't find any messages</h3>
+        <p class="empty-description">Try removing or adjusting your filters.</p>
+        
+        <button class="clear-filters-btn" (click)="clearFilters()">
+          Clear all filters
+        </button>
+      </div>
+
+      <!-- Message Items -->
+      <div 
+        *ngFor="let message of filteredMessages()"
+        class="message-item"
+        [class.unread]="message.isUnread"
+        [class.selected]="selectedMessage()?.id === message.id"
+        (click)="selectMessage(message)">
+        
+        <img [src]="message.guestAvatar" 
+             [alt]="message.guestName" 
+             class="message-avatar">
+        
+        <div class="message-content">
+          <div class="message-header">
+            <span class="guest-name">{{ message.guestName }}</span>
+            <span class="message-time">{{ getRelativeTime(message.timestamp) }}</span>
+          </div>
+          <div class="property-name">{{ message.propertyTitle }}</div>
+          <div class="message-preview">{{ message.lastMessage }}</div>
+        </div>
+
+        <div class="unread-indicator" *ngIf="message.isUnread"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Conversation Area -->
+  <div class="conversation-area">
+    
+    <!-- No conversation selected -->
+    <div *ngIf="!selectedMessage()" class="no-conversation">
+      <div class="no-conversation-icon">
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+          <rect x="15" y="25" width="50" height="35" rx="4" stroke="#CCCCCC" stroke-width="2"/>
+          <path d="M15 30L40 45L65 30" stroke="#CCCCCC" stroke-width="2"/>
+        </svg>
+      </div>
+      <h3 class="no-conversation-title">Select a conversation</h3>
+      <p class="no-conversation-text">Choose a message from the list to view the conversation</p>
+    </div>
+
+    <!-- Selected conversation -->
+    <div *ngIf="selectedMessage()" class="conversation-view">
+      
+      <!-- Conversation Header -->
+      <div class="conversation-header">
+        <div class="conversation-info">
+          <img [src]="selectedMessage()!.guestAvatar" 
+               [alt]="selectedMessage()!.guestName" 
+               class="conversation-avatar">
+          <div>
+            <h3 class="conversation-guest-name">{{ selectedMessage()!.guestName }}</h3>
+            <p class="conversation-property">{{ selectedMessage()!.propertyTitle }}</p>
+          </div>
+        </div>
+        
+        <button class="icon-btn" title="More options">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <circle cx="10" cy="4" r="1.5"/>
+            <circle cx="10" cy="10" r="1.5"/>
+            <circle cx="10" cy="16" r="1.5"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Messages Area -->
+      <div class="messages-area">
+        <div class="conversation-placeholder">
+          <p>Conversation content will appear here</p>
+          <p class="placeholder-note">This is a UI preview - full messaging functionality coming soon!</p>
+        </div>
+      </div>
+
+      <!-- Message Input -->
+      <div class="message-input-area">
+        <textarea 
+          class="message-input" 
+          placeholder="Type a message..."
+          rows="1"></textarea>
+        <button class="send-btn" title="Send message">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2 10l16-8-8 16-2-6-6-2z"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

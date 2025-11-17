@@ -1,0 +1,37 @@
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Airbnb.API.Models
+{
+    public class ApplicationUser : IdentityUser
+    {
+        [Required]
+        [MaxLength(100)]
+        public string FirstName { get; set; }
+
+        [Required]
+        [MaxLength(100)]
+        public string LastName { get; set; }
+
+        [MaxLength(500)]
+        public string? Bio { get; set; }
+
+        public string? ProfileImageUrl { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? UpdatedAt { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        // Navigation Properties
+        public virtual ICollection<Property> Properties { get; set; } = new List<Property>();
+        public virtual ICollection<Booking> GuestBookings { get; set; } = new List<Booking>();
+        public virtual ICollection<Review> ReviewsGiven { get; set; } = new List<Review>();
+        public virtual ICollection<Review> ReviewsReceived { get; set; } = new List<Review>();
+    }
+}
