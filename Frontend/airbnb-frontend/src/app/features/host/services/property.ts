@@ -1,231 +1,343 @@
-// ============================================
-// src/app/host/services/property.service.ts
-// ============================================
+import { Injectable, signal } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, catchError, map, tap } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
-import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
+// Import your existing Property model
 import { 
   Property, 
-  CreatePropertyRequest, 
-  UpdatePropertyRequest,
-  HostDashboardStats 
+  CreatePropertyDto, 
+  UpdatePropertyDto,
+  PropertyFilters,
+  PropertyStatus 
 } from '../models/property.model';
-import { PropertyImage } from '../models/image.model';
-import { MOCK_PROPERTIES, MOCK_DASHBOARD_STATS } from '../models/mock-data';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PropertyService {
-
-  // في الوقت الحالي هنستخدم Mock Data
-  // لما الـ Backend يخلص هنبدل الـ of() بـ this.http.get()
+  private apiUrl = `${environment.apiUrl}/host/property`;
   
-  private mockProperties = [...MOCK_PROPERTIES];
-  private mockStats = MOCK_DASHBOARD_STATS;
+  // Using signals for reactive state management
+  private propertiesSignal = signal<Property[]>([]);
+  private loadingSignal = signal<boolean>(false);
+  private errorSignal = signal<string | null>(null);
 
-  constructor() { }
+  // Public readonly signals
+  readonly properties = this.propertiesSignal.asReadonly();
+  readonly loading = this.loadingSignal.asReadonly();
+  readonly error = this.errorSignal.asReadonly();
 
-  // ============================================
-  // Get All Properties للـ Host
-  // ============================================
-  getHostProperties(hostId: string): Observable<Property[]> {
-    // TODO: لما الـ Backend يخلص
-    // return this.http.get<Property[]>(`${this.apiUrl}/properties/host/${hostId}`);
-    
-    // دلوقتي بنستخدم Mock Data
-    console.log('Getting properties for host:', hostId);
-    return of(this.mockProperties).pipe(delay(500)); // simulate API delay
+  constructor(private http: HttpClient) {}
+
+  /**
+   * Get HTTP headers with auth token
+   */
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken'); // Store token after login
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
   }
 
-  // ============================================
-  // Get Property By ID
-  // ============================================
+  /**
+   * Load all properties for the current host
+   */
+  loadProperties(): void {
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
+
+    this.getAllProperties().subscribe({
+      next: (properties) => {
+        this.propertiesSignal.set(properties);
+        this.loadingSignal.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading properties:', error);
+        this.errorSignal.set(error.message);
+        this.loadingSignal.set(false);
+      }
+    });
+  }
+
+  /**
+   * Get all properties from API
+   */
+  getAllProperties(): Observable<Property[]> {
+    this.loadingSignal.set(true);
+    
+    return this.http.get<{ success: boolean; data: any[] }>(
+      this.apiUrl, 
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => {
+        // Map API response to Property model
+        return response.data.map(item => this.mapApiToProperty(item));
+      }),
+      tap(() => this.loadingSignal.set(false)),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Get property by ID
+   */
   getPropertyById(id: string): Observable<Property | undefined> {
-    // TODO: لما الـ Backend يخلص
-    // return this.http.get<Property>(`${this.apiUrl}/properties/${id}`);
+    this.loadingSignal.set(true);
     
-    console.log('Getting property by id:', id);
-    const property = this.mockProperties.find(p => p.id === id);
-    return of(property).pipe(delay(300));
+    return this.http.get<{ success: boolean; data: any }>(
+      `${this.apiUrl}/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return this.mapApiToProperty(response.data);
+        }
+        return undefined;
+      }),
+      tap(() => this.loadingSignal.set(false)),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message);
+        throw error;
+      })
+    );
   }
 
-  // ============================================
-  // Create New Property
-  // ============================================
-  createProperty(request: CreatePropertyRequest): Observable<Property> {
-    // TODO: لما الـ Backend يخلص
-    // return this.http.post<Property>(`${this.apiUrl}/properties`, request);
-    
-    console.log('Creating property:', request);
-    
-    // Mock: إنشاء عقار جديد
-    const newProperty: Property = {
-      id: Date.now().toString(),
-      hostId: 'host-1',
-      title: request.title,
-      description: request.description,
-      propertyType: request.propertyType,
-      propertyTypeName: this.getPropertyTypeName(request.propertyType),
-      pricePerNight: request.pricePerNight,
-      maxGuests: request.maxGuests,
-      bedrooms: request.bedrooms,
-      bathrooms: request.bathrooms,
-      address: request.address,
-      city: request.city,
-      country: request.country,
-      latitude: request.latitude,
-      longitude: request.longitude,
-      isActive: true,
-      images: [],
-      amenities: [],
-      averageRating: 0,
-      totalReviews: 0,
-      totalBookings: 0,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    this.mockProperties.push(newProperty);
-    return of(newProperty).pipe(delay(800));
+  /**
+   * Create new property
+   */
+  createProperty(propertyDto: CreatePropertyDto): Observable<Property> {
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
+
+    return this.http.post<{ success: boolean; data: any }>(
+      this.apiUrl,
+      propertyDto,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => this.mapApiToProperty(response.data)),
+      tap(property => {
+        const current = this.propertiesSignal();
+        this.propertiesSignal.set([...current, property]);
+        this.loadingSignal.set(false);
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message);
+        throw error;
+      })
+    );
   }
 
-  // ============================================
-  // Update Property
-  // ============================================
-  updateProperty(id: string, request: UpdatePropertyRequest): Observable<Property> {
-    // TODO: لما الـ Backend يخلص
-    // return this.http.put<Property>(`${this.apiUrl}/properties/${id}`, request);
-    
-    console.log('Updating property:', id, request);
-    
-    // Mock: تحديث العقار
-    const index = this.mockProperties.findIndex(p => p.id === id);
-    if (index !== -1) {
-      this.mockProperties[index] = {
-        ...this.mockProperties[index],
-        ...request,
-        propertyTypeName: this.getPropertyTypeName(request.propertyType),
-        updatedAt: new Date()
-      };
-      return of(this.mockProperties[index]).pipe(delay(800));
-    }
-    
-    throw new Error('Property not found');
+  /**
+   * Update existing property
+   */
+  updateProperty(propertyDto: UpdatePropertyDto): Observable<Property> {
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
+
+    return this.http.put<{ success: boolean; data: any }>(
+      `${this.apiUrl}/${propertyDto.id}`,
+      propertyDto,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => this.mapApiToProperty(response.data)),
+      tap(property => {
+        const current = this.propertiesSignal();
+        const index = current.findIndex(p => p.id === propertyDto.id);
+        if (index !== -1) {
+          const updated = [...current];
+          updated[index] = property;
+          this.propertiesSignal.set(updated);
+        }
+        this.loadingSignal.set(false);
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message);
+        throw error;
+      })
+    );
   }
 
-  // ============================================
-  // Delete Property
-  // ============================================
+  /**
+   * Delete property
+   */
   deleteProperty(id: string): Observable<boolean> {
-    // TODO: لما الـ Backend يخلص
-    // return this.http.delete<boolean>(`${this.apiUrl}/properties/${id}`);
-    
-    console.log('Deleting property:', id);
-    
-    // Mock: حذف العقار
-    const index = this.mockProperties.findIndex(p => p.id === id);
-    if (index !== -1) {
-      this.mockProperties.splice(index, 1);
-      return of(true).pipe(delay(500));
-    }
-    
-    return of(false).pipe(delay(500));
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
+
+    return this.http.delete<{ success: boolean }>(
+      `${this.apiUrl}/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.success),
+      tap(() => {
+        const current = this.propertiesSignal();
+        const filtered = current.filter(p => p.id !== id);
+        this.propertiesSignal.set(filtered);
+        this.loadingSignal.set(false);
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message);
+        throw error;
+      })
+    );
   }
 
-  // ============================================
-  // Toggle Property Active Status
-  // ============================================
+  /**
+   * Toggle property status (list/unlist)
+   */
   togglePropertyStatus(id: string): Observable<Property> {
-    // TODO: لما الـ Backend يخلص
-    // return this.http.patch<Property>(`${this.apiUrl}/properties/${id}/toggle-status`, {});
-    
-    console.log('Toggling property status:', id);
-    
-    // Mock: تغيير حالة العقار
-    const property = this.mockProperties.find(p => p.id === id);
-    if (property) {
-      property.isActive = !property.isActive;
-      property.updatedAt = new Date();
-      return of(property).pipe(delay(500));
-    }
-    
-    throw new Error('Property not found');
+    return this.http.patch<{ success: boolean; data: any }>(
+      `${this.apiUrl}/${id}/toggle-status`,
+      {},
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => this.mapApiToProperty(response.data)),
+      tap(property => {
+        const current = this.propertiesSignal();
+        const index = current.findIndex(p => p.id === id);
+        if (index !== -1) {
+          const updated = [...current];
+          updated[index] = property;
+          this.propertiesSignal.set(updated);
+        }
+      }),
+      catchError(error => {
+        this.errorSignal.set(error.message);
+        throw error;
+      })
+    );
   }
 
-  // ============================================
-  // Upload Property Images
-  // ============================================
-  uploadPropertyImages(propertyId: string, files: File[]): Observable<PropertyImage[]> {
-    // TODO: لما الـ Backend يخلص
-    // const formData = new FormData();
-    // files.forEach(file => formData.append('images', file));
-    // return this.http.post<PropertyImage[]>(`${this.apiUrl}/properties/${propertyId}/images`, formData);
-    
-    console.log('Uploading images for property:', propertyId, files);
-    
-    // Mock: رفع الصور
-    const images: PropertyImage[] = files.map((file, index) => ({
-      id: `img-${Date.now()}-${index}`,
-      propertyId: propertyId,
-      imageUrl: URL.createObjectURL(file), // مؤقت للعرض فقط
-      isPrimary: index === 0,
-      order: index + 1
-    }));
-    
-    return of(images).pipe(delay(1000));
+  /**
+   * Upload property images
+   */
+  uploadPropertyImages(propertyId: string, files: File[]): Observable<any[]> {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('file', file);
+    });
+
+    // Don't set Content-Type header - browser will set it with boundary
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+    });
+
+    return this.http.post<{ success: boolean; data: any }>(
+      `${this.apiUrl}/${propertyId}/images`,
+      formData,
+      { headers }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error uploading images:', error);
+        throw error;
+      })
+    );
   }
 
-  // ============================================
-  // Delete Property Image
-  // ============================================
-  deletePropertyImage(imageId: string): Observable<boolean> {
-    // TODO: لما الـ Backend يخلص
-    // return this.http.delete<boolean>(`${this.apiUrl}/properties/images/${imageId}`);
-    
-    console.log('Deleting image:', imageId);
-    return of(true).pipe(delay(500));
-  }
-
-  // ============================================
-  // Get Host Dashboard Stats
-  // ============================================
-  getHostDashboardStats(hostId: string): Observable<HostDashboardStats> {
-    // TODO: لما الـ Backend يخلص
-    // return this.http.get<HostDashboardStats>(`${this.apiUrl}/properties/host/${hostId}/stats`);
-    
-    console.log('Getting dashboard stats for host:', hostId);
-    return of(this.mockStats).pipe(delay(800));
-  }
-
-  // ============================================
-  // Helper Methods
-  // ============================================
-  
-  private getPropertyTypeName(type: number): string {
-    const types: { [key: number]: string } = {
-      1: 'Apartment',
-      2: 'House',
-      3: 'Villa',
-      4: 'Studio',
-      5: 'Guesthouse',
-      6: 'Hotel'
+  /**
+   * Map API response to Property model
+   */
+  private mapApiToProperty(apiData: any): Property {
+    return {
+      id: apiData.id.toString(),
+      hostId: apiData.hostId,
+      title: apiData.title,
+      description: apiData.description,
+      propertyType: apiData.propertyType,
+      roomType: ('entire_place' as unknown) as Property['roomType'], // Default - adjust based on your API
+      location: {
+        address: apiData.address,
+        city: apiData.city,
+        state: apiData.country, // Adjust if you have separate state field
+        country: apiData.country,
+        zipCode: apiData.postalCode || '',
+        coordinates: {
+          lat: apiData.latitude,
+          lng: apiData.longitude
+        }
+      },
+      capacity: {
+        guests: apiData.maxGuests,
+        bedrooms: apiData.numberOfBedrooms,
+        beds: apiData.numberOfBedrooms, // Adjust if you track beds separately
+        bathrooms: apiData.numberOfBathrooms
+      },
+      amenities: apiData.amenities?.map((a: any) => a.id) || [],
+      images: apiData.images?.map((img: any) => ({
+        id: img.id.toString(),
+        url: `http://localhost:5202${img.imageUrl}`,
+        caption: '',
+        order: img.displayOrder,
+        isMain: img.isPrimary
+      })) || [],
+      coverImage: apiData.images?.find((img: any) => img.isPrimary)?.imageUrl 
+        ? `http://localhost:5202${apiData.images.find((img: any) => img.isPrimary).imageUrl}`
+        : '',
+      pricing: {
+        basePrice: apiData.pricePerNight,
+        currency: 'USD',
+        cleaningFee: apiData.cleaningFee || 0
+      },
+      availability: {
+        minNights: apiData.minimumStay,
+        maxNights: 30,
+        advanceNotice: 1,
+        preparationTime: 1,
+        availabilityWindow: 12,
+        blockedDates: [],
+        customPricing: []
+      },
+      houseRules: {
+        checkInTime: apiData.checkInTime || '15:00',
+        checkOutTime: apiData.checkOutTime || '11:00',
+        smokingAllowed: false,
+        petsAllowed: false,
+        eventsAllowed: false,
+        childrenAllowed: true,
+        additionalRules: apiData.houseRules ? [apiData.houseRules] : []
+      },
+      status: apiData.isActive ? ('published' as PropertyStatus) : ('unlisted' as PropertyStatus),
+      isInstantBook: false,
+      createdAt: new Date(apiData.createdAt),
+      updatedAt: new Date(apiData.updatedAt ?? apiData.createdAt),
+      publishedAt: apiData.isActive ? new Date(apiData.createdAt) : undefined,
+      stats: {
+        totalBookings: apiData.totalBookings || 0,
+        totalEarnings: 0,
+        averageRating: apiData.averageRating || 0,
+        totalReviews: apiData.totalReviews || 0,
+        responseRate: 0,
+        acceptanceRate: 0,
+        viewsLastMonth: 0,
+        occupancyRate: 0
+      }
     };
-    return types[type] || 'Unknown';
+  }
+
+  /**
+   * Search properties by title or location
+   */
+  searchProperties(query: string): Observable<Property[]> {
+    return this.getAllProperties().pipe(
+      map(properties => {
+        const lowerQuery = query.toLowerCase();
+        return properties.filter(p => 
+          p.title.toLowerCase().includes(lowerQuery) ||
+          p.location.city.toLowerCase().includes(lowerQuery) ||
+          p.location.country.toLowerCase().includes(lowerQuery)
+        );
+      })
+    );
   }
 }
-
-// ============================================
-// ملاحظات مهمة:
-// ============================================
-// 
-// 1. كل الـ Functions دلوقتي بتستخدم Mock Data (بيانات وهمية)
-// 2. في الـ Console.log عشان تشوفي إيه اللي بيحصل
-// 3. delay() عشان نحاكي تأخير الـ API الحقيقي
-// 4. لما الـ Backend يخلص، هنشيل كل الـ Mock code ونحط HttpClient
-// 
-// كل اللي محتاجة تعمليه:
-// - استوردي HttpClient في Constructor لما Backend يخلص
-// - شيلي الـ of() و delay()
-// - حطي this.http.get/post/put/delete
-// ============================================

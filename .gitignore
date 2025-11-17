@@ -1,4 +1,34 @@
-.vs/ 
-*.user 
-obj/ 
-*.cache 
+###########################
+# General Visual Studio and .NET Ignored Files
+###########################
+
+# VS Solution files (user settings)
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build Results & Cache
+[Bb]in/
+[Oo]bj/
+*.pdb
+*.intellisense.cache
+*.builds.cache
+*.log
+
+# Visual Studio / Rider Specific Folders
+.vs/
+.idea/
+*.opensdf
+*.VC.db
+
+# NuGet/Package Manager
+*.nupkg
+*.snk
+
+# Temporary / Cache Files
+*~
+*.bak
+*.cache
+*.temp
+*.[Tt]mp
