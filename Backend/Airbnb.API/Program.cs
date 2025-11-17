@@ -42,6 +42,8 @@
 
 
 using Airbnb.API.Models;
+using Airbnb.API.Services.Implementations;
+using Airbnb.API.Services.Interfaces;
 //using Airbnb.API.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -138,6 +140,9 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
+// Add our custom services
+builder.Services.AddScoped<IAuthService, AuthService>();
+
 // Add CORS
 builder.Services.AddCors(options =>
 {
@@ -191,6 +196,12 @@ builder.Services.AddSwaggerGen(c =>
 // 6. Build App
 // ============================================
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedRolesAndAdmin(services);
+}
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
