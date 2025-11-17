@@ -1,150 +1,100 @@
+<!-- src/app/features/host/components/my-properties/my-properties.component.html -->
 
-<div class="properties-container">
-  <!-- Header Section -->
-  <div class="header-section">
-    <div class="header-content">
-      <h1 class="page-title">Your listings</h1>
-      <a routerLink="/host/add-property" class="btn-airbnb">
-        <i class="bi bi-plus-circle"></i>
-        Create listing
-      </a>
+<div class="listings-page">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">Your listings</h1>
+    
+    <div class="header-actions">
+      <!-- View Toggle Button -->
+      <button class="view-toggle-btn" (click)="toggleViewMode()" title="Toggle view">
+        <svg *ngIf="viewMode() === 'grid'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        <svg *ngIf="viewMode() === 'list'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+      </button>
+
+      <!-- Add New Property Button -->
+      <button class="add-property-btn" (click)="addNewProperty()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
     </div>
-  </div>
-
-  <!-- Tabs Section -->
-  <div class="tabs-section">
-    <button 
-      class="tab-btn"
-      [class.active]="activeTab === 'all'"
-      (click)="activeTab = 'all'">
-      All ({{ properties.length }})
-    </button>
-    <button 
-      class="tab-btn"
-      [class.active]="activeTab === 'active'"
-      (click)="activeTab = 'active'">
-      Listed ({{ activePropertiesCount }})
-    </button>
-    <button 
-      class="tab-btn"
-      [class.active]="activeTab === 'inactive'"
-      (click)="activeTab = 'inactive'">
-      Unlisted ({{ inactivePropertiesCount }})
-    </button>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-container">
-    <div class="spinner-border text-danger" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-    <p class="loading-text">Loading your properties...</p>
+  <div *ngIf="loading()" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading your listings...</p>
   </div>
 
   <!-- Properties Grid -->
-  <div *ngIf="!isLoading && filteredProperties.length > 0" class="properties-grid">
-    <div *ngFor="let property of filteredProperties" class="property-card">
+  <div *ngIf="!loading() && properties().length > 0" class="properties-grid" [class.list-view]="viewMode() === 'list'">
+    
+    <div *ngFor="let property of properties()" 
+         class="property-card"
+         (click)="editProperty(property.id)">
+      
       <!-- Property Image -->
-      <div class="property-image-container">
-        <img 
-          [src]="getPrimaryImage(property)" 
-          [alt]="property.title"
-          class="property-image">
+      <div class="property-image">
+        <img [src]="property.coverImage || property.images[0]?.url" 
+             [alt]="property.title"
+             *ngIf="property.coverImage || property.images.length > 0">
         
+        <!-- Placeholder for properties without images -->
+        <div class="image-placeholder" *ngIf="!property.coverImage && property.images.length === 0">
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="#CCCCCC">
+            <path d="M40 10L10 30v40h60V30L40 10zm0 8l20 15v27H20V33l20-15z"/>
+          </svg>
+        </div>
+
         <!-- Status Badge -->
-        <div class="status-badge" [class.active]="property.isActive">
-          {{ property.isActive ? 'Listed' : 'Unlisted' }}
+        <div class="status-badge" [ngClass]="getStatusBadgeClass(property.status)">
+          <span class="status-dot"></span>
+          <span class="status-text">{{ getStatusLabel(property.status) }}</span>
         </div>
       </div>
 
-      <!-- Property Details -->
-      <div class="property-details">
-        <div class="property-header">
-          <h3 class="property-title">{{ property.title }}</h3>
-          <div class="property-rating">
-            <i class="bi bi-star-fill"></i>
-            <span>{{ property.averageRating }}</span>
-            <span class="reviews-count">({{ property.totalReviews }})</span>
-          </div>
-        </div>
-
-        <p class="property-location">
-          <i class="bi bi-geo-alt"></i>
-          {{ property.city }}, {{ property.country }}
-        </p>
-
-        <div class="property-stats">
-          <span class="stat-item">
-            <i class="bi bi-house-door"></i>
-            {{ property.propertyTypeName }}
-          </span>
-          <span class="stat-item">
-            <i class="bi bi-people"></i>
-            {{ property.maxGuests }} guests
-          </span>
-          <span class="stat-item">
-            <i class="bi bi-door-closed"></i>
-            {{ property.bedrooms }} beds
-          </span>
-        </div>
-
-        <div class="property-footer">
-          <div class="price-section">
-            <span class="price">${{ property.pricePerNight }}</span>
-            <span class="price-label">per night</span>
-          </div>
-          
-          <div class="bookings-info">
-            <i class="bi bi-calendar-check"></i>
-            {{ property.totalBookings }} bookings
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-          <a 
-            [routerLink]="['/host/edit-property', property.id]" 
-            class="btn-action btn-edit">
-            <i class="bi bi-pencil"></i>
-            Edit
-          </a>
-          
-          <button 
-            (click)="togglePropertyStatus(property)"
-            class="btn-action btn-toggle">
-            <i class="bi" [class.bi-eye-slash]="property.isActive" [class.bi-eye]="!property.isActive"></i>
-            {{ property.isActive ? 'Unlist' : 'List' }}
-          </button>
-          
-          <button 
-            (click)="deleteProperty(property)"
-            class="btn-action btn-delete">
-            <i class="bi bi-trash"></i>
-            Delete
-          </button>
-        </div>
+      <!-- Property Info -->
+      <div class="property-info">
+        <h3 class="property-title">{{ property.title }}</h3>
+        <p class="property-location">{{ getLocationString(property) }}</p>
       </div>
+
     </div>
+
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!isLoading && filteredProperties.length === 0" class="empty-state">
-    <div class="empty-icon">
-      <i class="bi bi-house-x"></i>
+  <div *ngIf="!loading() && properties().length === 0" class="empty-state">
+    <div class="empty-illustration">
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+        <rect x="30" y="40" width="60" height="50" rx="4" stroke="#DDDDDD" stroke-width="2"/>
+        <path d="M30 60L60 40L90 60" stroke="#DDDDDD" stroke-width="2" fill="none"/>
+        <rect x="50" y="65" width="20" height="25" fill="#EBEBEB"/>
+        <rect x="40" y="50" width="10" height="10" fill="#EBEBEB"/>
+        <rect x="70" y="50" width="10" height="10" fill="#EBEBEB"/>
+      </svg>
     </div>
-    <h2>No properties found</h2>
-    <p *ngIf="activeTab === 'all'">
-      You haven't created any listings yet. Create your first listing to get started!
+    
+    <h2 class="empty-title">No listings yet</h2>
+    <p class="empty-description">
+      Create your first listing to start hosting and earning.
     </p>
-    <p *ngIf="activeTab === 'active'">
-      You don't have any listed properties at the moment.
-    </p>
-    <p *ngIf="activeTab === 'inactive'">
-      You don't have any unlisted properties.
-    </p>
-    <a routerLink="/host/add-property" class="btn-airbnb">
-      <i class="bi bi-plus-circle"></i>
+    
+    <button class="create-listing-btn" (click)="addNewProperty()">
       Create your first listing
-    </a>
+    </button>
   </div>
+
 </div>
