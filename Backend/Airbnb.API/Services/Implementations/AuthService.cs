@@ -116,5 +116,85 @@ namespace Airbnb.API.Services.Implementations
                 Email = user.Email
             };
         }
+
+        public async Task<IdentityResult> UpdateUserProfileAsync(string userId, UpdateProfileDto updateDto)
+        {
+            // Find the user by their ID
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                // This is a special case. If the user from a valid token doesn't exist, something is wrong.
+                // We return an IdentityResult with a custom error.
+                return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "User not found." });
+            }
+
+            // Update the user's properties with the values from the DTO
+            user.FirstName = updateDto.FirstName;
+            user.LastName = updateDto.LastName;
+            user.Bio = updateDto.Bio;
+            user.UpdatedAt = DateTime.UtcNow; // It's good practice to track when a record was last updated
+
+            // Persist the changes to the database
+            var result = await _userManager.UpdateAsync(user);
+
+            return result;
+        }
+
+        public async Task<string> GeneratePasswordResetTokenAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                // Don't reveal that the user does not exist.
+                // Return null, and the controller will handle sending a generic success message.
+                return null;
+            }
+
+            // Generate the password reset token using the UserManager
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            return token;
+        }
+
+        public async Task<IdentityResult> DeleteUserAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "User not found." });
+            }
+
+            // --- This is the "Soft Delete" ---
+            // We deactivate the user instead of permanently deleting them.
+            user.IsActive = false;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            user.Email = null;
+            user.NormalizedEmail = null;
+            user.UserName = null;
+            user.NormalizedUserName = null;
+
+            var result = await _userManager.UpdateAsync(user);
+            return result;
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(ResetPasswordDto resetDto)
+        {
+            var user = await _userManager.FindByEmailAsync(resetDto.Email);
+            if (user == null)
+            {
+                // Don't reveal that the user does not exist.
+                // The token validation will fail anyway, but this is an extra precaution.
+                // We return a generic error message that will be handled by the controller.
+                return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "Invalid password reset request." });
+            }
+
+            // The UserManager handles everything: it checks if the token is valid for this user
+            // and if it hasn't expired, then updates the password hash.
+            var result = await _userManager.ResetPasswordAsync(user, resetDto.Token, resetDto.NewPassword);
+
+            return result;
+        }
     }
 }
