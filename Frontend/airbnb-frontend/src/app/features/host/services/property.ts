@@ -1,6 +1,9 @@
 import { Injectable, signal } from '@angular/core';
-import { Observable, of, delay, throwError } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, catchError, map, tap } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+
+// Import your existing Property model
 import { 
   Property, 
   CreatePropertyDto, 
@@ -8,14 +11,15 @@ import {
   PropertyFilters,
   PropertyStatus 
 } from '../models/property.model';
-import { MOCK_PROPERTIES, MOCK_HOST_ID } from '../models/mock-data';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PropertyService {
+  private apiUrl = `${environment.apiUrl}/host/property`;
+  
   // Using signals for reactive state management
-  private propertiesSignal = signal<Property[]>([...MOCK_PROPERTIES]);
+  private propertiesSignal = signal<Property[]>([]);
   private loadingSignal = signal<boolean>(false);
   private errorSignal = signal<string | null>(null);
 
@@ -24,8 +28,17 @@ export class PropertyService {
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
-  constructor() {
-    this.loadProperties();
+  constructor(private http: HttpClient) {}
+
+  /**
+   * Get HTTP headers with auth token
+   */
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken'); // Store token after login
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
   }
 
   /**
@@ -35,24 +48,38 @@ export class PropertyService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
-    // Simulate API call delay
-    setTimeout(() => {
-      this.propertiesSignal.set([...MOCK_PROPERTIES]);
-      this.loadingSignal.set(false);
-    }, 500);
+    this.getAllProperties().subscribe({
+      next: (properties) => {
+        this.propertiesSignal.set(properties);
+        this.loadingSignal.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading properties:', error);
+        this.errorSignal.set(error.message);
+        this.loadingSignal.set(false);
+      }
+    });
   }
 
   /**
-   * Get all properties (returns Observable for async pipe)
+   * Get all properties from API
    */
   getAllProperties(): Observable<Property[]> {
     this.loadingSignal.set(true);
     
-    return of([...MOCK_PROPERTIES]).pipe(
-      delay(300), // Simulate network delay
-      map(properties => {
+    return this.http.get<{ success: boolean; data: any[] }>(
+      this.apiUrl, 
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => {
+        // Map API response to Property model
+        return response.data.map(item => this.mapApiToProperty(item));
+      }),
+      tap(() => this.loadingSignal.set(false)),
+      catchError(error => {
         this.loadingSignal.set(false);
-        return properties;
+        this.errorSignal.set(error.message);
+        throw error;
       })
     );
   }
@@ -63,81 +90,21 @@ export class PropertyService {
   getPropertyById(id: string): Observable<Property | undefined> {
     this.loadingSignal.set(true);
     
-    return of(MOCK_PROPERTIES.find(p => p.id === id)).pipe(
-      delay(300),
-      map(property => {
-        this.loadingSignal.set(false);
-        if (!property) {
-          this.errorSignal.set('Property not found');
+    return this.http.get<{ success: boolean; data: any }>(
+      `${this.apiUrl}/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return this.mapApiToProperty(response.data);
         }
-        return property;
-      })
-    );
-  }
-
-  /**
-   * Get properties with filters
-   */
-  getFilteredProperties(filters: PropertyFilters): Observable<Property[]> {
-    this.loadingSignal.set(true);
-    
-    let filtered = [...MOCK_PROPERTIES];
-
-    // Apply filters
-    if (filters.status) {
-      filtered = filtered.filter(p => p.status === filters.status);
-    }
-    if (filters.propertyType) {
-      filtered = filtered.filter(p => p.propertyType === filters.propertyType);
-    }
-    if (filters.city) {
-      filtered = filtered.filter(p => 
-        p.location.city.toLowerCase().includes(filters.city!.toLowerCase())
-      );
-    }
-    if (filters.minPrice) {
-      filtered = filtered.filter(p => p.pricing.basePrice >= filters.minPrice!);
-    }
-    if (filters.maxPrice) {
-      filtered = filtered.filter(p => p.pricing.basePrice <= filters.maxPrice!);
-    }
-
-    // Apply sorting
-    if (filters.sortBy) {
-      filtered.sort((a, b) => {
-        let aValue: any, bValue: any;
-        
-        switch (filters.sortBy) {
-          case 'createdAt':
-            aValue = a.createdAt.getTime();
-            bValue = b.createdAt.getTime();
-            break;
-          case 'earnings':
-            aValue = a.stats.totalEarnings;
-            bValue = b.stats.totalEarnings;
-            break;
-          case 'rating':
-            aValue = a.stats.averageRating;
-            bValue = b.stats.averageRating;
-            break;
-          case 'bookings':
-            aValue = a.stats.totalBookings;
-            bValue = b.stats.totalBookings;
-            break;
-          default:
-            return 0;
-        }
-
-        const order = filters.sortOrder === 'desc' ? -1 : 1;
-        return (aValue - bValue) * order;
-      });
-    }
-
-    return of(filtered).pipe(
-      delay(300),
-      map(properties => {
+        return undefined;
+      }),
+      tap(() => this.loadingSignal.set(false)),
+      catchError(error => {
         this.loadingSignal.set(false);
-        return properties;
+        this.errorSignal.set(error.message);
+        throw error;
       })
     );
   }
@@ -149,45 +116,21 @@ export class PropertyService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
-    const newProperty: Property = {
-      id: `prop-${Date.now()}`,
-      hostId: MOCK_HOST_ID,
-      ...propertyDto,
-      images: [],
-      coverImage: '',
-      availability: {
-        minNights: 1,
-        maxNights: 30,
-        advanceNotice: 1,
-        preparationTime: 1,
-        availabilityWindow: 12,
-        blockedDates: [],
-        customPricing: [],
-        ...propertyDto.pricing
-      },
-      status: PropertyStatus.DRAFT,
-      isInstantBook: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      stats: {
-        totalBookings: 0,
-        totalEarnings: 0,
-        averageRating: 0,
-        totalReviews: 0,
-        responseRate: 0,
-        acceptanceRate: 0,
-        viewsLastMonth: 0,
-        occupancyRate: 0
-      }
-    };
-
-    return of(newProperty).pipe(
-      delay(500),
-      map(property => {
+    return this.http.post<{ success: boolean; data: any }>(
+      this.apiUrl,
+      propertyDto,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => this.mapApiToProperty(response.data)),
+      tap(property => {
         const current = this.propertiesSignal();
         this.propertiesSignal.set([...current, property]);
         this.loadingSignal.set(false);
-        return property;
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message);
+        throw error;
       })
     );
   }
@@ -199,28 +142,26 @@ export class PropertyService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
-    const current = this.propertiesSignal();
-    const index = current.findIndex(p => p.id === propertyDto.id);
-
-    if (index === -1) {
-      this.loadingSignal.set(false);
-      return throwError(() => new Error('Property not found'));
-    }
-
-    const updatedProperty: Property = {
-      ...current[index],
-      ...propertyDto,
-      updatedAt: new Date()
-    };
-
-    return of(updatedProperty).pipe(
-      delay(500),
-      map(property => {
-        const updated = [...current];
-        updated[index] = property;
-        this.propertiesSignal.set(updated);
+    return this.http.put<{ success: boolean; data: any }>(
+      `${this.apiUrl}/${propertyDto.id}`,
+      propertyDto,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => this.mapApiToProperty(response.data)),
+      tap(property => {
+        const current = this.propertiesSignal();
+        const index = current.findIndex(p => p.id === propertyDto.id);
+        if (index !== -1) {
+          const updated = [...current];
+          updated[index] = property;
+          this.propertiesSignal.set(updated);
+        }
         this.loadingSignal.set(false);
-        return property;
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message);
+        throw error;
       })
     );
   }
@@ -232,153 +173,170 @@ export class PropertyService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
-    return of(true).pipe(
-      delay(500),
-      map(() => {
+    return this.http.delete<{ success: boolean }>(
+      `${this.apiUrl}/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.success),
+      tap(() => {
         const current = this.propertiesSignal();
         const filtered = current.filter(p => p.id !== id);
         this.propertiesSignal.set(filtered);
         this.loadingSignal.set(false);
-        return true;
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message);
+        throw error;
       })
     );
   }
 
   /**
-   * Update property status
+   * Toggle property status (list/unlist)
    */
-  updatePropertyStatus(id: string, status: PropertyStatus): Observable<Property> {
-    const current = this.propertiesSignal();
-    const property = current.find(p => p.id === id);
-
-    if (!property) {
-      return throwError(() => new Error('Property not found'));
-    }
-
-    const updatedProperty: Property = {
-      ...property,
-      status,
-      updatedAt: new Date(),
-      publishedAt: status === PropertyStatus.PUBLISHED ? new Date() : property.publishedAt
-    };
-
-    return of(updatedProperty).pipe(
-      delay(300),
-      map(prop => {
+  togglePropertyStatus(id: string): Observable<Property> {
+    return this.http.patch<{ success: boolean; data: any }>(
+      `${this.apiUrl}/${id}/toggle-status`,
+      {},
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => this.mapApiToProperty(response.data)),
+      tap(property => {
+        const current = this.propertiesSignal();
         const index = current.findIndex(p => p.id === id);
-        const updated = [...current];
-        updated[index] = prop;
-        this.propertiesSignal.set(updated);
-        return prop;
+        if (index !== -1) {
+          const updated = [...current];
+          updated[index] = property;
+          this.propertiesSignal.set(updated);
+        }
+      }),
+      catchError(error => {
+        this.errorSignal.set(error.message);
+        throw error;
       })
     );
   }
 
   /**
-   * Toggle instant book
+   * Upload property images
    */
-  toggleInstantBook(id: string): Observable<Property> {
-    const current = this.propertiesSignal();
-    const property = current.find(p => p.id === id);
+  uploadPropertyImages(propertyId: string, files: File[]): Observable<any[]> {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('file', file);
+    });
 
-    if (!property) {
-      return throwError(() => new Error('Property not found'));
-    }
+    // Don't set Content-Type header - browser will set it with boundary
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+    });
 
-    const updatedProperty: Property = {
-      ...property,
-      isInstantBook: !property.isInstantBook,
-      updatedAt: new Date()
-    };
-
-    return of(updatedProperty).pipe(
-      delay(300),
-      map(prop => {
-        const index = current.findIndex(p => p.id === id);
-        const updated = [...current];
-        updated[index] = prop;
-        this.propertiesSignal.set(updated);
-        return prop;
+    return this.http.post<{ success: boolean; data: any }>(
+      `${this.apiUrl}/${propertyId}/images`,
+      formData,
+      { headers }
+    ).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error uploading images:', error);
+        throw error;
       })
     );
   }
 
   /**
-   * Get property statistics summary
+   * Map API response to Property model
    */
-  getPropertiesStats(): Observable<{
-    total: number;
-    published: number;
-    draft: number;
-    unlisted: number;
-    totalEarnings: number;
-    averageRating: number;
-  }> {
-    const properties = this.propertiesSignal();
-    
-    const stats = {
-      total: properties.length,
-      published: properties.filter(p => p.status === PropertyStatus.PUBLISHED).length,
-      draft: properties.filter(p => p.status === PropertyStatus.DRAFT).length,
-      unlisted: properties.filter(p => p.status === PropertyStatus.UNLISTED).length,
-      totalEarnings: properties.reduce((sum, p) => sum + p.stats.totalEarnings, 0),
-      averageRating: properties.reduce((sum, p) => sum + p.stats.averageRating, 0) / properties.length || 0
-    };
-
-    return of(stats).pipe(delay(200));
-  }
-
-  /**
-   * Search properties by title or location
-   */
-  searchProperties(query: string): Observable<Property[]> {
-    const lowerQuery = query.toLowerCase();
-    const filtered = MOCK_PROPERTIES.filter(p => 
-      p.title.toLowerCase().includes(lowerQuery) ||
-      p.location.city.toLowerCase().includes(lowerQuery) ||
-      p.location.state.toLowerCase().includes(lowerQuery) ||
-      p.location.country.toLowerCase().includes(lowerQuery)
-    );
-
-    return of(filtered).pipe(delay(300));
-  }
-
-  /**
-   * Duplicate property
-   */
-  duplicateProperty(id: string): Observable<Property> {
-    const property = MOCK_PROPERTIES.find(p => p.id === id);
-    
-    if (!property) {
-      return throwError(() => new Error('Property not found'));
-    }
-
-    const duplicated: Property = {
-      ...property,
-      id: `prop-${Date.now()}`,
-      title: `${property.title} (Copy)`,
-      status: PropertyStatus.DRAFT,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      publishedAt: undefined,
+  private mapApiToProperty(apiData: any): Property {
+    return {
+      id: apiData.id.toString(),
+      hostId: apiData.hostId,
+      title: apiData.title,
+      description: apiData.description,
+      propertyType: apiData.propertyType,
+      roomType: ('entire_place' as unknown) as Property['roomType'], // Default - adjust based on your API
+      location: {
+        address: apiData.address,
+        city: apiData.city,
+        state: apiData.country, // Adjust if you have separate state field
+        country: apiData.country,
+        zipCode: apiData.postalCode || '',
+        coordinates: {
+          lat: apiData.latitude,
+          lng: apiData.longitude
+        }
+      },
+      capacity: {
+        guests: apiData.maxGuests,
+        bedrooms: apiData.numberOfBedrooms,
+        beds: apiData.numberOfBedrooms, // Adjust if you track beds separately
+        bathrooms: apiData.numberOfBathrooms
+      },
+      amenities: apiData.amenities?.map((a: any) => a.id) || [],
+      images: apiData.images?.map((img: any) => ({
+        id: img.id.toString(),
+        url: `http://localhost:5202${img.imageUrl}`,
+        caption: '',
+        order: img.displayOrder,
+        isMain: img.isPrimary
+      })) || [],
+      coverImage: apiData.images?.find((img: any) => img.isPrimary)?.imageUrl 
+        ? `http://localhost:5202${apiData.images.find((img: any) => img.isPrimary).imageUrl}`
+        : '',
+      pricing: {
+        basePrice: apiData.pricePerNight,
+        currency: 'USD',
+        cleaningFee: apiData.cleaningFee || 0
+      },
+      availability: {
+        minNights: apiData.minimumStay,
+        maxNights: 30,
+        advanceNotice: 1,
+        preparationTime: 1,
+        availabilityWindow: 12,
+        blockedDates: [],
+        customPricing: []
+      },
+      houseRules: {
+        checkInTime: apiData.checkInTime || '15:00',
+        checkOutTime: apiData.checkOutTime || '11:00',
+        smokingAllowed: false,
+        petsAllowed: false,
+        eventsAllowed: false,
+        childrenAllowed: true,
+        additionalRules: apiData.houseRules ? [apiData.houseRules] : []
+      },
+      status: apiData.isActive ? ('published' as PropertyStatus) : ('unlisted' as PropertyStatus),
+      isInstantBook: false,
+      createdAt: new Date(apiData.createdAt),
+      updatedAt: new Date(apiData.updatedAt ?? apiData.createdAt),
+      publishedAt: apiData.isActive ? new Date(apiData.createdAt) : undefined,
       stats: {
-        totalBookings: 0,
+        totalBookings: apiData.totalBookings || 0,
         totalEarnings: 0,
-        averageRating: 0,
-        totalReviews: 0,
+        averageRating: apiData.averageRating || 0,
+        totalReviews: apiData.totalReviews || 0,
         responseRate: 0,
         acceptanceRate: 0,
         viewsLastMonth: 0,
         occupancyRate: 0
       }
     };
+  }
 
-    return of(duplicated).pipe(
-      delay(500),
-      map(prop => {
-        const current = this.propertiesSignal();
-        this.propertiesSignal.set([...current, prop]);
-        return prop;
+  /**
+   * Search properties by title or location
+   */
+  searchProperties(query: string): Observable<Property[]> {
+    return this.getAllProperties().pipe(
+      map(properties => {
+        const lowerQuery = query.toLowerCase();
+        return properties.filter(p => 
+          p.title.toLowerCase().includes(lowerQuery) ||
+          p.location.city.toLowerCase().includes(lowerQuery) ||
+          p.location.country.toLowerCase().includes(lowerQuery)
+        );
       })
     );
   }

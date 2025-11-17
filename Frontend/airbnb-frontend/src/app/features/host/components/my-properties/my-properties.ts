@@ -1,96 +1,151 @@
-// import { Component, OnInit } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { RouterLink } from '@angular/router';
-// import { PropertyService } from '../../services/property';
-// import { Property } from '../../models/property.model';
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { PropertyService } from '../../services/property';
+import { Property, PropertyStatus } from '../../models/property.model';
 
-// @Component({
-//   selector: 'app-my-properties',
-//   imports: [CommonModule, RouterLink],
-//   templateUrl: './my-properties.html',
-//   styleUrl: './my-properties.css',
+@Component({
+  selector: 'app-my-properties',
+  imports: [CommonModule, RouterLink],
+  templateUrl: './my-properties.html',
+  styleUrl: './my-properties.css',
  
-// })
-// export class MyProperties implements OnInit{
-//   properties: Property[] = [];
-//   isLoading = true;
-//   activeTab: 'all' | 'active' | 'inactive' = 'all';
+})
 
-//   constructor(private propertyService: PropertyService) {}
+export class MyProperties implements OnInit{
+  // Properties data
+  properties = signal<Property[]>([]);
+  loading = signal<boolean>(true);
+  
+  // View mode: 'grid' or 'list'
+  viewMode = signal<'grid' | 'list'>('grid');
 
-//   ngOnInit(): void {
-//     this.loadProperties();
-//   }
+  constructor(
+    private propertyService: PropertyService,
+    private router: Router
+  ) {}
 
-//   loadProperties(): void {
-//     this.isLoading = true;
-//     // في الوقت الحالي hostId ثابت، لما Authentication يخلص هناخده من الـ Token
-//     this.propertyService.getHostProperties('host-1').subscribe({
-//       next: (data) => {
-//         this.properties = data;
-//         this.isLoading = false;
-//       },
-//       error: (error) => {
-//         console.error('Error loading properties:', error);
-//         this.isLoading = false;
-//       }
-//     });
-//   }
+  ngOnInit(): void {
+    this.loadProperties();
+  }
 
-//   get filteredProperties(): Property[] {
-//     if (this.activeTab === 'all') {
-//       return this.properties;
-//     }
-//     return this.properties.filter(p => 
-//       this.activeTab === 'active' ? p.isActive : !p.isActive
-//     );
-//   }
+  /**
+   * Load all properties
+   */
+  loadProperties(): void {
+    this.loading.set(true);
+    
+    this.propertyService.getAllProperties().subscribe({
+      next: (properties) => {
+        this.properties.set(properties);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading properties:', err);
+        this.loading.set(false);
+      }
+    });
+  }
 
-//   get activePropertiesCount(): number {
-//     return this.properties.filter(p => p.isActive).length;
-//   }
+  /**
+   * Toggle view mode
+   */
+  toggleViewMode(): void {
+    const current = this.viewMode();
+    this.viewMode.set(current === 'grid' ? 'list' : 'grid');
+  }
 
-//   get inactivePropertiesCount(): number {
-//     return this.properties.filter(p => !p.isActive).length;
-//   }
+  /**
+   * Navigate to add property
+   */
+  addNewProperty(): void {
+    this.router.navigate(['/host/properties/add']);
+  }
 
-//   togglePropertyStatus(property: Property): void {
-//     if (confirm(`Are you sure you want to ${property.isActive ? 'deactivate' : 'activate'} this property?`)) {
-//       this.propertyService.togglePropertyStatus(property.id).subscribe({
-//         next: (updatedProperty) => {
-//           // Update the property in the list
-//           const index = this.properties.findIndex(p => p.id === property.id);
-//           if (index !== -1) {
-//             this.properties[index] = updatedProperty;
-//           }
-//         },
-//         error: (error) => {
-//           console.error('Error toggling property status:', error);
-//           alert('Failed to update property status');
-//         }
-//       });
-//     }
-//   }
+  /**
+   * Navigate to edit property
+   */
+  editProperty(propertyId: string): void {
+    this.router.navigate(['/host/properties/edit', propertyId]);
+  }
 
-//   deleteProperty(property: Property): void {
-//     if (confirm(`Are you sure you want to delete "${property.title}"? This action cannot be undone.`)) {
-//       this.propertyService.deleteProperty(property.id).subscribe({
-//         next: (success) => {
-//           if (success) {
-//             this.properties = this.properties.filter(p => p.id !== property.id);
-//             alert('Property deleted successfully');
-//           }
-//         },
-//         error: (error) => {
-//           console.error('Error deleting property:', error);
-//           alert('Failed to delete property');
-//         }
-//       });
-//     }
-//   }
+  /**
+   * Get status badge class
+   */
+  getStatusBadgeClass(status: PropertyStatus): string {
+    switch (status) {
+      case PropertyStatus.PUBLISHED:
+        return 'status-published';
+      case PropertyStatus.DRAFT:
+        return 'status-draft';
+      case PropertyStatus.UNLISTED:
+        return 'status-unlisted';
+      case PropertyStatus.UNDER_REVIEW:
+        return 'status-review';
+      default:
+        return '';
+    }
+  }
 
-//   getPrimaryImage(property: Property): string {
-//     const primaryImage = property.images.find(img => img.isPrimary);
-//     return primaryImage?.imageUrl || property.images[0]?.imageUrl || 'https://via.placeholder.com/400x300?text=No+Image';
-//   }
-// }
+  /**
+   * Get status label
+   */
+  getStatusLabel(status: PropertyStatus): string {
+    switch (status) {
+      case PropertyStatus.PUBLISHED:
+        return 'Published';
+      case PropertyStatus.DRAFT:
+        return 'In progress';
+      case PropertyStatus.UNLISTED:
+        return 'Unlisted';
+      case PropertyStatus.UNDER_REVIEW:
+        return 'Under review';
+      case PropertyStatus.BLOCKED:
+        return 'Action required';
+      default:
+        return status;
+    }
+  }
+
+  /**
+   * Check if property needs action
+   */
+  needsAction(property: Property): boolean {
+    return property.status === PropertyStatus.DRAFT || 
+           property.status === PropertyStatus.BLOCKED ||
+           property.status === PropertyStatus.UNDER_REVIEW;
+  }
+
+  /**
+   * Get property location string
+   */
+  getLocationString(property: Property): string {
+    const parts = [];
+    if (property.roomType) {
+      parts.push(this.getRoomTypeLabel(property.roomType));
+    }
+    if (property.location.city) {
+      parts.push(property.location.city);
+    }
+    if (property.location.state) {
+      parts.push(property.location.state);
+    }
+    if (property.location.country) {
+      parts.push(property.location.country);
+    }
+    return parts.join(', ') || 'Home in';
+  }
+
+  /**
+   * Get room type label
+   */
+  getRoomTypeLabel(roomType: string): string {
+    const labels: { [key: string]: string } = {
+      'entire_place': 'Home in',
+      'private_room': 'Private room in',
+      'shared_room': 'Shared room in',
+      'hotel_room': 'Hotel room in'
+    };
+    return labels[roomType] || 'Home in';
+  }
+}

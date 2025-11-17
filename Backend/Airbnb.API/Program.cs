@@ -1,48 +1,8 @@
-//var builder = WebApplication.CreateBuilder(args);
-
-//// Add services to the container.
-//// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-//builder.Services.AddOpenApi();
-
-//var app = builder.Build();
-
-//// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.MapOpenApi();
-//}
-
-//app.UseHttpsRedirection();
-
-//var summaries = new[]
-//{
-//    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-//};
-
-//app.MapGet("/weatherforecast", () =>
-//{
-//    var forecast =  Enumerable.Range(1, 5).Select(index =>
-//        new WeatherForecast
-//        (
-//            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-//            Random.Shared.Next(-20, 55),
-//            summaries[Random.Shared.Next(summaries.Length)]
-//        ))
-//        .ToArray();
-//    return forecast;
-//})
-//.WithName("GetWeatherForecast");
-
-//app.Run();
-
-//record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-//{
-//    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-//}
-
-
 using Airbnb.API.Models;
-//using Airbnb.API.Data;
+using Airbnb.API.Repositories.Interfaces;
+using Airbnb.API.Repositories.Implementations;
+using Airbnb.API.Services.Interfaces;
+using Airbnb.API.Services.Implementations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -88,7 +48,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
     // User settings
     options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedEmail = false; // Set to true in production
+    options.SignIn.RequireConfirmedEmail = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -130,7 +90,19 @@ builder.Services.AddAuthorization(options =>
 });
 
 // ============================================
-// 5. Add Controllers & Services
+// 5. Register Repositories
+// ============================================
+builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+
+// ============================================
+// 6. Register Services
+// ============================================
+builder.Services.AddScoped<IPropertyService, PropertyService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+
+// ============================================
+// 7. Add Controllers & Services
 // ============================================
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -188,7 +160,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // ============================================
-// 6. Build App
+// 8. Build App
 // ============================================
 var app = builder.Build();
 
@@ -199,6 +171,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Enable static files (for image uploads)
+app.UseStaticFiles();
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAngular");
 
@@ -207,10 +182,27 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// ============================================
+// 9. Seed Database (Optional)
+// ============================================
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        await SeedRolesAndAdmin(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database");
+    }
+}
+
 app.Run();
 
 // ============================================
-// 8. Seed Roles & Admin Method
+// 10. Seed Roles & Admin Method
 // ============================================
 async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
 {
