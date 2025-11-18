@@ -1,8 +1,9 @@
+using Airbnb.API.Data;
 using Airbnb.API.Models;
-using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Repositories.Implementations;
-using Airbnb.API.Services.Interfaces;
+using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Implementations;
+using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -191,6 +192,10 @@ using (var scope = app.Services.CreateScope())
     try
     {
         await SeedRolesAndAdmin(services);
+
+        // Add this line****
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        SeedAmenities.SeedData(context);
     }
     catch (Exception ex)
     {
