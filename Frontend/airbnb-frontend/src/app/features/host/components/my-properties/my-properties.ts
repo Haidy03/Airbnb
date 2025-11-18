@@ -69,6 +69,56 @@ export class MyProperties implements OnInit{
     this.router.navigate(['/host/properties/edit', propertyId]);
   }
 
+   /**
+   * Quick publish/unpublish toggle
+   */
+  togglePublishStatus(property: Property, event: Event): void {
+    event.stopPropagation(); // Prevent card click
+    
+    const willPublish = property.status !== PropertyStatus.PUBLISHED;
+    
+    // Validate before publishing
+    if (willPublish) {
+      const validation = this.propertyService.validatePropertyForPublishing(property);
+      if (!validation.isValid) {
+        const errorMsg = 'Cannot publish. Please complete:\n' + validation.errors.join('\n');
+        alert(errorMsg);
+        this.router.navigate(['/host/properties/edit', property.id]);
+        return;
+      }
+    }
+    
+    const confirmMsg = willPublish 
+      ? 'Publish this listing? It will be visible to guests.'
+      : 'Unpublish this listing? It will be hidden from guests.';
+    
+    if (!confirm(confirmMsg)) return;
+    
+    const action$ = willPublish 
+      ? this.propertyService.publishProperty(property.id)
+      : this.propertyService.unpublishProperty(property.id);
+    
+    action$.subscribe({
+      next: (updatedProperty) => {
+        // Update local state
+        const current = this.properties();
+        const index = current.findIndex(p => p.id === property.id);
+        if (index !== -1) {
+          const updated = [...current];
+          updated[index] = updatedProperty;
+          this.properties.set(updated);
+        }
+        
+        const msg = willPublish ? 'Published successfully!' : 'Unpublished successfully!';
+        alert(msg);
+      },
+      error: (error) => {
+        console.error('Error toggling status:', error);
+        alert(error.message || 'Failed to update status');
+      }
+    });
+  }
+
   /**
    * Get status badge class
    */

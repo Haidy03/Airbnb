@@ -5,6 +5,7 @@ import { HostCalendar } from './features/host/components/host-calendar/host-cale
 import { MyProperties } from './features/host/components/my-properties/my-properties';
 import { HostMessages } from './features/host/components/host-messages/host-messages';
 import { AddProperty } from './features/host/components/add-property/add-property';
+import { EditProperty } from './features/host/components/edit-property/edit-property';
 
 export const routes: Routes = [
   {
@@ -16,10 +17,8 @@ export const routes: Routes = [
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
-      { 
-        path: 'properties/add', 
-        component: AddProperty 
-      },
+      {path: 'properties/add',component: AddProperty},
+      {path: 'properties/edit/:id',component: EditProperty},
       // Add more routes here as we build them
     ]
   },
