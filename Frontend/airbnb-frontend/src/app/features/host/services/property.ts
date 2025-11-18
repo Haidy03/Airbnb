@@ -218,6 +218,57 @@ export class PropertyService {
     );
   }
 
+  // Add these methods to your existing PropertyService in property.ts
+
+/**
+ * Delete property image
+ */
+deletePropertyImage(imageId: number): Observable<boolean> {
+  return this.http.delete<{ success: boolean }>(
+    `${this.apiUrl}/images/${imageId}`,
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => response.success),
+    catchError(error => {
+      this.errorSignal.set(error.message);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Set primary image for property
+ */
+setPrimaryImage(imageId: number): Observable<boolean> {
+  return this.http.patch<{ success: boolean }>(
+    `${this.apiUrl}/images/${imageId}/set-primary`,
+    {},
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => response.success),
+    catchError(error => {
+      this.errorSignal.set(error.message);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Reorder property images
+ */
+reorderImages(propertyId: string, imageIds: number[]): Observable<boolean> {
+  return this.http.patch<{ success: boolean }>(
+    `${this.apiUrl}/${propertyId}/images/reorder`,
+    { imageIds },
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => response.success),
+    catchError(error => {
+      this.errorSignal.set(error.message);
+      throw error;
+    })
+  );
+}
   /**
    * Upload property images
    */
@@ -340,4 +391,139 @@ export class PropertyService {
       })
     );
   }
+
+  // Add these methods to PropertyService (Frontend - property.ts)
+
+/**
+ * Publish a property listing
+ */
+publishProperty(propertyId: string): Observable<Property> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  return this.http.post<{ success: boolean; data: any; message?: string; errors?: string[] }>(
+    `${this.apiUrl}/${propertyId}/publish`,
+    {},
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to publish property');
+      }
+      const property = this.mapApiToProperty(response.data);
+      
+      // Update local state
+      const current = this.propertiesSignal();
+      const index = current.findIndex(p => p.id === propertyId);
+      if (index !== -1) {
+        const updated = [...current];
+        updated[index] = property;
+        this.propertiesSignal.set(updated);
+      }
+      
+      this.loadingSignal.set(false);
+      return property;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      
+      // Handle validation errors
+      if (error.error?.errors) {
+        const errorMsg = 'Property is not ready to publish:\n' + error.error.errors.join('\n');
+        this.errorSignal.set(errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      this.errorSignal.set(error.message);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Unpublish a property listing
+ */
+unpublishProperty(propertyId: string): Observable<Property> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  return this.http.post<{ success: boolean; data: any }>(
+    `${this.apiUrl}/${propertyId}/unpublish`,
+    {},
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      const property = this.mapApiToProperty(response.data);
+      
+      // Update local state
+      const current = this.propertiesSignal();
+      const index = current.findIndex(p => p.id === propertyId);
+      if (index !== -1) {
+        const updated = [...current];
+        updated[index] = property;
+        this.propertiesSignal.set(updated);
+      }
+      
+      this.loadingSignal.set(false);
+      return property;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      this.errorSignal.set(error.message);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Check if property is ready to publish
+ */
+validatePropertyForPublishing(property: Property): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  if (!property.title || property.title.length < 10) {
+    errors.push('Title must be at least 10 characters');
+  }
+
+  if (!property.description || property.description.length < 50) {
+    errors.push('Description must be at least 50 characters');
+  }
+
+  if (!property.images || property.images.length === 0) {
+    errors.push('At least one photo is required');
+  }
+
+  if (property.pricing.basePrice <= 0) {
+    errors.push('Valid price per night is required');
+  }
+
+  if (property.capacity.guests <= 0) {
+    errors.push('Maximum guests must be specified');
+  }
+
+  if (property.capacity.bedrooms <= 0) {
+    errors.push('Number of bedrooms must be specified');
+  }
+
+  if (property.capacity.bathrooms <= 0) {
+    errors.push('Number of bathrooms must be specified');
+  }
+
+  if (!property.location.address) {
+    errors.push('Property address is required');
+  }
+
+  if (!property.location.city) {
+    errors.push('City is required');
+  }
+
+  if (!property.location.country) {
+    errors.push('Country is required');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
 }

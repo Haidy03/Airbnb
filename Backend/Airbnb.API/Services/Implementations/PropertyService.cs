@@ -286,5 +286,56 @@ namespace Airbnb.API.Services.Implementations
                 UpdatedAt = property.UpdatedAt
             };
         }
+
+        // Add these methods to PropertyService.cs (Backend)
+
+        /// <summary>
+        /// Publish a property
+        /// </summary>
+        public async Task<bool> PublishPropertyAsync(int id, string hostId)
+        {
+            var property = await _propertyRepository.GetByIdAsync(id);
+
+            if (property == null)
+                return false;
+
+            if (property.HostId != hostId)
+                throw new UnauthorizedAccessException("You are not authorized to publish this property");
+
+            // Set property as active and approved
+            property.IsActive = true;
+            property.IsApproved = true; // You might want admin approval first
+            property.UpdatedAt = DateTime.UtcNow;
+
+            await _propertyRepository.UpdateAsync(property);
+
+            _logger.LogInformation("Property {PropertyId} published by host {HostId}", id, hostId);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Unpublish a property
+        /// </summary>
+        public async Task<bool> UnpublishPropertyAsync(int id, string hostId)
+        {
+            var property = await _propertyRepository.GetByIdAsync(id);
+
+            if (property == null)
+                return false;
+
+            if (property.HostId != hostId)
+                throw new UnauthorizedAccessException("You are not authorized to unpublish this property");
+
+            // Set property as inactive
+            property.IsActive = false;
+            property.UpdatedAt = DateTime.UtcNow;
+
+            await _propertyRepository.UpdateAsync(property);
+
+            _logger.LogInformation("Property {PropertyId} unpublished by host {HostId}", id, hostId);
+
+            return true;
+        }
     }
 }
