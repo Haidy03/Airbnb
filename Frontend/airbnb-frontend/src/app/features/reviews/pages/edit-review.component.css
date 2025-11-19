@@ -1,3 +1,4 @@
+/* استخدمي نفس CSS الـ add-review.css */
 .container {
   max-width: 800px;
   margin: 40px auto;
@@ -29,6 +30,25 @@
 
 .card-body {
   padding: 32px;
+}
+
+.property-info {
+  background: #f7f7f7;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.property-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  color: #222;
+}
+
+.review-date {
+  margin: 0;
+  font-size: 14px;
+  color: #717171;
 }
 
 .loading-container {
