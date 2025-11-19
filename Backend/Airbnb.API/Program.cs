@@ -18,9 +18,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ============================================
-// 1. Add Database Context
-// ============================================
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -102,13 +99,13 @@ builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
 
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 // ============================================
 // 6. Register Services
 // ============================================
 builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
-builder.Services.AddScoped<ISearchService, SearchService>();
-builder.Services.AddScoped<ICalendarService, CalendarService>();
+
 // ============================================
 // 7. Add Controllers & Services
 // ============================================
@@ -116,6 +113,8 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+
     });
 
 
