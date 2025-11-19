@@ -1,0 +1,250 @@
+<div class="booking-card">
+  <!-- Header -->
+  <div class="booking-header">
+    <div class="price-info">
+      <span class="price">{{ currency === 'USD' ? '$' : currency }} {{ pricePerNight }}</span>
+      <span class="per-night">night</span>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="booking-form">
+
+    <!-- Dates Section -->
+    <div class="form-section dates-section">
+      <!-- Check-in -->
+      <div class="date-input">
+        <label for="checkIn">CHECK-IN</label>
+        <input
+          type="date"
+          id="checkIn"
+          formControlName="checkIn"
+          [min]="today"
+          class="date-field"
+          placeholder="Add date"
+        />
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Check-out -->
+      <div class="date-input">
+        <label for="checkOut">CHECK-OUT</label>
+        <input
+          type="date"
+          id="checkOut"
+          formControlName="checkOut"
+          [min]="bookingForm.get('checkIn')?.value || today"
+          class="date-field"
+          placeholder="Add date"
+        />
+      </div>
+    </div>
+
+    <!-- Guests Section -->
+    <div class="form-section guests-section">
+      <div class="guests-trigger" (click)="toggleGuestPicker()">
+        <div>
+          <label>GUESTS</label>
+          <div class="guests-text">{{ getGuestsText() }}</div>
+        </div>
+        <svg
+          class="dropdown-icon"
+          [class.open]="showGuestPicker"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+        >
+          <path d="M6 9l6 6 6-6" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- Guest Picker Dropdown -->
+      <div class="guest-picker" *ngIf="showGuestPicker">
+
+        <!-- Adults -->
+        <div class="guest-row">
+          <div class="guest-info">
+            <div class="guest-label">Adults</div>
+            <div class="guest-description">Age 13+</div>
+          </div>
+          <div class="guest-counter">
+            <button
+              type="button"
+              class="counter-btn"
+              (click)="decrementGuest('adults')"
+              [disabled]="bookingForm.get('adults')?.value <= 1"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M5 12h14" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <span class="counter-value">{{ bookingForm.get('adults')?.value }}</span>
+            <button
+              type="button"
+              class="counter-btn"
+              (click)="incrementGuest('adults')"
+              [disabled]="getTotalGuests() >= maxGuests"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Children -->
+        <div class="guest-row">
+          <div class="guest-info">
+            <div class="guest-label">Children</div>
+            <div class="guest-description">Ages 2–12</div>
+          </div>
+          <div class="guest-counter">
+            <button
+              type="button"
+              class="counter-btn"
+              (click)="decrementGuest('children')"
+              [disabled]="bookingForm.get('children')?.value <= 0"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M5 12h14" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <span class="counter-value">{{ bookingForm.get('children')?.value }}</span>
+            <button
+              type="button"
+              class="counter-btn"
+              (click)="incrementGuest('children')"
+              [disabled]="getTotalGuests() >= maxGuests"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Infants -->
+        <div class="guest-row">
+          <div class="guest-info">
+            <div class="guest-label">Infants</div>
+            <div class="guest-description">Under 2</div>
+          </div>
+          <div class="guest-counter">
+            <button
+              type="button"
+              class="counter-btn"
+              (click)="decrementGuest('infants')"
+              [disabled]="bookingForm.get('infants')?.value <= 0"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M5 12h14" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <span class="counter-value">{{ bookingForm.get('infants')?.value }}</span>
+            <button
+              type="button"
+              class="counter-btn"
+              (click)="incrementGuest('infants')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pets -->
+        <div class="guest-row">
+          <div class="guest-info">
+            <div class="guest-label">Pets</div>
+            <div class="guest-description">
+              <a href="#" class="pets-link">Bringing a service animal?</a>
+            </div>
+          </div>
+          <div class="guest-counter">
+            <button
+              type="button"
+              class="counter-btn"
+              (click)="decrementGuest('pets')"
+              [disabled]="bookingForm.get('pets')?.value <= 0"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M5 12h14" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <span class="counter-value">{{ bookingForm.get('pets')?.value }}</span>
+            <button
+              type="button"
+              class="counter-btn"
+              (click)="incrementGuest('pets')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Close Button -->
+        <div class="guest-picker-footer">
+          <button type="button" class="close-btn" (click)="closeGuestPicker()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="errorMessage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" stroke-width="2"/>
+        <path d="M12 8v4M12 16h.01" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Reserve Button -->
+    <button
+      type="submit"
+      class="reserve-btn"
+      [disabled]="isLoading || !bookingForm.valid"
+      [class.loading]="isLoading"
+    >
+      <span *ngIf="!isLoading">Reserve</span>
+      <span *ngIf="isLoading" class="loading-spinner"></span>
+    </button>
+
+    <!-- Price Breakdown -->
+    <div class="price-breakdown" *ngIf="priceBreakdown">
+      <p class="no-charge-text">You won't be charged yet</p>
+
+      <div class="price-row">
+        <span>{{ currency === 'USD' ? '$' : currency }}{{ priceBreakdown.pricePerNight }} x {{ priceBreakdown.numberOfNights }} nights</span>
+        <span>{{ currency === 'USD' ? '$' : currency }}{{ priceBreakdown.basePrice.toFixed(2) }}</span>
+      </div>
+
+      <div class="price-row">
+        <span>Cleaning fee</span>
+        <span>{{ currency === 'USD' ? '$' : currency }}{{ priceBreakdown.cleaningFee.toFixed(2) }}</span>
+      </div>
+
+      <div class="price-row">
+        <span>Service fee</span>
+        <span>{{ currency === 'USD' ? '$' : currency }}{{ priceBreakdown.serviceFee.toFixed(2) }}</span>
+      </div>
+
+      <div class="price-row">
+        <span>Taxes</span>
+        <span>{{ currency === 'USD' ? '$' : currency }}{{ priceBreakdown.tax.toFixed(2) }}</span>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <div class="price-row total">
+        <span>Total</span>
+        <span>{{ currency === 'USD' ? '$' : currency }}{{ priceBreakdown.totalPrice.toFixed(2) }}</span>
+      </div>
+    </div>
+  </form>
+</div>
