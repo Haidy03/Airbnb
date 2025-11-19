@@ -1,0 +1,217 @@
+.property-list-container {
+  padding: 24px 0;
+  font-family: 'Inter', sans-serif;
+  color: #222;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #EBEBEB;
+}
+
+.results-info {
+  flex: 1;
+}
+
+.results-count {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+  color: #222;
+}
+
+.sort-options {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sort-options label {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  color: #222;
+}
+
+.sort-options .form-select {
+  min-width: 200px;
+  border: 1px solid #B0B0B0;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.sort-options .form-select:focus {
+  border-color: #222;
+  box-shadow: 0 0 8px rgba(34, 34, 34, 0.15);
+  background-color: #fafafa;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 16px;
+}
+
+.loading-text {
+  font-size: 16px;
+  color: #717171;
+  margin: 0;
+}
+
+/* ✅ التعديل الأساسي - 3 columns بدل 4 */
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns دايماً على الشاشات الكبيرة */
+  gap: 40px 24px;
+  margin-bottom: 48px;
+}
+
+/* ✅ إزالة الـ styles الزيادة من app-property-card */
+.properties-grid app-property-card {
+  display: block; /* مهم عشان الـ card ياخد المساحة كلها */
+}
+
+/* Responsive breakpoints - 3 columns على الشاشات الكبيرة */
+@media (min-width: 1128px) {
+  .properties-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px 24px;
+  }
+}
+
+@media (min-width: 950px) and (max-width: 1127px) {
+  .properties-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px 20px;
+  }
+}
+
+@media (min-width: 744px) and (max-width: 949px) {
+  .properties-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px 20px;
+  }
+}
+
+@media (max-width: 743px) {
+  .properties-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  color: #F0F0F0;
+  margin-bottom: 16px;
+}
+
+.empty-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.empty-text {
+  font-size: 16px;
+  color: #717171;
+  max-width: 400px;
+  margin: 0;
+}
+
+.pagination-container {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid #EBEBEB;
+}
+
+.pagination {
+  margin-bottom: 16px;
+}
+
+.page-link {
+  color: #222;
+  border: 1px solid #DDDDDD;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 4px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.page-link:hover {
+  background-color: #fce4f1;
+  border-color: #ff6fa3;
+  color: #ff4081;
+}
+
+.page-item.active .page-link {
+  background-color: #ff4081;
+  border-color: #ff4081;
+  color: white;
+  font-weight: 600;
+}
+
+.page-item.disabled .page-link {
+  color: #DDDDDD;
+  cursor: not-allowed;
+  border-color: #EBEBEB;
+}
+
+.page-item.disabled .page-link:hover {
+  background-color: transparent;
+  border-color: #EBEBEB;
+}
+
+.pagination-info {
+  text-align: center;
+  font-size: 14px;
+  color: #717171;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .sort-options {
+    width: 100%;
+  }
+
+  .sort-options .form-select {
+    flex: 1;
+  }
+
+  .results-count {
+    font-size: 18px;
+  }
+}

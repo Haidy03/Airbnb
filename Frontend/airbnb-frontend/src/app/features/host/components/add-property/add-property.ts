@@ -1,37 +1,49 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PropertyService } from '../../services/property';
-import { CreatePropertyRequest, PropertyType, PROPERTY_TYPES } from '../../models/property.model';
-import { AMENITIES_LIST, Amenity } from '../../models/amenity.model';
+import { FileUploadService } from '../../services/file-upload';
+import { AMENITIES_LIST, AmenityCategory } from '../../models/amenity.model';
+import { PropertyType } from '../../models/property.model';
+
+interface AmenityDisplay {
+  id: number;
+  name: string;
+  category: string;
+  icon: string;
+}
 
 @Component({
   selector: 'app-add-property',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './add-property.html',
-  styleUrl: './add-property.css',
+  styleUrls: ['./add-property.css']
 })
-export class AddProperty implements OnInit{
-  propertyForm!: FormGroup;
-  propertyTypes = PROPERTY_TYPES;
-  amenitiesList = AMENITIES_LIST;
-  selectedAmenities: string[] = [];
-  
-  currentStep = 1;
-  totalSteps = 4;
-  
-  // Image Upload
-  selectedImages: File[] = [];
-  imagePreviewUrls: string[] = [];
-  
-  isSubmitting = false;
+export class AddProperty implements OnInit {
+  private fb = inject(FormBuilder);
+  private propertyService = inject(PropertyService);
+  private fileUploadService = inject(FileUploadService);
+  private router = inject(Router);
 
-  constructor(
-    private fb: FormBuilder,
-    private propertyService: PropertyService,
-    private router: Router
-  ) {}
+  propertyForm!: FormGroup;
+  currentStep = 1;
+  totalSteps = 5;
+  isSubmitting = false;
+  selectedFiles: File[] = [];
+  imagesPreviews: string[] = [];
+
+  // Amenities with numeric IDs for backend
+  availableAmenities: AmenityDisplay[] = AMENITIES_LIST.map((amenity, index) => ({
+    id: index + 1, // Convert to numeric ID
+    name: amenity.name,
+    category: amenity.category,
+    icon: amenity.icon
+  }));
+
+  propertyTypes = Object.values(PropertyType);
+Math: any;
 
   ngOnInit(): void {
     this.initializeForm();
@@ -40,32 +52,48 @@ export class AddProperty implements OnInit{
   initializeForm(): void {
     this.propertyForm = this.fb.group({
       // Step 1: Basic Info
-      title: ['', [Validators.required, Validators.maxLength(200)]],
-      description: ['', [Validators.required, Validators.maxLength(2000)]],
-      propertyType: [PropertyType.Apartment, Validators.required],
-      
-      // Step 2: Details
-      pricePerNight: ['', [Validators.required, Validators.min(1)]],
-      maxGuests: ['', [Validators.required, Validators.min(1), Validators.max(50)]],
-      bedrooms: ['', [Validators.required, Validators.min(0)]],
-      bathrooms: ['', [Validators.required, Validators.min(0)]],
-      
-      // Step 3: Location
-      address: ['', Validators.required],
-      city: ['', Validators.required],
-      country: ['', Validators.required],
-      latitude: [''],
-      longitude: ['']
+      title: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
+      description: ['', [Validators.required, Validators.minLength(50), Validators.maxLength(2000)]],
+      propertyType: ['', Validators.required],
+
+      // Step 2: Location
+      address: ['', [Validators.required, Validators.maxLength(200)]],
+      city: ['', [Validators.required, Validators.maxLength(100)]],
+      country: ['', [Validators.required, Validators.maxLength(100)]],
+      postalCode: [''],
+      latitude: [0, [Validators.required]],
+      longitude: [0, [Validators.required]],
+
+      // Step 3: Property Details
+      numberOfBedrooms: [1, [Validators.required, Validators.min(1)]],
+      numberOfBathrooms: [1, [Validators.required, Validators.min(1)]],
+      maxGuests: [1, [Validators.required, Validators.min(1)]],
+
+      // Step 4: Pricing & Rules
+      pricePerNight: [0, [Validators.required, Validators.min(1)]],
+      cleaningFee: [0, [Validators.min(0)]],
+      houseRules: [''],
+      checkInTime: ['15:00'],
+      checkOutTime: ['11:00'],
+      minimumStay: [1, [Validators.required, Validators.min(1)]],
+
+      // Step 5: Amenities
+      amenityIds: [[], Validators.required]
     });
   }
 
-  // Step Navigation
+  // Format property type for display
+  formatPropertyType(type: string): string {
+    return type.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  }
+
+  // Navigation Methods
   nextStep(): void {
-    if (this.currentStep < this.totalSteps) {
-      if (this.isCurrentStepValid()) {
+    if (this.validateCurrentStep()) {
+      if (this.currentStep < this.totalSteps) {
         this.currentStep++;
-      } else {
-        this.markStepAsTouched();
       }
     }
   }
@@ -76,180 +104,262 @@ export class AddProperty implements OnInit{
     }
   }
 
-  isCurrentStepValid(): boolean {
+  goToStep(step: number): void {
+    if (step <= this.currentStep || this.validateStepsUpTo(step - 1)) {
+      this.currentStep = step;
+    }
+  }
+
+  validateCurrentStep(): boolean {
+    let fieldsToValidate: string[] = [];
+
     switch (this.currentStep) {
       case 1:
-        return this.propertyForm.get('title')?.valid && 
-               this.propertyForm.get('description')?.valid &&
-               this.propertyForm.get('propertyType')?.valid || false;
+        fieldsToValidate = ['title', 'description', 'propertyType'];
+        break;
       case 2:
-        return this.propertyForm.get('pricePerNight')?.valid &&
-               this.propertyForm.get('maxGuests')?.valid &&
-               this.propertyForm.get('bedrooms')?.valid &&
-               this.propertyForm.get('bathrooms')?.valid || false;
+        fieldsToValidate = ['address', 'city', 'country', 'latitude', 'longitude'];
+        break;
       case 3:
-        return this.propertyForm.get('address')?.valid &&
-               this.propertyForm.get('city')?.valid &&
-               this.propertyForm.get('country')?.valid || false;
+        fieldsToValidate = ['numberOfBedrooms', 'numberOfBathrooms', 'maxGuests'];
+        break;
       case 4:
-        return true; // Amenities and images are optional
-      default:
-        return false;
-    }
-  }
-
-  markStepAsTouched(): void {
-    switch (this.currentStep) {
-      case 1:
-        this.propertyForm.get('title')?.markAsTouched();
-        this.propertyForm.get('description')?.markAsTouched();
-        this.propertyForm.get('propertyType')?.markAsTouched();
+        fieldsToValidate = ['pricePerNight', 'checkInTime', 'checkOutTime', 'minimumStay'];
         break;
-      case 2:
-        this.propertyForm.get('pricePerNight')?.markAsTouched();
-        this.propertyForm.get('maxGuests')?.markAsTouched();
-        this.propertyForm.get('bedrooms')?.markAsTouched();
-        this.propertyForm.get('bathrooms')?.markAsTouched();
-        break;
-      case 3:
-        this.propertyForm.get('address')?.markAsTouched();
-        this.propertyForm.get('city')?.markAsTouched();
-        this.propertyForm.get('country')?.markAsTouched();
+      case 5:
+        fieldsToValidate = ['amenityIds'];
         break;
     }
+
+    let isValid = true;
+    fieldsToValidate.forEach(field => {
+      const control = this.propertyForm.get(field);
+      if (control) {
+        control.markAsTouched();
+        if (control.invalid) {
+          isValid = false;
+        }
+      }
+    });
+
+    if (!isValid) {
+      alert('Please fill all required fields correctly');
+    }
+
+    return isValid;
   }
 
-  // Amenities
-  toggleAmenity(amenityId: string): void {
-    const index = this.selectedAmenities.indexOf(amenityId);
+  validateStepsUpTo(step: number): boolean {
+    return true;
+  }
+
+  // Amenity Methods
+  toggleAmenity(amenityId: number): void {
+    const amenityIds = this.propertyForm.get('amenityIds')?.value as number[];
+    const index = amenityIds.indexOf(amenityId);
+
     if (index > -1) {
-      this.selectedAmenities.splice(index, 1);
+      amenityIds.splice(index, 1);
     } else {
-      this.selectedAmenities.push(amenityId);
+      amenityIds.push(amenityId);
     }
+
+    this.propertyForm.patchValue({ amenityIds });
   }
 
-  isAmenitySelected(amenityId: string): boolean {
-    return this.selectedAmenities.includes(amenityId);
+  isAmenitySelected(amenityId: number): boolean {
+    const amenityIds = this.propertyForm.get('amenityIds')?.value as number[];
+    return amenityIds.includes(amenityId);
   }
 
-  // Image Upload
-  onImageSelect(event: any): void {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+  getAmenitiesByCategory(category: string): AmenityDisplay[] {
+    return this.availableAmenities.filter(a => a.category === category);
+  }
+
+  getUniqueCategories(): string[] {
+    return [...new Set(this.availableAmenities.map(a => a.category))];
+  }
+
+  // Image Upload Methods
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      const files = Array.from(input.files);
+      
+      const validFiles = files.filter(file => {
+        const isValidType = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type);
+        const isValidSize = file.size <= 5 * 1024 * 1024;
         
-        // Validate file type
-        if (!file.type.match(/image\/(jpg|jpeg|png)/)) {
-          alert('Please upload only JPG, JPEG or PNG images');
-          continue;
+        if (!isValidType) {
+          alert(`${file.name} has invalid type`);
+          return false;
         }
-        
-        // Validate file size (5MB max)
-        if (file.size > 5 * 1024 * 1024) {
-          alert('Image size should not exceed 5MB');
-          continue;
+        if (!isValidSize) {
+          alert(`${file.name} exceeds 5MB`);
+          return false;
         }
-        
-        this.selectedImages.push(file);
-        
-        // Create preview
+        return true;
+      });
+
+      this.selectedFiles.push(...validFiles);
+      
+      validFiles.forEach(file => {
         const reader = new FileReader();
         reader.onload = (e: any) => {
-          this.imagePreviewUrls.push(e.target.result);
+          this.imagesPreviews.push(e.target.result);
         };
         reader.readAsDataURL(file);
-      }
+      });
     }
   }
 
   removeImage(index: number): void {
-    this.selectedImages.splice(index, 1);
-    this.imagePreviewUrls.splice(index, 1);
+    this.selectedFiles.splice(index, 1);
+    this.imagesPreviews.splice(index, 1);
   }
 
-  // Form Submission
-  onSubmit(): void {
+  // Location Methods
+  getCurrentLocation(): void {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.propertyForm.patchValue({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+          alert('Location captured successfully');
+        },
+        (error) => {
+          alert('Unable to get location');
+          console.error('Geolocation error:', error);
+        }
+      );
+    } else {
+      alert('Geolocation is not supported');
+    }
+  }
+
+  // Submit Methods
+  async onSubmit(): Promise<void> {
     if (this.propertyForm.invalid) {
+      alert('Please fill all required fields');
       Object.keys(this.propertyForm.controls).forEach(key => {
         this.propertyForm.get(key)?.markAsTouched();
       });
       return;
     }
 
+    if (this.selectedFiles.length === 0) {
+      alert('Please upload at least one image');
+      return;
+    }
+
     this.isSubmitting = true;
 
-    const formValue = this.propertyForm.value;
-    const request: CreatePropertyRequest = {
-      title: formValue.title,
-      description: formValue.description,
-      propertyType: formValue.propertyType,
-      pricePerNight: formValue.pricePerNight,
-      maxGuests: formValue.maxGuests,
-      bedrooms: formValue.bedrooms,
-      bathrooms: formValue.bathrooms,
-      address: formValue.address,
-      city: formValue.city,
-      country: formValue.country,
-      latitude: formValue.latitude || undefined,
-      longitude: formValue.longitude || undefined,
-      amenityIds: this.selectedAmenities
-    };
+    try {
+      // Prepare DTO matching backend CreatePropertyDto
+      const formValue = this.propertyForm.value;
+      
+      const createPropertyDto = {
+        title: formValue.title,
+        description: formValue.description,
+        propertyType: formValue.propertyType, // Now sends just the string value
+        address: formValue.address,
+        city: formValue.city,
+        country: formValue.country,
+        postalCode: formValue.postalCode || null,
+        latitude: formValue.latitude,
+        longitude: formValue.longitude,
+        numberOfBedrooms: formValue.numberOfBedrooms,
+        numberOfBathrooms: formValue.numberOfBathrooms,
+        maxGuests: formValue.maxGuests,
+        pricePerNight: formValue.pricePerNight,
+        cleaningFee: formValue.cleaningFee || null,
+        houseRules: formValue.houseRules || null,
+        checkInTime: formValue.checkInTime ? `${formValue.checkInTime}:00` : null,
+        checkOutTime: formValue.checkOutTime ? `${formValue.checkOutTime}:00` : null,
+        minimumStay: formValue.minimumStay,
+        amenityIds: [] // Temporarily send empty array for testing
+      };
 
-    this.propertyService.createProperty(request).subscribe({
-      next: (property) => {
-        console.log('Property created:', property);
-        
-        // Upload images if any
-        if (this.selectedImages.length > 0) {
-          this.propertyService.uploadPropertyImages(property.id, this.selectedImages).subscribe({
-            next: (images) => {
-              console.log('Images uploaded:', images);
-              this.navigateToMyProperties();
-            },
-            error: (error) => {
-              console.error('Error uploading images:', error);
-              alert('Property created but failed to upload images');
-              this.navigateToMyProperties();
+      console.log('Submitting property:', createPropertyDto);
+
+      // Create property
+      this.propertyService.createProperty(createPropertyDto as any).subscribe({
+        next: async (response) => {
+          console.log('Property created:', response);
+          const propertyId = response.id;
+
+          // Upload images one by one
+          if (this.selectedFiles.length > 0) {
+            for (const file of this.selectedFiles) {
+              try {
+                await this.propertyService.uploadPropertyImages(propertyId, [file]).toPromise();
+              } catch (error) {
+                console.error('Error uploading image:', error);
+              }
             }
-          });
-        } else {
-          this.navigateToMyProperties();
-        }
-      },
-      error: (error) => {
-        console.error('Error creating property:', error);
-        alert('Failed to create property. Please try again.');
-        this.isSubmitting = false;
-      }
-    });
-  }
+          }
 
-  navigateToMyProperties(): void {
-    alert('Property created successfully!');
-    this.router.navigate(['/host/my-properties']);
+          alert('Property created successfully!');
+          this.router.navigate(['/host/properties']);
+        },
+        error: (error) => {
+          console.error('Error creating property:', error);
+          
+          if (error.status === 401) {
+            alert('Authentication required. Please login first.');
+            // You can redirect to login page here if needed
+            // this.router.navigate(['/auth/login']);
+          } else {
+            const errorMessage = error?.error?.message || error?.message || 'Failed to create property';
+            alert(errorMessage);
+          }
+          
+          this.isSubmitting = false;
+        }
+      });
+    } catch (error: any) {
+      console.error('Error creating property:', error);
+      alert(error?.message || 'Failed to create property');
+      this.isSubmitting = false;
+    }
   }
 
   // Helper Methods
-  getErrorMessage(fieldName: string): string {
-    const control = this.propertyForm.get(fieldName);
-    if (control?.hasError('required')) {
-      return 'This field is required';
-    }
-    if (control?.hasError('maxLength')) {
-      return `Maximum ${control.errors?.['maxLength'].requiredLength} characters allowed`;
-    }
-    if (control?.hasError('min')) {
-      return `Minimum value is ${control.errors?.['min'].min}`;
-    }
-    if (control?.hasError('max')) {
-      return `Maximum value is ${control.errors?.['max'].max}`;
+  getProgressPercentage(): number {
+    return (this.currentStep / this.totalSteps) * 100;
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.propertyForm.get(fieldName);
+    return !!(field && field.invalid && field.touched);
+  }
+
+  getFieldError(fieldName: string): string {
+    const field = this.propertyForm.get(fieldName);
+    if (field?.errors) {
+      if (field.errors['required']) return 'This field is required';
+      if (field.errors['minlength']) return `Minimum length is ${field.errors['minlength'].requiredLength}`;
+      if (field.errors['maxlength']) return `Maximum length is ${field.errors['maxlength'].requiredLength}`;
+      if (field.errors['min']) return `Minimum value is ${field.errors['min'].min}`;
+      if (field.errors['max']) return `Maximum value is ${field.errors['max'].max}`;
     }
     return '';
   }
 
-  getProgressPercentage(): number {
-    return (this.currentStep / this.totalSteps) * 100;
+  // Increment/Decrement helpers
+  incrementValue(fieldName: string): void {
+    const control = this.propertyForm.get(fieldName);
+    if (control) {
+      control.setValue(control.value + 1);
+    }
+  }
+
+  decrementValue(fieldName: string, min: number = 1): void {
+    const control = this.propertyForm.get(fieldName);
+    if (control && control.value > min) {
+      control.setValue(control.value - 1);
+    }
   }
 }

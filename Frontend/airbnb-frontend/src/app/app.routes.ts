@@ -1,38 +1,28 @@
 import { Routes } from '@angular/router';
+import { HostLayoutComponent } from './layouts/host-layout/host-layout';
+import { HostDashboardComponent } from './features/host/components/host-dashboard/host-dashboard';
+import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
+import { MyProperties } from './features/host/components/my-properties/my-properties';
+import { HostMessages } from './features/host/components/host-messages/host-messages';
+import { AddProperty } from './features/host/components/add-property/add-property';
+import { EditProperty } from './features/host/components/edit-property/edit-property';
 
 export const routes: Routes = [
-
-    // Host Routes
   {
     path: 'host',
+    component: HostLayoutComponent,
     children: [
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./features/host/components/host-dashboard/host-dashboard')
-          .then(m => m.HostDashboard)
-      },
-      {
-        path: 'my-properties',
-        loadComponent: () => import('./features/host/components/my-properties/my-properties')
-          .then(m => m.MyProperties)
-      },
-      {
-        path: 'add-property',
-        loadComponent: () => import('./features/host/components/add-property/add-property')
-          .then(m => m.AddProperty)
-      },
-      {
-        path: 'edit-property/:id',
-        loadComponent: () => import('./features/host/components/edit-property/edit-property')
-          .then(m => m.EditProperty)
-      },
-      {
-        path: '',
-        redirectTo: 'my-properties',
-        pathMatch: 'full'
-      }
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: HostDashboardComponent },
+      { path: 'calendar', component: HostCalendar },
+      { path: 'properties', component: MyProperties },
+      { path: 'messages', component: HostMessages },
+      {path: 'properties/add',component: AddProperty},
+      {path: 'properties/edit/:id',component: EditProperty},
+      // Add more routes here as we build them
     ]
   },
+<<<<<<< HEAD
 
   // Default redirect
   {
@@ -60,3 +50,7 @@ export const routes: Routes = [
     redirectTo: 'search'
   }
 ];
+=======
+  { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' }
+];
+>>>>>>> 221cd89216df6657bd4a1a742d2898ca29234b85
