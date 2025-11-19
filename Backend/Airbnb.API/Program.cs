@@ -10,6 +10,8 @@ using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -105,6 +107,7 @@ builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 
+builder.Services.AddScoped<ICalendarService, CalendarService>();
 // ============================================
 // 7. Add Controllers & Services
 // ============================================
@@ -114,10 +117,16 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
+
+
 // Add our custom services
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Add CORS
+builder.Services.AddAutoMapper(typeof(PropertyProfile));
+
+
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -165,6 +174,8 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+
 
 // ============================================
 // 8. Build App
