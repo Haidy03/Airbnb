@@ -32,3 +32,4 @@
 *.cache
 *.temp
 *.[Tt]mp
+/etc
