@@ -1,352 +1,424 @@
-// import { Component, OnInit } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-// import { ActivatedRoute, Router } from '@angular/router';
-// import { PropertyService } from '../../services/property';
-// import { Property, UpdatePropertyRequest, PropertyType, PROPERTY_TYPES } from '../../models/property.model';
-// import { AMENITIES_LIST, Amenity } from '../../models/amenity.model';
-// import { PropertyImage } from '../../models/image.model';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { PropertyService } from '../../services/property';
+import { FileUploadService } from '../../services/file-upload';
+import { AMENITIES_LIST } from '../../models/amenity.model';
+import { PropertyType, Property } from '../../models/property.model';
 
-// @Component({
-//   selector: 'app-edit-property',
-//   imports: [CommonModule, ReactiveFormsModule],
-//   templateUrl: './edit-property.html',
-//   styleUrl: './edit-property.css',
-// })
-// export class EditProperty implements OnInit{
-//   propertyForm!: FormGroup;
-//   propertyTypes = PROPERTY_TYPES;
-//   amenitiesList = AMENITIES_LIST;
-//   selectedAmenities: string[] = [];
-  
-//   currentStep = 1;
-//   totalSteps = 4;
-  
-//   // Property Data
-//   propertyId!: string;
-//   property!: Property;
-//   existingImages: PropertyImage[] = [];
-  
-//   // New Image Upload
-//   newImages: File[] = [];
-//   newImagePreviewUrls: string[] = [];
-  
-//   isLoading = true;
-//   isSubmitting = false;
-//   deletedImageIds: string[] = [];
+interface AmenityDisplay {
+  id: number;
+  name: string;
+  category: string;
+  icon: string;
+}
 
-//   constructor(
-//     private fb: FormBuilder,
-//     private propertyService: PropertyService,
-//     private router: Router,
-//     private route: ActivatedRoute
-//   ) {}
+@Component({
+  selector: 'app-edit-property',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule,RouterLink],
+  templateUrl: './edit-property.html',
+  styleUrls: ['./edit-property.css']
+})
+export class EditProperty implements OnInit {
+  private fb = inject(FormBuilder);
+  private propertyService = inject(PropertyService);
+  private fileUploadService = inject(FileUploadService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
-//   ngOnInit(): void {
-//     this.propertyId = this.route.snapshot.params['id'];
-//     this.initializeForm();
-//     this.loadPropertyData();
-//   }
+  propertyForm!: FormGroup;
+  propertyId: string = '';
+  property: Property | null = null;
+  
+  currentStep = 1;
+  totalSteps = 5;
+  isSubmitting = false;
+  isLoading = true;
+  
+  selectedFiles: File[] = [];
+  imagesPreviews: string[] = [];
+  existingImages: any[] = [];
+  imagesToDelete: string[] = [];
 
-//   initializeForm(): void {
-//     this.propertyForm = this.fb.group({
-//       // Step 1: Basic Info
-//       title: ['', [Validators.required, Validators.maxLength(200)]],
-//       description: ['', [Validators.required, Validators.maxLength(2000)]],
-//       propertyType: [PropertyType.Apartment, Validators.required],
+  availableAmenities: AmenityDisplay[] = AMENITIES_LIST.map((amenity, index) => ({
+    id: index + 1,
+    name: amenity.name,
+    category: amenity.category,
+    icon: amenity.icon
+  }));
+
+  propertyTypes = Object.values(PropertyType);
+  Math: any;
+
+  ngOnInit(): void {
+    // Get property ID from route
+    this.propertyId = this.route.snapshot.paramMap.get('id') || '';
+    
+    if (!this.propertyId) {
+      this.router.navigate(['/host/properties']);
+      return;
+    }
+
+    this.initializeForm();
+    this.loadProperty();
+  }
+
+  initializeForm(): void {
+    this.propertyForm = this.fb.group({
+      title: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
+      description: ['', [Validators.required, Validators.minLength(50), Validators.maxLength(2000)]],
+      propertyType: ['', Validators.required],
+      address: ['', [Validators.required, Validators.maxLength(200)]],
+      city: ['', [Validators.required, Validators.maxLength(100)]],
+      country: ['', [Validators.required, Validators.maxLength(100)]],
+      postalCode: [''],
+      latitude: [0, [Validators.required]],
+      longitude: [0, [Validators.required]],
+      numberOfBedrooms: [1, [Validators.required, Validators.min(1)]],
+      numberOfBathrooms: [1, [Validators.required, Validators.min(1)]],
+      maxGuests: [1, [Validators.required, Validators.min(1)]],
+      pricePerNight: [0, [Validators.required, Validators.min(1)]],
+      cleaningFee: [0, [Validators.min(0)]],
+      houseRules: [''],
+      checkInTime: ['15:00'],
+      checkOutTime: ['11:00'],
+      minimumStay: [1, [Validators.required, Validators.min(1)]],
+      amenityIds: [[]]
+    });
+  }
+
+  /**
+   * Load property data
+   */
+  loadProperty(): void {
+    this.isLoading = true;
+    
+    this.propertyService.getPropertyById(this.propertyId).subscribe({
+      next: (property) => {
+        if (!property) {
+          alert('Property not found');
+          this.router.navigate(['/host/properties']);
+          return;
+        }
+
+        this.property = property;
+        this.populateForm(property);
+        this.existingImages = property.images.map(img => ({
+          id: img.id,
+          url: img.url,
+          isPrimary: img.isMain,
+          order: img.order
+        }));
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading property:', error);
+        alert('Failed to load property');
+        this.router.navigate(['/host/properties']);
+      }
+    });
+  }
+
+  /**
+   * Populate form with property data
+   */
+  populateForm(property: Property): void {
+    this.propertyForm.patchValue({
+      title: property.title,
+      description: property.description,
+      propertyType: property.propertyType,
+      address: property.location.address,
+      city: property.location.city,
+      country: property.location.country,
+      postalCode: property.location.zipCode,
+      latitude: property.location.coordinates.lat,
+      longitude: property.location.coordinates.lng,
+      numberOfBedrooms: property.capacity.bedrooms,
+      numberOfBathrooms: property.capacity.bathrooms,
+      maxGuests: property.capacity.guests,
+      pricePerNight: property.pricing.basePrice,
+      cleaningFee: property.pricing.cleaningFee || 0,
+      houseRules: property.houseRules.additionalRules?.join('\n') || '',
+      checkInTime: property.houseRules.checkInTime,
+      checkOutTime: property.houseRules.checkOutTime,
+      minimumStay: property.availability.minNights,
+      amenityIds: property.amenities.map(a => parseInt(a))
+    });
+  }
+
+  formatPropertyType(type: string): string {
+    return type.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  }
+
+  nextStep(): void {
+    if (this.validateCurrentStep()) {
+      if (this.currentStep < this.totalSteps) {
+        this.currentStep++;
+      }
+    }
+  }
+
+  previousStep(): void {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+    }
+  }
+
+  goToStep(step: number): void {
+    if (step <= this.currentStep || this.validateStepsUpTo(step - 1)) {
+      this.currentStep = step;
+    }
+  }
+
+  validateCurrentStep(): boolean {
+    let fieldsToValidate: string[] = [];
+
+    switch (this.currentStep) {
+      case 1:
+        fieldsToValidate = ['title', 'description', 'propertyType'];
+        break;
+      case 2:
+        fieldsToValidate = ['address', 'city', 'country', 'latitude', 'longitude'];
+        break;
+      case 3:
+        fieldsToValidate = ['numberOfBedrooms', 'numberOfBathrooms', 'maxGuests'];
+        break;
+      case 4:
+        fieldsToValidate = ['pricePerNight', 'checkInTime', 'checkOutTime', 'minimumStay'];
+        break;
+    }
+
+    let isValid = true;
+    fieldsToValidate.forEach(field => {
+      const control = this.propertyForm.get(field);
+      if (control) {
+        control.markAsTouched();
+        if (control.invalid) {
+          isValid = false;
+        }
+      }
+    });
+
+    if (!isValid) {
+      alert('Please fill all required fields correctly');
+    }
+
+    return isValid;
+  }
+
+  validateStepsUpTo(step: number): boolean {
+    return true;
+  }
+
+  toggleAmenity(amenityId: number): void {
+    const amenityIds = this.propertyForm.get('amenityIds')?.value as number[];
+    const index = amenityIds.indexOf(amenityId);
+
+    if (index > -1) {
+      amenityIds.splice(index, 1);
+    } else {
+      amenityIds.push(amenityId);
+    }
+
+    this.propertyForm.patchValue({ amenityIds });
+  }
+
+  isAmenitySelected(amenityId: number): boolean {
+    const amenityIds = this.propertyForm.get('amenityIds')?.value as number[];
+    return amenityIds.includes(amenityId);
+  }
+
+  getAmenitiesByCategory(category: string): AmenityDisplay[] {
+    return this.availableAmenities.filter(a => a.category === category);
+  }
+
+  getUniqueCategories(): string[] {
+    return [...new Set(this.availableAmenities.map(a => a.category))];
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      const files = Array.from(input.files);
       
-//       // Step 2: Details
-//       pricePerNight: ['', [Validators.required, Validators.min(1)]],
-//       maxGuests: ['', [Validators.required, Validators.min(1), Validators.max(50)]],
-//       bedrooms: ['', [Validators.required, Validators.min(0)]],
-//       bathrooms: ['', [Validators.required, Validators.min(0)]],
+      const validFiles = files.filter(file => {
+        const isValidType = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type);
+        const isValidSize = file.size <= 5 * 1024 * 1024;
+        
+        if (!isValidType) {
+          alert(`${file.name} has invalid type`);
+          return false;
+        }
+        if (!isValidSize) {
+          alert(`${file.name} exceeds 5MB`);
+          return false;
+        }
+        return true;
+      });
+
+      this.selectedFiles.push(...validFiles);
       
-//       // Step 3: Location
-//       address: ['', Validators.required],
-//       city: ['', Validators.required],
-//       country: ['', Validators.required],
-//       latitude: [''],
-//       longitude: ['']
-//     });
-//   }
+      validFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.imagesPreviews.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }
 
-//   loadPropertyData(): void {
-//     this.isLoading = true;
-//     this.propertyService.getPropertyById(this.propertyId).subscribe({
-//       next: (property) => {
-//         if (property) {
-//           this.property = property;
-//           this.existingImages = [...property.images];
-//           this.populateForm();
-//           this.isLoading = false;
-//         } else {
-//           alert('Property not found');
-//           this.router.navigate(['/host/my-properties']);
-//         }
-//       },
-//       error: (error) => {
-//         console.error('Error loading property:', error);
-//         alert('Failed to load property');
-//         this.router.navigate(['/host/my-properties']);
-//       }
-//     });
-//   }
+  removeNewImage(index: number): void {
+    this.selectedFiles.splice(index, 1);
+    this.imagesPreviews.splice(index, 1);
+  }
 
-//   populateForm(): void {
-//     this.propertyForm.patchValue({
-//       title: this.property.title,
-//       description: this.property.description,
-//       propertyType: this.property.propertyType,
-//       pricePerNight: this.property.pricePerNight,
-//       maxGuests: this.property.maxGuests,
-//       bedrooms: this.property.bedrooms,
-//       bathrooms: this.property.bathrooms,
-//       address: this.property.address,
-//       city: this.property.city,
-//       country: this.property.country,
-//       latitude: this.property.latitude || '',
-//       longitude: this.property.longitude || ''
-//     });
+  removeExistingImage(imageId: string): void {
+    this.imagesToDelete.push(imageId);
+    this.existingImages = this.existingImages.filter(img => img.id !== imageId);
+  }
 
-//     // Set selected amenities
-//     this.selectedAmenities = this.property.amenities.map(a => a.id);
-//   }
+  getCurrentLocation(): void {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.propertyForm.patchValue({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+          alert('Location captured successfully');
+        },
+        (error) => {
+          alert('Unable to get location');
+          console.error('Geolocation error:', error);
+        }
+      );
+    } else {
+      alert('Geolocation is not supported');
+    }
+  }
 
-//   // Step Navigation
-//   nextStep(): void {
-//     if (this.currentStep < this.totalSteps) {
-//       if (this.isCurrentStepValid()) {
-//         this.currentStep++;
-//       } else {
-//         this.markStepAsTouched();
-//       }
-//     }
-//   }
+  async onSubmit(): Promise<void> {
+    if (this.propertyForm.invalid) {
+      alert('Please fill all required fields');
+      Object.keys(this.propertyForm.controls).forEach(key => {
+        this.propertyForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
 
-//   previousStep(): void {
-//     if (this.currentStep > 1) {
-//       this.currentStep--;
-//     }
-//   }
+    this.isSubmitting = true;
 
-//   isCurrentStepValid(): boolean {
-//     switch (this.currentStep) {
-//       case 1:
-//         return this.propertyForm.get('title')?.valid && 
-//                this.propertyForm.get('description')?.valid &&
-//                this.propertyForm.get('propertyType')?.valid || false;
-//       case 2:
-//         return this.propertyForm.get('pricePerNight')?.valid &&
-//                this.propertyForm.get('maxGuests')?.valid &&
-//                this.propertyForm.get('bedrooms')?.valid &&
-//                this.propertyForm.get('bathrooms')?.valid || false;
-//       case 3:
-//         return this.propertyForm.get('address')?.valid &&
-//                this.propertyForm.get('city')?.valid &&
-//                this.propertyForm.get('country')?.valid || false;
-//       case 4:
-//         return true;
-//       default:
-//         return false;
-//     }
-//   }
+    try {
+      const formValue = this.propertyForm.value;
+      
+      const updatePropertyDto = {
+        id: this.propertyId,
+        title: formValue.title,
+        description: formValue.description,
+        propertyType: formValue.propertyType,
+        address: formValue.address,
+        city: formValue.city,
+        country: formValue.country,
+        postalCode: formValue.postalCode || null,
+        latitude: formValue.latitude,
+        longitude: formValue.longitude,
+        numberOfBedrooms: formValue.numberOfBedrooms,
+        numberOfBathrooms: formValue.numberOfBathrooms,
+        maxGuests: formValue.maxGuests,
+        pricePerNight: formValue.pricePerNight,
+        cleaningFee: formValue.cleaningFee || null,
+        houseRules: formValue.houseRules || null,
+        checkInTime: formValue.checkInTime ? `${formValue.checkInTime}` : null,
+        checkOutTime: formValue.checkOutTime ? `${formValue.checkOutTime}` : null,
+        minimumStay: formValue.minimumStay,
+        amenityIds: []
+      };
 
-//   markStepAsTouched(): void {
-//     switch (this.currentStep) {
-//       case 1:
-//         this.propertyForm.get('title')?.markAsTouched();
-//         this.propertyForm.get('description')?.markAsTouched();
-//         this.propertyForm.get('propertyType')?.markAsTouched();
-//         break;
-//       case 2:
-//         this.propertyForm.get('pricePerNight')?.markAsTouched();
-//         this.propertyForm.get('maxGuests')?.markAsTouched();
-//         this.propertyForm.get('bedrooms')?.markAsTouched();
-//         this.propertyForm.get('bathrooms')?.markAsTouched();
-//         break;
-//       case 3:
-//         this.propertyForm.get('address')?.markAsTouched();
-//         this.propertyForm.get('city')?.markAsTouched();
-//         this.propertyForm.get('country')?.markAsTouched();
-//         break;
-//     }
-//   }
+      console.log('Updating property:', updatePropertyDto);
 
-//   // Amenities
-//   toggleAmenity(amenityId: string): void {
-//     const index = this.selectedAmenities.indexOf(amenityId);
-//     if (index > -1) {
-//       this.selectedAmenities.splice(index, 1);
-//     } else {
-//       this.selectedAmenities.push(amenityId);
-//     }
-//   }
+      this.propertyService.updateProperty(updatePropertyDto as any).subscribe({
+        next: async (response) => {
+          console.log('Property updated:', response);
 
-//   isAmenitySelected(amenityId: string): boolean {
-//     return this.selectedAmenities.includes(amenityId);
-//   }
+          // Delete removed images
+          for (const imageId of this.imagesToDelete) {
+            try {
+              await this.propertyService.deletePropertyImage(parseInt(imageId)).toPromise();
+            } catch (error) {
+              console.error('Error deleting image:', error);
+            }
+          }
 
-//   // Existing Images Management
-//   removeExistingImage(imageId: string): void {
-//     if (confirm('Are you sure you want to delete this image?')) {
-//       this.deletedImageIds.push(imageId);
-//       this.existingImages = this.existingImages.filter(img => img.id !== imageId);
-//     }
-//   }
+          // Upload new images
+          if (this.selectedFiles.length > 0) {
+            for (const file of this.selectedFiles) {
+              try {
+                await this.propertyService.uploadPropertyImages(
+                  (this.propertyId), 
+                  [file]
+                ).toPromise();
+              } catch (error) {
+                console.error('Error uploading image:', error);
+              }
+            }
+          }
 
-//   setPrimaryImage(imageId: string): void {
-//     this.existingImages = this.existingImages.map(img => ({
-//       ...img,
-//       isPrimary: img.id === imageId
-//     }));
-//   }
+          alert('Property updated successfully!');
+          this.router.navigate(['/host/properties']);
+        },
+        error: (error) => {
+          console.error('Error updating property:', error);
+          const errorMessage = error?.error?.message || error?.message || 'Failed to update property';
+          alert(errorMessage);
+          this.isSubmitting = false;
+        }
+      });
+    } catch (error: any) {
+      console.error('Error updating property:', error);
+      alert(error?.message || 'Failed to update property');
+      this.isSubmitting = false;
+    }
+  }
 
-//   // New Image Upload
-//   onNewImageSelect(event: any): void {
-//     const files = event.target.files;
-//     if (files && files.length > 0) {
-//       for (let i = 0; i < files.length; i++) {
-//         const file = files[i];
-        
-//         // Validate file type
-//         if (!file.type.match(/image\/(jpg|jpeg|png)/)) {
-//           alert('Please upload only JPG, JPEG or PNG images');
-//           continue;
-//         }
-        
-//         // Validate file size (5MB max)
-//         if (file.size > 5 * 1024 * 1024) {
-//           alert('Image size should not exceed 5MB');
-//           continue;
-//         }
-        
-//         this.newImages.push(file);
-        
-//         // Create preview
-//         const reader = new FileReader();
-//         reader.onload = (e: any) => {
-//           this.newImagePreviewUrls.push(e.target.result);
-//         };
-//         reader.readAsDataURL(file);
-//       }
-//     }
-//   }
+  deleteProperty(): void {
+    if (!confirm('Are you sure you want to delete this property? This action cannot be undone.')) {
+      return;
+    }
 
-//   removeNewImage(index: number): void {
-//     this.newImages.splice(index, 1);
-//     this.newImagePreviewUrls.splice(index, 1);
-//   }
+    this.propertyService.deleteProperty(this.propertyId).subscribe({
+      next: () => {
+        alert('Property deleted successfully');
+        this.router.navigate(['/host/properties']);
+      },
+      error: (error) => {
+        console.error('Error deleting property:', error);
+        alert('Failed to delete property');
+      }
+    });
+  }
 
-//   // Form Submission
-//   onSubmit(): void {
-//     if (this.propertyForm.invalid) {
-//       Object.keys(this.propertyForm.controls).forEach(key => {
-//         this.propertyForm.get(key)?.markAsTouched();
-//       });
-//       return;
-//     }
+  getProgressPercentage(): number {
+    return (this.currentStep / this.totalSteps) * 100;
+  }
 
-//     this.isSubmitting = true;
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.propertyForm.get(fieldName);
+    return !!(field && field.invalid && field.touched);
+  }
 
-//     const formValue = this.propertyForm.value;
-//     const request: UpdatePropertyRequest = {
-//       title: formValue.title,
-//       description: formValue.description,
-//       propertyType: formValue.propertyType,
-//       pricePerNight: formValue.pricePerNight,
-//       maxGuests: formValue.maxGuests,
-//       bedrooms: formValue.bedrooms,
-//       bathrooms: formValue.bathrooms,
-//       address: formValue.address,
-//       city: formValue.city,
-//       country: formValue.country,
-//       latitude: formValue.latitude || undefined,
-//       longitude: formValue.longitude || undefined,
-//       amenityIds: this.selectedAmenities
-//     };
-
-//     this.propertyService.updateProperty(this.propertyId, request).subscribe({
-//       next: (property) => {
-//         console.log('Property updated:', property);
-        
-//         // Delete removed images
-//         this.deleteRemovedImages(() => {
-//           // Upload new images if any
-//           if (this.newImages.length > 0) {
-//             this.propertyService.uploadPropertyImages(this.propertyId, this.newImages).subscribe({
-//               next: (images) => {
-//                 console.log('New images uploaded:', images);
-//                 this.navigateToMyProperties();
-//               },
-//               error: (error) => {
-//                 console.error('Error uploading new images:', error);
-//                 alert('Property updated but failed to upload new images');
-//                 this.navigateToMyProperties();
-//               }
-//             });
-//           } else {
-//             this.navigateToMyProperties();
-//           }
-//         });
-//       },
-//       error: (error) => {
-//         console.error('Error updating property:', error);
-//         alert('Failed to update property. Please try again.');
-//         this.isSubmitting = false;
-//       }
-//     });
-//   }
-
-//   deleteRemovedImages(callback: () => void): void {
-//     if (this.deletedImageIds.length === 0) {
-//       callback();
-//       return;
-//     }
-
-//     let deletedCount = 0;
-//     this.deletedImageIds.forEach(imageId => {
-//       this.propertyService.deletePropertyImage(imageId).subscribe({
-//         next: () => {
-//           deletedCount++;
-//           if (deletedCount === this.deletedImageIds.length) {
-//             callback();
-//           }
-//         },
-//         error: (error) => {
-//           console.error('Error deleting image:', error);
-//           deletedCount++;
-//           if (deletedCount === this.deletedImageIds.length) {
-//             callback();
-//           }
-//         }
-//       });
-//     });
-//   }
-
-//   navigateToMyProperties(): void {
-//     alert('Property updated successfully!');
-//     this.router.navigate(['/host/my-properties']);
-//   }
-
-//   // Helper Methods
-//   getErrorMessage(fieldName: string): string {
-//     const control = this.propertyForm.get(fieldName);
-//     if (control?.hasError('required')) {
-//       return 'This field is required';
-//     }
-//     if (control?.hasError('maxLength')) {
-//       return `Maximum ${control.errors?.['maxLength'].requiredLength} characters allowed`;
-//     }
-//     if (control?.hasError('min')) {
-//       return `Minimum value is ${control.errors?.['min'].min}`;
-//     }
-//     if (control?.hasError('max')) {
-//       return `Maximum value is ${control.errors?.['max'].max}`;
-//     }
-//     return '';
-//   }
-
-//   getProgressPercentage(): number {
-//     return (this.currentStep / this.totalSteps) * 100;
-//   }
-// }
+  getFieldError(fieldName: string): string {
+    const field = this.propertyForm.get(fieldName);
+    if (field?.errors) {
+      if (field.errors['required']) return 'This field is required';
+      if (field.errors['minlength']) return `Minimum length is ${field.errors['minlength'].requiredLength}`;
+      if (field.errors['maxlength']) return `Maximum length is ${field.errors['maxlength'].requiredLength}`;
+      if (field.errors['min']) return `Minimum value is ${field.errors['min'].min}`;
+    }
+    return '';
+  }
+}

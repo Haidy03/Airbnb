@@ -1,11 +1,17 @@
+using Airbnb.API.Data;
 using Airbnb.API.Models;
-using Airbnb.API.Repositories.Interfaces;
-using Airbnb.API.Repositories.Implementations;
-using Airbnb.API.Services.Interfaces;
 using Airbnb.API.Services.Implementations;
+using Airbnb.API.Services.Interfaces;
+//using Airbnb.API.Data;
+using Airbnb.API.Repositories.Implementations;
+using Airbnb.API.Repositories.Interfaces;
+using Airbnb.API.Services.Implementations;
+using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -91,14 +97,14 @@ builder.Services.AddAuthorization(options =>
 // ============================================
 builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+
+
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 // ============================================
 // 6. Register Services
 // ============================================
 builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
-builder.Services.AddScoped<IReviewService, ReviewService>();
-
 
 // ============================================
 // 7. Add Controllers & Services
@@ -111,7 +117,16 @@ builder.Services.AddControllers()
 
     });
 
+
+
+// Add our custom services
+builder.Services.AddScoped<IAuthService, AuthService>();
+
 // Add CORS
+builder.Services.AddAutoMapper(typeof(PropertyProfile));
+
+
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -160,10 +175,32 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
+
 // ============================================
 // 8. Build App
 // ============================================
 var app = builder.Build();
+
+// ============================================
+// Seed Database
+// ============================================
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    // 1. Seed Roles (You already have this)
+    await SeedRolesAndAdmin(services);
+
+    // 2. Seed Properties (ADD THIS LINE)
+    await Airbnb.API.Data.SeedData.InitializeAsync(services);
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedRolesAndAdmin(services);
+}
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -192,6 +229,10 @@ using (var scope = app.Services.CreateScope())
     try
     {
         await SeedRolesAndAdmin(services);
+
+        // Add this line****
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        SeedAmenities.SeedData(context);
     }
     catch (Exception ex)
     {

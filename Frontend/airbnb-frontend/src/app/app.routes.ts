@@ -4,6 +4,9 @@ import { HostDashboardComponent } from './features/host/components/host-dashboar
 import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
 import { MyProperties } from './features/host/components/my-properties/my-properties';
 import { HostMessages } from './features/host/components/host-messages/host-messages';
+import { AddProperty } from './features/host/components/add-property/add-property';
+import { EditProperty } from './features/host/components/edit-property/edit-property';
+import { BookingForm } from './features/guest/components/booking-form/booking-form';
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 
@@ -17,15 +20,6 @@ export const routes: Routes = [
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
-      {
-    path: 'reviews/add/:bookingId',
-    component: AddReviewComponent
-  },
-  {
-    path: '',
-    redirectTo: '/',
-    pathMatch: 'full'
-  }
       // Add more routes here as we build them
     ]
   },
