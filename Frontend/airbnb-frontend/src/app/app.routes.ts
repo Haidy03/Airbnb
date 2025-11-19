@@ -45,15 +45,15 @@ export const routes: Routes = [
     path: 'search',
     loadComponent: () =>
       import('./features/guest/components/search/components/search-results/search-results')
-        .then(m => m.SearchResults)
+        .then(m => m.SearchResultsComponent)
   },
 
-  {
-    path: 'property/:id',
-    loadComponent: () =>
-      import('./features/guest/components/search/components/property-details/property-details')
-        .then(m => m.PropertyDetails)
-  },
+{
+  path: 'property/:id',
+  loadComponent: () =>
+    import('./features/guest/components/search/components/property-details/property-details')
+      .then(m => m.PropertyDetailsComponent)
+},
 
   {
     path: '**',
