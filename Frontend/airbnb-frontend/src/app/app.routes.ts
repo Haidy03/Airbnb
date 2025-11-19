@@ -6,6 +6,7 @@ import { MyProperties } from './features/host/components/my-properties/my-proper
 import { HostMessages } from './features/host/components/host-messages/host-messages';
 import { AddProperty } from './features/host/components/add-property/add-property';
 import { EditProperty } from './features/host/components/edit-property/edit-property';
+import { BookingForm } from './features/guest/components/booking-form/booking-form';
 
 export const routes: Routes = [
   {
@@ -19,6 +20,7 @@ export const routes: Routes = [
       { path: 'messages', component: HostMessages },
       {path: 'properties/add',component: AddProperty},
       {path: 'properties/edit/:id',component: EditProperty},
+      {path:'booking',component:BookingForm},
       // Add more routes here as we build them
     ]
   },
