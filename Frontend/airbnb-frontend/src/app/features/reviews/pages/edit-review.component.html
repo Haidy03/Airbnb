@@ -2,14 +2,14 @@
   <div class="review-page">
     <div class="card">
       <div class="card-header">
-        <h2>Write a Review</h2>
+        <h2>Edit Review</h2>
       </div>
       
       <div class="card-body">
         <!-- Loading -->
-        <div *ngIf="loading && !canReview" class="loading-container">
+        <div *ngIf="loading && !review" class="loading-container">
           <div class="spinner"></div>
-          <p>Loading...</p>
+          <p>Loading review...</p>
         </div>
 
         <!-- Error Message -->
@@ -23,10 +23,16 @@
         </div>
 
         <!-- Review Form -->
-        <form *ngIf="canReview && !loading && !successMessage" 
+        <form *ngIf="review && !loading && !successMessage" 
               [formGroup]="reviewForm" 
               (ngSubmit)="onSubmit()">
           
+          <!-- Property Info -->
+          <div class="property-info">
+            <h3>{{ review.propertyTitle }}</h3>
+            <p class="review-date">Original review: {{ review.createdAt | date:'medium' }}</p>
+          </div>
+
           <!-- Overall Rating -->
           <div class="form-group">
             <label class="form-label required">Overall Rating</label>
@@ -113,7 +119,7 @@
               class="btn btn-primary" 
               [disabled]="loading || overallRating === 0">
               <span *ngIf="loading" class="spinner-sm"></span>
-              {{ loading ? 'Submitting...' : 'Submit Review' }}
+              {{ loading ? 'Updating...' : 'Update Review' }}
             </button>
             <button 
               type="button" 

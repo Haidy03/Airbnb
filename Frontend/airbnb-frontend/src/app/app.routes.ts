@@ -9,8 +9,13 @@ import { EditProperty } from './features/host/components/edit-property/edit-prop
 import { BookingForm } from './features/guest/components/booking-form/booking-form';
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
+import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
 
 export const routes: Routes = [
+  {
+    path: 'test-login',
+    component: TestLoginComponent
+  },
   {
     path: 'host',
     component: HostLayoutComponent,
@@ -20,7 +25,6 @@ export const routes: Routes = [
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
-      // Add more routes here as we build them
     ]
   },
   { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' },
@@ -28,5 +32,10 @@ export const routes: Routes = [
     path: 'reviews',
     loadChildren: () => import('./features/reviews/review.routes')
       .then(m => m.reviewRoutes)
+  },
+  { 
+    path: '', 
+    redirectTo: 'test-login', 
+    pathMatch: 'full' 
   }
 ];

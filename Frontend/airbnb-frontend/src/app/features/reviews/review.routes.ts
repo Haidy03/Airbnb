@@ -1,24 +1,22 @@
+// src/app/features/reviews/review.routes.ts
+
 import { Routes } from '@angular/router';
-import { authGuard } from '../../core/guards/auth.guard';
 
 export const reviewRoutes: Routes = [
   {
     path: 'add/:bookingId',
     loadComponent: () => 
-      import('./components/add-review/add-review.component').then(m => m.AddReviewComponent),
-    canActivate: [authGuard]
+      import('./components/add-review/add-review.component').then(m => m.AddReviewComponent)
   },
   {
     path: 'edit/:id',
     loadComponent: () => 
-      import('./pages/edit-review.component').then(m => m.EditReviewComponent),
-    canActivate: [authGuard]
+      import('./pages/edit-review.component').then(m => m.EditReviewComponent)
   },
   {
     path: 'my-reviews',
     loadComponent: () => 
-      import('./components/my-reviews/my-reviews').then(m => m.MyReviews),
-    canActivate: [authGuard]
+      import('./components/my-reviews/my-reviews').then(m => m.MyReviews)
   },
   {
     path: 'property/:propertyId',
