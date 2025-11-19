@@ -1,4 +1,5 @@
-﻿using Airbnb.API.Models;
+﻿using Airbnb.API.DTOs.Search;
+using Airbnb.API.Models;
 
 namespace Airbnb.API.Repositories.Interfaces
 {
@@ -13,5 +14,7 @@ namespace Airbnb.API.Repositories.Interfaces
         Task DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
         Task<bool> IsHostOwnerAsync(int propertyId, string hostId);
+        Task<PagedResult<PropertySearchResultDto>> SearchPropertiesAsync(SearchRequestDto searchDto);
+        Task<List<PropertySearchResultDto>> GetFeaturedPropertiesAsync(int count);
     }
 }

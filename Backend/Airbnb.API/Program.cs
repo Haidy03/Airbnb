@@ -101,12 +101,13 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
+
 // ============================================
 // 6. Register Services
 // ============================================
 builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
-
+builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 // ============================================
 // 7. Add Controllers & Services
@@ -181,6 +182,20 @@ builder.Services.AddSwaggerGen(c =>
 // 8. Build App
 // ============================================
 var app = builder.Build();
+
+// ============================================
+// Seed Database
+// ============================================
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    // 1. Seed Roles (You already have this)
+    await SeedRolesAndAdmin(services);
+
+    // 2. Seed Properties (ADD THIS LINE)
+    await Airbnb.API.Data.SeedData.InitializeAsync(services);
+}
 
 using (var scope = app.Services.CreateScope())
 {
