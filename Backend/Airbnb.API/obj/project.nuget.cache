@@ -94,15 +94,5 @@
     "C:\\Users\\sohil\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
     "C:\\Users\\sohil\\.nuget\\packages\\system.windows.extensions\\6.0.0\\system.windows.extensions.6.0.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "Undefined",
-      "level": "Warning",
-      "message": "Problem reading the cache file D:\\iti\\Final Project\\Backend\\Airbnb.API\\obj\\project.nuget.cache : '<' is an invalid start of a property name. Expected a '\"'. Path: $ | LineNumber: 2 | BytePositionInLine: 0.",
-      "projectPath": "D:\\iti\\Final Project\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-      "warningLevel": 1,
-      "filePath": "D:\\iti\\Final Project\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-      "targetGraphs": []
-    }
-  ]
+  "logs": []
 }
