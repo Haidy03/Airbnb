@@ -1,0 +1,46 @@
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.star {
+  color: #e0e0e0;
+  transition: all 0.2s ease;
+  -webkit-user-select: none;  /* Safari/Chrome */
+  -moz-user-select: none;     /* Firefox */
+  -ms-user-select: none;      /* IE10+ */
+  user-select: none;
+}
+
+.star.filled {
+  color: #ffc107;
+}
+
+.star.interactive {
+  cursor: pointer;
+}
+
+.star.interactive:hover {
+  transform: scale(1.2);
+}
+
+.star-small {
+  font-size: 1rem;
+}
+
+.star-medium {
+  font-size: 1.5rem;
+}
+
+.star-large {
+  font-size: 2rem;
+}
+
+.readonly .star {
+  cursor: default;
+}
+
+.readonly .star:hover {
+  transform: none;
+}

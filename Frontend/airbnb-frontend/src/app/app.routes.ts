@@ -7,6 +7,8 @@ import { HostMessages } from './features/host/components/host-messages/host-mess
 import { AddProperty } from './features/host/components/add-property/add-property';
 import { EditProperty } from './features/host/components/edit-property/edit-property';
 import { BookingForm } from './features/guest/components/booking-form/booking-form';
+import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
+import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 
 export const routes: Routes = [
   {
@@ -18,11 +20,13 @@ export const routes: Routes = [
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
-      {path: 'properties/add',component: AddProperty},
-      {path: 'properties/edit/:id',component: EditProperty},
-      {path:'booking',component:BookingForm},
       // Add more routes here as we build them
     ]
   },
-  { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' }
+  { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' },
+  {
+    path: 'reviews',
+    loadChildren: () => import('./features/reviews/review.routes')
+      .then(m => m.reviewRoutes)
+  }
 ];
