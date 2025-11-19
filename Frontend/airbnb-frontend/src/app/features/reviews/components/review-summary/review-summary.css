@@ -1,0 +1,112 @@
+.review-summary-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 40px;
+  color: white;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.summary-header {
+  text-align: center;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.overall-rating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.rating-number {
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.total-reviews {
+  font-size: 16px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.detailed-ratings {
+  margin-top: 32px;
+}
+
+.ratings-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.rating-item {
+  margin-bottom: 20px;
+}
+
+.rating-item:last-child {
+  margin-bottom: 0;
+}
+
+.rating-item label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.rating-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rating-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.rating-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+  border-radius: 10px;
+  transition: width 0.6s ease;
+  box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+}
+
+.rating-value {
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .review-summary-card {
+    padding: 24px;
+  }
+
+  .rating-number {
+    font-size: 48px;
+  }
+
+  .ratings-title {
+    font-size: 18px;
+  }
+
+  .rating-item label {
+    font-size: 13px;
+  }
+
+  .rating-value {
+    font-size: 14px;
+    min-width: 35px;
+  }
+}

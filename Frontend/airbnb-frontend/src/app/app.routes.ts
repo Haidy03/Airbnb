@@ -23,5 +23,10 @@ export const routes: Routes = [
       // Add more routes here as we build them
     ]
   },
-  { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' }
+  { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' },
+  {
+    path: 'reviews',
+    loadChildren: () => import('./features/reviews/review.routes')
+      .then(m => m.reviewRoutes)
+  }
 ];

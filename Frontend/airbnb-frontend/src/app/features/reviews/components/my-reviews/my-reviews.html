@@ -1,1 +1,81 @@
-<p>my-reviews works!</p>
+<div class="my-reviews-container">
+  <div class="page-header">
+    <h1>My Reviews</h1>
+    <p class="subtitle">Manage your reviews and see feedback you've received</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading your reviews...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !loading" class="alert alert-error">
+    {{ errorMessage }}
+    <button class="btn-retry" (click)="loadMyReviews()">Retry</button>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && !errorMessage" class="reviews-content">
+    
+    <!-- Reviews I've Given -->
+    <section class="reviews-section">
+      <div class="section-header">
+        <h2>Reviews I've Given</h2>
+        <span class="count-badge">{{ reviewsGiven.length }}</span>
+      </div>
+
+      <div *ngIf="reviewsGiven.length === 0" class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h3>No reviews yet</h3>
+        <p>When you complete a stay, you'll be able to leave a review</p>
+      </div>
+
+      <div *ngIf="reviewsGiven.length > 0" class="reviews-list">
+        <div *ngFor="let review of reviewsGiven" class="review-item">
+          <app-review-card 
+            [review]="review" 
+            [showPropertyName]="true">
+          </app-review-card>
+          
+          <div class="review-actions">
+            <button 
+              class="btn btn-edit" 
+              (click)="editReview(review.id)">
+              <span class="icon">✏️</span> Edit
+            </button>
+            <button 
+              class="btn btn-delete" 
+              (click)="deleteReview(review.id)">
+              <span class="icon">🗑️</span> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reviews I've Received -->
+    <section class="reviews-section">
+      <div class="section-header">
+        <h2>Reviews I've Received</h2>
+        <span class="count-badge">{{ reviewsReceived.length }}</span>
+      </div>
+
+      <div *ngIf="reviewsReceived.length === 0" class="empty-state">
+        <div class="empty-icon">⭐</div>
+        <h3>No reviews received yet</h3>
+        <p>Reviews from your guests will appear here</p>
+      </div>
+
+      <div *ngIf="reviewsReceived.length > 0" class="reviews-list">
+        <app-review-card 
+          *ngFor="let review of reviewsReceived" 
+          [review]="review"
+          [showPropertyName]="true">
+        </app-review-card>
+      </div>
+    </section>
+
+  </div>
+</div>
