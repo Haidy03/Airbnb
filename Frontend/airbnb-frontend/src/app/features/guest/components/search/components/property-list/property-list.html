@@ -1,0 +1,97 @@
+<div class="property-list-container p-3">
+  <!-- Header: Results Count & Sort -->
+  <div class="list-header d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <div class="results-info">
+      <h2 class="results-count mb-0">{{ totalProperties }} stays found</h2>
+    </div>
+    <div class="sort-options d-flex align-items-center mt-2 mt-lg-0">
+      <label for="sort-select" class="me-2 fw-semibold">Sort by:</label>
+      <select
+        id="sort-select"
+        class="form-select form-select-sm"
+        [(ngModel)]="sortOption"
+        (change)="onSortChange($event)"
+      >
+        <option value="popular">Most Popular</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="rating">Highest Rating</option>
+        <option value="newest">Newest</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container text-center py-5">
+    <div class="spinner-border text-primary mb-3" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="loading-text fw-medium">Finding amazing places for you...</p>
+  </div>
+
+  <!-- Properties Grid -->
+  <div *ngIf="!isLoading && properties.length > 0" class="properties-grid">
+    <app-property-card
+      *ngFor="let property of properties"
+      [property]="property"
+      [isFavorite]="isFavorite(property.id)"
+      (favoriteToggle)="onFavoriteToggle($event)"
+      (cardClick)="onPropertyClick($event)"
+    ></app-property-card>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && properties.length === 0" class="empty-state text-center py-5 text-muted">
+    <i class="bi bi-house-x empty-icon display-4 mb-3"></i>
+    <h3 class="empty-title mb-2">No properties found</h3>
+    <p class="empty-text">Try adjusting your search or filters to find what you're looking for.</p>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && properties.length > 0 && totalPages > 1" class="pagination-container mt-4 text-center">
+    <nav aria-label="Property list pagination">
+      <ul class="pagination justify-content-center flex-wrap">
+        <!-- Previous Button -->
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" href="javascript:void(0)" (click)="currentPage > 1 && onPageChange(currentPage - 1)">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+
+        <!-- First Page -->
+        <li *ngIf="paginationRange[0] > 1" class="page-item">
+          <a class="page-link" href="javascript:void(0)" (click)="onPageChange(1)">1</a>
+        </li>
+        <li *ngIf="paginationRange[0] > 2" class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+
+        <!-- Page Numbers -->
+        <li *ngFor="let page of paginationRange" class="page-item" [class.active]="page === currentPage">
+          <a class="page-link" href="javascript:void(0)" (click)="onPageChange(page)">{{ page }}</a>
+        </li>
+
+        <!-- Last Page -->
+        <li *ngIf="paginationRange[paginationRange.length - 1] < totalPages - 1" class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+        <li *ngIf="paginationRange[paginationRange.length - 1] < totalPages" class="page-item">
+          <a class="page-link" href="javascript:void(0)" (click)="onPageChange(totalPages)">{{ totalPages }}</a>
+        </li>
+
+        <!-- Next Button -->
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" href="javascript:void(0)" (click)="currentPage < totalPages && onPageChange(currentPage + 1)">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="pagination-info mt-2 text-muted small">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} -
+      {{ Math.min(currentPage * pageSize, totalProperties) }} of
+      {{ totalProperties }} properties
+    </div>
+  </div>
+</div>

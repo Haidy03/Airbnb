@@ -1,0 +1,195 @@
+/* src/app/features/guest/components/search/components/search-map/search-map.component.css */
+
+.map-container-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  background: #F7F7F7;
+}
+
+.map-canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+}
+
+.map-controls {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+.map-control-btn {
+  width: 40px;
+  height: 40px;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.map-control-btn:hover {
+  background: #F7F7F7;
+  transform: scale(1.05);
+}
+
+.map-control-btn i {
+  font-size: 18px;
+  color: #222;
+}
+
+.map-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: white;
+  border-radius: 12px;
+  z-index: 5;
+}
+
+.map-loading p {
+  font-size: 14px;
+  color: #717171;
+  margin: 0;
+}
+
+/* Custom Marker Styles */
+:host ::ng-deep .custom-marker {
+  background: transparent;
+  border: none;
+}
+
+:host ::ng-deep .price-marker {
+  background: white;
+  border: 1px solid #DDDDDD;
+  border-radius: 24px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-align: center;
+}
+
+:host ::ng-deep .price-marker:hover {
+  background: #222;
+  color: white;
+  transform: scale(1.1);
+  z-index: 1000;
+}
+
+:host ::ng-deep .price-marker.selected {
+  background: #222;
+  color: white;
+  border-color: #222;
+  transform: scale(1.15);
+  z-index: 1001;
+}
+
+/* Popup Styles */
+:host ::ng-deep .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+}
+
+:host ::ng-deep .leaflet-popup-content {
+  margin: 0;
+  width: 280px !important;
+}
+
+:host ::ng-deep .map-popup {
+  display: flex;
+  flex-direction: column;
+}
+
+:host ::ng-deep .map-popup img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+:host ::ng-deep .popup-content {
+  padding: 16px;
+}
+
+:host ::ng-deep .popup-content h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .popup-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+:host ::ng-deep .popup-rating i {
+  font-size: 12px;
+  color: #222;
+}
+
+:host ::ng-deep .popup-price {
+  font-size: 14px;
+  color: #222;
+}
+
+:host ::ng-deep .popup-price strong {
+  font-size: 16px;
+}
+
+:host ::ng-deep .leaflet-popup-tip-container {
+  display: none;
+}
+
+:host ::ng-deep .leaflet-popup-close-button {
+  font-size: 24px;
+  color: #222;
+  padding: 8px 12px;
+}
+
+@media (max-width: 768px) {
+  .map-container-wrapper {
+    min-height: 400px;
+  }
+
+  .map-controls {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  :host ::ng-deep .leaflet-popup-content {
+    width: 240px !important;
+  }
+
+  :host ::ng-deep .map-popup img {
+    height: 150px;
+  }
+}
