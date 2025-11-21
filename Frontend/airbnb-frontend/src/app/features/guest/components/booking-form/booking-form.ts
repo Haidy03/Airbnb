@@ -1,7 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit, Input, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { trigger, transition, style, animate } from '@angular/animations';
 import {
   CreateBookingDto,
   BookingGuest,
@@ -14,35 +15,49 @@ import {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './booking-form.html',
-  styleUrls: ['./booking-form.css'],
+  styleUrl: './booking-form.css',
+  animations: [
+    trigger('slideDown', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(-8px)' }),
+        animate('200ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('150ms ease-in', style({ opacity: 0, transform: 'translateY(-8px)' }))
+      ])
+    ])
+  ]
 })
-export class BookingForm implements OnInit {
+export class BookingFormComponent implements OnInit {
 
-   // معلومات العقار من الـ parent component
+  // Property inputs from parent component
   @Input() propertyId!: string;
-  @Input() pricePerNight: number = 300;
+  @Input() pricePerNight: number = 100;
   @Input() cleaningFee: number = 20;
-  @Input() serviceFeePercent: number = 14; // 14%
-  @Input() taxPercent: number = 5; // 5%
+  @Input() serviceFeePercent: number = 14; // Airbnb usually charges ~14%
+  @Input() taxPercent: number = 5; // Tax percentage
   @Input() currency: string = 'USD';
   @Input() minNights: number = 1;
   @Input() maxGuests: number = 6;
+  @Input() propertyRating?: number;
+  @Input() reviewsCount?: number;
 
   bookingForm!: FormGroup;
 
-  // حالة الفورم
+  // State
   isLoading: boolean = false;
   showGuestPicker: boolean = false;
 
-  // تفاصيل السعر
+  // Price calculation
   priceBreakdown: PriceBreakdown | null = null;
 
-  // التواريخ المحظورة (mock data - هتيجي من الـ API)
+  // Blocked dates (will come from API in production)
   bookedDates: Date[] = [];
-  // التاريخ الحالي (لمنع اختيار تواريخ ماضية)
+
+  // Current date for validation
   today: string = new Date().toISOString().split('T')[0];
 
-  // الأخطاء
+  // Error handling
   errorMessage: string = '';
 
   constructor(
@@ -56,7 +71,7 @@ export class BookingForm implements OnInit {
   }
 
   /**
-   * تهيئة الفورم
+   * Initialize the booking form
    */
   initializeForm(): void {
     this.bookingForm = this.fb.group({
@@ -72,18 +87,18 @@ export class BookingForm implements OnInit {
   }
 
   /**
-   * مراقبة التغييرات في الفورم
+   * Setup form value changes listeners
    */
   setupValueChanges(): void {
-    // حساب السعر عند تغيير التواريخ أو عدد الضيوف
+    // Recalculate price when dates or guests change
     this.bookingForm.valueChanges.subscribe(() => {
       this.calculatePrice();
-      this.errorMessage = '';
+      this.clearError();
     });
   }
 
   /**
-   * حساب السعر
+   * Calculate total price with breakdown
    */
   calculatePrice(): void {
     const checkIn = this.bookingForm.get('checkIn')?.value;
@@ -97,7 +112,7 @@ export class BookingForm implements OnInit {
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
-    // حساب عدد الليالي
+    // Calculate number of nights
     const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
     const numberOfNights = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
@@ -106,17 +121,24 @@ export class BookingForm implements OnInit {
       return;
     }
 
-    // حساب السعر الأساسي
+    // Calculate base price
     const basePrice = this.pricePerNight * numberOfNights;
 
-    // رسوم الخدمة (نسبة من السعر الأساسي)
+    // Calculate service fee (percentage of base price)
     const serviceFee = basePrice * (this.serviceFeePercent / 100);
 
-    // الضريبة (نسبة من السعر الأساسي + رسوم الخدمة)
-    const tax = (basePrice + serviceFee) * (this.taxPercent / 100);
+    // Calculate tax (percentage of base + service fee)
+    const taxableAmount = basePrice + serviceFee;
+    const tax = taxableAmount * (this.taxPercent / 100);
 
-    // السعر الإجمالي
-    const totalPrice = basePrice + this.cleaningFee + serviceFee + tax;
+    // Long stay discount (if >= 7 nights, 10% discount)
+    let discount = 0;
+    if (numberOfNights >= 7) {
+      discount = basePrice * 0.1; // 10% discount
+    }
+
+    // Calculate total
+    const totalPrice = basePrice + this.cleaningFee + serviceFee + tax - discount;
 
     this.priceBreakdown = {
       pricePerNight: this.pricePerNight,
@@ -125,19 +147,20 @@ export class BookingForm implements OnInit {
       cleaningFee: this.cleaningFee,
       serviceFee,
       tax,
+      discount: discount > 0 ? discount : undefined,
       totalPrice,
       currency: this.currency
     };
   }
 
   /**
-   * زيادة عدد الضيوف
+   * Increment guest count
    */
   incrementGuest(type: 'adults' | 'children' | 'infants' | 'pets'): void {
     const currentValue = this.bookingForm.get(type)?.value || 0;
     const totalGuests = this.getTotalGuests();
 
-    // التحقق من الحد الأقصى للضيوف (ما عدا الرضع)
+    // Check max guests limit (excluding infants and pets)
     if (type !== 'infants' && type !== 'pets') {
       if (totalGuests >= this.maxGuests) {
         return;
@@ -146,18 +169,19 @@ export class BookingForm implements OnInit {
 
     this.bookingForm.patchValue({ [type]: currentValue + 1 });
   }
-   /**
-   * تقليل عدد الضيوف
+
+  /**
+   * Decrement guest count
    */
   decrementGuest(type: 'adults' | 'children' | 'infants' | 'pets'): void {
     const currentValue = this.bookingForm.get(type)?.value || 0;
 
-    // لا يمكن تقليل البالغين عن 1
+    // Adults must be at least 1
     if (type === 'adults' && currentValue <= 1) {
       return;
     }
 
-    // لا يمكن تقليل الباقي عن 0
+    // Others can't go below 0
     if (currentValue <= 0) {
       return;
     }
@@ -166,7 +190,7 @@ export class BookingForm implements OnInit {
   }
 
   /**
-   * الحصول على إجمالي عدد الضيوف (البالغين والأطفال فقط)
+   * Get total guest count (adults + children only)
    */
   getTotalGuests(): number {
     const adults = this.bookingForm.get('adults')?.value || 0;
@@ -175,35 +199,37 @@ export class BookingForm implements OnInit {
   }
 
   /**
-   * نص عدد الضيوف
+   * Get formatted guests text for display
    */
   getGuestsText(): string {
-    const total = this.getTotalGuests();
+    const adults = this.bookingForm.get('adults')?.value || 0;
+    const children = this.bookingForm.get('children')?.value || 0;
     const infants = this.bookingForm.get('infants')?.value || 0;
     const pets = this.bookingForm.get('pets')?.value || 0;
 
-    let text = `${total} ${total === 1 ? 'guest' : 'guests'}`;
+    const total = adults + children;
+    let text = `${total} guest${total !== 1 ? 's' : ''}`;
 
     if (infants > 0) {
-      text += `, ${infants} ${infants === 1 ? 'infant' : 'infants'}`;
+      text += `, ${infants} infant${infants !== 1 ? 's' : ''}`;
     }
 
     if (pets > 0) {
-      text += `, ${pets} ${pets === 1 ? 'pet' : 'pets'}`;
+      text += `, ${pets} pet${pets !== 1 ? 's' : ''}`;
     }
 
     return text;
   }
 
   /**
-   * التحقق من صحة التواريخ
+   * Validate dates
    */
   validateDates(): boolean {
     const checkIn = this.bookingForm.get('checkIn')?.value;
     const checkOut = this.bookingForm.get('checkOut')?.value;
 
     if (!checkIn || !checkOut) {
-      this.errorMessage = 'Please select check-in and check-out dates';
+      this.setError('Please select check-in and check-out dates');
       return false;
     }
 
@@ -212,25 +238,25 @@ export class BookingForm implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // التحقق من أن التواريخ ليست في الماضي
+    // Check if dates are in the past
     if (checkInDate < today) {
-      this.errorMessage = 'Check-in date cannot be in the past';
+      this.setError('Check-in date cannot be in the past');
       return false;
     }
 
-    // التحقق من أن تاريخ المغادرة بعد تاريخ الوصول
+    // Check if checkout is after checkin
     if (checkOutDate <= checkInDate) {
-      this.errorMessage = 'Check-out date must be after check-in date';
+      this.setError('Check-out date must be after check-in date');
       return false;
     }
 
-    // حساب عدد الليالي
+    // Calculate nights
     const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
     const numberOfNights = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-    // التحقق من الحد الأدنى للليالي
+    // Check minimum nights
     if (numberOfNights < this.minNights) {
-      this.errorMessage = `Minimum stay is ${this.minNights} ${this.minNights === 1 ? 'night' : 'nights'}`;
+      this.setError(`This property has a ${this.minNights} night minimum`);
       return false;
     }
 
@@ -238,18 +264,18 @@ export class BookingForm implements OnInit {
   }
 
   /**
-   * التحقق من عدد الضيوف
+   * Validate guest count
    */
   validateGuests(): boolean {
     const totalGuests = this.getTotalGuests();
 
     if (totalGuests < 1) {
-      this.errorMessage = 'At least 1 guest is required';
+      this.setError('At least 1 guest is required');
       return false;
     }
 
     if (totalGuests > this.maxGuests) {
-      this.errorMessage = `Maximum ${this.maxGuests} guests allowed`;
+      this.setError(`This property can accommodate a maximum of ${this.maxGuests} guests`);
       return false;
     }
 
@@ -257,43 +283,71 @@ export class BookingForm implements OnInit {
   }
 
   /**
-   * إظهار/إخفاء اختيار الضيوف
+   * Toggle guest picker dropdown
    */
   toggleGuestPicker(): void {
     this.showGuestPicker = !this.showGuestPicker;
   }
 
   /**
-   * إغلاق اختيار الضيوف
+   * Close guest picker
    */
   closeGuestPicker(): void {
     this.showGuestPicker = false;
   }
 
   /**
-   * إرسال الحجز
+   * Close dropdown when clicking outside
+   */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const guestSection = target.closest('.guests-row');
+    const guestDropdown = target.closest('.guest-dropdown');
+
+    if (!guestSection && !guestDropdown && this.showGuestPicker) {
+      this.closeGuestPicker();
+    }
+  }
+
+  /**
+   * Set error message
+   */
+  setError(message: string): void {
+    this.errorMessage = message;
+  }
+
+  /**
+   * Clear error message
+   */
+  clearError(): void {
+    this.errorMessage = '';
+  }
+
+  /**
+   * Submit booking form
    */
   onSubmit(): void {
-    // التحقق من صحة الفورم
+    // Validate form
     if (!this.bookingForm.valid) {
-      this.errorMessage = 'Please fill in all required fields';
+      this.setError('Please fill in all required fields');
       return;
     }
 
-    // التحقق من التواريخ
+    // Validate dates
     if (!this.validateDates()) {
       return;
     }
 
-    // التحقق من عدد الضيوف
+    // Validate guests
     if (!this.validateGuests()) {
       return;
     }
 
     this.isLoading = true;
-    this.errorMessage = '';
+    this.clearError();
 
-    // تجهيز البيانات
+    // Prepare booking data
     const formValue = this.bookingForm.value;
 
     const guests: BookingGuest = {
@@ -310,38 +364,44 @@ export class BookingForm implements OnInit {
       guests,
       messageToHost: formValue.messageToHost,
       specialRequests: formValue.specialRequests,
-      paymentMethod: PaymentMethod.CREDIT_CARD // افتراضي
+      paymentMethod: PaymentMethod.CREDIT_CARD
     };
 
-    // محاكاة الإرسال (لأنه مفيش backend)
+    // Simulate API call (replace with actual service call in production)
     setTimeout(() => {
       console.log('Booking Data:', bookingData);
       console.log('Price Breakdown:', this.priceBreakdown);
 
       this.isLoading = false;
 
-      // التوجه إلى صفحة الدفع أو التأكيد
-      // this.router.navigate(['/checkout'], {
-      //   state: { booking: bookingData, pricing: this.priceBreakdown }
-      // });
+      // Navigate to checkout/payment page
+     this.router.navigate(['/checkout'], {
+         state: {
+           booking: bookingData,
+           pricing: this.priceBreakdown
+        }
+     });
 
-      alert('Booking submitted successfully! (Mock)');
+      alert('Booking request submitted! (Demo mode)');
     }, 1500);
   }
 
   /**
-   * مسح الفورم
+   * Reset form to initial state
    */
   resetForm(): void {
     this.bookingForm.reset({
+      checkIn: '',
+      checkOut: '',
       adults: 1,
       children: 0,
       infants: 0,
-      pets: 0
+      pets: 0,
+      messageToHost: '',
+      specialRequests: ''
     });
     this.priceBreakdown = null;
-    this.errorMessage = '';
+    this.clearError();
+    this.closeGuestPicker();
   }
-
-
 }
