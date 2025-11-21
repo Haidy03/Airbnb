@@ -240,91 +240,102 @@ Math: any;
   }
 
   // Submit Methods
-  async onSubmit(): Promise<void> {
-    if (this.propertyForm.invalid) {
-      alert('Please fill all required fields');
-      Object.keys(this.propertyForm.controls).forEach(key => {
-        this.propertyForm.get(key)?.markAsTouched();
-      });
-      return;
-    }
+ // Update in add-property.ts onSubmit() method
 
-    if (this.selectedFiles.length === 0) {
-      alert('Please upload at least one image');
-      return;
-    }
+async onSubmit(): Promise<void> {
+  if (this.propertyForm.invalid) {
+    alert('Please fill all required fields');
+    Object.keys(this.propertyForm.controls).forEach(key => {
+      this.propertyForm.get(key)?.markAsTouched();
+    });
+    return;
+  }
 
-    this.isSubmitting = true;
+  if (this.selectedFiles.length === 0) {
+    alert('Please upload at least one image');
+    return;
+  }
 
-    try {
-      // Prepare DTO matching backend CreatePropertyDto
-      const formValue = this.propertyForm.value;
+  this.isSubmitting = true;
+
+  try {
+    const formValue = this.propertyForm.value;
+    
+    // ✅ FIXED: Match backend CreatePropertyDto exactly
+    const createPropertyDto = {
+      // Basic Info (Backend: string)
+      title: formValue.title,
+      description: formValue.description,
+      propertyType: formValue.propertyType, // ✅ Now sends string, not enum
       
-      const createPropertyDto = {
-        title: formValue.title,
-        description: formValue.description,
-        propertyType: formValue.propertyType, // Now sends just the string value
-        address: formValue.address,
-        city: formValue.city,
-        country: formValue.country,
-        postalCode: formValue.postalCode || null,
-        latitude: formValue.latitude,
-        longitude: formValue.longitude,
-        numberOfBedrooms: formValue.numberOfBedrooms,
-        numberOfBathrooms: formValue.numberOfBathrooms,
-        maxGuests: formValue.maxGuests,
-        pricePerNight: formValue.pricePerNight,
-        cleaningFee: formValue.cleaningFee || null,
-        houseRules: formValue.houseRules || null,
-        checkInTime: formValue.checkInTime ? `${formValue.checkInTime}:00` : null,
-        checkOutTime: formValue.checkOutTime ? `${formValue.checkOutTime}:00` : null,
-        minimumStay: formValue.minimumStay,
-        amenityIds: [] // Temporarily send empty array for testing
-      };
+      // Location (Backend: string)
+      address: formValue.address,
+      city: formValue.city,
+      country: formValue.country,
+      postalCode: formValue.postalCode || null,
+      latitude: parseFloat(formValue.latitude),  // ✅ Ensure number
+      longitude: parseFloat(formValue.longitude), // ✅ Ensure number
+      
+      // Capacity (Backend: int)
+      numberOfBedrooms: parseInt(formValue.numberOfBedrooms),
+      numberOfBathrooms: parseInt(formValue.numberOfBathrooms),
+      maxGuests: parseInt(formValue.maxGuests),
+      
+      // Pricing (Backend: decimal)
+      pricePerNight: parseFloat(formValue.pricePerNight),
+      cleaningFee: formValue.cleaningFee ? parseFloat(formValue.cleaningFee) : null,
+      
+      // Rules (Backend: string, TimeSpan)
+      houseRules: formValue.houseRules || null,
+      checkInTime: formValue.checkInTime || null,  // ✅ Send as "HH:mm" string
+      checkOutTime: formValue.checkOutTime || null, // ✅ Send as "HH:mm" string
+      minimumStay: parseInt(formValue.minimumStay),
+      
+      // Amenities (Backend: List<int>)
+      amenityIds: formValue.amenityIds.map((id: number) => parseInt(id.toString())) // ✅ Ensure integers
+    };
 
-      console.log('Submitting property:', createPropertyDto);
+    console.log('✅ Submitting property with correct types:', createPropertyDto);
 
-      // Create property
-      this.propertyService.createProperty(createPropertyDto as any).subscribe({
-        next: async (response) => {
-          console.log('Property created:', response);
-          const propertyId = response.id;
+    // Create property
+    this.propertyService.createProperty(createPropertyDto as any).subscribe({
+      next: async (response) => {
+        console.log('✅ Property created:', response);
+        const propertyId = response.id;
 
-          // Upload images one by one
-          if (this.selectedFiles.length > 0) {
-            for (const file of this.selectedFiles) {
-              try {
-                await this.propertyService.uploadPropertyImages(propertyId, [file]).toPromise();
-              } catch (error) {
-                console.error('Error uploading image:', error);
-              }
+        // Upload images one by one
+        if (this.selectedFiles.length > 0) {
+          for (const file of this.selectedFiles) {
+            try {
+              await this.propertyService.uploadPropertyImages(propertyId, [file]).toPromise();
+            } catch (error) {
+              console.error('Error uploading image:', error);
             }
           }
-
-          alert('Property created successfully!');
-          this.router.navigate(['/host/properties']);
-        },
-        error: (error) => {
-          console.error('Error creating property:', error);
-          
-          if (error.status === 401) {
-            alert('Authentication required. Please login first.');
-            // You can redirect to login page here if needed
-            // this.router.navigate(['/auth/login']);
-          } else {
-            const errorMessage = error?.error?.message || error?.message || 'Failed to create property';
-            alert(errorMessage);
-          }
-          
-          this.isSubmitting = false;
         }
-      });
-    } catch (error: any) {
-      console.error('Error creating property:', error);
-      alert(error?.message || 'Failed to create property');
-      this.isSubmitting = false;
-    }
+
+        alert('Property created successfully!');
+        this.router.navigate(['/host/properties']);
+      },
+      error: (error) => {
+        console.error('❌ Error creating property:', error);
+        
+        if (error.status === 401) {
+          alert('Authentication required. Please login first.');
+        } else {
+          const errorMessage = error?.error?.message || error?.message || 'Failed to create property';
+          alert(errorMessage);
+        }
+        
+        this.isSubmitting = false;
+      }
+    });
+  } catch (error: any) {
+    console.error('❌ Error creating property:', error);
+    alert(error?.message || 'Failed to create property');
+    this.isSubmitting = false;
   }
+}
 
   // Helper Methods
   getProgressPercentage(): number {
