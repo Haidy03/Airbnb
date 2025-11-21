@@ -1,0 +1,55 @@
+<div class="container my-5">
+    <!-- Breadcrumbs or Back Button -->
+    <a routerLink="/search" class="text-muted mb-3 d-block">&larr; Back to search</a>
+
+    <div class="row">
+        <div class="col-12">
+            <!-- Property Title and Location -->
+            <h1 class="fw-bold">{{ propertyDetails?.title || 'Loading Property...' }}</h1>
+            <p class="text-muted">{{ propertyDetails?.location || 'Unknown location' }}</p>
+        </div>
+    </div>
+
+    <!-- Image Gallery Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <!-- Mock image gallery area -->
+            <div class="bg-light p-5 rounded-3 text-center text-muted" style="min-height: 400px;">
+                Image Gallery / Carousel Placeholder
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Details (Description, Host Info, Amenities) -->
+        <div class="col-lg-8">
+            <h3 class="border-bottom pb-2">Description</h3>
+            <p>{{ propertyDetails?.description || 'No description provided.' }}</p>
+
+            <h3 class="border-bottom pb-2 mt-4">Amenities</h3>
+            <!-- Placeholder for amenities list -->
+            <ul class="list-unstyled">
+                <li>&bull; Wi-Fi</li>
+                <li>&bull; Pool</li>
+                <li>&bull; Free Parking</li>
+            </ul>
+        </div>
+
+        <!-- Booking/Reservation Panel -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">
+                        <!-- Example price -->
+                        ${{ propertyDetails?.pricePerNight || 'XXX' }}
+                        <small class="text-muted fw-normal">/ night</small>
+                    </h5>
+                    <!-- Placeholder for Booking Form Component (from another developer) -->
+                    <div class="bg-warning-subtle p-3 rounded mt-3 text-center">
+                        [Booking Form Component Placeholder]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

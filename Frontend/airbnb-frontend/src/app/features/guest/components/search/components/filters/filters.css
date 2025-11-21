@@ -1,0 +1,463 @@
+
+.filters-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.filters-panel {
+  position: fixed;
+  top: 0;
+  right: -600px;
+  width: 600px;
+  max-width: 100%;
+  height: 100vh;
+  background: white;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.3s ease;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.filters-panel.open {
+  right: 0;
+}
+
+.filters-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #EBEBEB;
+  flex-shrink: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.close-btn:hover {
+  background-color: #F7F7F7;
+}
+
+.close-btn i {
+  font-size: 16px;
+  color: #222;
+}
+
+.filters-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+}
+
+.clear-all-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #222;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  padding: 8px;
+}
+
+.clear-all-btn:hover {
+  color: #000;
+}
+
+.filters-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.filter-section {
+  padding: 24px 0;
+  border-bottom: 1px solid #EBEBEB;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+}
+
+.filter-heading {
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 12px 0;
+}
+
+.filter-subheading {
+  font-size: 14px;
+  color: #717171;
+  margin: 0 0 20px 0;
+}
+
+/* Price Range */
+.price-inputs {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.price-input-group {
+  flex: 1;
+}
+
+.price-input-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #717171;
+  margin-bottom: 8px;
+}
+
+.input-with-currency {
+  position: relative;
+}
+
+.currency {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #717171;
+}
+
+.input-with-currency .form-control {
+  padding-left: 48px;
+}
+
+.price-separator {
+  font-size: 18px;
+  color: #717171;
+  padding-bottom: 8px;
+}
+
+.price-slider {
+  position: relative;
+  height: 6px;
+  background: #DDDDDD;
+  border-radius: 3px;
+}
+
+.price-slider input[type="range"] {
+  position: absolute;
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  padding: 0;
+}
+
+.price-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid #222;
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.price-slider input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid #222;
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: all;
+}
+
+/* Property Types */
+.property-types-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.property-type-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 12px;
+  border: 1px solid #B0B0B0;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+}
+
+.property-type-btn:hover {
+  border-color: #222;
+}
+
+.property-type-btn.selected {
+  background: #F7F7F7;
+  border: 2px solid #222;
+}
+
+.property-type-btn i {
+  font-size: 24px;
+}
+
+/* Rooms Controls */
+.rooms-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.room-control {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.room-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #222;
+}
+
+.room-buttons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.room-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #717171;
+  transition: color 0.2s ease;
+}
+
+.room-btn:hover:not(:disabled) {
+  color: #222;
+}
+
+.room-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.room-btn i {
+  font-size: 32px;
+}
+
+.room-value {
+  font-size: 16px;
+  font-weight: 400;
+  color: #222;
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Amenities */
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.amenity-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #B0B0B0;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  position: relative;
+}
+
+.amenity-btn:hover {
+  border-color: #222;
+}
+
+.amenity-btn.selected {
+  background: #F7F7F7;
+  border: 2px solid #222;
+}
+
+.amenity-btn i:first-child {
+  font-size: 20px;
+}
+
+.amenity-btn .check-icon {
+  position: absolute;
+  right: 12px;
+  color: #222;
+  font-size: 16px;
+}
+
+/* Booking Options */
+.booking-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.option-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+}
+
+.option-info {
+  flex: 1;
+}
+
+.option-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.option-description {
+  font-size: 14px;
+  color: #717171;
+}
+
+.option-item .form-check-input {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #B0B0B0;
+  cursor: pointer;
+}
+
+.option-item .form-check-input:checked {
+  background-color: #222;
+  border-color: #222;
+}
+
+/* Rating */
+.rating-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rating-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border: 1px solid #B0B0B0;
+  border-radius: 24px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+}
+
+.rating-btn:hover {
+  border-color: #222;
+}
+
+.rating-btn.selected {
+  background: #222;
+  border-color: #222;
+  color: white;
+}
+
+.rating-btn i {
+  font-size: 14px;
+}
+
+/* Footer */
+.filters-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-top: 1px solid #EBEBEB;
+  flex-shrink: 0;
+}
+
+.footer-info {
+  font-size: 14px;
+  color: #222;
+  font-weight: 500;
+}
+
+.apply-btn {
+  background: linear-gradient(to right, #E61E4D 0%, #E31C5F 50%, #D70466 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.apply-btn:hover {
+  transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+  .filters-panel {
+    width: 100%;
+    right: -100%;
+  }
+
+  .property-types-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .amenities-grid {
+    grid-template-columns: 1fr;
+  }
+}
