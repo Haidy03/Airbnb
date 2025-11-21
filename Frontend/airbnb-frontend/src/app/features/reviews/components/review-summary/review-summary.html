@@ -1,0 +1,69 @@
+<div class="review-summary-card">
+  <div class="summary-header">
+    <div class="overall-rating">
+      <div class="rating-number">{{ formatRating(summary.averageRating) }}</div>
+      <app-star-rating 
+        [rating]="summary.averageRating" 
+        [readonly]="true"
+        size="large">
+      </app-star-rating>
+      <div class="total-reviews">{{ summary.totalReviews }} reviews</div>
+    </div>
+  </div>
+
+  <div class="detailed-ratings">
+    <h3 class="ratings-title">Rating Breakdown</h3>
+    
+    <div class="rating-item">
+      <label>Cleanliness</label>
+      <div class="rating-bar-container">
+        <div class="rating-bar">
+          <div 
+            class="rating-fill" 
+            [style.width.%]="getRatingPercentage(summary.averageCleanlinessRating)">
+          </div>
+        </div>
+        <span class="rating-value">{{ formatRating(summary.averageCleanlinessRating) }}</span>
+      </div>
+    </div>
+
+    <div class="rating-item">
+      <label>Communication</label>
+      <div class="rating-bar-container">
+        <div class="rating-bar">
+          <div 
+            class="rating-fill" 
+            [style.width.%]="getRatingPercentage(summary.averageCommunicationRating)">
+          </div>
+        </div>
+        <span class="rating-value">{{ formatRating(summary.averageCommunicationRating) }}</span>
+      </div>
+    </div>
+
+    <div class="rating-item">
+      <label>Location</label>
+      <div class="rating-bar-container">
+        <div class="rating-bar">
+          <div 
+            class="rating-fill" 
+            [style.width.%]="getRatingPercentage(summary.averageLocationRating)">
+          </div>
+        </div>
+        <span class="rating-value">{{ formatRating(summary.averageLocationRating) }}</span>
+      </div>
+    </div>
+
+    <div class="rating-item">
+      <label>Value</label>
+      <div class="rating-bar-container">
+        <div class="rating-bar">
+          <div 
+            class="rating-fill" 
+            [style.width.%]="getRatingPercentage(summary.averageValueRating)">
+          </div>
+        </div>
+        <span class="rating-value">{{ formatRating(summary.averageValueRating) }}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -6,8 +6,16 @@ import { MyProperties } from './features/host/components/my-properties/my-proper
 import { HostMessages } from './features/host/components/host-messages/host-messages';
 import { AddProperty } from './features/host/components/add-property/add-property';
 import { EditProperty } from './features/host/components/edit-property/edit-property';
+import { BookingForm } from './features/guest/components/booking-form/booking-form';
+import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
+import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
+import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
 
 export const routes: Routes = [
+  {
+    path: 'test-login',
+    component: TestLoginComponent
+  },
   {
     path: 'host',
     component: HostLayoutComponent,
@@ -17,40 +25,17 @@ export const routes: Routes = [
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
-      {path: 'properties/add',component: AddProperty},
-      {path: 'properties/edit/:id',component: EditProperty},
-      // Add more routes here as we build them
     ]
   },
-<<<<<<< HEAD
-
-  // Default redirect
+  { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' },
+  {
+    path: 'reviews',
+    loadChildren: () => import('./features/reviews/review.routes')
+      .then(m => m.reviewRoutes)
+  },
   {
     path: '',
-    redirectTo: 'search',
+    redirectTo: 'test-login',
     pathMatch: 'full'
-  },
-
-  {
-    path: 'search',
-    loadComponent: () =>
-      import('./features/guest/components/search/components/search-results/search-results')
-        .then(m => m.SearchResultsComponent)
-  },
-
-{
-  path: 'property/:id',
-  loadComponent: () =>
-    import('./features/guest/components/search/components/property-details/property-details')
-      .then(m => m.PropertyDetailsComponent)
-},
-
-  {
-    path: '**',
-    redirectTo: 'search'
   }
 ];
-=======
-  { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' }
-];
->>>>>>> 221cd89216df6657bd4a1a742d2898ca29234b85

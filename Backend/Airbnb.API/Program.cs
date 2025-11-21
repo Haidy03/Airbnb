@@ -1,8 +1,8 @@
-using Airbnb.API.Data;
+﻿using Airbnb.API.Data;
 using Airbnb.API.Models;
 using Airbnb.API.Services.Implementations;
 using Airbnb.API.Services.Interfaces;
-//using Airbnb.API.Data;
+using Airbnb.API.Data;
 using Airbnb.API.Repositories.Implementations;
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Implementations;
@@ -18,9 +18,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ============================================
-// 1. Add Database Context
-// ============================================
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -100,15 +97,14 @@ builder.Services.AddAuthorization(options =>
 // ============================================
 builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-
-
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 // ============================================
 // 6. Register Services
 // ============================================
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
-builder.Services.AddScoped<ISearchService, SearchService>();
-builder.Services.AddScoped<ICalendarService, CalendarService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 // ============================================
 // 7. Add Controllers & Services
 // ============================================
@@ -116,18 +112,15 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+
     });
 
 
-
-// Add our custom services
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-// Add CORS
 builder.Services.AddAutoMapper(typeof(PropertyProfile));
 
 
-
+// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -189,19 +182,31 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        logger.LogInformation("🚀 Starting database seeding...");
+        await SeedRolesAndAdmin(services);
+        logger.LogInformation("✅ Roles and Admin seeded successfully");
 
-    // 1. Seed Roles (You already have this)
-    await SeedRolesAndAdmin(services);
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        SeedAmenities.SeedData(context);
+        logger.LogInformation("✅ Amenities seeded successfully");
 
-    // 2. Seed Properties (ADD THIS LINE)
-    await Airbnb.API.Data.SeedData.InitializeAsync(services);
+
+        // ⭐ أضيفي الـ Seed Data للـ Reviews
+        await SeedReviewData(services);
+        logger.LogInformation("✅ Review test data seeded successfully");
+
+        logger.LogInformation("🎉 All seeding completed successfully!");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while seeding the database");
+    }
 }
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    await SeedRolesAndAdmin(services);
-}
+
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -221,37 +226,17 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// ============================================
-// 9. Seed Database (Optional)
-// ============================================
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        await SeedRolesAndAdmin(services);
-
-        // Add this line****
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        SeedAmenities.SeedData(context);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database");
-    }
-}
-
 app.Run();
 
 // ============================================
 // 10. Seed Roles & Admin Method
 // ============================================
+
 async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
 {
     var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
+    var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
     // Create Roles
     string[] roleNames = { "Admin", "Host", "Guest" };
     foreach (var roleName in roleNames)
@@ -259,6 +244,7 @@ async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
         if (!await roleManager.RoleExistsAsync(roleName))
         {
             await roleManager.CreateAsync(new IdentityRole(roleName));
+            logger.LogInformation($"   ✓ Created role: {roleName}");
         }
     }
 
@@ -282,6 +268,231 @@ async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
+            logger.LogInformation($"   ✓ Created Admin user: {adminEmail}");
         }
+        else
+        {
+            logger.LogError($"   ✗ Failed to create Admin: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
+    }
+}
+async Task SeedReviewData(IServiceProvider serviceProvider)
+{
+    var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        // ========================================
+        // 1. Create Guest User
+        // ========================================
+        var guestEmail = "guest@test.com";
+        var guest = await userManager.FindByEmailAsync(guestEmail);
+
+        if (guest == null)
+        {
+            logger.LogInformation("   → Creating Guest user...");
+            guest = new ApplicationUser
+            {
+                UserName = guestEmail,
+                Email = guestEmail,
+                FirstName = "Ahmed",
+                LastName = "Mohamed",
+                EmailConfirmed = true,
+                IsActive = true,
+                ProfileImageUrl = "https://i.pravatar.cc/150?img=1",
+                PhoneNumber = "01234567890",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var guestResult = await userManager.CreateAsync(guest, "Guest@123");
+            if (guestResult.Succeeded)
+            {
+                await userManager.AddToRoleAsync(guest, "Guest");
+                logger.LogInformation($"   ✓ Guest created: {guestEmail}");
+            }
+            else
+            {
+                logger.LogError($"   ✗ Failed to create Guest: {string.Join(", ", guestResult.Errors.Select(e => e.Description))}");
+                return;
+            }
+        }
+
+        // ========================================
+        // 2. Create Host User
+        // ========================================
+        var hostEmail = "host@test.com";
+        var host = await userManager.FindByEmailAsync(hostEmail);
+
+        if (host == null)
+        {
+            logger.LogInformation("   → Creating Host user...");
+            host = new ApplicationUser
+            {
+                UserName = hostEmail,
+                Email = hostEmail,
+                FirstName = "Sara",
+                LastName = "Ali",
+                EmailConfirmed = true,
+                IsActive = true,
+                ProfileImageUrl = "https://i.pravatar.cc/150?img=2",
+                PhoneNumber = "01098765432",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var hostResult = await userManager.CreateAsync(host, "Host@123");
+            if (hostResult.Succeeded)
+            {
+                await userManager.AddToRoleAsync(host, "Host");
+                logger.LogInformation($"   ✓ Host created: {hostEmail}");
+            }
+            else
+            {
+                logger.LogError($"   ✗ Failed to create Host: {string.Join(", ", hostResult.Errors.Select(e => e.Description))}");
+                return;
+            }
+        }
+
+        // Reload users from DB to get IDs
+        guest = await userManager.FindByEmailAsync(guestEmail);
+        host = await userManager.FindByEmailAsync(hostEmail);
+
+        if (guest == null || host == null)
+        {
+            logger.LogError("   ✗ Users not found after creation");
+            return;
+        }
+
+        // ========================================
+        // 3. Create Property
+        // ========================================
+        if (!await context.Properties.AnyAsync())
+        {
+            logger.LogInformation("   → Creating test property...");
+
+            var property = new Property
+            {
+                Title = "Luxury Villa in Cairo",
+                Description = "Beautiful villa with stunning Nile view, perfect for families and groups. Fully equipped with modern amenities.",
+                PricePerNight = 1500,
+                CleaningFee = 200,
+                MaxGuests = 6,
+                NumberOfBedrooms = 3,
+                NumberOfBathrooms = 2,
+                PropertyType = "Villa",
+                Country = "Egypt",
+                City = "Cairo",
+                Address = "Zamalek, Cairo",
+                Latitude = 30.0444,
+                Longitude = 31.2357,
+                HostId = host.Id,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            context.Properties.Add(property);
+            await context.SaveChangesAsync();
+            logger.LogInformation($"   ✓ Property created (ID: {property.Id})");
+        }
+
+        var testProperty = await context.Properties.FirstOrDefaultAsync();
+        if (testProperty == null)
+        {
+            logger.LogError("   ✗ Property not found after creation");
+            return;
+        }
+
+        // ========================================
+        // 4. Create Completed Booking
+        // ========================================
+        if (!await context.Bookings.AnyAsync())
+        {
+            logger.LogInformation("   → Creating completed booking...");
+
+            var booking = new Booking
+            {
+                PropertyId = testProperty.Id,
+                GuestId = guest.Id,
+                CheckInDate = DateTime.UtcNow.AddDays(-10).Date,
+                CheckOutDate = DateTime.UtcNow.AddDays(-3).Date,
+                NumberOfGuests = 2,
+                NumberOfNights = 7,
+                PricePerNight = testProperty.PricePerNight,
+                CleaningFee = testProperty.CleaningFee ?? 0,
+                TotalPrice = (testProperty.PricePerNight * 7) + (testProperty.CleaningFee ?? 0),
+                Status = BookingStatus.Completed,
+                CreatedAt = DateTime.UtcNow.AddDays(-15)
+            };
+
+            context.Bookings.Add(booking);
+            await context.SaveChangesAsync();
+            logger.LogInformation($"   ✓ Booking created (ID: {booking.Id}, Status: {booking.Status})");
+        }
+
+        var completedBooking = await context.Bookings
+            .FirstOrDefaultAsync(b => b.Status == BookingStatus.Completed);
+
+        if (completedBooking == null)
+        {
+            logger.LogError("   ✗ No completed booking found");
+            return;
+        }
+
+        // ========================================
+        // 5. Create Sample Review (Optional)
+        // ========================================
+        if (!await context.Reviews.AnyAsync())
+        {
+            logger.LogInformation("   → Creating sample review...");
+
+            var review = new Review
+            {
+                BookingId = completedBooking.Id,
+                PropertyId = testProperty.Id,
+                ReviewerId = guest.Id,
+                RevieweeId = host.Id,
+                ReviewType = ReviewType.GuestToProperty,
+                Rating = 5,
+                Comment = "Amazing place! The villa exceeded all expectations. Very clean, great location, and the host was incredibly helpful. Would definitely stay again!",
+                CleanlinessRating = 5,
+                CommunicationRating = 5,
+                LocationRating = 4,
+                ValueRating = 5,
+                CreatedAt = DateTime.UtcNow.AddDays(-2),
+                IsApproved = true
+            };
+
+            context.Reviews.Add(review);
+            await context.SaveChangesAsync();
+            logger.LogInformation($"   ✓ Review created (ID: {review.Id})");
+        }
+
+        // ========================================
+        // 6. Print Summary
+        // ========================================
+        logger.LogInformation("");
+        logger.LogInformation("📊 DATABASE SUMMARY:");
+        logger.LogInformation($"   • Users: {await context.Users.CountAsync()}");
+        logger.LogInformation($"   • Properties: {await context.Properties.CountAsync()}");
+        logger.LogInformation($"   • Bookings: {await context.Bookings.CountAsync()}");
+        logger.LogInformation($"   • Reviews: {await context.Reviews.CountAsync()}");
+
+        var bookingIds = await context.Bookings.Select(b => b.Id).ToListAsync();
+        if (bookingIds.Any())
+        {
+            logger.LogInformation($"   • Available Booking IDs: {string.Join(", ", bookingIds)}");
+        }
+
+        logger.LogInformation("");
+        logger.LogInformation("🔑 TEST CREDENTIALS:");
+        logger.LogInformation("   Guest: guest@test.com / Guest@123");
+        logger.LogInformation("   Host:  host@test.com / Host@123");
+        logger.LogInformation("   Admin: admin@airbnb.com / Admin@123");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "❌ Error in SeedReviewTestData");
+        throw;
     }
 }

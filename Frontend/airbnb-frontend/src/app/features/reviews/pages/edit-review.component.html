@@ -1,0 +1,136 @@
+<div class="container">
+  <div class="review-page">
+    <div class="card">
+      <div class="card-header">
+        <h2>Edit Review</h2>
+      </div>
+      
+      <div class="card-body">
+        <!-- Loading -->
+        <div *ngIf="loading && !review" class="loading-container">
+          <div class="spinner"></div>
+          <p>Loading review...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage && !loading" class="alert alert-error">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+
+        <!-- Review Form -->
+        <form *ngIf="review && !loading && !successMessage" 
+              [formGroup]="reviewForm" 
+              (ngSubmit)="onSubmit()">
+          
+          <!-- Property Info -->
+          <div class="property-info">
+            <h3>{{ review.propertyTitle }}</h3>
+            <p class="review-date">Original review: {{ review.createdAt | date:'medium' }}</p>
+          </div>
+
+          <!-- Overall Rating -->
+          <div class="form-group">
+            <label class="form-label required">Overall Rating</label>
+            <div class="rating-container">
+              <app-star-rating 
+                [rating]="overallRating"
+                [readonly]="false"
+                size="large"
+                (ratingChange)="onOverallRatingChange($event)">
+              </app-star-rating>
+              <span class="rating-value">{{ overallRating }}/5</span>
+            </div>
+          </div>
+
+          <!-- Detailed Ratings -->
+          <div class="detailed-ratings-card">
+            <h3>Detailed Ratings (Optional)</h3>
+            
+            <div class="rating-row">
+              <label>Cleanliness</label>
+              <app-star-rating 
+                [rating]="cleanlinessRating"
+                [readonly]="false"
+                size="medium"
+                (ratingChange)="onCleanlinessRatingChange($event)">
+              </app-star-rating>
+              <span class="rating-text">{{ cleanlinessRating || 'Not rated' }}</span>
+            </div>
+
+            <div class="rating-row">
+              <label>Communication</label>
+              <app-star-rating 
+                [rating]="communicationRating"
+                [readonly]="false"
+                size="medium"
+                (ratingChange)="onCommunicationRatingChange($event)">
+              </app-star-rating>
+              <span class="rating-text">{{ communicationRating || 'Not rated' }}</span>
+            </div>
+
+            <div class="rating-row">
+              <label>Location</label>
+              <app-star-rating 
+                [rating]="locationRating"
+                [readonly]="false"
+                size="medium"
+                (ratingChange)="onLocationRatingChange($event)">
+              </app-star-rating>
+              <span class="rating-text">{{ locationRating || 'Not rated' }}</span>
+            </div>
+
+            <div class="rating-row">
+              <label>Value for Money</label>
+              <app-star-rating 
+                [rating]="valueRating"
+                [readonly]="false"
+                size="medium"
+                (ratingChange)="onValueRatingChange($event)">
+              </app-star-rating>
+              <span class="rating-text">{{ valueRating || 'Not rated' }}</span>
+            </div>
+          </div>
+
+          <!-- Comment -->
+          <div class="form-group">
+            <label for="comment" class="form-label">Your Review</label>
+            <textarea 
+              id="comment"
+              class="form-control" 
+              formControlName="comment" 
+              rows="6" 
+              placeholder="Share your experience..."
+              maxlength="1000">
+            </textarea>
+            <div class="char-count">
+              {{ reviewForm.get('comment')?.value?.length || 0 }}/1000 characters
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="button-group">
+            <button 
+              type="submit" 
+              class="btn btn-primary" 
+              [disabled]="loading || overallRating === 0">
+              <span *ngIf="loading" class="spinner-sm"></span>
+              {{ loading ? 'Updating...' : 'Update Review' }}
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="cancel()"
+              [disabled]="loading">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
