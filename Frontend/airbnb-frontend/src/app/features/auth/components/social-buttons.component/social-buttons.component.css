@@ -1,0 +1,51 @@
+social-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.social-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 14px;
+  background: white;
+  border: 1px solid #222222;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222222;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.social-btn:hover {
+  background-color: #f7f7f7;
+  border-color: #222222;
+  transform: scale(1.01);
+}
+
+.social-btn:active {
+  transform: scale(0.98);
+}
+
+.icon-wrapper {
+  position: absolute;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.button-text {
+  text-align: center;
+  flex: 1;
+}
