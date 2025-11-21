@@ -15,9 +15,14 @@ import { CheckoutComponent } from './features/guest/components/checkout/checkout
 import { LoginComponent } from './features/auth/components/login.component/login.component';
 
 export const routes: Routes = [
+  // Routes المحددة أولاً
   {
     path: 'test-login',
     component: TestLoginComponent
+  },
+  {
+    path: 'login', 
+    component: LoginComponent
   },
   {
     path: 'host',
@@ -32,16 +37,16 @@ export const routes: Routes = [
       { path: 'properties/edit/:id', component: EditProperty },
     ]
   },
-
   {
     path: 'reviews',
     loadChildren: () => import('./features/reviews/review.routes')
       .then(m => m.reviewRoutes)
   },
+  // Default redirect في الآخر
   {
     path: '',
     redirectTo: 'test-login',
     pathMatch: 'full'
   },
-  { path: 'login', component: LoginComponent },
+  {path: 'login', component: LoginComponent},
 ];
