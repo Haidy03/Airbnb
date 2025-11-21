@@ -1,3 +1,4 @@
+
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError, throwError } from 'rxjs';
@@ -12,7 +13,17 @@ import {
   SocialLoginRequest,
   AuthProvider
 } from '../models/auth-user.model';
-import { PaginatedResponse } from '../models/login-response.model';
+
+// ✅ FIXED: Match backend response structure
+interface LoginResponse {
+  token: string;
+  userId: string;
+  email: string;
+}
+
+interface RegisterResponse {
+  message: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -21,9 +32,10 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  private readonly API_URL = '/api/auth';
-  private readonly TOKEN_KEY = 'auth_token';
-  private readonly USER_KEY = 'auth_user';
+  private readonly API_URL = 'https://localhost:5202/api/Auth'; // ✅ Use your actual backend URL
+  private readonly TOKEN_KEY = 'token';
+  private readonly USER_ID_KEY = 'userId';
+  private readonly EMAIL_KEY = 'email';
 
   private userSubject = new BehaviorSubject<AuthUser | null>(this.getUserFromStorage());
   public user$ = this.userSubject.asObservable();
@@ -33,136 +45,166 @@ export class AuthService {
   }
 
   get isAuthenticated(): boolean {
-    return !!this.currentUser && !!this.getToken();
+    return !!this.getToken();
+  }
+
+  // ✅ FIXED: Get token from correct key
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  private setToken(token: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
+  private setUser(user: AuthUser): void {
+    localStorage.setItem(this.USER_ID_KEY, user.id);
+    if (user.email) {
+      localStorage.setItem(this.EMAIL_KEY, user.email);
+    }
+    this.userSubject.next(user);
+  }
+
+  private getUserFromStorage(): AuthUser | null {
+    const userId = localStorage.getItem(this.USER_ID_KEY);
+    const email = localStorage.getItem(this.EMAIL_KEY);
+    
+    if (!userId) return null;
+    
+    return {
+      id: userId,
+      email: email || undefined,
+      isEmailVerified: true,
+      isPhoneVerified: false
+    };
+  }
+
+  // ✅ FIXED: Email Login to match backend response
+  loginWithEmail(request: EmailLoginRequest): Observable<{ success: boolean }> {
+    return this.http.post<LoginResponse>(`${this.API_URL}/login`, request)
+      .pipe(
+        tap(response => {
+          console.log('✅ Login response:', response);
+          
+          // Store token and user info
+          this.setToken(response.token);
+          
+          const user: AuthUser = {
+            id: response.userId,
+            email: response.email,
+            isEmailVerified: true,
+            isPhoneVerified: false
+          };
+          
+          this.setUser(user);
+        }),
+        catchError(error => {
+          console.error('❌ Login error:', error);
+          return throwError(() => error);
+        }),
+        tap(() => ({ success: true }))
+      ) as any;
+  }
+
+  // ✅ FIXED: Register to match backend response
+  register(request: RegisterRequest): Observable<{ success: boolean }> {
+    return this.http.post<RegisterResponse>(`${this.API_URL}/register`, request)
+      .pipe(
+        tap(response => {
+          console.log('✅ Registration response:', response);
+        }),
+        catchError(error => {
+          console.error('❌ Registration error:', error);
+          return throwError(() => error);
+        }),
+        tap(() => ({ success: true }))
+      ) as any;
   }
 
   // Phone Authentication Flow
   startPhoneLogin(request: PhoneLoginRequest): Observable<PhoneStartResponse> {
     return this.http.post<PhoneStartResponse>(`${this.API_URL}/phone/start`, request)
       .pipe(
-        catchError(this.handleError)
+        catchError(error => {
+          console.error('❌ Phone login error:', error);
+          return throwError(() => error);
+        })
       );
   }
 
-  verifyPhoneCode(request: PhoneVerifyRequest): Observable<PaginatedResponse<AuthUser>> {
-    return this.http.post<PaginatedResponse<AuthUser>>(`${this.API_URL}/phone/verify`, request)
+  verifyPhoneCode(request: PhoneVerifyRequest): Observable<{ success: boolean }> {
+    return this.http.post<any>(`${this.API_URL}/phone/verify`, request)
       .pipe(
-        tap(response => this.handleSuccessfulAuth(response)),
-        catchError(this.handleError)
-      );
-  }
-
-  // Email Login
-  // loginWithEmail(request: EmailLoginRequest): Observable<PaginatedResponse<AuthUser>> {
-  //   return this.http.post<PaginatedResponse<AuthUser>>(`https://localhost:5202/api/auth/login`, request)
-  //     .pipe(
-  //       tap(response => this.handleSuccessfulAuth(response)),
-  //       catchError(this.handleError)
-  //     );
-  // }
-  loginWithEmail(request: { email: string; password: string }) {
-  return this.http.post<PaginatedResponse<AuthUser>>('https://localhost:5202/api/auth/login', request).pipe(
-    tap((response) => {
-      if (response.success && response.token && response.user) {
-        this.setToken(response.token);
-        this.setUser(response.user);
-      }
-    })
-  );
-}
-
-  // Register
-  register(request: RegisterRequest): Observable<PaginatedResponse<AuthUser>> {
-    return this.http.post<PaginatedResponse<AuthUser>>(`https://localhost:5202/api/auth/register`, request)
-      .pipe(
-        tap(response => this.handleSuccessfulAuth(response)),
-        catchError(this.handleError)
-      );
+        tap(response => {
+          if (response.token) {
+            this.setToken(response.token);
+            if (response.user) {
+              this.setUser(response.user);
+            }
+          }
+        }),
+        catchError(error => {
+          console.error('❌ Phone verification error:', error);
+          return throwError(() => error);
+        }),
+        tap(() => ({ success: true }))
+      ) as any;
   }
 
   // Social Login
-  loginWithGoogle(token: string): Observable<PaginatedResponse<AuthUser>> {
+  loginWithGoogle(token: string): Observable<{ success: boolean }> {
     return this.loginWithSocial({
       provider: AuthProvider.GOOGLE,
       token
     });
   }
 
-  loginWithFacebook(token: string): Observable<PaginatedResponse<AuthUser>> {
+  loginWithFacebook(token: string): Observable<{ success: boolean }> {
     return this.loginWithSocial({
       provider: AuthProvider.FACEBOOK,
       token
     });
   }
 
-  loginWithApple(token: string): Observable<PaginatedResponse<AuthUser>> {
+  loginWithApple(token: string): Observable<{ success: boolean }> {
     return this.loginWithSocial({
       provider: AuthProvider.APPLE,
       token
     });
   }
 
-  private loginWithSocial(request: SocialLoginRequest): Observable<PaginatedResponse<AuthUser>> {
+  private loginWithSocial(request: SocialLoginRequest): Observable<{ success: boolean }> {
     const endpoint = `${this.API_URL}/${request.provider}`;
-    return this.http.post<PaginatedResponse<AuthUser>>(endpoint, request)
+    return this.http.post<any>(endpoint, request)
       .pipe(
-        tap(response => this.handleSuccessfulAuth(response)),
-        catchError(this.handleError)
-      );
+        tap(response => {
+          if (response.token) {
+            this.setToken(response.token);
+            if (response.user) {
+              this.setUser(response.user);
+            }
+          }
+        }),
+        catchError(error => {
+          console.error('❌ Social login error:', error);
+          return throwError(() => error);
+        }),
+        tap(() => ({ success: true }))
+      ) as any;
   }
 
-  // Logout
+  // ✅ FIXED: Proper logout
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem(this.USER_ID_KEY);
+    localStorage.removeItem(this.EMAIL_KEY);
     this.userSubject.next(null);
     this.router.navigate(['/']);
   }
 
-  // Token Management
-  getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
-  }
-
-  private setToken(token: string | boolean | null | undefined): void {
-    if (token == null) return;
-    localStorage.setItem(this.TOKEN_KEY, String(token));
-  }
-
-  private setUser(user: AuthUser): void {
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-    this.userSubject.next(user);
-  }
-
-  private getUserFromStorage(): AuthUser | null {
-    const userJson = localStorage.getItem(this.USER_KEY);
-    if (!userJson) return null;
-    
-    try {
-      return JSON.parse(userJson);
-    } catch {
-      return null;
-    }
-  }
-
-  // Handle Successful Authentication
-   handleSuccessfulAuth(response: PaginatedResponse<AuthUser>): void {
-    if (response.success && response.token && response.user) {
-      this.setToken(response.token);
-      this.setUser(response.user);
-    }
-  }
-
-  // Error Handler
-  private handleError(error: any): Observable<never> {
-    const errorMessage = error.error?.message || error.message || 'An error occurred';
-    console.error('Auth Error:', error);
-    return throwError(() => new Error(errorMessage));
-  }
-
   // Refresh Token (if implemented)
-  refreshToken(): Observable<PaginatedResponse<AuthUser>> {
-    return this.http.post<PaginatedResponse<AuthUser>>(`${this.API_URL}/refresh`, {})
+  refreshToken(): Observable<{ success: boolean }> {
+    return this.http.post<any>(`${this.API_URL}/refresh`, {})
       .pipe(
         tap(response => {
           if (response.token) {
@@ -172,7 +214,8 @@ export class AuthService {
         catchError(error => {
           this.logout();
           return throwError(() => error);
-        })
-      );
+        }),
+        tap(() => ({ success: true }))
+      ) as any;
   }
 }

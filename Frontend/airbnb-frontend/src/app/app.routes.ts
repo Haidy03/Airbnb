@@ -6,27 +6,30 @@ import { MyProperties } from './features/host/components/my-properties/my-proper
 import { HostMessages } from './features/host/components/host-messages/host-messages';
 import { AddProperty } from './features/host/components/add-property/add-property';
 import { EditProperty } from './features/host/components/edit-property/edit-property';
-
-import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
-import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
-import { BookingFormComponent } from './features/guest/components/booking-form/booking-form';
-import { CheckoutComponent } from './features/guest/components/checkout/checkout';
 import { LoginComponent } from './features/auth/components/login.component/login.component';
 
+// ✅ Import auth guards
+import { authGuard, noAuthGuard } from './features/auth/services/auth.guard';
+
 export const routes: Routes = [
-  // Routes المحددة أولاً
-  {
-    path: 'test-login',
-    component: TestLoginComponent
-  },
+  // ✅ Login routes - accessible only when NOT authenticated
+  // {
+  //   path: 'test-login',
+  //   component: TestLoginComponent,
+  //   canActivate: [noAuthGuard]
+  // },
   {
     path: 'login', 
-    component: LoginComponent
+    component: LoginComponent,
+    canActivate: [noAuthGuard]
   },
+  
+  // ✅ Host routes - protected by auth guard
   {
     path: 'host',
     component: HostLayoutComponent,
+    canActivate: [authGuard], // ✅ Protect entire host section
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
@@ -37,16 +40,24 @@ export const routes: Routes = [
       { path: 'properties/edit/:id', component: EditProperty },
     ]
   },
+  
+  // Reviews routes
   {
     path: 'reviews',
     loadChildren: () => import('./features/reviews/review.routes')
       .then(m => m.reviewRoutes)
   },
-  // Default redirect في الآخر
+  
+  // ✅ Default redirect to test-login
   {
     path: '',
     redirectTo: 'test-login',
     pathMatch: 'full'
   },
-  {path: 'login', component: LoginComponent},
+  
+  // ✅ Catch-all redirect
+  {
+    path: '**',
+    redirectTo: 'test-login'
+  }
 ];
