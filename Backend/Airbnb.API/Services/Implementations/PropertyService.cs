@@ -71,6 +71,7 @@ namespace Airbnb.API.Services.Implementations
             }
 
             var createdProperty = await _propertyRepository.AddAsync(property);
+            createdProperty = await _propertyRepository.GetByIdWithDetailsAsync(createdProperty.Id);
 
             return await MapToResponseDto(createdProperty);
         }
@@ -167,6 +168,7 @@ namespace Airbnb.API.Services.Implementations
             return true;
         }
 
+
         public async Task<PropertyImageDto> UploadPropertyImageAsync(int propertyId, string hostId, IFormFile file)
         {
             var property = await _propertyRepository.GetByIdWithDetailsAsync(propertyId);
@@ -187,9 +189,15 @@ namespace Airbnb.API.Services.Implementations
             if (file.Length > 5 * 1024 * 1024) // 5MB limit
                 throw new ArgumentException("File size exceeds 5MB");
 
-            // Create upload directory if it doesn't exist
+            // ✅ FIXED: Ensure directory exists
             var uploadPath = Path.Combine(_environment.WebRootPath, "uploads", "properties", propertyId.ToString());
-            Directory.CreateDirectory(uploadPath);
+
+            // Create directory if it doesn't exist
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+                _logger.LogInformation("Created upload directory: {Path}", uploadPath);
+            }
 
             // Generate unique filename
             var fileName = $"{Guid.NewGuid()}{extension}";
@@ -201,12 +209,14 @@ namespace Airbnb.API.Services.Implementations
                 await file.CopyToAsync(stream);
             }
 
+            _logger.LogInformation("Image saved to: {Path}", filePath);
+
             // Create PropertyImage record
             var propertyImage = new PropertyImage
             {
                 PropertyId = propertyId,
-                ImageUrl = $"/uploads/properties/{propertyId}/{fileName}",
-                IsPrimary = !property.Images.Any(), // First image is primary
+                ImageUrl = $"/uploads/properties/{propertyId}/{fileName}", // ✅ Relative URL
+                IsPrimary = !property.Images.Any(),
                 DisplayOrder = property.Images.Count,
                 UploadedAt = DateTime.UtcNow
             };

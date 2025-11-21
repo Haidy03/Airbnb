@@ -1,4 +1,5 @@
-export const environmentProd = {
+export const environment = {
   production: true,
-  apiUrl: 'http://localhost:5202/api'
+  apiUrl: 'https://your-production-api.com/api',
+  imageBaseUrl: 'https://your-cdn.com'
 };

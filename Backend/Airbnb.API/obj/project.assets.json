@@ -8457,68 +8457,23 @@
     ]
   },
   "packageFolders": {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "C:\\Users\\sohil\\.nuget\\packages\\": {},
->>>>>>> 221cd89216df6657bd4a1a742d2898ca29234b85
-=======
-    "C:\\Users\\Ard Al Jood\\.nuget\\packages\\": {},
->>>>>>> main
-=======
-    "C:\\Users\\PC\\.nuget\\packages\\": {},
->>>>>>> main
+    "C:\\Users\\haidy\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      "projectUniqueName": "D:\\Graduation Project\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
+      "projectUniqueName": "C:\\Haidy\\Projects\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
       "projectName": "Airbnb.API",
-      "projectPath": "D:\\Graduation Project\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-      "packagesPath": "C:\\Users\\mosaad\\.nuget\\packages\\",
-      "outputPath": "D:\\Graduation Project\\Airbnb\\Backend\\Airbnb.API\\obj\\",
-=======
-      "projectUniqueName": "D:\\iti\\Final Project\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-      "projectName": "Airbnb.API",
-      "projectPath": "D:\\iti\\Final Project\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-      "packagesPath": "C:\\Users\\sohil\\.nuget\\packages\\",
-      "outputPath": "D:\\iti\\Final Project\\Backend\\Airbnb.API\\obj\\",
->>>>>>> 221cd89216df6657bd4a1a742d2898ca29234b85
-=======
-      "projectUniqueName": "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-      "projectName": "Airbnb.API",
-      "projectPath": "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-      "packagesPath": "C:\\Users\\Ard Al Jood\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Ard Al Jood\\source\\repos\\TestAir\\Haidy03\\Airbnb\\Backend\\Airbnb.API\\obj\\",
->>>>>>> main
-=======
-      "projectUniqueName": "D:\\TantaITI\\Angular\\Grad\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-      "projectName": "Airbnb.API",
-      "projectPath": "D:\\TantaITI\\Angular\\Grad\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
-      "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-      "outputPath": "D:\\TantaITI\\Angular\\Grad\\Airbnb\\Backend\\Airbnb.API\\obj\\",
->>>>>>> main
+      "projectPath": "C:\\Haidy\\Projects\\Airbnb\\Backend\\Airbnb.API\\Airbnb.API.csproj",
+      "packagesPath": "C:\\Users\\haidy\\.nuget\\packages\\",
+      "outputPath": "C:\\Haidy\\Projects\\Airbnb\\Backend\\Airbnb.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        "C:\\Users\\mosaad\\AppData\\Roaming\\NuGet\\NuGet.Config",
-=======
-        "C:\\Users\\sohil\\AppData\\Roaming\\NuGet\\NuGet.Config",
->>>>>>> 221cd89216df6657bd4a1a742d2898ca29234b85
-=======
-        "C:\\Users\\Ard Al Jood\\AppData\\Roaming\\NuGet\\NuGet.Config",
->>>>>>> main
-=======
-        "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
->>>>>>> main
+        "C:\\Users\\haidy\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -8639,7 +8594,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

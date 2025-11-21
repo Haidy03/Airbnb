@@ -326,15 +326,16 @@ reorderImages(propertyId: string, imageIds: number[]): Observable<boolean> {
       },
       amenities: apiData.amenities?.map((a: any) => a.id) || [],
       images: apiData.images?.map((img: any) => ({
-        id: img.id.toString(),
-        url: `http://localhost:5202${img.imageUrl}`,
-        caption: '',
-        order: img.displayOrder,
-        isMain: img.isPrimary
-      })) || [],
-      coverImage: apiData.images?.find((img: any) => img.isPrimary)?.imageUrl 
-        ? `http://localhost:5202${apiData.images.find((img: any) => img.isPrimary).imageUrl}`
-        : '',
+      id: img.id.toString(),
+      url: `${environment.imageBaseUrl}${img.imageUrl}`, // ✅ Use environment
+      caption: '',
+      order: img.displayOrder,
+      isMain: img.isPrimary
+    })) || [],
+    
+    coverImage: apiData.images?.find((img: any) => img.isPrimary)?.imageUrl 
+      ? `${environment.imageBaseUrl}${apiData.images.find((img: any) => img.isPrimary).imageUrl}` // ✅ Use environment
+      : '',
       pricing: {
         basePrice: apiData.pricePerNight,
         currency: 'USD',

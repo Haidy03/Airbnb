@@ -25,9 +25,12 @@ export const routes: Routes = [
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
+      {path: 'properties/add', component: AddProperty},
+      {path: 'properties/edit/:id', component: EditProperty},
+      
     ]
   },
-  { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' },
+ 
   {
     path: 'reviews',
     loadChildren: () => import('./features/reviews/review.routes')

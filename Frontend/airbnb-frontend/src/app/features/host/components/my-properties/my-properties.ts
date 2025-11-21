@@ -6,7 +6,7 @@ import { Property, PropertyStatus } from '../../models/property.model';
 
 @Component({
   selector: 'app-my-properties',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './my-properties.html',
   styleUrl: './my-properties.css',
  
