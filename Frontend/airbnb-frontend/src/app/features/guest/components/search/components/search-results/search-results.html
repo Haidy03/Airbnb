@@ -1,0 +1,42 @@
+<div class="search-results-container">
+  <app-search-bar
+    (search)="onSearchSubmit($event)"
+    (filtersOpen)="onFiltersOpen()"
+  ></app-search-bar>
+
+  <app-filters
+    [isOpen]="showFilters"
+    (close)="onFiltersClose()"
+    (applyFilters)="onFiltersApply($event)"
+  ></app-filters>
+
+  <div class="results-content">
+    <div class="results-list-section" [class.with-map]="showMap">
+      <div class="container-fluid">
+        <button class="map-toggle-btn d-lg-none" (click)="toggleMap()" type="button">
+          <i class="bi" [ngClass]="showMap ? 'bi-list' : 'bi-map'"></i>
+          <span>{{ showMap ? 'Show list' : 'Show map' }}</span>
+        </button>
+
+        <app-property-list
+          *ngIf="!showMap || isDesktop"
+          (propertyHover)="onPropertyHover($event)"
+          (propertySelect)="onPropertySelect($event)"
+        ></app-property-list>
+      </div>
+    </div>
+
+    <div class="results-map-section" *ngIf="showMap" [class.mobile-fullscreen]="!isDesktop">
+      <app-search-map
+        [properties]="propertyList?.properties || []"
+        [selectedPropertyId]="selectedProperty?.id || null"
+        (propertySelect)="onMapPropertySelect($event)"
+        (mapBoundsChange)="onMapBoundsChange($event)"
+      ></app-search-map>
+
+      <button class="close-map-btn d-lg-none" (click)="toggleMap()" type="button">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+</div>

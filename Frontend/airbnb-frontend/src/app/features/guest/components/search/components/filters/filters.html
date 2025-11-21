@@ -1,0 +1,242 @@
+
+<div class="filters-overlay" *ngIf="isOpen" (click)="onClose()"></div>
+
+<div class="filters-panel" [class.open]="isOpen">
+  <!-- Header -->
+  <div class="filters-header">
+    <button class="close-btn" (click)="onClose()" type="button">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <h2 class="filters-title">Filters</h2>
+    <button class="clear-all-btn" (click)="clearAll()" type="button">
+      Clear all
+    </button>
+  </div>
+
+  <!-- Filters Content -->
+  <div class="filters-content">
+
+    <!-- Price Range -->
+    <div class="filter-section">
+      <h3 class="filter-heading">Price range</h3>
+      <p class="filter-subheading">Nightly prices before fees and taxes</p>
+
+      <div class="price-inputs">
+        <div class="price-input-group">
+          <label>Minimum</label>
+          <div class="input-with-currency">
+            <span class="currency">EGP</span>
+            <input
+              type="number"
+              class="form-control"
+              [value]="priceMin"
+              (input)="onPriceMinChange($event)"
+              min="0"
+              [max]="maxPrice"
+            >
+          </div>
+        </div>
+        <span class="price-separator">–</span>
+        <div class="price-input-group">
+          <label>Maximum</label>
+          <div class="input-with-currency">
+            <span class="currency">EGP</span>
+            <input
+              type="number"
+              class="form-control"
+              [value]="priceMax"
+              (input)="onPriceMaxChange($event)"
+              [min]="minPrice"
+              [max]="maxPrice"
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="price-slider">
+        <input
+          type="range"
+          class="range-min"
+          [min]="minPrice"
+          [max]="maxPrice"
+          [value]="priceMin"
+          (input)="onPriceMinChange($event)"
+        >
+        <input
+          type="range"
+          class="range-max"
+          [min]="minPrice"
+          [max]="maxPrice"
+          [value]="priceMax"
+          (input)="onPriceMaxChange($event)"
+        >
+      </div>
+    </div>
+
+    <!-- Property Type -->
+    <div class="filter-section">
+      <h3 class="filter-heading">Property type</h3>
+      <div class="property-types-grid">
+        <button
+          *ngFor="let type of propertyTypes"
+          class="property-type-btn"
+          [class.selected]="type.selected"
+          (click)="togglePropertyType(type.type)"
+          type="button"
+        >
+          <i class="bi" [ngClass]="type.icon"></i>
+          <span>{{ type.label }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Rooms and beds -->
+    <div class="filter-section">
+      <h3 class="filter-heading">Rooms and beds</h3>
+
+      <div class="rooms-controls">
+        <div class="room-control">
+          <span class="room-label">Bedrooms</span>
+          <div class="room-buttons">
+            <button
+              class="room-btn"
+              [disabled]="bedrooms === null || bedrooms <= 0"
+              (click)="decrementRooms('bedrooms')"
+              type="button"
+            >
+              <i class="bi bi-dash-circle"></i>
+            </button>
+            <span class="room-value">{{ bedrooms === null ? 'Any' : bedrooms }}</span>
+            <button
+              class="room-btn"
+              (click)="incrementRooms('bedrooms')"
+              type="button"
+            >
+              <i class="bi bi-plus-circle"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="room-control">
+          <span class="room-label">Beds</span>
+          <div class="room-buttons">
+            <button
+              class="room-btn"
+              [disabled]="beds === null || beds <= 0"
+              (click)="decrementRooms('beds')"
+              type="button"
+            >
+              <i class="bi bi-dash-circle"></i>
+            </button>
+            <span class="room-value">{{ beds === null ? 'Any' : beds }}</span>
+            <button
+              class="room-btn"
+              (click)="incrementRooms('beds')"
+              type="button"
+            >
+              <i class="bi bi-plus-circle"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="room-control">
+          <span class="room-label">Bathrooms</span>
+          <div class="room-buttons">
+            <button
+              class="room-btn"
+              [disabled]="bathrooms === null || bathrooms <= 0"
+              (click)="decrementRooms('bathrooms')"
+              type="button"
+            >
+              <i class="bi bi-dash-circle"></i>
+            </button>
+            <span class="room-value">{{ bathrooms === null ? 'Any' : bathrooms }}</span>
+            <button
+              class="room-btn"
+              (click)="incrementRooms('bathrooms')"
+              type="button"
+            >
+              <i class="bi bi-plus-circle"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Amenities -->
+    <div class="filter-section">
+      <h3 class="filter-heading">Amenities</h3>
+      <div class="amenities-grid">
+        <button
+          *ngFor="let amenity of amenities"
+          class="amenity-btn"
+          [class.selected]="amenity.selected"
+          (click)="toggleAmenity(amenity.id)"
+          type="button"
+        >
+          <i class="bi" [ngClass]="amenity.icon"></i>
+          <span>{{ amenity.name }}</span>
+          <i *ngIf="amenity.selected" class="bi bi-check-lg check-icon"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Booking options -->
+    <div class="filter-section">
+      <h3 class="filter-heading">Booking options</h3>
+      <div class="booking-options">
+        <label class="option-item">
+          <div class="option-info">
+            <div class="option-name">Instant Book</div>
+            <div class="option-description">Book without waiting for host approval</div>
+          </div>
+          <input type="checkbox" class="form-check-input" [(ngModel)]="instantBook">
+        </label>
+
+        <label class="option-item">
+          <div class="option-info">
+            <div class="option-name">Self check-in</div>
+            <div class="option-description">Easy access to the property</div>
+          </div>
+          <input type="checkbox" class="form-check-input" [(ngModel)]="selfCheckIn">
+        </label>
+
+        <label class="option-item">
+          <div class="option-info">
+            <div class="option-name">Allows pets</div>
+            <div class="option-description">Bringing a pet along</div>
+          </div>
+          <input type="checkbox" class="form-check-input" [(ngModel)]="allowsPets">
+        </label>
+      </div>
+    </div>
+
+    <!-- Rating -->
+    <div class="filter-section">
+      <h3 class="filter-heading">Guest rating</h3>
+      <div class="rating-buttons">
+        <button
+          *ngFor="let rating of [4.5, 4.0, 3.5, 3.0]"
+          class="rating-btn"
+          [class.selected]="minRating === rating"
+          (click)="setMinRating(rating)"
+          type="button"
+        >
+          <i class="bi bi-star-fill"></i>
+          {{ rating }}+
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="filters-footer">
+    <div class="footer-info">
+      <span *ngIf="activeFiltersCount > 0">{{ activeFiltersCount }} filter(s) applied</span>
+    </div>
+    <button class="apply-btn" (click)="apply()" type="button">
+      Show results
+    </button>
+  </div>
+</div>

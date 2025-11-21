@@ -1,0 +1,26 @@
+<div class="row skeleton-container">
+    <ng-container *ngFor="let item of skeletonCards">
+        <!-- Reuses the property card layout for a consistent look -->
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+            <div class="card border-0">
+                <!-- Skeleton Image Area -->
+                <div class="skeleton-image rounded-4 bg-light placeholder-glow">
+                    <span class="placeholder col-12 h-100"></span>
+                </div>
+
+                <!-- Skeleton Text Details -->
+                <div class="card-body p-2">
+                    <h6 class="card-title fw-semibold mb-1 placeholder-glow">
+                        <span class="placeholder col-8"></span>
+                    </h6>
+                    <p class="card-text text-muted mb-1 placeholder-glow">
+                        <span class="placeholder col-5"></span>
+                    </p>
+                    <div class="price mt-2 placeholder-glow">
+                        <span class="placeholder col-3"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</div>
