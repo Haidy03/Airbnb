@@ -1,26 +1,22 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { AuthService } from './auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
-  const token = authService.getToken();
+  // ✅ FIXED: Get token from correct key
+  const token = localStorage.getItem('token');
 
-  // Skip adding token for auth endpoints
-  if (req.url.includes('/api/auth/login') || 
-      req.url.includes('/api/auth/register') ||
-      req.url.includes('/api/auth/phone/start')) {
-    return next(req);
-  }
+  // ✅ Skip adding token for auth endpoints
+  const isAuthEndpoint = req.url.includes('/Auth/login') || 
+                         req.url.includes('/Auth/register') ||
+                         req.url.includes('/Auth/phone/start');
 
-  // Add Authorization header if token exists
-  if (token) {
-    const clonedRequest = req.clone({
+  // If there's a token and it's not an auth endpoint, add Authorization header
+  if (token && !isAuthEndpoint) {
+    req = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
     });
-    return next(clonedRequest);
+    console.log('🔐 Added auth token to request:', req.url);
   }
 
   return next(req);

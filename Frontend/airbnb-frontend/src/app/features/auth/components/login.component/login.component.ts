@@ -1,3 +1,4 @@
+
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -38,28 +39,25 @@ export class LoginComponent {
   // Session
   sessionId = signal('');
 
-  // Phone Form
+  // Forms
   phoneForm = this.fb.nonNullable.group({
     phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{8,15}$/)]]
   });
 
-  // Verification Form
   verificationForm = this.fb.nonNullable.group({
     code: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(6)]]
   });
 
-  // Email Login Form
   emailLoginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]]
   });
 
-  // Register Form
   registerForm = this.fb.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   // Mode Switching
@@ -127,8 +125,9 @@ export class LoginComponent {
       next: (response) => {
         this.isLoading.set(false);
         if (response.success) {
+          console.log('✅ Phone verification successful, navigating to host dashboard');
           this.closeModal();
-          this.router.navigate(['/']);
+          this.router.navigate(['/host/dashboard']);
         }
       },
       error: (error) => {
@@ -144,7 +143,7 @@ export class LoginComponent {
     this.errorMessage.set('');
   }
 
-  // Email Login Flow
+  // ✅ FIXED: Email Login Flow with proper navigation
   onEmailLogin() {
     if (this.emailLoginForm.invalid || this.isLoading()) return;
 
@@ -156,23 +155,39 @@ export class LoginComponent {
       password: this.emailLoginForm.value.password!
     };
 
+    console.log('🔐 Attempting login with:', { email: request.email });
+
     this.authService.loginWithEmail(request).subscribe({
       next: (response) => {
         this.isLoading.set(false);
-        if (response.success) {
-         // this.authService.handleSuccessfulAuth(response);
-          this.closeModal();
-          this.router.navigate(['/']);
-        }
+        console.log('✅ Login successful!');
+        
+        // Close modal
+        this.closeModal();
+        
+        // Navigate to host dashboard
+        console.log('🚀 Navigating to /host/dashboard');
+        this.router.navigate(['/host/dashboard']).then(success => {
+          if (success) {
+            console.log('✅ Navigation successful');
+          } else {
+            console.error('❌ Navigation failed');
+          }
+        });
       },
       error: (error) => {
         this.isLoading.set(false);
-        this.errorMessage.set(error.message || 'Invalid email or password');
+        console.error('❌ Login failed:', error);
+        
+        const errorMsg = error?.error?.message || 
+                        error?.message || 
+                        'Invalid email or password';
+        this.errorMessage.set(errorMsg);
       }
     });
   }
 
-  // Register Flow
+  // ✅ FIXED: Register Flow with proper navigation
   onRegister() {
     if (this.registerForm.invalid || this.isLoading()) return;
 
@@ -186,17 +201,41 @@ export class LoginComponent {
       password: this.registerForm.value.password!
     };
 
+    console.log('📝 Attempting registration:', { email: request.email });
+
     this.authService.register(request).subscribe({
       next: (response) => {
         this.isLoading.set(false);
-        if (response.success) {
-          this.closeModal();
-          this.router.navigate(['/']);
-        }
+        console.log('✅ Registration successful!');
+        
+        // After successful registration, automatically log in
+        const loginRequest = {
+          email: request.email,
+          password: request.password
+        };
+        
+        this.authService.loginWithEmail(loginRequest).subscribe({
+          next: () => {
+            console.log('✅ Auto-login successful after registration');
+            this.closeModal();
+            this.router.navigate(['/host/dashboard']);
+          },
+          error: (loginError) => {
+            console.error('❌ Auto-login failed:', loginError);
+            // If auto-login fails, switch to login mode
+            this.switchMode('email');
+            this.errorMessage.set('Registration successful! Please log in.');
+          }
+        });
       },
       error: (error) => {
         this.isLoading.set(false);
-        this.errorMessage.set(error.message || 'Registration failed');
+        console.error('❌ Registration failed:', error);
+        
+        const errorMsg = error?.error?.message || 
+                        error?.message || 
+                        'Registration failed';
+        this.errorMessage.set(errorMsg);
       }
     });
   }
@@ -210,8 +249,6 @@ export class LoginComponent {
       return;
     }
     
-    // Implement actual social login logic here
-    // For now, just show a message
     this.errorMessage.set(`${provider} login will be implemented`);
   }
 
