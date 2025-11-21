@@ -11,10 +11,16 @@ import { ReviewCardComponent } from './features/reviews/components/review-card/r
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
 import { LoginComponent } from './features/auth/components/login.component/login.component';
+
 export const routes: Routes = [
+  // Routes المحددة أولاً
   {
     path: 'test-login',
     component: TestLoginComponent
+  },
+  {
+    path: 'login', 
+    component: LoginComponent
   },
   {
     path: 'host',
@@ -27,16 +33,20 @@ export const routes: Routes = [
       { path: 'messages', component: HostMessages },
     ]
   },
-  { path: '', redirectTo: 'host/dashboard', pathMatch: 'full' },
   {
     path: 'reviews',
     loadChildren: () => import('./features/reviews/review.routes')
       .then(m => m.reviewRoutes)
   },
+  // Default redirect في الآخر
   {
     path: '',
     redirectTo: 'test-login',
     pathMatch: 'full'
   },
-  {path: 'login', component: LoginComponent},
+  // Wildcard route للصفحات المش موجودة (اختياري)
+  // {
+  //   path: '**',
+  //   redirectTo: 'test-login'
+  // }
 ];
