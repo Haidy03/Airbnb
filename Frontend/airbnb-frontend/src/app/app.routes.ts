@@ -6,11 +6,11 @@ import { MyProperties } from './features/host/components/my-properties/my-proper
 import { HostMessages } from './features/host/components/host-messages/host-messages';
 import { AddProperty } from './features/host/components/add-property/add-property';
 import { EditProperty } from './features/host/components/edit-property/edit-property';
-import { BookingForm } from './features/guest/components/booking-form/booking-form';
+import { BookingFormComponent } from './features/guest/components/booking-form/booking-form';
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
-
+import { LoginComponent } from './features/auth/components/login.component/login.component';
 export const routes: Routes = [
   {
     path: 'test-login',
@@ -33,9 +33,10 @@ export const routes: Routes = [
     loadChildren: () => import('./features/reviews/review.routes')
       .then(m => m.reviewRoutes)
   },
-  { 
-    path: '', 
-    redirectTo: 'test-login', 
-    pathMatch: 'full' 
-  }
+  {
+    path: '',
+    redirectTo: 'test-login',
+    pathMatch: 'full'
+  },
+  {path: 'login', component: LoginComponent},
 ];

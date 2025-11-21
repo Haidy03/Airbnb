@@ -1,0 +1,325 @@
+<div class="modal-card">
+  <!-- Header -->
+  <div class="modal-header">
+    <button 
+      *ngIf="showBackButton" 
+      class="back-button" 
+      (click)="onBack()"
+      type="button">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 28 8.7 16.7a1 1 0 0 1 0-1.4L20 4"></path>
+      </svg>
+    </button>
+    <h2>{{ modalTitle }}</h2>
+    <button class="close-button" (click)="closeModal()" type="button">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <path d="m6 6 20 20M26 6 6 26"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Body -->
+  <div class="modal-body">
+    <!-- ============== PHONE LOGIN - INPUT ============== -->
+    <div *ngIf="isPhoneMode && isPhoneInput">
+      <h1 class="welcome-title">Welcome to Airbnb</h1>
+
+      <form [formGroup]="phoneForm" (ngSubmit)="onPhoneContinue()">
+        <!-- Country Code Select -->
+        <div class="country-select-wrapper">
+          <div class="country-select" (click)="toggleCountryDropdown()">
+            <div class="select-content">
+              <label class="select-label">Country code</label>
+              <div class="selected-country">
+                {{ selectedCountry().name }} ({{ selectedCountry().dialCode }})
+              </div>
+            </div>
+            <svg 
+              class="chevron-icon"
+              [class.open]="isCountryDropdownOpen()"
+              viewBox="0 0 32 32" 
+              xmlns="http://www.w3.org/2000/svg">
+              <path d="m4 12 11.3 11.3a1 1 0 0 0 1.4 0L28 12"></path>
+            </svg>
+          </div>
+
+          <!-- Dropdown -->
+          <div class="dropdown" *ngIf="isCountryDropdownOpen()">
+            <div class="dropdown-list">
+              <div 
+                *ngFor="let country of countries"
+                class="dropdown-item"
+                [class.selected]="country.code === selectedCountry().code"
+                (click)="selectCountry(country)">
+                <span class="country-flag">{{ country.flag }}</span>
+                <span class="country-name">{{ country.name }}</span>
+                <span class="country-dial">{{ country.dialCode }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phone Number Input -->
+        <div class="input-group">
+          <input
+            type="tel"
+            formControlName="phoneNumber"
+            placeholder="Phone number"
+            class="phone-input"
+            [class.error]="phoneNumber?.invalid && phoneNumber?.touched"
+          />
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" *ngIf="errorMessage()">
+          {{ errorMessage() }}
+        </div>
+
+        <!-- Privacy Note -->
+        <p class="privacy-note">
+          We'll call or text you to confirm your number. Standard message and data rates apply.
+          <a href="#" class="privacy-link">Privacy Policy</a>
+        </p>
+
+        <!-- Continue Button -->
+        <button 
+          type="submit" 
+          class="btn-continue" 
+          [disabled]="phoneForm.invalid || isLoading()">
+          <span *ngIf="!isLoading()">Continue</span>
+          <span *ngIf="isLoading()" class="spinner"></span>
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="divider-text">
+        <span>or</span>
+      </div>
+
+      <!-- Social Buttons -->
+      <app-social-buttons (socialLogin)="onSocialLogin($event)"></app-social-buttons>
+
+      <!-- Register Link -->
+      <div class="bottom-link">
+        Don't have an account? 
+        <button class="link-button" (click)="switchMode('register')">Sign up</button>
+      </div>
+    </div>
+
+    <!-- ============== PHONE LOGIN - VERIFY ============== -->
+    <div *ngIf="isPhoneMode && isPhoneVerify">
+      <p class="verification-description">
+        Enter the code we sent to {{ selectedCountry().dialCode }} {{ phoneForm.value.phoneNumber }}
+      </p>
+
+      <form [formGroup]="verificationForm" (ngSubmit)="onVerifyCode()">
+        <div class="input-group">
+          <input
+            type="text"
+            formControlName="code"
+            placeholder="Verification code"
+            class="code-input"
+            maxlength="6"
+            [class.error]="code?.invalid && code?.touched"
+          />
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" *ngIf="errorMessage()">
+          {{ errorMessage() }}
+        </div>
+
+        <!-- Resend Code -->
+        <p class="resend-note">
+          Didn't receive a code? <a href="#" class="resend-link">Send again</a>
+        </p>
+
+        <!-- Verify Button -->
+        <button 
+          type="submit" 
+          class="btn-continue" 
+          [disabled]="verificationForm.invalid || isLoading()">
+          <span *ngIf="!isLoading()">Verify</span>
+          <span *ngIf="isLoading()" class="spinner"></span>
+        </button>
+      </form>
+    </div>
+
+    <!-- ============== EMAIL LOGIN ============== -->
+    <div *ngIf="isEmailMode">
+      <form [formGroup]="emailLoginForm" (ngSubmit)="onEmailLogin()">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="Email"
+            class="form-input"
+            [class.error]="email?.invalid && email?.touched"
+          />
+          <small class="error-text" *ngIf="email?.invalid && email?.touched">
+            Please enter a valid email
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-wrapper">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Password"
+              class="form-input"
+              [class.error]="emailPassword?.invalid && emailPassword?.touched"
+            />
+            <button 
+              type="button" 
+              class="password-toggle"
+              (click)="togglePasswordVisibility()">
+              {{ showPassword() ? 'Hide' : 'Show' }}
+            </button>
+          </div>
+          <small class="error-text" *ngIf="emailPassword?.invalid && emailPassword?.touched">
+            Password is required
+          </small>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" *ngIf="errorMessage()">
+          {{ errorMessage() }}
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="btn-continue" 
+          [disabled]="emailLoginForm.invalid || isLoading()">
+          <span *ngIf="!isLoading()">Continue</span>
+          <span *ngIf="isLoading()" class="spinner"></span>
+        </button>
+      </form>
+
+      <div class="forgot-password">
+        <a href="#">Forgot password?</a>
+      </div>
+
+      <!-- Register Link -->
+      <div class="bottom-link">
+        Don't have an account? 
+        <button class="link-button" (click)="switchMode('register')">Sign up</button>
+      </div>
+    </div>
+
+    <!-- ============== REGISTER ============== -->
+    <div *ngIf="isRegisterMode">
+      <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              formControlName="firstName"
+              placeholder="First name"
+              class="form-input"
+              [class.error]="firstName?.invalid && firstName?.touched"
+            />
+            <small class="error-text" *ngIf="firstName?.invalid && firstName?.touched">
+              First name is required
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              formControlName="lastName"
+              placeholder="Last name"
+              class="form-input"
+              [class.error]="lastName?.invalid && lastName?.touched"
+            />
+            <small class="error-text" *ngIf="lastName?.invalid && lastName?.touched">
+              Last name is required
+            </small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="registerEmail">Email</label>
+          <input
+            id="registerEmail"
+            type="email"
+            formControlName="email"
+            placeholder="Email"
+            class="form-input"
+            [class.error]="registerEmail?.invalid && registerEmail?.touched"
+          />
+          <small class="error-text" *ngIf="registerEmail?.invalid && registerEmail?.touched">
+            Please enter a valid email
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="registerPassword">Password</label>
+          <div class="password-wrapper">
+            <input
+              id="registerPassword"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Password"
+              class="form-input"
+              [class.error]="registerPassword?.invalid && registerPassword?.touched"
+            />
+            <button 
+              type="button" 
+              class="password-toggle"
+              (click)="togglePasswordVisibility()">
+              {{ showPassword() ? 'Hide' : 'Show' }}
+            </button>
+          </div>
+          <small class="error-text" *ngIf="registerPassword?.invalid && registerPassword?.touched">
+            Password must be at least 8 characters
+          </small>
+          <small class="help-text">Use 8 or more characters with a mix of letters, numbers & symbols</small>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" *ngIf="errorMessage()">
+          {{ errorMessage() }}
+        </div>
+
+        <!-- Terms -->
+        <p class="terms-text">
+          By selecting <strong>Agree and continue</strong>, I agree to Airbnb's 
+          <a href="#">Terms of Service</a>, 
+          <a href="#">Payments Terms of Service</a>, and 
+          <a href="#">Nondiscrimination Policy</a> and acknowledge the 
+          <a href="#">Privacy Policy</a>.
+        </p>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="btn-continue" 
+          [disabled]="registerForm.invalid || isLoading()">
+          <span *ngIf="!isLoading()">Agree and continue</span>
+          <span *ngIf="isLoading()" class="spinner"></span>
+        </button>
+      </form>
+
+      <!-- Login Link -->
+      <div class="bottom-link">
+        Already have an account? 
+        <button class="link-button" (click)="switchMode('phone')">Log in</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Backdrop for country dropdown -->
+<div class="backdrop" *ngIf="isCountryDropdownOpen()" (click)="toggleCountryDropdown()"></div>
