@@ -6,8 +6,8 @@ using System.Security.Claims;
 namespace Airbnb.API.Controllers.Host
 {
     [ApiController]
-    [Route("api/host/[controller]")]
-    [Authorize]
+    [Route("api/host/[controller]")] // Maps to: api/host/booking
+    [Authorize] // Only logged-in users
     public class BookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;
@@ -21,19 +21,14 @@ namespace Airbnb.API.Controllers.Host
             _logger = logger;
         }
 
-        /// <summary>
-        /// Get all bookings for the authenticated host
-        /// </summary>
+        // 1. Get all bookings for this host's properties
+        // GET: api/host/booking
         [HttpGet]
         public async Task<IActionResult> GetMyBookings()
         {
             try
             {
                 var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                if (string.IsNullOrEmpty(hostId))
-                    return Unauthorized(new { success = false, message = "User not authenticated" });
-
                 var bookings = await _bookingService.GetHostBookingsAsync(hostId);
 
                 return Ok(new
@@ -50,9 +45,8 @@ namespace Airbnb.API.Controllers.Host
             }
         }
 
-        /// <summary>
-        /// Get a specific booking by ID
-        /// </summary>
+        // 2. Get a specific booking detail
+        // GET: api/host/booking/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBookingById(int id)
         {
@@ -60,23 +54,17 @@ namespace Airbnb.API.Controllers.Host
             {
                 var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                if (string.IsNullOrEmpty(hostId))
-                    return Unauthorized(new { success = false, message = "User not authenticated" });
-
+                // We reuse the service method. It checks if the user (hostId) is allowed to see it.
                 var booking = await _bookingService.GetBookingByIdAsync(id, hostId);
 
                 if (booking == null)
-                    return NotFound(new { success = false, message = "Booking not found" });
+                    return NotFound(new { success = false, message = "Booking not found or access denied" });
 
                 return Ok(new
                 {
                     success = true,
                     data = booking
                 });
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
             }
             catch (Exception ex)
             {
@@ -85,19 +73,14 @@ namespace Airbnb.API.Controllers.Host
             }
         }
 
-        /// <summary>
-        /// Get all bookings for a specific property
-        /// </summary>
+        // 3. Get bookings for a specific property
+        // GET: api/host/booking/property/{propertyId}
         [HttpGet("property/{propertyId}")]
         public async Task<IActionResult> GetPropertyBookings(int propertyId)
         {
             try
             {
                 var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                if (string.IsNullOrEmpty(hostId))
-                    return Unauthorized(new { success = false, message = "User not authenticated" });
-
                 var bookings = await _bookingService.GetPropertyBookingsAsync(propertyId, hostId);
 
                 return Ok(new
@@ -118,31 +101,20 @@ namespace Airbnb.API.Controllers.Host
             }
         }
 
-        /// <summary>
-        /// Approve a pending booking
-        /// </summary>
+        // 4. Approve a booking
+        // POST: api/host/booking/{id}/approve
         [HttpPost("{id}/approve")]
         public async Task<IActionResult> ApproveBooking(int id)
         {
             try
             {
                 var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                if (string.IsNullOrEmpty(hostId))
-                    return Unauthorized(new { success = false, message = "User not authenticated" });
-
                 var result = await _bookingService.ApproveBookingAsync(id, hostId);
 
                 if (!result)
                     return NotFound(new { success = false, message = "Booking not found" });
 
-                _logger.LogInformation("Booking {BookingId} approved by host {HostId}", id, hostId);
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Booking approved successfully"
-                });
+                return Ok(new { success = true, message = "Booking approved successfully" });
             }
             catch (UnauthorizedAccessException)
             {
@@ -152,38 +124,22 @@ namespace Airbnb.API.Controllers.Host
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error approving booking {BookingId}", id);
-                return StatusCode(500, new { success = false, message = "Internal server error" });
-            }
         }
 
-        /// <summary>
-        /// Decline a pending booking
-        /// </summary>
+        // 5. Decline a booking
+        // POST: api/host/booking/{id}/decline
         [HttpPost("{id}/decline")]
         public async Task<IActionResult> DeclineBooking(int id)
         {
             try
             {
                 var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                if (string.IsNullOrEmpty(hostId))
-                    return Unauthorized(new { success = false, message = "User not authenticated" });
-
                 var result = await _bookingService.DeclineBookingAsync(id, hostId);
 
                 if (!result)
                     return NotFound(new { success = false, message = "Booking not found" });
 
-                _logger.LogInformation("Booking {BookingId} declined by host {HostId}", id, hostId);
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Booking declined successfully"
-                });
+                return Ok(new { success = true, message = "Booking declined successfully" });
             }
             catch (UnauthorizedAccessException)
             {
@@ -193,38 +149,22 @@ namespace Airbnb.API.Controllers.Host
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error declining booking {BookingId}", id);
-                return StatusCode(500, new { success = false, message = "Internal server error" });
-            }
         }
 
-        /// <summary>
-        /// Cancel a confirmed booking
-        /// </summary>
+        // 6. Cancel a booking (Host cancels a confirmed trip)
+        // POST: api/host/booking/{id}/cancel
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> CancelBooking(int id)
         {
             try
             {
                 var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                if (string.IsNullOrEmpty(hostId))
-                    return Unauthorized(new { success = false, message = "User not authenticated" });
-
                 var result = await _bookingService.CancelBookingAsync(id, hostId);
 
                 if (!result)
                     return NotFound(new { success = false, message = "Booking not found" });
 
-                _logger.LogInformation("Booking {BookingId} cancelled by host {HostId}", id, hostId);
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Booking cancelled successfully"
-                });
+                return Ok(new { success = true, message = "Booking cancelled successfully" });
             }
             catch (UnauthorizedAccessException)
             {
@@ -233,11 +173,6 @@ namespace Airbnb.API.Controllers.Host
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error cancelling booking {BookingId}", id);
-                return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
     }
