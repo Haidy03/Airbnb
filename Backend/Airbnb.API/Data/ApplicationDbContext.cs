@@ -18,6 +18,7 @@ namespace Airbnb.API.Models
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<PropertyAvailability> PropertyAvailabilities { get; set; }
+        public DbSet<UserVerification> UserVerifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

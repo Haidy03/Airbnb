@@ -86,7 +86,7 @@ namespace Airbnb.API.Services.Implementations
                     OriginalPrice = dayAvailability?.CustomPrice.HasValue == true ? basePrice : null,
                     HasBooking = dayBooking != null,
                     BookingId = dayBooking?.Id,
-                    BookingStatus = dayBooking?.Status,
+                    BookingStatus = dayBooking?.Status.ToString(),
                     GuestName = dayBooking?.Guest?.FirstName + " " + dayBooking?.Guest?.LastName,
                     IsCheckIn = isCheckIn,
                     IsCheckOut = isCheckOut,

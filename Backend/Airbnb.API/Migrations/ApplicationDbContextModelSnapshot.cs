@@ -17,7 +17,7 @@ namespace Airbnb.API.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -73,6 +73,12 @@ namespace Airbnb.API.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("BlockReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("BlockedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -93,6 +99,12 @@ namespace Airbnb.API.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
                     b.Property<string>("LastName")
@@ -138,6 +150,9 @@ namespace Airbnb.API.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -207,10 +222,9 @@ namespace Airbnb.API.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<int>("Status")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("int");
 
                     b.Property<decimal>("TotalPrice")
                         .HasPrecision(18, 2)
@@ -244,6 +258,12 @@ namespace Airbnb.API.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedByAdminId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<TimeSpan?>("CheckInTime")
                         .HasColumnType("time");
@@ -317,6 +337,12 @@ namespace Airbnb.API.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -503,6 +529,56 @@ namespace Airbnb.API.Migrations
                         .IsUnique();
 
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.UserVerification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReviewedByAdminId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserVerifications");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -744,6 +820,17 @@ namespace Airbnb.API.Migrations
                     b.Navigation("Reviewer");
                 });
 
+            modelBuilder.Entity("Airbnb.API.Models.UserVerification", b =>
+                {
+                    b.HasOne("Airbnb.API.Models.ApplicationUser", "User")
+                        .WithOne("Verification")
+                        .HasForeignKey("Airbnb.API.Models.UserVerification", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -809,6 +896,8 @@ namespace Airbnb.API.Migrations
                     b.Navigation("ReviewsGiven");
 
                     b.Navigation("ReviewsReceived");
+
+                    b.Navigation("Verification");
                 });
 
             modelBuilder.Entity("Airbnb.API.Models.Booking", b =>

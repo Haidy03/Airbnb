@@ -94,6 +94,11 @@ namespace Airbnb.API.Models
             get { return Reviews?.Count ?? 0; }
         }
 
+        public PropertyStatus Status { get; set; } = PropertyStatus.PendingApproval;
+        public DateTime? ApprovedAt { get; set; }
+        public string? ApprovedByAdminId { get; set; }
+        public string? RejectionReason { get; set; }
+
         // Navigation Properties
         public virtual ICollection<PropertyImage> Images { get; set; } = new List<PropertyImage>();
         public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();

@@ -6,7 +6,7 @@ import { MyProperties } from './features/host/components/my-properties/my-proper
 import { HostMessages } from './features/host/components/host-messages/host-messages';
 import { AddProperty } from './features/host/components/add-property/add-property';
 import { EditProperty } from './features/host/components/edit-property/edit-property';
-
+import { AdminGuard } from './core/guards/admin.guard';
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
@@ -15,7 +15,6 @@ import { CheckoutComponent } from './features/guest/components/checkout/checkout
 import { LoginComponent } from './features/auth/components/login.component/login.component';
 
 export const routes: Routes = [
-  // Routes المحددة أولاً
   {
     path: 'test-login',
     component: TestLoginComponent
@@ -42,7 +41,11 @@ export const routes: Routes = [
     loadChildren: () => import('./features/reviews/review.routes')
       .then(m => m.reviewRoutes)
   },
-  // Default redirect في الآخر
+  {
+  path: 'admin',
+  loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes),
+  canActivate: [AdminGuard] // Make sure user is Admin
+},
   {
     path: '',
     redirectTo: 'test-login',
