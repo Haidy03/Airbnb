@@ -1,3 +1,4 @@
+
 /* Main Booking Card */
 .booking-card {
   border: 1px solid rgb(221, 221, 221);
@@ -147,8 +148,7 @@
   color: rgb(113, 113, 113);
 }
 
-.date-input::-webkit-calendar-picker-indicator {
-}
+
 
 /* Guests Section */
 /* Updated selector to match HTML: .guests-info */
@@ -558,3 +558,564 @@
 .guest-picker {
   animation: slideDown 0.2s ease-out;
 }
+
+/* Main Booking Card */
+.booking-card {
+  border: 1px solid rgb(221, 221, 221);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 6px 16px;
+  background: rgb(255, 255, 255);
+  max-width: 376px;
+  position: sticky;
+  top: 80px;
+}
+
+/* Header Section */
+.booking-header {
+  margin-bottom: 24px;
+}
+
+.price-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.price-info {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.price {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  line-height: 26px;
+}
+
+.per-night {
+  font-size: 16px;
+  font-weight: 400;
+  color: rgb(34, 34, 34);
+}
+
+.rating-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+/* Updated selector to match HTML: .rating-value */
+.rating-info .rating-value {
+  color: rgb(34, 34, 34);
+  font-weight: 600;
+}
+
+/* Updated selector to match HTML: .reviews-link */
+.rating-info .reviews-link {
+  color: rgb(113, 113, 113);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Form Sections - Main Input Block (Dates & Guests) */
+.booking-form {
+  position: relative;
+}
+
+/* Updated selector to match HTML: .form-container */
+.form-container {
+  border: 1px solid rgb(176, 176, 176);
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  background: white;
+  margin-bottom: 16px; /* Added margin for separation from button */
+}
+
+.form-container:hover {
+  border-color: rgb(34, 34, 34);
+}
+
+/* Input Rows */
+.dates-row {
+  display: flex;
+  min-height: 56px;
+}
+
+.guests-row {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 12px;
+  justify-content: space-between;
+}
+
+/* Updated selector to match HTML: .date-field */
+.date-field {
+  flex: 1;
+  padding: 10px 12px;
+  position: relative;
+}
+
+/* Dividers */
+/* Updated selector to match HTML: .vertical-line */
+.vertical-line {
+  width: 1px;
+  height: 32px;
+  background-color: rgb(176, 176, 176);
+  align-self: center; /* Center the divider vertically */
+}
+
+/* Updated selector to match HTML: .horizontal-line */
+.horizontal-line {
+  height: 1px;
+  background-color: rgb(176, 176, 176);
+  margin: 0;
+}
+
+/* Labels and Inputs */
+/* Updated selector to match HTML: .field-label */
+.field-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 12px;
+  color: rgb(34, 34, 34);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.date-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgb(34, 34, 34);
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.date-input::placeholder {
+  color: rgb(113, 113, 113);
+}
+
+ 
+
+/* Guests Section */
+/* Updated selector to match HTML: .guests-info */
+.guests-info {
+  flex: 1;
+}
+
+/* Updated selector to match HTML: .guests-value */
+.guests-value {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgb(34, 34, 34); /* Changed color to dark for selected value */
+  margin-top: 4px;
+}
+
+/* Updated selector to match HTML: .arrow-icon */
+.arrow-icon {
+  width: 16px;
+  height: 16px;
+  color: rgb(34, 34, 34);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.arrow-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Guest Dropdown */
+/* Updated selector to match HTML: .guest-picker */
+.guest-picker {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid rgb(221, 221, 221);
+  border-radius: 12px;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 10px 37px;
+  z-index: 10;
+  padding: 24px;
+  max-height: 400px;
+  overflow-y: auto;
+  animation: slideDown 0.2s ease-out; /* Kept the animation */
+}
+
+/* Updated selector to match HTML: .guest-row */
+.guest-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.guest-row:not(:last-of-type) { /* Changed :last-child to :last-of-type to exclude buttons/notes */
+  border-bottom: 1px solid rgb(235, 235, 235);
+}
+
+.guest-details {
+  flex: 1;
+}
+
+.guest-type {
+  font-size: 16px;
+  font-weight: 400;
+  color: rgb(34, 34, 34);
+  line-height: 20px;
+}
+
+/* Updated selector to match HTML: .guest-desc */
+.guest-desc {
+  font-size: 14px;
+  color: rgb(113, 113, 113);
+  line-height: 18px;
+  margin-top: 4px;
+}
+
+/* Updated selector to match HTML: .link-text */
+.link-text {
+  color: rgb(34, 34, 34);
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+.link-text:hover {
+  color: rgb(0, 0, 0);
+}
+
+/* Guest Controls */
+.guest-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Updated selector to match HTML: .stepper-btn */
+.stepper-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgb(176, 176, 176);
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: rgb(113, 113, 113);
+  padding: 0;
+}
+
+.stepper-btn:hover:not(:disabled) {
+  border-color: rgb(34, 34, 34);
+  color: rgb(34, 34, 34);
+  background: rgb(247, 247, 247);
+  transform: scale(1.04);
+}
+
+.stepper-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+  border-color: rgb(235, 235, 235);
+  transform: none; /* Ensure no scale on disabled */
+}
+
+.stepper-btn svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor; /* Ensure SVG color changes with text color */
+}
+
+/* Updated selector to match HTML: .guest-number */
+.guest-number {
+  min-width: 16px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 400;
+  color: rgb(34, 34, 34);
+}
+
+/* Updated selector to match HTML: .max-warning */
+.max-warning {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgb(247, 247, 247);
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgb(113, 113, 113);
+  line-height: 18px;
+}
+
+/* Updated selector to match HTML: .close-picker */
+.close-picker {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgb(235, 235, 235);
+  display: block; /* Make it a block element to use margin/padding correctly */
+  width: 100%; /* Full width for the footer section layout */
+  text-align: right;
+  background: none;
+  border-bottom: none; /* Overwrite the border-top from the previous block */
+  border-left: none;
+  border-right: none;
+  color: rgb(34, 34, 34);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.close-picker:hover {
+  color: rgb(0, 0, 0);
+}
+
+/* Error Alert */
+/* Updated selector to match HTML: .error-box */
+.error-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgb(255, 245, 245);
+  border: 1px solid rgb(252, 129, 129);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  color: rgb(193, 53, 21);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.error-box svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Reserve Button */
+/* Updated selector to match HTML: .reserve-btn */
+.reserve-btn {
+  width: 100%;
+  background: linear-gradient(to right, rgb(230, 30, 77) 0%, rgb(227, 28, 95) 50%, rgb(215, 4, 102) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+  position: relative;
+  min-height: 48px;
+}
+
+.reserve-btn:hover:not(:disabled) {
+  background: linear-gradient(to right, rgb(211, 11, 71) 0%, rgb(201, 19, 77) 50%, rgb(189, 4, 81) 100%);
+  transform: scale(1.02);
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px;
+}
+
+.reserve-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reserve-btn.loading {
+  color: transparent;
+}
+
+/* Updated selector to match HTML: .btn-spinner */
+.btn-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Charge Notice */
+/* Updated selector to match HTML: .notice-text */
+.notice-text {
+  text-align: center;
+  font-size: 14px;
+  color: rgb(34, 34, 34);
+  margin-bottom: 24px;
+}
+
+/* Price Breakdown */
+/* Updated selector to match HTML: .price-details */
+.price-details {
+  margin-top: 24px;
+}
+
+/* Updated selector to match HTML: .price-line */
+.price-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  font-size: 16px;
+  line-height: 20px;
+}
+
+/* Updated selector to match HTML: .price-desc */
+.price-desc {
+  color: rgb(34, 34, 34);
+  font-weight: 400;
+  flex: 1;
+}
+
+/* Updated selector to match HTML: .price-desc.underline */
+.price-desc.underline {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  cursor: help;
+}
+
+/* Added selector for discount line labels (green/teal color) */
+.price-line.discount-line .price-desc {
+  color: rgb(0, 132, 137);
+}
+
+/* Updated selector to match HTML: .price-amount */
+.price-amount {
+  color: rgb(34, 34, 34);
+  font-weight: 400;
+  margin-left: 16px;
+}
+
+/* Added selector for discount line values (green/teal color) */
+.price-line.discount-line .price-amount {
+  color: rgb(0, 132, 137);
+}
+
+/* Updated selector to match HTML: .divider-line */
+.divider-line {
+  height: 1px;
+  background-color: rgb(221, 221, 221);
+  margin: 16px 0;
+}
+
+/* Updated selector to match HTML: .price-line.total-line */
+.price-line.total-line {
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+/* Report Section */
+.report-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgb(221, 221, 221);
+}
+
+.report-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgb(113, 113, 113);
+  text-decoration: underline;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.report-link:hover {
+  color: rgb(34, 34, 34);
+}
+
+.report-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Backdrop */
+/* Updated selector to match HTML: .backdrop */
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 9;
+}
+
+/* Responsive Design */
+@media (max-width: 743px) {
+  .booking-card {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 100%;
+    border-radius: 12px 12px 0 0;
+    box-shadow: rgba(0, 0, 0, 0.28) 0px -4px 16px;
+    z-index: 100;
+    padding: 16px;
+  }
+
+  .booking-header {
+    margin-bottom: 16px;
+  }
+
+  /* Updated selector to match HTML: .price-details */
+  .price-details {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .report-section {
+    display: none;
+  }
+}
+
+@media (min-width: 744px) and (max-width: 1127px) {
+  .booking-card {
+    max-width: 100%;
+  }
+}
+
+/* Smooth Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Updated selector to match HTML: .guest-picker */
+.guest-picker {
+  animation: slideDown 0.2s ease-out;
+}
+
