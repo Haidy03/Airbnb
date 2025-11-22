@@ -1,7 +1,8 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, map, tap } from 'rxjs';
+import { HttpClient, HttpHeaders ,HttpEventType } from '@angular/common/http';
+import { Observable, catchError, filter, map, tap ,of,forkJoin} from 'rxjs';
 import { environment } from '../../../../environments/environment';
+
 
 // Import your existing Property model
 import { 
@@ -41,6 +42,8 @@ export class PropertyService {
     });
   }
 
+
+
   /**
    * Load all properties for the current host
    */
@@ -60,6 +63,7 @@ export class PropertyService {
       }
     });
   }
+
 
   /**
    * Get all properties from API
@@ -84,30 +88,30 @@ export class PropertyService {
     );
   }
 
-  /**
-   * Get property by ID
-   */
-  getPropertyById(id: string): Observable<Property | undefined> {
-    this.loadingSignal.set(true);
-    
-    return this.http.get<{ success: boolean; data: any }>(
-      `${this.apiUrl}/${id}`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      map(response => {
-        if (response.success && response.data) {
-          return this.mapApiToProperty(response.data);
-        }
-        return undefined;
-      }),
-      tap(() => this.loadingSignal.set(false)),
-      catchError(error => {
-        this.loadingSignal.set(false);
-        this.errorSignal.set(error.message);
-        throw error;
-      })
-    );
-  }
+ /**
+ * Get property by ID
+ */
+getPropertyById(id: string): Observable<Property | null> { // ✅ Changed to Property | null
+  this.loadingSignal.set(true);
+  
+  return this.http.get<{ success: boolean; data: any }>(
+    `${this.apiUrl}/${id}`,
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      if (response.success && response.data) {
+        return this.mapApiToProperty(response.data);
+      }
+      return null; // ✅ Return null instead of undefined
+    }),
+    tap(() => this.loadingSignal.set(false)),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      this.errorSignal.set(error.message);
+      return of(null); // ✅ Return null on error
+    })
+  );
+}
 
   /**
    * Create new property
@@ -269,33 +273,125 @@ reorderImages(propertyId: string, imageIds: number[]): Observable<boolean> {
     })
   );
 }
-  /**
-   * Upload property images
-   */
-  uploadPropertyImages(propertyId: string, files: File[]): Observable<any[]> {
+/**
+ * Upload property images - FIXED VERSION
+ */
+uploadPropertyImages(propertyId: string, files: File[]): Observable<any[]> {
+  console.log('📤 Uploading images for property:', propertyId);
+  console.log('📤 Number of files:', files.length);
+
+  // ✅ Create an array of observables for each file upload
+  const uploadObservables = files.map(file => this.uploadSingleImage(propertyId, file));
+
+  // ✅ Use forkJoin to upload all images in parallel
+  return forkJoin(uploadObservables).pipe(
+    tap(results => {
+      console.log('✅ All images uploaded successfully:', results);
+    }),
+    catchError(error => {
+      console.error('❌ Error uploading images:', error);
+      this.errorSignal.set(error.message || 'Failed to upload images');
+      throw error;
+    })
+  );
+}
+/**
+ * Upload a single image - NEW METHOD
+ */
+private uploadSingleImage(propertyId: string, file: File): Observable<any> {
+  console.log('📤 Uploading single image:', file.name);
+
+  // ✅ Create FormData with correct field name
+  const formData = new FormData();
+  formData.append('file', file, file.name); // Backend expects 'file'
+
+  // ✅ Get token for authorization
+  const token = localStorage.getItem('token');
+  
+  // ✅ Create headers - DON'T set Content-Type, browser will set it with boundary
+  const headers = new HttpHeaders({
+    'Authorization': token ? `Bearer ${token}` : ''
+  });
+
+  // ✅ Make the upload request
+  return this.http.post<{ success: boolean; data: any; message?: string }>(
+    `${this.apiUrl}/${propertyId}/images`,
+    formData,
+    { 
+      headers,
+      reportProgress: true, // Enable progress tracking
+      observe: 'events' as any // Get progress events
+    }
+  ).pipe(
+    // ✅ Filter for the final response
+    filter((event: any) => event.type === HttpEventType.Response),
+    map((event: any) => {
+      const response = event.body;
+      console.log('✅ Upload response:', response);
+      
+      if (!response.success) {
+        throw new Error(response.message || 'Upload failed');
+      }
+      
+      return response.data;
+    }),
+    catchError(error => {
+      console.error('❌ Upload error for file:', file.name, error);
+      
+      // Handle specific error cases
+      if (error.status === 400) {
+        throw new Error('Invalid file. Please check file size and type.');
+      } else if (error.status === 401) {
+        throw new Error('Authentication required. Please login again.');
+      } else if (error.status === 413) {
+        throw new Error('File too large. Maximum size is 5MB.');
+      }
+      
+      throw new Error(error.message || 'Failed to upload image');
+    })
+  );
+}
+/**
+ * Upload property images with progress tracking - ALTERNATIVE METHOD
+ */
+uploadPropertyImagesWithProgress(
+  propertyId: string, 
+  files: File[],
+  onProgress?: (progress: number) => void
+): Observable<any[]> {
+  console.log('📤 Uploading images with progress tracking');
+
+  const uploadObservables = files.map((file, index) => {
     const formData = new FormData();
-    files.forEach(file => {
-      formData.append('file', file);
-    });
+    formData.append('file', file, file.name);
 
-    // Don't set Content-Type header - browser will set it with boundary
+    const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+      'Authorization': token ? `Bearer ${token}` : ''
     });
 
-    return this.http.post<{ success: boolean; data: any }>(
+    return this.http.post(
       `${this.apiUrl}/${propertyId}/images`,
       formData,
-      { headers }
+      {
+        headers,
+        reportProgress: true,
+        observe: 'events'
+      }
     ).pipe(
-      map(response => response.data),
-      catchError(error => {
-        console.error('Error uploading images:', error);
-        throw error;
-      })
+      tap((event: any) => {
+        if (event.type === HttpEventType.UploadProgress && onProgress) {
+          const progress = Math.round((100 * event.loaded) / event.total);
+          onProgress((progress / files.length) + (index * (100 / files.length)));
+        }
+      }),
+      filter((event: any) => event.type === HttpEventType.Response),
+      map((event: any) => event.body.data)
     );
-  }
+  });
 
+  return forkJoin(uploadObservables);
+}
   /**
    * Map API response to Property model
    */
@@ -305,7 +401,8 @@ reorderImages(propertyId: string, imageIds: number[]): Observable<boolean> {
       hostId: apiData.hostId,
       title: apiData.title,
       description: apiData.description,
-      propertyType: apiData.propertyType,
+      propertyType: apiData.propertyType || 'HOUSE',
+      propertyTypeId: apiData.propertyTypeId,
       roomType: ('entire_place' as unknown) as Property['roomType'], // Default - adjust based on your API
       location: {
         address: apiData.address,
@@ -527,4 +624,104 @@ validatePropertyForPublishing(property: Property): { isValid: boolean; errors: s
     errors
   };
 }
+
+/**
+ * Create a draft property
+ */
+createDraftProperty(): Observable<Property> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  // Minimal property data for draft
+  const draftProperty = {
+    title: 'Untitled Property',
+    description: 'Property listing in progress',
+    propertyType: 'HOUSE',
+    address: 'Not specified',
+    city: 'Not specified',
+    country: 'Not specified',
+    postalCode: null,
+    latitude: 0,
+    longitude: 0,
+    numberOfBedrooms: 1,
+    numberOfBathrooms: 1,
+    maxGuests: 1,
+    pricePerNight: 0,
+    cleaningFee: null,
+    houseRules: null,
+    checkInTime: null,
+    checkOutTime: null,
+    minimumStay: 1,
+    amenityIds: []
+  };
+
+  return this.http.post<{ success: boolean; data: any }>(
+    this.apiUrl,
+    draftProperty,
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      const property = this.mapApiToProperty(response.data);
+      
+      // Store draft ID in localStorage
+      localStorage.setItem('property_draft_id', property.id);
+      
+      // Add to local state
+      const current = this.propertiesSignal();
+      this.propertiesSignal.set([...current, property]);
+      
+      this.loadingSignal.set(false);
+      return property;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      this.errorSignal.set(error.message);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Get draft property
+ */
+getDraftProperty(): Observable<Property | null> {
+  const draftId = localStorage.getItem('property_draft_id');
+  
+  if (!draftId) {
+    return of(null);
+  }
+
+  return this.getPropertyById(draftId);
+}
+
+/**
+ * Clear draft
+ */
+clearDraft(): void {
+  localStorage.removeItem('property_draft_id');
+}
+
+/**
+ * Check if property is a draft (incomplete)
+ */
+isDraft(property: Property): boolean {
+  return (
+    property.title === 'Untitled Property' ||
+    property.status === PropertyStatus.DRAFT ||
+    !property.images || 
+    property.images.length === 0 ||
+    property.pricing.basePrice === 0
+  );
+}
+
+/**
+ * Update draft property (partial update)
+ */
+updateDraftProperty(draftId: string, updates: Partial<UpdatePropertyDto>): Observable<Property> {
+  return this.updateProperty({
+    id: draftId,
+    ...updates
+  });
+}
+
 }

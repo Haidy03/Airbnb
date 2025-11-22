@@ -1,0 +1,112 @@
+
+<header class="header">
+  <div class="logo" [routerLink]="['/']">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 1c-5.5 0-10 4.5-10 10 0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/>
+    </svg>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" (click)="showQuestionsModal()">
+      Questions?
+    </button>
+    <button 
+      class="btn-primary" 
+      (click)="saveAndExit()"
+      [disabled]="isLoading()">
+      <span *ngIf="!isLoading()">Save & exit</span>
+      <span *ngIf="isLoading()">Saving...</span>
+    </button>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main class="main-content">
+  <!-- Left Content -->
+  <div class="content-left">
+    <div class="step-label">Step 1</div>
+    <h1 class="main-title">Tell us about your place</h1>
+    <p class="description">
+      In this step, we'll ask you which type of property you have and if guests will book the entire place or just a room. Then let us know the location and how many guests can stay.
+    </p>
+  </div>
+
+  <!-- Right Content - 3D House Illustration -->
+  <div class="content-right">
+    <div class="house-3d">
+      <div class="house-container">
+        <svg class="house-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+          <!-- Floor Base -->
+          <ellipse cx="250" cy="450" rx="180" ry="30" fill="#E0E0E0" opacity="0.3"/>
+          
+          <!-- Main House Structure -->
+          <g transform="translate(250, 200)">
+            <!-- Back Wall -->
+            <path d="M -100 50 L -100 -80 L 100 -80 L 100 50 Z" fill="#F5F5F5" stroke="#DDDDDD" stroke-width="2"/>
+            
+            <!-- Left Wall -->
+            <path d="M -100 50 L -150 80 L -150 -50 L -100 -80 Z" fill="#E8E8E8" stroke="#DDDDDD" stroke-width="2"/>
+            
+            <!-- Front Wall -->
+            <path d="M -100 50 L 100 50 L 150 80 L -150 80 Z" fill="#FAFAFA" stroke="#DDDDDD" stroke-width="2"/>
+            
+            <!-- Right Wall -->
+            <path d="M 100 50 L 100 -80 L 150 -50 L 150 80 Z" fill="#ECECEC" stroke="#DDDDDD" stroke-width="2"/>
+            
+            <!-- Roof -->
+            <path d="M -100 -80 L 0 -130 L 100 -80 L 150 -50 L 0 -100 L -150 -50 Z" fill="#FF385C" stroke="#E31C5F" stroke-width="2"/>
+            
+            <!-- Windows - Back Wall -->
+            <rect x="-70" y="-40" width="35" height="40" fill="#87CEEB" stroke="#666" stroke-width="1.5"/>
+            <rect x="35" y="-40" width="35" height="40" fill="#87CEEB" stroke="#666" stroke-width="1.5"/>
+            <line x1="-52.5" y1="-40" x2="-52.5" y2="0" stroke="#666" stroke-width="1.5"/>
+            <line x1="-70" y1="-20" x2="-35" y2="-20" stroke="#666" stroke-width="1.5"/>
+            <line x1="52.5" y1="-40" x2="52.5" y2="0" stroke="#666" stroke-width="1.5"/>
+            <line x1="35" y1="-20" x2="70" y2="-20" stroke="#666" stroke-width="1.5"/>
+            
+            <!-- Door -->
+            <rect x="-20" y="0" width="40" height="50" fill="#8B4513" stroke="#5D2906" stroke-width="2"/>
+            <circle cx="10" cy="25" r="2" fill="#FFD700"/>
+            
+            <!-- Window - Right Wall -->
+            <path d="M 110 -20 L 140 -5 L 140 20 L 110 5 Z" fill="#87CEEB" stroke="#666" stroke-width="1.5"/>
+            <line x1="125" y1="-12.5" x2="125" y2="12.5" stroke="#666" stroke-width="1"/>
+            <line x1="110" y1="-7.5" x2="140" y2="7.5" stroke="#666" stroke-width="1"/>
+            
+            <!-- Chimney -->
+            <rect x="40" y="-110" width="20" height="40" fill="#8B4513" stroke="#5D2906" stroke-width="1.5"/>
+            <rect x="35" y="-115" width="30" height="8" fill="#A0522D"/>
+            
+            <!-- Decorative Plants -->
+            <ellipse cx="-130" cy="80" rx="15" ry="8" fill="#90EE90"/>
+            <ellipse cx="-130" cy="75" rx="18" ry="10" fill="#7CCD7C"/>
+            <ellipse cx="130" cy="80" rx="15" ry="8" fill="#90EE90"/>
+            <ellipse cx="130" cy="75" rx="18" ry="10" fill="#7CCD7C"/>
+            
+            <!-- Stairs -->
+            <rect x="-25" y="50" width="50" height="5" fill="#CCCCCC" stroke="#999" stroke-width="1"/>
+            <rect x="-30" y="55" width="60" height="5" fill="#BBBBBB" stroke="#999" stroke-width="1"/>
+            <rect x="-35" y="60" width="70" height="5" fill="#AAAAAA" stroke="#999" stroke-width="1"/>
+            
+            <!-- Garden Path -->
+            <ellipse cx="0" cy="100" rx="60" ry="20" fill="#D3D3D3" opacity="0.6"/>
+          </g>
+          
+          <!-- Clouds -->
+          <g opacity="0.3">
+            <ellipse cx="80" cy="80" rx="30" ry="15" fill="#E0E0E0"/>
+            <ellipse cx="100" cy="75" rx="35" ry="18" fill="#E0E0E0"/>
+            <ellipse cx="400" cy="100" rx="40" ry="20" fill="#E0E0E0"/>
+            <ellipse cx="430" cy="95" rx="30" ry="15" fill="#E0E0E0"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Footer with Progress -->
+<footer class="footer">
+  <div class="progress-bar" style="width: 5%"></div>
+  <button class="btn-back" (click)="goBack()">Back</button>
+  <button class="btn-next" (click)="startPropertyCreation()">Next</button>
+</footer>

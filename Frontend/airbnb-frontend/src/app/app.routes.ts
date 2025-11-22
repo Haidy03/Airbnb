@@ -10,9 +10,14 @@ import { AdminGuard } from './core/guards/admin.guard';
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
-import { BookingFormComponent } from './features/guest/components/booking-form/booking-form';
-import { CheckoutComponent } from './features/guest/components/checkout/checkout';
 import { LoginComponent } from './features/auth/components/login.component/login.component';
+
+// ✅ Import auth guards
+import { authGuard, noAuthGuard } from './features/auth/services/auth.guard';
+import { PropertyIntroComponent } from './features/host/components/property-steps/property-intro/property-intro';
+import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
+import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
+import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
 
 export const routes: Routes = [
   {
@@ -21,21 +26,56 @@ export const routes: Routes = [
   },
   {
     path: 'login', 
-    component: LoginComponent
+    component: LoginComponent,
+    canActivate: [noAuthGuard]
   },
+  
+  // ✅ Host routes - protected by auth guard
   {
     path: 'host',
     component: HostLayoutComponent,
+    canActivate: [authGuard], // ✅ Protect entire host section
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
-      { path: 'properties/add', component: AddProperty },
-      { path: 'properties/edit/:id', component: EditProperty },
+      {path: 'properties/addd', component: AddProperty },
+      {path: 'properties/edit/:id', component: EditProperty },
     ]
   },
+
+    // ✅ Property creation flow - full-screen, no host layout
+  {
+    path: 'host/properties',
+    canActivate: [authGuard],
+    children: [
+      { 
+        path: 'intro', 
+        component: PropertyIntroComponent
+      },
+      { 
+        path: 'property-type', 
+        component: PropertyTypeComponent
+      },
+      { 
+        path: 'room-type', 
+        component: PropertyRoomTypeComponent
+      },
+      { 
+        path: 'location', 
+        component: PropertyLocationComponent
+      },
+      // Add more steps here as you create them:
+      // { path: 'privacy-type', component: PropertyPrivacyComponent },
+      // { path: 'location', component: PropertyLocationComponent },
+      // { path: 'amenities', component: PropertyAmenitiesComponent },
+      // etc.
+    ]
+  },
+  
+  // Reviews routes
   {
     path: 'reviews',
     loadChildren: () => import('./features/reviews/review.routes')
@@ -51,5 +91,10 @@ export const routes: Routes = [
     redirectTo: 'test-login',
     pathMatch: 'full'
   },
-  {path: 'login', component: LoginComponent},
+  
+  // ✅ Catch-all redirect
+  {
+    path: '**',
+    redirectTo: 'test-login'
+  }
 ];

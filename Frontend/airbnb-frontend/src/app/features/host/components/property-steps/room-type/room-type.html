@@ -1,0 +1,42 @@
+
+    <header class="header">
+      <div class="logo" [routerLink]="['/']">
+        <!-- Logo SVG -->
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary" (click)="showQuestionsModal()">Questions?</button>
+        <button class="btn-primary" (click)="saveAndExit()">Save & exit</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="content-container">
+        <h1 class="main-title">What type of place will guests have?</h1>
+        
+        <div class="room-types-list">
+          <button 
+            *ngFor="let type of roomTypes"
+            class="room-type-card"
+            [class.selected]="selectedType() === type.id"
+            (click)="selectRoomType(type.id)"
+            type="button">
+            
+            <div class="card-content">
+              <div class="card-text">
+                <h3 class="card-title">{{ type.title }}</h3>
+                <p class="card-description">{{ type.description }}</p>
+              </div>
+              <div class="card-icon">{{ type.icon }}</div>
+            </div>
+            
+            <div class="checkmark" *ngIf="selectedType() === type.id">✓</div>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="progress-bar" style="width: 20%"></div>
+      <button class="btn-back" (click)="goBack()">Back</button>
+      <button class="btn-next" [disabled]="!selectedType()" (click)="goNext()">Next</button>
+    </footer>

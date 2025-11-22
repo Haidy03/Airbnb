@@ -59,7 +59,7 @@ export class MyProperties implements OnInit{
    * Navigate to add property
    */
   addNewProperty(): void {
-    this.router.navigate(['/host/properties/add']);
+    this.router.navigate(['/host/properties/intro']);
   }
 
   /**

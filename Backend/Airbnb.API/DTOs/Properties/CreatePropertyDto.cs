@@ -4,7 +4,9 @@
     {
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string PropertyType { get; set; } = string.Empty;
+
+        // UPDATED: Use PropertyTypeId instead of string
+        public int PropertyTypeId { get; set; }
 
         // Location
         public string Address { get; set; } = string.Empty;
@@ -31,6 +33,5 @@
 
         // Amenities
         public List<int> AmenityIds { get; set; } = new();
-    
     }
 }

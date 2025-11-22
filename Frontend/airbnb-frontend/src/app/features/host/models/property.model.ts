@@ -4,6 +4,7 @@ export interface Property {
   title: string;
   description: string;
   propertyType: PropertyType;
+  propertyTypeId?: number; // ✅ Add for backend compatibility
   roomType: RoomType;
   
   // Location

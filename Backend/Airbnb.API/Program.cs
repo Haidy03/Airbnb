@@ -1,20 +1,22 @@
 ﻿using Airbnb.API.Data;
-using Airbnb.API.Models;
-using Airbnb.API.Services.Implementations;
-using Airbnb.API.Services.Interfaces;
 using Airbnb.API.Data;
+using Airbnb.API.Models;
 using Airbnb.API.Repositories.Implementations;
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Implementations;
+using Airbnb.API.Services.Implementations;
+using Airbnb.API.Services.Interfaces;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,6 +109,8 @@ builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<ICalendarService, CalendarService>();
+
 // ============================================
 // 7. Add Controllers & Services
 // ============================================
@@ -218,10 +222,22 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+
+
 // Enable static files (for image uploads)
 app.UseStaticFiles();
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.WebRootPath, "uploads")),
+    RequestPath = "/uploads"
+});
+
 app.UseHttpsRedirection();
+
+
 app.UseCors("AllowAngular");
 
 app.UseAuthentication();
@@ -281,6 +297,8 @@ async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
         }
     }
 }
+// Replace your SeedReviewData function with this updated version:
+
 async Task SeedReviewData(IServiceProvider serviceProvider)
 {
     var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
@@ -289,9 +307,7 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
 
     try
     {
-        // ========================================
-        // 1. Create Guest User
-        // ========================================
+        // Create Guest User
         var guestEmail = "guest@test.com";
         var guest = await userManager.FindByEmailAsync(guestEmail);
 
@@ -319,14 +335,12 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
             }
             else
             {
-                logger.LogError($"   ✗ Failed to create Guest: {string.Join(", ", guestResult.Errors.Select(e => e.Description))}");
+                logger.LogError($"   ✗ Failed to create Guest");
                 return;
             }
         }
 
-        // ========================================
-        // 2. Create Host User
-        // ========================================
+        // Create Host User
         var hostEmail = "host@test.com";
         var host = await userManager.FindByEmailAsync(hostEmail);
 
@@ -354,7 +368,7 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
             }
             else
             {
-                logger.LogError($"   ✗ Failed to create Host: {string.Join(", ", hostResult.Errors.Select(e => e.Description))}");
+                logger.LogError($"   ✗ Failed to create Host");
                 return;
             }
         }
@@ -369,9 +383,7 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
             return;
         }
 
-        // ========================================
-        // 3. Create Property
-        // ========================================
+        // Create Property - ✅ USING PropertyTypeId now!
         if (!await context.Properties.AnyAsync())
         {
             logger.LogInformation("   → Creating test property...");
@@ -385,7 +397,7 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
                 MaxGuests = 6,
                 NumberOfBedrooms = 3,
                 NumberOfBathrooms = 2,
-                PropertyType = "Villa",
+                PropertyTypeId = 1, // ✅ CHANGED: Use PropertyTypeId (1 = House)
                 Country = "Egypt",
                 City = "Cairo",
                 Address = "Zamalek, Cairo",
@@ -407,9 +419,7 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
             return;
         }
 
-        // ========================================
-        // 4. Create Completed Booking
-        // ========================================
+        // Create Completed Booking
         if (!await context.Bookings.AnyAsync())
         {
             logger.LogInformation("   → Creating completed booking...");
@@ -431,7 +441,7 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
 
             context.Bookings.Add(booking);
             await context.SaveChangesAsync();
-            logger.LogInformation($"   ✓ Booking created (ID: {booking.Id}, Status: {booking.Status})");
+            logger.LogInformation($"   ✓ Booking created (ID: {booking.Id})");
         }
 
         var completedBooking = await context.Bookings
@@ -443,9 +453,7 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
             return;
         }
 
-        // ========================================
-        // 5. Create Sample Review (Optional)
-        // ========================================
+        // Create Sample Review
         if (!await context.Reviews.AnyAsync())
         {
             logger.LogInformation("   → Creating sample review...");
@@ -472,31 +480,17 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
             logger.LogInformation($"   ✓ Review created (ID: {review.Id})");
         }
 
-        // ========================================
-        // 6. Print Summary
-        // ========================================
         logger.LogInformation("");
         logger.LogInformation("📊 DATABASE SUMMARY:");
         logger.LogInformation($"   • Users: {await context.Users.CountAsync()}");
         logger.LogInformation($"   • Properties: {await context.Properties.CountAsync()}");
         logger.LogInformation($"   • Bookings: {await context.Bookings.CountAsync()}");
         logger.LogInformation($"   • Reviews: {await context.Reviews.CountAsync()}");
-
-        var bookingIds = await context.Bookings.Select(b => b.Id).ToListAsync();
-        if (bookingIds.Any())
-        {
-            logger.LogInformation($"   • Available Booking IDs: {string.Join(", ", bookingIds)}");
-        }
-
         logger.LogInformation("");
-        logger.LogInformation("🔑 TEST CREDENTIALS:");
-        logger.LogInformation("   Guest: guest@test.com / Guest@123");
-        logger.LogInformation("   Host:  host@test.com / Host@123");
-        logger.LogInformation("   Admin: admin@airbnb.com / Admin@123");
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "❌ Error in SeedReviewTestData");
+        logger.LogError(ex, "❌ Error in SeedReviewData");
         throw;
     }
 }
