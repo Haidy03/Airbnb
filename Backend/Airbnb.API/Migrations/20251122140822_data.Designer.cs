@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Airbnb.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251122040512_third")]
-    partial class third
+    [Migration("20251122140822_data")]
+    partial class data
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -336,10 +336,8 @@ namespace Airbnb.API.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("PropertyType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("PropertyTypeId")
+                        .HasColumnType("int");
 
                     b.Property<string>("RejectionReason")
                         .HasColumnType("nvarchar(max)");
@@ -362,6 +360,8 @@ namespace Airbnb.API.Migrations
                     b.HasIndex("IsActive");
 
                     b.HasIndex("PricePerNight");
+
+                    b.HasIndex("PropertyTypeId");
 
                     b.HasIndex("City", "Country");
 
@@ -459,6 +459,189 @@ namespace Airbnb.API.Migrations
                     b.HasIndex("PropertyId", "IsPrimary");
 
                     b.ToTable("PropertyImages");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.PropertyType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IconType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PropertyTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Category = "RESIDENTIAL",
+                            Code = "HOUSE",
+                            Description = "A standalone house",
+                            DisplayOrder = 1,
+                            IconType = "house",
+                            IsActive = true,
+                            Name = "House"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = "RESIDENTIAL",
+                            Code = "APARTMENT",
+                            Description = "A unit in a multi-unit building",
+                            DisplayOrder = 2,
+                            IconType = "apartment",
+                            IsActive = true,
+                            Name = "Apartment"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Category = "UNIQUE",
+                            Code = "BARN",
+                            Description = "A converted barn",
+                            DisplayOrder = 3,
+                            IconType = "barn",
+                            IsActive = true,
+                            Name = "Barn"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = "RESIDENTIAL",
+                            Code = "BED_BREAKFAST",
+                            Description = "A small lodging establishment",
+                            DisplayOrder = 4,
+                            IconType = "bed-breakfast",
+                            IsActive = true,
+                            Name = "Bed & breakfast"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Category = "UNIQUE",
+                            Code = "BOAT",
+                            Description = "A watercraft for accommodation",
+                            DisplayOrder = 5,
+                            IconType = "boat",
+                            IsActive = true,
+                            Name = "Boat"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Category = "OUTDOOR",
+                            Code = "CABIN",
+                            Description = "A small house in a rural area",
+                            DisplayOrder = 6,
+                            IconType = "cabin",
+                            IsActive = true,
+                            Name = "Cabin"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Category = "OUTDOOR",
+                            Code = "CAMPER",
+                            Description = "A recreational vehicle",
+                            DisplayOrder = 7,
+                            IconType = "camper",
+                            IsActive = true,
+                            Name = "Camper/RV"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Category = "RESIDENTIAL",
+                            Code = "CASA_PARTICULAR",
+                            Description = "A Cuban home stay",
+                            DisplayOrder = 8,
+                            IconType = "casa",
+                            IsActive = true,
+                            Name = "Casa particular"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Category = "UNIQUE",
+                            Code = "CASTLE",
+                            Description = "A historic castle",
+                            DisplayOrder = 9,
+                            IconType = "castle",
+                            IsActive = true,
+                            Name = "Castle"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Category = "UNIQUE",
+                            Code = "CAVE",
+                            Description = "A natural cave dwelling",
+                            DisplayOrder = 10,
+                            IconType = "cave",
+                            IsActive = true,
+                            Name = "Cave"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Category = "UNIQUE",
+                            Code = "CONTAINER",
+                            Description = "A shipping container home",
+                            DisplayOrder = 11,
+                            IconType = "container",
+                            IsActive = true,
+                            Name = "Container"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Category = "UNIQUE",
+                            Code = "CYCLADIC_HOME",
+                            Description = "A traditional Greek island home",
+                            DisplayOrder = 12,
+                            IconType = "cycladic",
+                            IsActive = true,
+                            Name = "Cycladic home"
+                        });
                 });
 
             modelBuilder.Entity("Airbnb.API.Models.Review", b =>
@@ -744,7 +927,15 @@ namespace Airbnb.API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Airbnb.API.Models.PropertyType", "PropertyType")
+                        .WithMany("Properties")
+                        .HasForeignKey("PropertyTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Host");
+
+                    b.Navigation("PropertyType");
                 });
 
             modelBuilder.Entity("Airbnb.API.Models.PropertyAmenity", b =>
@@ -919,6 +1110,11 @@ namespace Airbnb.API.Migrations
                     b.Navigation("PropertyAmenities");
 
                     b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.PropertyType", b =>
+                {
+                    b.Navigation("Properties");
                 });
 #pragma warning restore 612, 618
         }

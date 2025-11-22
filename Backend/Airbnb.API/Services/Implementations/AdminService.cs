@@ -102,7 +102,7 @@ namespace Airbnb.API.Services.Implementations
                 {
                     PropertyType = g.Key.ToString(),
                     Count = g.Count(),
-                    TotalRevenue = g.SelectMany(p => p.Bookings)
+                    TotalRevenue = g.SelectMany(p => p.Bookings ?? Enumerable.Empty<Booking>())
                         .Where(b => b.Status == BookingStatus.Completed)
                         .Sum(b => b.TotalPrice)
                 })
