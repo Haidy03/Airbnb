@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace Airbnb.API.Models
 {
@@ -43,10 +44,14 @@ namespace Airbnb.API.Models
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
-        // Property Details
+        // Property Type - UPDATED to use FK relationship
         [Required]
-        [MaxLength(50)]
-        public string PropertyType { get; set; } // Apartment, House, Villa, etc.
+        public int PropertyTypeId { get; set; }
+
+        [ForeignKey("PropertyTypeId")]
+        public virtual PropertyType PropertyType { get; set; }
+
+       
 
         public int NumberOfBedrooms { get; set; }
         public int NumberOfBathrooms { get; set; }
@@ -67,11 +72,11 @@ namespace Airbnb.API.Models
         public TimeSpan? CheckInTime { get; set; }
         public TimeSpan? CheckOutTime { get; set; }
 
-        public int MinimumStay { get; set; } = 1; // Minimum nights
+        public int MinimumStay { get; set; } = 1;
 
         // Status
         public bool IsActive { get; set; } = true;
-        public bool IsApproved { get; set; } = false; // Admin approval
+        public bool IsApproved { get; set; } = false;
 
         // Timestamps
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

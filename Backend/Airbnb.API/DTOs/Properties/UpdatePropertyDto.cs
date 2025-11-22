@@ -4,7 +4,7 @@
     {
         public string? Title { get; set; }
         public string? Description { get; set; }
-        public string? PropertyType { get; set; }
+        public int? PropertyTypeId { get; set; } // ✅ CHANGED from string PropertyType to int PropertyTypeId
 
         public string? Address { get; set; }
         public string? City { get; set; }

@@ -11,7 +11,9 @@ namespace Airbnb.API.Models
             : base(options)
         {
         }
+
         public DbSet<Property> Properties { get; set; }
+        public DbSet<PropertyType> PropertyTypes { get; set; } // NEW
         public DbSet<PropertyImage> PropertyImages { get; set; }
         public DbSet<Amenity> Amenities { get; set; }
         public DbSet<PropertyAmenity> PropertyAmenities { get; set; }
@@ -22,6 +24,17 @@ namespace Airbnb.API.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // ============================================
+            // PropertyType Configuration (NEW)
+            // ============================================
+            modelBuilder.Entity<PropertyType>(entity =>
+            {
+                entity.HasKey(pt => pt.Id);
+                entity.HasIndex(pt => pt.Code).IsUnique();
+                entity.HasIndex(pt => pt.Category);
+                entity.Property(pt => pt.IsActive).HasDefaultValue(true);
+            });
 
             // ============================================
             // Property Configuration
@@ -40,7 +53,13 @@ namespace Airbnb.API.Models
                 entity.HasOne(p => p.Host)
                     .WithMany(u => u.Properties)
                     .HasForeignKey(p => p.HostId)
-                    .OnDelete(DeleteBehavior.Restrict); // Don't delete properties if user is deleted
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Relationship: Property -> PropertyType (NEW)
+                entity.HasOne(p => p.PropertyType)
+                    .WithMany(pt => pt.Properties)
+                    .HasForeignKey(p => p.PropertyTypeId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 // Decimal precision
                 entity.Property(p => p.PricePerNight)
@@ -58,11 +77,10 @@ namespace Airbnb.API.Models
 
                 entity.HasIndex(pi => new { pi.PropertyId, pi.IsPrimary });
 
-                // Relationship: PropertyImage -> Property
                 entity.HasOne(pi => pi.Property)
                     .WithMany(p => p.Images)
                     .HasForeignKey(pi => pi.PropertyId)
-                    .OnDelete(DeleteBehavior.Cascade); // Delete images when property is deleted
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // ============================================
@@ -83,16 +101,13 @@ namespace Airbnb.API.Models
             {
                 entity.HasKey(pa => pa.Id);
 
-                // Composite unique index to prevent duplicates
                 entity.HasIndex(pa => new { pa.PropertyId, pa.AmenityId }).IsUnique();
 
-                // Relationship: PropertyAmenity -> Property
                 entity.HasOne(pa => pa.Property)
                     .WithMany(p => p.PropertyAmenities)
                     .HasForeignKey(pa => pa.PropertyId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // Relationship: PropertyAmenity -> Amenity
                 entity.HasOne(pa => pa.Amenity)
                     .WithMany(a => a.PropertyAmenities)
                     .HasForeignKey(pa => pa.AmenityId)
@@ -106,30 +121,25 @@ namespace Airbnb.API.Models
             {
                 entity.HasKey(b => b.Id);
 
-                // Indexes for query optimization
                 entity.HasIndex(b => new { b.PropertyId, b.CheckInDate, b.CheckOutDate });
                 entity.HasIndex(b => b.GuestId);
                 entity.HasIndex(b => b.Status);
                 entity.HasIndex(b => b.CreatedAt);
 
-                // Relationship: Booking -> Property
                 entity.HasOne(b => b.Property)
                     .WithMany(p => p.Bookings)
                     .HasForeignKey(b => b.PropertyId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Relationship: Booking -> Guest (User)
                 entity.HasOne(b => b.Guest)
                     .WithMany(u => u.GuestBookings)
                     .HasForeignKey(b => b.GuestId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Decimal precision
                 entity.Property(b => b.PricePerNight).HasPrecision(18, 2);
                 entity.Property(b => b.CleaningFee).HasPrecision(18, 2);
                 entity.Property(b => b.TotalPrice).HasPrecision(18, 2);
 
-                // Check constraint: CheckOut must be after CheckIn
                 entity.HasCheckConstraint(
                     "CK_Booking_CheckOutAfterCheckIn",
                     "[CheckOutDate] > [CheckInDate]"
@@ -143,37 +153,31 @@ namespace Airbnb.API.Models
             {
                 entity.HasKey(r => r.Id);
 
-                // Indexes
                 entity.HasIndex(r => r.BookingId);
                 entity.HasIndex(r => r.PropertyId);
                 entity.HasIndex(r => new { r.ReviewerId, r.RevieweeId });
                 entity.HasIndex(r => r.CreatedAt);
 
-                // Relationship: Review -> Booking
                 entity.HasOne(r => r.Booking)
                     .WithMany(b => b.Reviews)
                     .HasForeignKey(r => r.BookingId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Relationship: Review -> Property
                 entity.HasOne(r => r.Property)
                     .WithMany(p => p.Reviews)
                     .HasForeignKey(r => r.PropertyId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Relationship: Review -> Reviewer (User)
                 entity.HasOne(r => r.Reviewer)
                     .WithMany(u => u.ReviewsGiven)
                     .HasForeignKey(r => r.ReviewerId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Relationship: Review -> Reviewee (User)
                 entity.HasOne(r => r.Reviewee)
                     .WithMany(u => u.ReviewsReceived)
                     .HasForeignKey(r => r.RevieweeId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Unique constraint: One review per booking per reviewer
                 entity.HasIndex(r => new { r.BookingId, r.ReviewerId, r.ReviewType })
                     .IsUnique();
             });
@@ -185,18 +189,38 @@ namespace Airbnb.API.Models
             {
                 entity.HasKey(pa => pa.Id);
 
-                // Unique constraint: One record per property per date
                 entity.HasIndex(pa => new { pa.PropertyId, pa.Date }).IsUnique();
 
-                // Relationship: PropertyAvailability -> Property
                 entity.HasOne(pa => pa.Property)
                     .WithMany(p => p.Availabilities)
                     .HasForeignKey(pa => pa.PropertyId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // Decimal precision
                 entity.Property(pa => pa.CustomPrice).HasPrecision(18, 2);
             });
+
+            // ============================================
+            // Seed PropertyTypes Data
+            // ============================================
+            SeedPropertyTypes(modelBuilder);
+        }
+
+        private void SeedPropertyTypes(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<PropertyType>().HasData(
+                new PropertyType { Id = 1, Code = "HOUSE", Name = "House", Description = "A standalone house", IconType = "house", DisplayOrder = 1, Category = "RESIDENTIAL", IsActive = true },
+                new PropertyType { Id = 2, Code = "APARTMENT", Name = "Apartment", Description = "A unit in a multi-unit building", IconType = "apartment", DisplayOrder = 2, Category = "RESIDENTIAL", IsActive = true },
+                new PropertyType { Id = 3, Code = "BARN", Name = "Barn", Description = "A converted barn", IconType = "barn", DisplayOrder = 3, Category = "UNIQUE", IsActive = true },
+                new PropertyType { Id = 4, Code = "BED_BREAKFAST", Name = "Bed & breakfast", Description = "A small lodging establishment", IconType = "bed-breakfast", DisplayOrder = 4, Category = "RESIDENTIAL", IsActive = true },
+                new PropertyType { Id = 5, Code = "BOAT", Name = "Boat", Description = "A watercraft for accommodation", IconType = "boat", DisplayOrder = 5, Category = "UNIQUE", IsActive = true },
+                new PropertyType { Id = 6, Code = "CABIN", Name = "Cabin", Description = "A small house in a rural area", IconType = "cabin", DisplayOrder = 6, Category = "OUTDOOR", IsActive = true },
+                new PropertyType { Id = 7, Code = "CAMPER", Name = "Camper/RV", Description = "A recreational vehicle", IconType = "camper", DisplayOrder = 7, Category = "OUTDOOR", IsActive = true },
+                new PropertyType { Id = 8, Code = "CASA_PARTICULAR", Name = "Casa particular", Description = "A Cuban home stay", IconType = "casa", DisplayOrder = 8, Category = "RESIDENTIAL", IsActive = true },
+                new PropertyType { Id = 9, Code = "CASTLE", Name = "Castle", Description = "A historic castle", IconType = "castle", DisplayOrder = 9, Category = "UNIQUE", IsActive = true },
+                new PropertyType { Id = 10, Code = "CAVE", Name = "Cave", Description = "A natural cave dwelling", IconType = "cave", DisplayOrder = 10, Category = "UNIQUE", IsActive = true },
+                new PropertyType { Id = 11, Code = "CONTAINER", Name = "Container", Description = "A shipping container home", IconType = "container", DisplayOrder = 11, Category = "UNIQUE", IsActive = true },
+                new PropertyType { Id = 12, Code = "CYCLADIC_HOME", Name = "Cycladic home", Description = "A traditional Greek island home", IconType = "cycladic", DisplayOrder = 12, Category = "UNIQUE", IsActive = true }
+            );
         }
     }
 }
