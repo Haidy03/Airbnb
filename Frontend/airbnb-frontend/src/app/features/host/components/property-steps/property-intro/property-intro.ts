@@ -105,6 +105,6 @@ export class PropertyIntroComponent implements OnInit {
    */
   startPropertyCreation(): void {
     // Navigate to the actual add property form
-    this.router.navigate(['/host/properties/add-form']);
+    this.router.navigate(['/host/properties/property-type']);
   }
 }

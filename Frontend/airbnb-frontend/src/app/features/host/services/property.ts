@@ -42,6 +42,8 @@ export class PropertyService {
     });
   }
 
+
+
   /**
    * Load all properties for the current host
    */
@@ -61,6 +63,7 @@ export class PropertyService {
       }
     });
   }
+
 
   /**
    * Get all properties from API
@@ -398,7 +401,8 @@ uploadPropertyImagesWithProgress(
       hostId: apiData.hostId,
       title: apiData.title,
       description: apiData.description,
-      propertyType: apiData.propertyType,
+      propertyType: apiData.propertyType || 'HOUSE',
+      propertyTypeId: apiData.propertyTypeId,
       roomType: ('entire_place' as unknown) as Property['roomType'], // Default - adjust based on your API
       location: {
         address: apiData.address,

@@ -12,7 +12,9 @@ import { LoginComponent } from './features/auth/components/login.component/login
 // ✅ Import auth guards
 import { authGuard, noAuthGuard } from './features/auth/services/auth.guard';
 import { PropertyIntroComponent } from './features/host/components/property-steps/property-intro/property-intro';
-import { PropertyTypeComponent } from './features/host/components/property-type/property-type';
+import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
+import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
+import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
 
 export const routes: Routes = [
 
@@ -33,6 +35,7 @@ export const routes: Routes = [
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
+      {path: 'properties/addd', component: AddProperty },
       {path: 'properties/edit/:id', component: EditProperty },
     ]
   },
@@ -47,8 +50,16 @@ export const routes: Routes = [
         component: PropertyIntroComponent
       },
       { 
-        path: 'add-form', 
+        path: 'property-type', 
         component: PropertyTypeComponent
+      },
+      { 
+        path: 'room-type', 
+        component: PropertyRoomTypeComponent
+      },
+      { 
+        path: 'location', 
+        component: PropertyLocationComponent
       },
       // Add more steps here as you create them:
       // { path: 'privacy-type', component: PropertyPrivacyComponent },
