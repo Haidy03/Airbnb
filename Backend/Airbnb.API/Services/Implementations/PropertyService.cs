@@ -31,7 +31,7 @@ namespace Airbnb.API.Services.Implementations
                 HostId = hostId,
                 Title = dto.Title,
                 Description = dto.Description,
-                PropertyType = dto.PropertyType,
+                PropertyTypeId = dto.PropertyTypeId, // ✅ CHANGED from PropertyType to PropertyTypeId
                 Address = dto.Address,
                 City = dto.City,
                 Country = dto.Country,
@@ -64,8 +64,7 @@ namespace Airbnb.API.Services.Implementations
                 }
                 catch (Exception ex)
                 {
-                    // Log but don't fail - just skip amenities for now
-                    Console.WriteLine($"Warning: Could not add amenities: {ex.Message}");
+                    _logger.LogWarning(ex, "Could not add amenities");
                     property.PropertyAmenities = new List<PropertyAmenity>();
                 }
             }
@@ -89,7 +88,7 @@ namespace Airbnb.API.Services.Implementations
             // Update only provided fields
             if (dto.Title != null) property.Title = dto.Title;
             if (dto.Description != null) property.Description = dto.Description;
-            if (dto.PropertyType != null) property.PropertyType = dto.PropertyType;
+            if (dto.PropertyTypeId.HasValue) property.PropertyTypeId = dto.PropertyTypeId.Value; // ✅ CHANGED
             if (dto.Address != null) property.Address = dto.Address;
             if (dto.City != null) property.City = dto.City;
             if (dto.Country != null) property.Country = dto.Country;
@@ -168,7 +167,6 @@ namespace Airbnb.API.Services.Implementations
             return true;
         }
 
-
         public async Task<PropertyImageDto> UploadPropertyImageAsync(int propertyId, string hostId, IFormFile file)
         {
             var property = await _propertyRepository.GetByIdWithDetailsAsync(propertyId);
@@ -186,43 +184,59 @@ namespace Airbnb.API.Services.Implementations
             if (!allowedExtensions.Contains(extension))
                 throw new ArgumentException("Invalid file type");
 
-            if (file.Length > 5 * 1024 * 1024) // 5MB limit
+            if (file.Length > 5 * 1024 * 1024)
                 throw new ArgumentException("File size exceeds 5MB");
 
-            // ✅ FIXED: Ensure directory exists
             var uploadPath = Path.Combine(_environment.WebRootPath, "uploads", "properties", propertyId.ToString());
 
-            // Create directory if it doesn't exist
             if (!Directory.Exists(uploadPath))
             {
                 Directory.CreateDirectory(uploadPath);
-                _logger.LogInformation("Created upload directory: {Path}", uploadPath);
+                _logger.LogInformation("📁 Created upload directory: {Path}", uploadPath);
             }
 
-            // Generate unique filename
             var fileName = $"{Guid.NewGuid()}{extension}";
             var filePath = Path.Combine(uploadPath, fileName);
 
-            // Save file
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                await file.CopyToAsync(stream);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+                _logger.LogInformation("✅ Image saved to: {Path}", filePath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Failed to save image to: {Path}", filePath);
+                throw new Exception($"Failed to save image: {ex.Message}");
             }
 
-            _logger.LogInformation("Image saved to: {Path}", filePath);
-
-            // Create PropertyImage record
             var propertyImage = new PropertyImage
             {
                 PropertyId = propertyId,
-                ImageUrl = $"/uploads/properties/{propertyId}/{fileName}", // ✅ Relative URL
+                ImageUrl = $"/uploads/properties/{propertyId}/{fileName}",
                 IsPrimary = !property.Images.Any(),
                 DisplayOrder = property.Images.Count,
                 UploadedAt = DateTime.UtcNow
             };
 
             property.Images.Add(propertyImage);
-            await _propertyRepository.UpdateAsync(property);
+
+            try
+            {
+                await _propertyRepository.UpdateAsync(property);
+                _logger.LogInformation("✅ Image record saved to database");
+            }
+            catch (Exception ex)
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                    _logger.LogWarning("🗑️ Deleted uploaded file due to database error");
+                }
+                throw new Exception($"Failed to save image record: {ex.Message}");
+            }
 
             return new PropertyImageDto
             {
@@ -235,14 +249,11 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<bool> DeletePropertyImageAsync(int imageId, string hostId)
         {
-            // Implementation for deleting image
-            // You'll need to add this to your repository
             throw new NotImplementedException();
         }
 
         public async Task<bool> SetPrimaryImageAsync(int imageId, string hostId)
         {
-            // Implementation for setting primary image
             throw new NotImplementedException();
         }
 
@@ -257,7 +268,7 @@ namespace Airbnb.API.Services.Implementations
                 HostName = $"{property.Host?.FirstName} {property.Host?.LastName}".Trim(),
                 Title = property.Title,
                 Description = property.Description,
-                PropertyType = property.PropertyType,
+                PropertyType = property.PropertyType?.Name ?? "Unknown", // ✅ CHANGED to use navigation property
                 Address = property.Address,
                 City = property.City,
                 Country = property.Country,
@@ -297,11 +308,6 @@ namespace Airbnb.API.Services.Implementations
             };
         }
 
-        // Add these methods to PropertyService.cs (Backend)
-
-        /// <summary>
-        /// Publish a property
-        /// </summary>
         public async Task<bool> PublishPropertyAsync(int id, string hostId)
         {
             var property = await _propertyRepository.GetByIdAsync(id);
@@ -312,9 +318,8 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to publish this property");
 
-            // Set property as active and approved
             property.IsActive = true;
-            property.IsApproved = true; // You might want admin approval first
+            property.IsApproved = true;
             property.UpdatedAt = DateTime.UtcNow;
 
             await _propertyRepository.UpdateAsync(property);
@@ -324,9 +329,6 @@ namespace Airbnb.API.Services.Implementations
             return true;
         }
 
-        /// <summary>
-        /// Unpublish a property
-        /// </summary>
         public async Task<bool> UnpublishPropertyAsync(int id, string hostId)
         {
             var property = await _propertyRepository.GetByIdAsync(id);
@@ -337,7 +339,6 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to unpublish this property");
 
-            // Set property as inactive
             property.IsActive = false;
             property.UpdatedAt = DateTime.UtcNow;
 

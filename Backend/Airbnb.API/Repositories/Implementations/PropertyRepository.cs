@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Airbnb.API.Repositories.Implementations
 {
-    public class PropertyRepository: IPropertyRepository
+    public class PropertyRepository : IPropertyRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -23,6 +23,7 @@ namespace Airbnb.API.Repositories.Implementations
         {
             return await _context.Properties
                 .Include(p => p.Host)
+                .Include(p => p.PropertyType) // ✅ ADDED: Include PropertyType
                 .Include(p => p.Images)
                 .Include(p => p.PropertyAmenities)
                     .ThenInclude(pa => pa.Amenity)
@@ -34,6 +35,7 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task<IEnumerable<Property>> GetAllAsync()
         {
             return await _context.Properties
+                .Include(p => p.PropertyType) // ✅ ADDED
                 .Include(p => p.Images)
                 .Include(p => p.PropertyAmenities)
                     .ThenInclude(pa => pa.Amenity)
@@ -43,6 +45,7 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task<IEnumerable<Property>> GetByHostIdAsync(string hostId)
         {
             return await _context.Properties
+                .Include(p => p.PropertyType) // ✅ ADDED
                 .Include(p => p.Images)
                 .Include(p => p.PropertyAmenities)
                     .ThenInclude(pa => pa.Amenity)
@@ -92,6 +95,7 @@ namespace Airbnb.API.Repositories.Implementations
         {
             // 1. Start with a base query of Active and Approved properties
             var query = _context.Properties
+                .Include(p => p.PropertyType) // ✅ ADDED
                 .Include(p => p.Images)
                 .Include(p => p.Reviews)
                 .AsQueryable()
@@ -122,10 +126,13 @@ namespace Airbnb.API.Repositories.Implementations
                 query = query.Where(p => p.PricePerNight <= searchDto.MaxPrice.Value);
             }
 
-            // Property Type
+            // Property Type - ✅ CHANGED: Compare with PropertyType.Name or Code
             if (!string.IsNullOrEmpty(searchDto.PropertyType))
             {
-                query = query.Where(p => p.PropertyType == searchDto.PropertyType);
+                var propertyType = searchDto.PropertyType.ToUpper();
+                query = query.Where(p =>
+                    p.PropertyType.Code == propertyType ||
+                    p.PropertyType.Name.ToLower().Contains(searchDto.PropertyType.ToLower()));
             }
 
             // Amenities (This is a bit complex: Property must have ALL selected amenities)
@@ -193,6 +200,7 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task<List<PropertySearchResultDto>> GetFeaturedPropertiesAsync(int count)
         {
             return await _context.Properties
+                .Include(p => p.PropertyType) // ✅ ADDED
                 .Include(p => p.Images)
                 .Include(p => p.Reviews)
                 .Where(p => p.IsActive && p.IsApproved)

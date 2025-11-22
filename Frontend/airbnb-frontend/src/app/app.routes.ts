@@ -11,14 +11,11 @@ import { LoginComponent } from './features/auth/components/login.component/login
 
 // ✅ Import auth guards
 import { authGuard, noAuthGuard } from './features/auth/services/auth.guard';
+import { PropertyIntroComponent } from './features/host/components/property-steps/property-intro/property-intro';
+import { PropertyTypeComponent } from './features/host/components/property-type/property-type';
 
 export const routes: Routes = [
-  // ✅ Login routes - accessible only when NOT authenticated
-  // {
-  //   path: 'test-login',
-  //   component: TestLoginComponent,
-  //   canActivate: [noAuthGuard]
-  // },
+
   {
     path: 'login', 
     component: LoginComponent,
@@ -36,8 +33,28 @@ export const routes: Routes = [
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
-      { path: 'properties/add', component: AddProperty },
-      { path: 'properties/edit/:id', component: EditProperty },
+      {path: 'properties/edit/:id', component: EditProperty },
+    ]
+  },
+
+    // ✅ Property creation flow - full-screen, no host layout
+  {
+    path: 'host/properties',
+    canActivate: [authGuard],
+    children: [
+      { 
+        path: 'intro', 
+        component: PropertyIntroComponent
+      },
+      { 
+        path: 'add-form', 
+        component: PropertyTypeComponent
+      },
+      // Add more steps here as you create them:
+      // { path: 'privacy-type', component: PropertyPrivacyComponent },
+      // { path: 'location', component: PropertyLocationComponent },
+      // { path: 'amenities', component: PropertyAmenitiesComponent },
+      // etc.
     ]
   },
   
