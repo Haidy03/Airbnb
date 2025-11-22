@@ -234,7 +234,6 @@ app.UseStaticFiles(new StaticFileOptions
         Path.Combine(builder.Environment.WebRootPath, "uploads")),
     RequestPath = "/uploads"
 });
-
 app.UseHttpsRedirection();
 
 
