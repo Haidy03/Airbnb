@@ -1,0 +1,106 @@
+<header class="header">
+  <div class="logo" routerLink="/">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 1c-5.5 0-10 4.5-10 10 0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/>
+    </svg>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary">Questions?</button>
+    <button class="btn-secondary outlined" (click)="saveAndExit()">Save & exit</button>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="content-container">
+    
+    <div class="main-header">
+      <h1>Tell guests what your place has to offer</h1>
+      <p class="subtitle">You can add more amenities after you publish your listing.</p>
+    </div>
+
+    <section class="amenity-section">
+      <h2 class="section-title">What about these guest favorites?</h2>
+      <div class="amenities-grid">
+        @for (amenity of guestFavorites(); track amenity.id) {
+          <button 
+            class="amenity-card" 
+            [class.selected]="isSelected(amenity.id)"
+            (click)="toggleAmenity(amenity.id)">
+            
+            <div class="icon-wrapper">
+              
+              <ng-container [ngSwitch]="amenity.icon">
+                <svg *ngSwitchCase="'wifi'" viewBox="0 0 32 32" fill="currentColor"><path d="M16 6.72c6.34 0 11.8 3.3 14.53 8.09l-1.58.92C26.58 11.43 21.63 8.52 16 8.52c-5.63 0-10.58 2.9-12.95 7.21l-1.58-.92C4.2 10.02 9.66 6.72 16 6.72zM16 12.72c3.9 0 7.32 2.01 9.18 4.98l-1.54.96c-1.48-2.37-4.2-3.98-7.64-3.98-3.44 0-6.16 1.61-7.64 3.98l-1.54-.96C8.68 14.73 12.1 12.72 16 12.72zM16 18.72c1.3 0 2.4.84 2.82 2h-5.64c.42-1.16 1.52-2 2.82-2z"/></svg>
+                <svg *ngSwitchCase="'tv'" viewBox="0 0 32 32" fill="currentColor"><path d="M29 5a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h26zm0 2H3v16h26V7zM8 27h16v2H8v-2z"/></svg>
+                <svg *ngSwitchCase="'utensils'" viewBox="0 0 32 32" fill="currentColor"><path d="M21.5 12a2.5 2.5 0 0 0-5 0v6h5v-6zM26 11a2 2 0 0 0-2-2h-2V4a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v5H8a2 2 0 0 0-2 2v16h20V11z"/></svg>
+                <svg *ngSwitchCase="'washing-machine'" viewBox="0 0 32 32" fill="currentColor"><path d="M26 2a2 2 0 0 1 2 2v24a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h20zm0 2H6v24h20V4zm-10 4a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm7-4h2v2h-2V6z"/></svg>
+                <svg *ngSwitchCase="'wind'" viewBox="0 0 32 32" fill="currentColor"><path d="M16 3a13 13 0 1 1 0 26 13 13 0 0 1 0-26zm0 2a11 11 0 1 0 0 22 11 11 0 0 0 0-22zm-4 5.5a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
+                <svg *ngSwitchCase="'snowflake'" viewBox="0 0 32 32" fill="currentColor"><path d="M16 2v6.17l4.3-2.48 1 1.73-4.3 2.49 4.3 2.48-1 1.73L16 11.64v4.97l4.3-2.48 1 1.73-4.3 2.48 4.3 2.49-1 1.73L16 20.18v6.18h-2v-6.17l-4.3 2.48-1-1.73 4.3-2.49-4.3-2.48 1-1.73 4.3 2.48v-4.97l-4.3 2.48-1-1.73 4.3-2.48-4.3-2.49 1-1.73L14 8.18V2h2z"/></svg>
+                <svg *ngSwitchCase="'flame'" viewBox="0 0 32 32" fill="currentColor"><path d="M16.02 2C16.02 2 9 9.29 9 15.5 9 20.2 12.12 24 16.02 24S23 20.2 23 15.5C23 9.29 16.02 2 16.02 2zm0 26c-5.52 0-10-4.48-10-10 0-6.9 7-14 10-14s10 7.1 10 14c0 5.52-4.48 10-10 10z"/></svg>
+                <svg *ngSwitchCase="'briefcase'" viewBox="0 0 32 32" fill="currentColor"><path d="M24 6h-4V3a1 1 0 0 0-1-1H13a1 1 0 0 0-1 1v3H8a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-10-2h4v2h-4V4zM8 8h16v4H8V8zm16 20H8v-2h16v2z"/></svg>
+                <svg *ngSwitchCase="'parking'" viewBox="0 0 32 32" fill="currentColor"><path d="M26 2a2 2 0 0 1 2 2v24a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h20zm0 2H6v24h20V4zM18.5 12H13v4h5.5a2 2 0 1 0 0-4zm0-2A4 4 0 0 1 21 17.65V18h-2v6h-2v-6h-4v6h-2V8h7.5z"/></svg>
+                <svg *ngSwitchCase="'paid-parking'" viewBox="0 0 32 32" fill="currentColor"><path d="M16 2a14 14 0 1 1 0 28 14 14 0 0 1 0-28zm0 2a12 12 0 1 0 0 24 12 12 0 0 0 0-24zm1.5 7H13v5h4.5a2.5 2.5 0 1 0 0-5zm0-2a4.5 4.5 0 0 1 2.5 8.24V23h-2v-6h-2v6h-2V9h6z"/></svg>
+                <svg *ngSwitchCase="'zap'" viewBox="0 0 32 32" fill="currentColor"><path d="M11.4 15h5.2L13 27l9-14h-6.2l5-9-9.4 11z"/></svg>
+                <svg *ngSwitchDefault viewBox="0 0 32 32" fill="currentColor"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              </ng-container>
+            </div>
+            <div class="amenity-name">{{ amenity.name }}</div>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="amenity-section">
+      <h2 class="section-title">Do you have any standout amenities?</h2>
+      <div class="amenities-grid">
+        @for (amenity of standoutAmenities(); track amenity.id) {
+          <button 
+            class="amenity-card" 
+            [class.selected]="isSelected(amenity.id)"
+            (click)="toggleAmenity(amenity.id)">
+            <div class="icon-wrapper">
+              <ng-container [ngSwitch]="amenity.icon">
+                 <svg *ngSwitchCase="'waves'" viewBox="0 0 32 32" fill="currentColor"><path d="M2 22c1.75 0 3.15-.91 4.64-1.88C8.25 19.06 9.91 18 12 18c2.09 0 3.75 1.06 5.36 2.12C18.85 21.09 20.25 22 22 22c1.75 0 3.15-.91 4.64-1.88C28.25 19.06 29.91 18 32 18v2c-1.75 0-3.15.91-4.64 1.88C25.75 22.94 24.09 24 22 24c-2.09 0-3.75-1.06-5.36-2.12C15.15 20.91 13.75 20 12 20c-1.75 0-3.15.91-4.64 1.88C5.75 22.94 4.09 24 2 24v-2zm0-8c1.75 0 3.15-.91 4.64-1.88C8.25 11.06 9.91 10 12 10c2.09 0 3.75 1.06 5.36 2.12C18.85 13.09 20.25 14 22 14c1.75 0 3.15-.91 4.64-1.88C28.25 11.06 29.91 10 32 10v2c-1.75 0-3.15.91-4.64 1.88C25.75 14.94 24.09 16 22 16c-2.09 0-3.75-1.06-5.36-2.12C15.15 12.91 13.75 12 12 12c-1.75 0-3.15.91-4.64 1.88C5.75 14.94 4.09 16 2 16v-2z"/></svg>
+                 <svg *ngSwitchCase="'hot-tub'" viewBox="0 0 32 32" fill="currentColor"><path d="M28 16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V16H2v10a4 4 0 0 0 4 4h20a4 4 0 0 0 4-4V16h-2zM8 12a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm8 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm8 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+                 <svg *ngSwitchCase="'patio'" viewBox="0 0 32 32" fill="currentColor"><path d="M16 2a14 14 0 0 1 14 14v14H2V16A14 14 0 0 1 16 2zm0 2a12 12 0 0 0-12 12v12h4v-8h4v8h8v-8h4v8h4v-12A12 12 0 0 0 16 4z"/></svg>
+                 <svg *ngSwitchCase="'grill'" viewBox="0 0 32 32" fill="currentColor"><path d="M16 2a14 14 0 0 1 14 14h-2a12 12 0 0 0-24 0H2A14 14 0 0 1 16 2zm0 2a12 12 0 0 0-11.31 8H27.3A12 12 0 0 0 16 4zm-5 14h10v2H11v-2zm-6 4h22v2H5v-2zm3 4h16v2H8v-2z"/></svg>
+                 <svg *ngSwitchCase="'dining'" viewBox="0 0 32 32" fill="currentColor"><path d="M25 14v14h-2V16H9v12H7V14a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM16 2a10 10 0 0 1 10 10h-2a8 8 0 0 0-16 0H6A10 10 0 0 1 16 2zm0 12h-2v6h2v-6z"/></svg>
+                 <svg *ngSwitchCase="'fire'" viewBox="0 0 32 32" fill="currentColor"><path d="M16 2c0 6 4 7 4 12 0 4-3 7-6 7s-5-3-5-8c0-2 .5-4 1-5-2 2-4 6-4 10 0 6 5 10 10 10s10-4 10-10c0-8-7-11-10-16z"/></svg>
+                 <svg *ngSwitchDefault viewBox="0 0 32 32" fill="currentColor"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              </ng-container>
+            </div>
+            <div class="amenity-name">{{ amenity.name }}</div>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="amenity-section" *ngIf="safetyItems().length > 0">
+      <h2 class="section-title">Do you have these safety items?</h2>
+      <div class="amenities-grid">
+        @for (amenity of safetyItems(); track amenity.id) {
+          <button 
+            class="amenity-card" 
+            [class.selected]="isSelected(amenity.id)"
+            (click)="toggleAmenity(amenity.id)">
+            <div class="icon-wrapper">
+               <ng-container [ngSwitch]="amenity.icon">
+                  <svg *ngSwitchCase="'alert-triangle'" viewBox="0 0 32 32" fill="currentColor"><path d="M16 2L2 28h28L16 2zm0 4l11 20H5L16 6zm-1 14h2v2h-2v-2zm0-8h2v6h-2v-6z"/></svg>
+                  <svg *ngSwitchCase="'alert-circle'" viewBox="0 0 32 32" fill="currentColor"><path d="M16 2a14 14 0 1 1 0 28 14 14 0 0 1 0-28zm0 2a12 12 0 1 0 0 24 12 12 0 0 0 0-24zm-1 6h2v10h-2V10zm0 12h2v2h-2v-2z"/></svg>
+                  <svg *ngSwitchDefault viewBox="0 0 32 32" fill="currentColor"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+               </ng-container>
+            </div>
+            <div class="amenity-name">{{ amenity.name }}</div>
+          </button>
+        }
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="progress-bar" style="width: 40%"></div>
+  <button class="btn-back" (click)="goBack()">Back</button>
+  <button class="btn-next" (click)="goNext()">Next</button>
+</footer>

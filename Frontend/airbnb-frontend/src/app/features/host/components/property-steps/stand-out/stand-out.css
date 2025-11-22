@@ -1,0 +1,200 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #FFFFFF;
+  font-family: "Circular", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  overflow: hidden; /* Prevents scrollbars during animation */
+}
+
+/* --- Layout & Header/Footer (Same as before) --- */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: white;
+  z-index: 100;
+}
+
+.logo svg { width: 32px; height: 32px; fill: #FF385C; }
+.header-actions { display: flex; gap: 16px; }
+
+.btn-secondary, .btn-next {
+  padding: 10px 20px;
+  border-radius: 30px; /* Airbnb Pill Shape */
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: 0.2s;
+}
+
+.btn-secondary { background: white; color: #222; }
+.btn-secondary:hover { background: #f7f7f7; }
+/* Outline for Save & Exit */
+.header-actions .btn-secondary:last-child { border-color: #dddddd; }
+
+.btn-next {
+  background: #222; color: white; padding: 14px 32px; border-radius: 8px;
+}
+.btn-back {
+  background: none; border: none; text-decoration: underline; font-weight: 600; font-size: 16px; cursor: pointer;
+}
+
+.footer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 80px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  background: white;
+  border-top: 1px solid #EBEBEB;
+  z-index: 100;
+}
+.progress-bar { position: absolute; top: 0; left: 0; height: 4px; background: #222; transition: width 0.3s; }
+
+
+/* --- MAIN CONTENT & ANIMATION --- */
+
+.main-content {
+  margin-top: 80px;
+  height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.content-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 48px;
+  gap: 60px;
+}
+
+.content-left {
+  flex: 1;
+  max-width: 500px;
+  animation: fadeContent 0.8s ease-out forwards;
+}
+
+.step-label { font-weight: 600; font-size: 18px; margin-bottom: 16px; }
+.main-title { font-size: 48px; line-height: 1.1; font-weight: 600; margin-bottom: 24px; color: #222; }
+.description { font-size: 18px; line-height: 1.5; color: #222; }
+
+.content-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/* --- SVG ANIMATIONS --- */
+
+.house-svg {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  overflow: visible; /* Allows animations to go slightly outside if needed */
+}
+
+/* 1. Base Floor */
+.anim-base {
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+/* 2. Structure (Walls) - Pop up from bottom */
+.anim-structure {
+  opacity: 0;
+  transform-origin: bottom center;
+  animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation-delay: 0.2s;
+}
+
+/* 3. Roof - Drop down */
+.anim-roof {
+  opacity: 0;
+  transform: translateY(-50px);
+  animation: dropDown 0.5s ease-out forwards;
+  animation-delay: 0.6s;
+}
+
+/* 4. Details (Windows/Doors) - Fade & Scale */
+.anim-details {
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out forwards;
+  animation-delay: 0.9s;
+}
+
+/* 5. Stairs - Slide Right */
+.anim-stairs {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: slideIn 0.5s ease-out forwards;
+  animation-delay: 1.1s;
+}
+
+/* 6. Plants - Pop */
+.anim-plants {
+  opacity: 0;
+  transform-origin: center;
+  transform: scale(0);
+  animation: popScale 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation-delay: 1.3s;
+}
+
+/* 7. Clouds - Drift */
+.anim-clouds {
+  opacity: 0;
+  animation: floatClouds 6s infinite ease-in-out alternate;
+  animation-delay: 1.5s; /* Starts appearing later */
+}
+
+/* --- KEYFRAMES --- */
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes popUp {
+  from { transform: scaleY(0); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+@keyframes dropDown {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideIn {
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes popScale {
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeContent {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatClouds {
+  0% { opacity: 0.5; transform: translateX(0); }
+  100% { opacity: 0.5; transform: translateX(20px); }
+}
+
+/* Mobile Responsive */
+@media (max-width: 900px) {
+  .content-wrapper {
+    flex-direction: column;
+    text-align: center;
+    padding-top: 20px;
+  }
+  .main-title { font-size: 32px; }
+  .content-right { margin-top: 20px; }
+}
