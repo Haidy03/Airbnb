@@ -1,0 +1,111 @@
+<header class="header">
+  <div class="logo" [routerLink]="['/']">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 1c-5.5 0-10 4.5-10 10 0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/>
+    </svg>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" (click)="showQuestionsModal()">
+      Questions?
+    </button>
+    <button 
+      class="btn-primary" 
+      (click)="saveAndExit()"
+      [disabled]="isLoading()">
+      <span *ngIf="!isLoading()">Save & exit</span>
+      <span *ngIf="isLoading()">Saving...</span>
+    </button>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="content-container">
+    <h1 class="main-title">Which of these best describes your place?</h1>
+    
+    <div class="property-types-grid">
+      <button 
+        *ngFor="let type of propertyTypes"
+        class="property-type-card"
+        [class.selected]="selectedType() === type.id"
+        (click)="selectPropertyType(type.id)"
+        type="button">
+        <div class="icon-wrapper">
+          <!-- Icon SVGs based on type -->
+          <ng-container [ngSwitch]="type.icon">
+            <!-- House -->
+            <svg *ngSwitchCase="'house'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 1l-15 13h4v17h8v-10h6v10h8v-17h4z"/>
+            </svg>
+            
+            <!-- Apartment -->
+            <svg *ngSwitchCase="'apartment'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 2v28h24v-28zm4 4h4v4h-4zm6 0h4v4h-4zm6 0h4v4h-4zm-12 6h4v4h-4zm6 0h4v4h-4zm6 0h4v4h-4zm-12 6h4v4h-4zm6 0h4v4h-4zm6 0h4v4h-4zm-12 6h4v4h-4zm6 0h4v4h-4zm6 0h4v4h-4z"/>
+            </svg>
+            
+            <!-- Barn -->
+            <svg *ngSwitchCase="'barn'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 1l-13 9v21h26v-21zm-7 20h-3v-4h3zm0-6h-3v-4h3zm5 6h-3v-10h3zm0-12h-3v-4h3zm5 12h-3v-4h3zm0-6h-3v-4h3zm5 6h-3v-10h3zm0-12h-3v-4h3z"/>
+            </svg>
+            
+            <!-- Bed & Breakfast -->
+            <svg *ngSwitchCase="'bed-breakfast'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 4v24h28v-24zm4 4h5v5h-5zm7 0h5v5h-5zm7 0h5v5h-5zm-14 7h20v9h-20z"/>
+            </svg>
+            
+            <!-- Boat -->
+            <svg *ngSwitchCase="'boat'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 12l-4 8c2 2 4 3 6 3s4-1 6-3c2 2 4 3 6 3s4-1 6-3c2 2 4 3 6 3s4-1 6-3l-4-8h-28zm12-10v10h6v-10z"/>
+            </svg>
+            
+            <!-- Cabin -->
+            <svg *ngSwitchCase="'cabin'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 2l-14 12v16h28v-16zm-6 22h-4v-6h4zm6 0h-4v-12h4zm6 0h-4v-6h4z"/>
+            </svg>
+            
+            <!-- Camper -->
+            <svg *ngSwitchCase="'camper'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 8v12h2c0 2.2 1.8 4 4 4s4-1.8 4-4h4c0 2.2 1.8 4 4 4s4-1.8 4-4h2v-12zm4 4h6v4h-6zm8 0h8v4h-8z"/>
+            </svg>
+            
+            <!-- Casa Particular -->
+            <svg *ngSwitchCase="'casa'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 2l-12 10v18h24v-18zm-4 22h-4v-8h4zm6 0h-4v-12h4zm6 0h-4v-8h4z"/>
+            </svg>
+            
+            <!-- Castle -->
+            <svg *ngSwitchCase="'castle'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 2v10h4v-4h4v4h4v-10h4v10h4v-4h4v4h4v-10h-28zm0 12v16h8v-8h12v8h8v-16z"/>
+            </svg>
+            
+            <!-- Cave -->
+            <svg *ngSwitchCase="'cave'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 2c-8 0-14 6-14 14v14h28v-14c0-8-6-14-14-14zm-8 24v-10c0-4.4 3.6-8 8-8s8 3.6 8 8v10z"/>
+            </svg>
+            
+            <!-- Container -->
+            <svg *ngSwitchCase="'container'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 6v20h28v-20zm4 4h20v12h-20zm-2-8h24v2h-24zm0 24h24v2h-24z"/>
+            </svg>
+            
+            <!-- Cycladic Home -->
+            <svg *ngSwitchCase="'cycladic'" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 2l-10 8v20h20v-20zm-4 22h-4v-8h4zm6 0h-4v-14h4zm6 0h-4v-8h4z"/>
+            </svg>
+          </ng-container>
+        </div>
+        <span class="label">{{ type.label }}</span>
+      </button>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="progress-bar" style="width: 10%"></div>
+  <button class="btn-back" (click)="goBack()">Back</button>
+  <button 
+    class="btn-next" 
+    [disabled]="!selectedType()"
+    (click)="goNext()">
+    Next
+  </button>
+</footer>

@@ -9,6 +9,7 @@
 
         public string GuestId { get; set; } = string.Empty;
         public string GuestName { get; set; } = string.Empty;
+        public string HostName { get; set; } = string.Empty;
         public string GuestEmail { get; set; } = string.Empty;
         public string? GuestPhone { get; set; }
 

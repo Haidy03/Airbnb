@@ -45,7 +45,7 @@ namespace Airbnb.API.Models
         // Status
         [Required]
         [MaxLength(50)]
-        public string Status { get; set; } // Pending, Confirmed, Cancelled, Completed
+        public BookingStatus Status { get; set; } // Pending, Confirmed, Cancelled, Completed
 
         [MaxLength(500)]
         public string? SpecialRequests { get; set; }

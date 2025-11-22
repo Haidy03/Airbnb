@@ -1,0 +1,330 @@
+<div class="admin-settings">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Settings</h1>
+      <p class="subtitle">Manage platform settings and your admin profile</p>
+    </div>
+  </div>
+
+  <!-- Settings Tabs -->
+  <div class="settings-tabs">
+    <button 
+      class="tab-btn"
+      [class.active]="activeTab() === 'general'"
+      (click)="selectTab('general')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 1v6m0 6v6M23 12h-6m-6 0H1" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      General
+    </button>
+    <button 
+      class="tab-btn"
+      [class.active]="activeTab() === 'profile'"
+      (click)="selectTab('profile')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+        <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      Profile
+    </button>
+    <button 
+      class="tab-btn"
+      [class.active]="activeTab() === 'security'"
+      (click)="selectTab('security')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      Security
+    </button>
+    <button 
+      class="tab-btn"
+      [class.active]="activeTab() === 'system'"
+      (click)="selectTab('system')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+        <line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2"/>
+        <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      System
+    </button>
+  </div>
+
+  <!-- General Settings -->
+  <div *ngIf="activeTab() === 'general'" class="settings-section">
+    <div class="section-card">
+      <h2>Platform Settings</h2>
+      <p class="section-description">Configure general platform settings</p>
+
+      <div class="form-group">
+        <label>Platform Name</label>
+        <input 
+          type="text" 
+          class="form-input"
+          [(ngModel)]="settings().platformName"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Platform Fee (%)</label>
+        <input 
+          type="number" 
+          class="form-input"
+          [(ngModel)]="settings().platformFeePercentage"
+          min="0"
+          max="100"
+        />
+        <p class="help-text">Percentage taken from each booking</p>
+      </div>
+
+      <div class="form-group">
+        <label>Currency</label>
+        <select class="form-select" [(ngModel)]="settings().currency">
+          <option value="USD">USD - US Dollar</option>
+          <option value="EUR">EUR - Euro</option>
+          <option value="GBP">GBP - British Pound</option>
+          <option value="EGP">EGP - Egyptian Pound</option>
+        </select>
+      </div>
+
+      <div class="form-group toggle-group">
+        <div class="toggle-label">
+          <label>Allow Guest Booking</label>
+          <p class="help-text">Enable guests to make bookings</p>
+        </div>
+        <label class="toggle-switch">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="settings().allowGuestBooking"
+          />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="form-group toggle-group">
+        <div class="toggle-label">
+          <label>Require ID Verification</label>
+          <p class="help-text">Users must verify their identity before booking/listing</p>
+        </div>
+        <label class="toggle-switch">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="settings().requireVerification"
+          />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="form-group toggle-group">
+        <div class="toggle-label">
+          <label>Auto-Approve Properties</label>
+          <p class="help-text">Automatically approve new property listings</p>
+        </div>
+        <label class="toggle-switch">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="settings().autoApproveProperties"
+          />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="form-group toggle-group">
+        <div class="toggle-label">
+          <label>Maintenance Mode</label>
+          <p class="help-text warning">Platform will be unavailable to users</p>
+        </div>
+        <label class="toggle-switch">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="settings().maintenanceMode"
+          />
+          <span class="slider danger"></span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" (click)="saveSettings()" [disabled]="saving()">
+          <span *ngIf="!saving()">Save Changes</span>
+          <span *ngIf="saving()">Saving...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Settings -->
+  <div *ngIf="activeTab() === 'profile'" class="settings-section">
+    <div class="section-card">
+      <h2>Admin Profile</h2>
+      <p class="section-description">Update your profile information</p>
+
+      <div class="profile-avatar-section">
+        <div class="avatar-large">A</div>
+        <button class="btn btn-secondary">Change Photo</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>First Name</label>
+          <input 
+            type="text" 
+            class="form-input"
+            [(ngModel)]="adminProfile().firstName"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Last Name</label>
+          <input 
+            type="text" 
+            class="form-input"
+            [(ngModel)]="adminProfile().lastName"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <input 
+          type="email" 
+          class="form-input"
+          [(ngModel)]="adminProfile().email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input 
+          type="tel" 
+          class="form-input"
+          [(ngModel)]="adminProfile().phone"
+        />
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" (click)="updateProfile()" [disabled]="saving()">
+          <span *ngIf="!saving()">Update Profile</span>
+          <span *ngIf="saving()">Updating...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Security Settings -->
+  <div *ngIf="activeTab() === 'security'" class="settings-section">
+    <div class="section-card">
+      <h2>Change Password</h2>
+      <p class="section-description">Update your password to keep your account secure</p>
+
+      <div class="form-group">
+        <label>Current Password</label>
+        <input 
+          type="password" 
+          class="form-input"
+          [(ngModel)]="passwordForm().currentPassword"
+          placeholder="Enter current password"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>New Password</label>
+        <input 
+          type="password" 
+          class="form-input"
+          [(ngModel)]="passwordForm().newPassword"
+          placeholder="Enter new password"
+        />
+        <p class="help-text">Must be at least 8 characters</p>
+      </div>
+
+      <div class="form-group">
+        <label>Confirm New Password</label>
+        <input 
+          type="password" 
+          class="form-input"
+          [(ngModel)]="passwordForm().confirmPassword"
+          placeholder="Confirm new password"
+        />
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" (click)="changePassword()" [disabled]="saving()">
+          <span *ngIf="!saving()">Change Password</span>
+          <span *ngIf="saving()">Changing...</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2>Two-Factor Authentication</h2>
+      <p class="section-description">Add an extra layer of security to your account</p>
+      
+      <div class="info-box">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" stroke-width="2"/>
+          <line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <p>Two-factor authentication is currently <strong>disabled</strong></p>
+      </div>
+
+      <button class="btn btn-secondary">Enable 2FA</button>
+    </div>
+  </div>
+
+  <!-- System Settings -->
+  <div *ngIf="activeTab() === 'system'" class="settings-section">
+    <div class="section-card">
+      <h2>System Maintenance</h2>
+      <p class="section-description">Manage system operations and maintenance</p>
+
+      <div class="action-card">
+        <div class="action-info">
+          <h3>Clear Cache</h3>
+          <p>Clear system cache to improve performance</p>
+        </div>
+        <button class="btn btn-secondary" (click)="clearCache()">Clear Cache</button>
+      </div>
+
+      <div class="action-card">
+        <div class="action-info">
+          <h3>Export Data</h3>
+          <p>Export all platform data for backup</p>
+        </div>
+        <button class="btn btn-secondary" (click)="exportData()">Export Data</button>
+      </div>
+
+      <div class="action-card danger">
+        <div class="action-info">
+          <h3>Database Backup</h3>
+          <p>Create a backup of the database</p>
+        </div>
+        <button class="btn btn-secondary">Create Backup</button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2>System Information</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Version:</span>
+          <span class="info-value">1.0.0</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Environment:</span>
+          <span class="info-value">Production</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Database:</span>
+          <span class="info-value">SQL Server</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Last Backup:</span>
+          <span class="info-value">2 hours ago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

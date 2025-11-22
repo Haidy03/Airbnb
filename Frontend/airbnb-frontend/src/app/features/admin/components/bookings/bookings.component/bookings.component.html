@@ -1,0 +1,305 @@
+<div class="admin-bookings">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Bookings Management</h1>
+      <p class="subtitle">Manage all platform bookings and reservations</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-tabs">
+      <button 
+        class="filter-tab"
+        [class.active]="selectedStatus() === 'All'"
+        (click)="onStatusChange('All')">
+        All Bookings
+      </button>
+      <button 
+        class="filter-tab"
+        [class.active]="selectedStatus() === 'Pending'"
+        (click)="onStatusChange('Pending')">
+        Pending
+      </button>
+      <button 
+        class="filter-tab"
+        [class.active]="selectedStatus() === 'Confirmed'"
+        (click)="onStatusChange('Confirmed')">
+        Confirmed
+      </button>
+      <button 
+        class="filter-tab"
+        [class.active]="selectedStatus() === 'Completed'"
+        (click)="onStatusChange('Completed')">
+        Completed
+      </button>
+      <button 
+        class="filter-tab"
+        [class.active]="selectedStatus() === 'Cancelled'"
+        (click)="onStatusChange('Cancelled')">
+        Cancelled
+      </button>
+    </div>
+
+    <div class="date-filters">
+      <div class="date-input-group">
+        <label>From:</label>
+        <input 
+          type="date" 
+          [(ngModel)]="startDate"
+          class="date-input"
+        />
+      </div>
+      <div class="date-input-group">
+        <label>To:</label>
+        <input 
+          type="date" 
+          [(ngModel)]="endDate"
+          class="date-input"
+        />
+      </div>
+      <button class="filter-btn" (click)="onDateFilter()">Apply</button>
+      <button class="clear-btn" (click)="clearDateFilter()">Clear</button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading bookings...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="error-state">
+    <p>{{ error() }}</p>
+    <button class="retry-btn" (click)="loadBookings()">Retry</button>
+  </div>
+
+  <!-- Bookings Table -->
+  <div *ngIf="!loading() && !error()" class="bookings-table-container">
+    <table class="bookings-table">
+      <thead>
+        <tr>
+          <th>Booking ID</th>
+          <th>Property</th>
+          <th>Guest</th>
+          <th>Host</th>
+          <th>Check-in/Check-out</th>
+          <th>Nights</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let booking of bookings()" class="booking-row">
+          <!-- Booking ID -->
+          <td class="booking-id">
+            <span class="id-badge">#{{ booking.id }}</span>
+            <span class="date-small">{{ formatDate(booking.createdAt) }}</span>
+          </td>
+
+          <!-- Property -->
+          <td class="property-cell">
+            <div class="property-info">
+              <div class="property-name">{{ booking.propertyTitle }}</div>
+              <div class="property-id">Property #{{ booking.propertyId }}</div>
+            </div>
+          </td>
+
+          <!-- Guest -->
+          <td class="user-cell">
+            <div class="user-info">
+              <div class="user-avatar">{{ booking.guestName.charAt(0) }}</div>
+              <div>
+                <div class="user-name">{{ booking.guestName }}</div>
+                <div class="user-id">Guest #{{ booking.guestId.substring(0, 8) }}</div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Host -->
+          <td class="user-cell">
+            <div class="user-info">
+              <div class="user-avatar host">{{ booking.hostName.charAt(0) }}</div>
+              <div>
+                <div class="user-name">{{ booking.hostName }}</div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Dates -->
+          <td class="dates-cell">
+            <div class="date-range">
+              <div class="date-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" fill="currentColor"/>
+                </svg>
+                <span>{{ formatDate(booking.checkInDate) }}</span>
+              </div>
+              <div class="date-separator">→</div>
+              <div class="date-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" fill="currentColor"/>
+                </svg>
+                <span>{{ formatDate(booking.checkOutDate) }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Nights -->
+          <td class="nights-cell">
+            <span class="nights-badge">{{ calculateNights(booking.checkInDate, booking.checkOutDate) }} nights</span>
+          </td>
+
+          <!-- Total -->
+          <td class="price-cell">
+            <span class="price">{{ formatCurrency(booking.totalPrice) }}</span>
+          </td>
+
+          <!-- Status -->
+          <td>
+            <span class="status-badge" [ngClass]="getStatusBadgeClass(booking.status)">
+              {{ booking.status }}
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button 
+                class="action-btn cancel"
+                *ngIf="booking.status === 'Confirmed' || booking.status === 'Pending'"
+                (click)="openCancelModal(booking)"
+                title="Cancel booking">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                  <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2"/>
+                  <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+
+              <button 
+                class="action-btn refund"
+                *ngIf="booking.status === 'Cancelled' || booking.status === 'Completed'"
+                (click)="openRefundModal(booking)"
+                title="Process refund">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="bookings().length === 0" class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+        <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+        <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+        <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      <h3>No bookings found</h3>
+      <p>Try adjusting your filters</p>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="bookings().length > 0">
+      <button 
+        class="page-btn"
+        [disabled]="pageNumber() === 1"
+        (click)="previousPage()">
+        ← Previous
+      </button>
+      <span class="page-info">Page {{ pageNumber() }}</span>
+      <button 
+        class="page-btn"
+        (click)="nextPage()">
+        Next →
+      </button>
+    </div>
+  </div>
+
+  <!-- Cancel Modal -->
+  <div class="modal-overlay" *ngIf="showCancelModal()" (click)="closeCancelModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Cancel Booking</h2>
+        <button class="close-btn" (click)="closeCancelModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>
+          You are about to cancel booking <strong>#{{ selectedBooking()?.id }}</strong> 
+          for <strong>{{ selectedBooking()?.propertyTitle }}</strong>
+        </p>
+        <div class="booking-details">
+          <div class="detail-row">
+            <span>Guest:</span>
+            <strong>{{ selectedBooking()?.guestName }}</strong>
+          </div>
+          <div class="detail-row">
+            <span>Amount:</span>
+            <strong>{{ formatCurrency(selectedBooking()?.totalPrice || 0) }}</strong>
+          </div>
+        </div>
+        <label>Cancellation Reason (Required):</label>
+        <textarea 
+          class="modal-textarea"
+          placeholder="Provide a detailed reason for cancellation..."
+          [(ngModel)]="cancelReason"
+          rows="4">
+        </textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeCancelModal()">Close</button>
+        <button class="btn btn-danger" (click)="cancelBooking()">Cancel Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refund Modal -->
+  <div class="modal-overlay" *ngIf="showRefundModal()" (click)="closeRefundModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Process Refund</h2>
+        <button class="close-btn" (click)="closeRefundModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Process refund for booking <strong>#{{ selectedBooking()?.id }}</strong></p>
+        
+        <div class="refund-info">
+          <div class="info-card">
+            <span class="info-label">Original Amount:</span>
+            <span class="info-value">{{ formatCurrency(selectedBooking()?.totalPrice || 0) }}</span>
+          </div>
+        </div>
+
+        <label>Refund Amount:</label>
+        <input 
+          type="number" 
+          class="modal-input"
+          [(ngModel)]="refundAmount"
+          [max]="selectedBooking()?.totalPrice ?? 0"
+          min="0"
+          step="0.01"
+        />
+
+        <label>Refund Reason (Required):</label>
+        <textarea 
+          class="modal-textarea"
+          placeholder="Explain the reason for this refund..."
+          [(ngModel)]="refundReason"
+          rows="3">
+        </textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeRefundModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="processRefund()">Process Refund</button>
+      </div>
+    </div>
+  </div>
+</div>

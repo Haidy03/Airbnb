@@ -17,7 +17,7 @@ namespace Airbnb.API.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -73,6 +73,12 @@ namespace Airbnb.API.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("BlockReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("BlockedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -93,6 +99,12 @@ namespace Airbnb.API.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
                     b.Property<string>("LastName")
@@ -138,6 +150,9 @@ namespace Airbnb.API.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -207,10 +222,9 @@ namespace Airbnb.API.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<int>("Status")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("int");
 
                     b.Property<decimal>("TotalPrice")
                         .HasPrecision(18, 2)
@@ -244,6 +258,12 @@ namespace Airbnb.API.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedByAdminId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<TimeSpan?>("CheckInTime")
                         .HasColumnType("time");
@@ -313,10 +333,14 @@ namespace Airbnb.API.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("PropertyType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("PropertyTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -333,6 +357,8 @@ namespace Airbnb.API.Migrations
                     b.HasIndex("IsActive");
 
                     b.HasIndex("PricePerNight");
+
+                    b.HasIndex("PropertyTypeId");
 
                     b.HasIndex("City", "Country");
 
@@ -432,6 +458,189 @@ namespace Airbnb.API.Migrations
                     b.ToTable("PropertyImages");
                 });
 
+            modelBuilder.Entity("Airbnb.API.Models.PropertyType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IconType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PropertyTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Category = "RESIDENTIAL",
+                            Code = "HOUSE",
+                            Description = "A standalone house",
+                            DisplayOrder = 1,
+                            IconType = "house",
+                            IsActive = true,
+                            Name = "House"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = "RESIDENTIAL",
+                            Code = "APARTMENT",
+                            Description = "A unit in a multi-unit building",
+                            DisplayOrder = 2,
+                            IconType = "apartment",
+                            IsActive = true,
+                            Name = "Apartment"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Category = "UNIQUE",
+                            Code = "BARN",
+                            Description = "A converted barn",
+                            DisplayOrder = 3,
+                            IconType = "barn",
+                            IsActive = true,
+                            Name = "Barn"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = "RESIDENTIAL",
+                            Code = "BED_BREAKFAST",
+                            Description = "A small lodging establishment",
+                            DisplayOrder = 4,
+                            IconType = "bed-breakfast",
+                            IsActive = true,
+                            Name = "Bed & breakfast"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Category = "UNIQUE",
+                            Code = "BOAT",
+                            Description = "A watercraft for accommodation",
+                            DisplayOrder = 5,
+                            IconType = "boat",
+                            IsActive = true,
+                            Name = "Boat"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Category = "OUTDOOR",
+                            Code = "CABIN",
+                            Description = "A small house in a rural area",
+                            DisplayOrder = 6,
+                            IconType = "cabin",
+                            IsActive = true,
+                            Name = "Cabin"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Category = "OUTDOOR",
+                            Code = "CAMPER",
+                            Description = "A recreational vehicle",
+                            DisplayOrder = 7,
+                            IconType = "camper",
+                            IsActive = true,
+                            Name = "Camper/RV"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Category = "RESIDENTIAL",
+                            Code = "CASA_PARTICULAR",
+                            Description = "A Cuban home stay",
+                            DisplayOrder = 8,
+                            IconType = "casa",
+                            IsActive = true,
+                            Name = "Casa particular"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Category = "UNIQUE",
+                            Code = "CASTLE",
+                            Description = "A historic castle",
+                            DisplayOrder = 9,
+                            IconType = "castle",
+                            IsActive = true,
+                            Name = "Castle"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Category = "UNIQUE",
+                            Code = "CAVE",
+                            Description = "A natural cave dwelling",
+                            DisplayOrder = 10,
+                            IconType = "cave",
+                            IsActive = true,
+                            Name = "Cave"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Category = "UNIQUE",
+                            Code = "CONTAINER",
+                            Description = "A shipping container home",
+                            DisplayOrder = 11,
+                            IconType = "container",
+                            IsActive = true,
+                            Name = "Container"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Category = "UNIQUE",
+                            Code = "CYCLADIC_HOME",
+                            Description = "A traditional Greek island home",
+                            DisplayOrder = 12,
+                            IconType = "cycladic",
+                            IsActive = true,
+                            Name = "Cycladic home"
+                        });
+                });
+
             modelBuilder.Entity("Airbnb.API.Models.Review", b =>
                 {
                     b.Property<int>("Id")
@@ -503,6 +712,56 @@ namespace Airbnb.API.Migrations
                         .IsUnique();
 
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.UserVerification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReviewedByAdminId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserVerifications");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -665,7 +924,15 @@ namespace Airbnb.API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Airbnb.API.Models.PropertyType", "PropertyType")
+                        .WithMany("Properties")
+                        .HasForeignKey("PropertyTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Host");
+
+                    b.Navigation("PropertyType");
                 });
 
             modelBuilder.Entity("Airbnb.API.Models.PropertyAmenity", b =>
@@ -744,6 +1011,17 @@ namespace Airbnb.API.Migrations
                     b.Navigation("Reviewer");
                 });
 
+            modelBuilder.Entity("Airbnb.API.Models.UserVerification", b =>
+                {
+                    b.HasOne("Airbnb.API.Models.ApplicationUser", "User")
+                        .WithOne("Verification")
+                        .HasForeignKey("Airbnb.API.Models.UserVerification", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -809,6 +1087,8 @@ namespace Airbnb.API.Migrations
                     b.Navigation("ReviewsGiven");
 
                     b.Navigation("ReviewsReceived");
+
+                    b.Navigation("Verification");
                 });
 
             modelBuilder.Entity("Airbnb.API.Models.Booking", b =>
@@ -827,6 +1107,11 @@ namespace Airbnb.API.Migrations
                     b.Navigation("PropertyAmenities");
 
                     b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.PropertyType", b =>
+                {
+                    b.Navigation("Properties");
                 });
 #pragma warning restore 612, 618
         }

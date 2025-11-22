@@ -117,7 +117,7 @@ namespace Airbnb.API.Controllers.Host
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating property");
-                return StatusCode(500, new { success = false, message = "Internal server error" });
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
             }
         }
 
@@ -191,29 +191,63 @@ namespace Airbnb.API.Controllers.Host
         // ----------------------------------------------------------------------
         // UPLOAD IMAGE
         // ----------------------------------------------------------------------
+
+        
+
         [HttpPost("{id}/images")]
         public async Task<IActionResult> UploadPropertyImage(int id, IFormFile file)
         {
             try
             {
+                // ✅ Validate file
                 if (file == null || file.Length == 0)
                     return BadRequest(new { success = false, message = "No file uploaded" });
 
+                // ✅ Validate file size (5MB)
+                if (file.Length > 5 * 1024 * 1024)
+                    return BadRequest(new { success = false, message = "File size exceeds 5MB limit" });
+
+                // ✅ Validate file type
+                var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp" };
+                if (!allowedTypes.Contains(file.ContentType.ToLower()))
+                    return BadRequest(new { success = false, message = "Invalid file type. Only JPEG, PNG, and WebP are allowed." });
+
                 var hostId = GetHostId();
 
+                // ✅ Upload image
                 var image = await _propertyService.UploadPropertyImageAsync(id, hostId, file);
 
+                // ✅ Return success response with image data
                 return Ok(new
                 {
                     success = true,
-                    data = image,
+                    data = new
+                    {
+                        id = image.Id,
+                        imageUrl = image.ImageUrl,
+                        isPrimary = image.IsPrimary,
+                        displayOrder = image.DisplayOrder
+                    },
                     message = "Image uploaded successfully"
                 });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { success = false, message = "Property not found" });
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading property image");
-                return StatusCode(500, new { success = false, message = "Internal server error" });
+                _logger.LogError(ex, "Error uploading property image for property {PropertyId}", id);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal server error",
+                    details = ex.Message // ✅ Include error details for debugging
+                });
             }
         }
 

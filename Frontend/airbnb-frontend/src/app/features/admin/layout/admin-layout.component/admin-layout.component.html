@@ -1,0 +1,86 @@
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.closed]="!sidebarOpen()" [class.mobile-open]="mobileMenuOpen()">
+    <!-- Logo -->
+    <div class="sidebar-header">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M16 4L4 12v16h8v-8h8v8h8V12L16 4z" fill="#FF385C"/>
+        </svg>
+        <span *ngIf="sidebarOpen()">Admin Panel</span>
+      </div>
+      <button class="toggle-btn desktop" (click)="toggleSidebar()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2"/>
+          <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2"/>
+          <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <a 
+        *ngFor="let item of navItems"
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        class="nav-item"
+        (click)="mobileMenuOpen.set(false)">
+        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path [attr.d]="item.icon" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span *ngIf="sidebarOpen()">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span *ngIf="sidebarOpen()">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content" [class.sidebar-closed]="!sidebarOpen()">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2"/>
+          <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2"/>
+          <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+
+      <div class="topbar-actions">
+        <button class="notification-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <span class="notification-badge">3</span>
+        </button>
+
+        <div class="admin-profile">
+          <div class="profile-avatar">A</div>
+          <span class="profile-name">Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Mobile Menu Overlay -->
+  <div 
+    *ngIf="mobileMenuOpen()" 
+    class="mobile-overlay"
+    (click)="toggleMobileMenu()">
+  </div>
+</div>

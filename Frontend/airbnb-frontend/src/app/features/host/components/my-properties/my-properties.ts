@@ -6,7 +6,7 @@ import { Property, PropertyStatus } from '../../models/property.model';
 
 @Component({
   selector: 'app-my-properties',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './my-properties.html',
   styleUrl: './my-properties.css',
  
@@ -59,7 +59,7 @@ export class MyProperties implements OnInit{
    * Navigate to add property
    */
   addNewProperty(): void {
-    this.router.navigate(['/host/properties/add']);
+    this.router.navigate(['/host/properties/intro']);
   }
 
   /**

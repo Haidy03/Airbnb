@@ -2,16 +2,27 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { PropertyService } from '../../services/property';
 import { FileUploadService } from '../../services/file-upload';
 import { AMENITIES_LIST, AmenityCategory } from '../../models/amenity.model';
-import { PropertyType } from '../../models/property.model';
+import { environment } from '../../../../../environments/environment';
 
 interface AmenityDisplay {
   id: number;
   name: string;
   category: string;
   icon: string;
+}
+
+interface PropertyTypeOption {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  iconType: string;
+  category?: string;
+  displayOrder: number;
 }
 
 @Component({
@@ -26,6 +37,7 @@ export class AddProperty implements OnInit {
   private propertyService = inject(PropertyService);
   private fileUploadService = inject(FileUploadService);
   private router = inject(Router);
+  private http = inject(HttpClient);
 
   propertyForm!: FormGroup;
   currentStep = 1;
@@ -42,11 +54,51 @@ export class AddProperty implements OnInit {
     icon: amenity.icon
   }));
 
-  propertyTypes = Object.values(PropertyType);
-Math: any;
+  // ✅ Property types loaded from backend
+  propertyTypes: PropertyTypeOption[] = [];
+  loadingPropertyTypes = false;
+  
+  Math: any;
 
   ngOnInit(): void {
     this.initializeForm();
+    this.loadPropertyTypes(); // ✅ Load property types from backend
+  }
+
+  /**
+   * ✅ Load property types from backend
+   */
+  loadPropertyTypes(): void {
+    this.loadingPropertyTypes = true;
+    
+    this.http.get<PropertyTypeOption[]>(`${environment.apiUrl}/PropertyTypes`)
+      .subscribe({
+        next: (types) => {
+          console.log('✅ Property types loaded:', types);
+          this.propertyTypes = types;
+          this.loadingPropertyTypes = false;
+        },
+        error: (error) => {
+          console.error('❌ Error loading property types:', error);
+          this.loadingPropertyTypes = false;
+          
+          // Fallback to hardcoded types if API fails
+          this.propertyTypes = [
+            { id: 1, code: 'HOUSE', name: 'House', iconType: 'house', displayOrder: 1 },
+            { id: 2, code: 'APARTMENT', name: 'Apartment', iconType: 'apartment', displayOrder: 2 },
+            { id: 3, code: 'BARN', name: 'Barn', iconType: 'barn', displayOrder: 3 },
+            { id: 4, code: 'BED_BREAKFAST', name: 'Bed & breakfast', iconType: 'bed-breakfast', displayOrder: 4 },
+            { id: 5, code: 'BOAT', name: 'Boat', iconType: 'boat', displayOrder: 5 },
+            { id: 6, code: 'CABIN', name: 'Cabin', iconType: 'cabin', displayOrder: 6 },
+            { id: 7, code: 'CAMPER', name: 'Camper/RV', iconType: 'camper', displayOrder: 7 },
+            { id: 8, code: 'CASA_PARTICULAR', name: 'Casa particular', iconType: 'casa', displayOrder: 8 },
+            { id: 9, code: 'CASTLE', name: 'Castle', iconType: 'castle', displayOrder: 9 },
+            { id: 10, code: 'CAVE', name: 'Cave', iconType: 'cave', displayOrder: 10 },
+            { id: 11, code: 'CONTAINER', name: 'Container', iconType: 'container', displayOrder: 11 },
+            { id: 12, code: 'CYCLADIC_HOME', name: 'Cycladic home', iconType: 'cycladic', displayOrder: 12 }
+          ];
+        }
+      });
   }
 
   initializeForm(): void {
@@ -54,7 +106,7 @@ Math: any;
       // Step 1: Basic Info
       title: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
       description: ['', [Validators.required, Validators.minLength(50), Validators.maxLength(2000)]],
-      propertyType: ['', Validators.required],
+      propertyType: ['', Validators.required], // ✅ This will store propertyTypeId (number)
 
       // Step 2: Location
       address: ['', [Validators.required, Validators.maxLength(200)]],
@@ -82,11 +134,9 @@ Math: any;
     });
   }
 
-  // Format property type for display
-  formatPropertyType(type: string): string {
-    return type.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+  // Format property type for display (no longer needed but kept for compatibility)
+  formatPropertyType(type: PropertyTypeOption): string {
+    return type.name;
   }
 
   // Navigation Methods
@@ -191,11 +241,11 @@ Math: any;
         const isValidSize = file.size <= 5 * 1024 * 1024;
         
         if (!isValidType) {
-          alert(`${file.name} has invalid type`);
+          alert(`${file.name} has invalid type. Only JPEG, PNG, and WebP are allowed.`);
           return false;
         }
         if (!isValidSize) {
-          alert(`${file.name} exceeds 5MB`);
+          alert(`${file.name} exceeds 5MB limit`);
           return false;
         }
         return true;
@@ -227,19 +277,19 @@ Math: any;
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
           });
-          alert('Location captured successfully');
+          alert('Location captured successfully!');
         },
         (error) => {
-          alert('Unable to get location');
+          alert('Unable to get location. Please enter coordinates manually.');
           console.error('Geolocation error:', error);
         }
       );
     } else {
-      alert('Geolocation is not supported');
+      alert('Geolocation is not supported by your browser');
     }
   }
 
-  // Submit Methods
+  // ✅ FIXED Submit Method
   async onSubmit(): Promise<void> {
     if (this.propertyForm.invalid) {
       alert('Please fill all required fields');
@@ -257,47 +307,61 @@ Math: any;
     this.isSubmitting = true;
 
     try {
-      // Prepare DTO matching backend CreatePropertyDto
       const formValue = this.propertyForm.value;
       
+      // ✅ FIXED: Match backend CreatePropertyDto exactly with correct types
       const createPropertyDto = {
+        // Basic Info
         title: formValue.title,
         description: formValue.description,
-        propertyType: formValue.propertyType, // Now sends just the string value
+        
+        // ✅ FIX: Send propertyTypeId as integer (not string)
+        propertyTypeId: parseInt(formValue.propertyType), 
+        
+        // Location
         address: formValue.address,
         city: formValue.city,
         country: formValue.country,
         postalCode: formValue.postalCode || null,
-        latitude: formValue.latitude,
-        longitude: formValue.longitude,
-        numberOfBedrooms: formValue.numberOfBedrooms,
-        numberOfBathrooms: formValue.numberOfBathrooms,
-        maxGuests: formValue.maxGuests,
-        pricePerNight: formValue.pricePerNight,
-        cleaningFee: formValue.cleaningFee || null,
+        latitude: parseFloat(formValue.latitude),
+        longitude: parseFloat(formValue.longitude),
+        
+        // Capacity
+        numberOfBedrooms: parseInt(formValue.numberOfBedrooms),
+        numberOfBathrooms: parseInt(formValue.numberOfBathrooms),
+        maxGuests: parseInt(formValue.maxGuests),
+        
+        // Pricing
+        pricePerNight: parseFloat(formValue.pricePerNight),
+        cleaningFee: formValue.cleaningFee ? parseFloat(formValue.cleaningFee) : null,
+        
+        // Rules
         houseRules: formValue.houseRules || null,
-        checkInTime: formValue.checkInTime ? `${formValue.checkInTime}:00` : null,
-        checkOutTime: formValue.checkOutTime ? `${formValue.checkOutTime}:00` : null,
-        minimumStay: formValue.minimumStay,
-        amenityIds: [] // Temporarily send empty array for testing
+        checkInTime: formValue.checkInTime || null,
+        checkOutTime: formValue.checkOutTime || null,
+        minimumStay: parseInt(formValue.minimumStay),
+        
+        // Amenities
+        amenityIds: formValue.amenityIds.map((id: number) => parseInt(id.toString()))
       };
 
-      console.log('Submitting property:', createPropertyDto);
+      console.log('✅ Submitting property with correct types:', createPropertyDto);
 
       // Create property
       this.propertyService.createProperty(createPropertyDto as any).subscribe({
         next: async (response) => {
-          console.log('Property created:', response);
+          console.log('✅ Property created successfully:', response);
           const propertyId = response.id;
 
           // Upload images one by one
           if (this.selectedFiles.length > 0) {
-            for (const file of this.selectedFiles) {
-              try {
-                await this.propertyService.uploadPropertyImages(propertyId, [file]).toPromise();
-              } catch (error) {
-                console.error('Error uploading image:', error);
-              }
+            try {
+              console.log(`📤 Uploading ${this.selectedFiles.length} images...`);
+              await this.propertyService.uploadPropertyImages(propertyId, this.selectedFiles).toPromise();
+              console.log('✅ All images uploaded successfully');
+            } catch (error) {
+              console.error('❌ Error uploading images:', error);
+              alert('Property created but some images failed to upload. You can add them later from the edit page.');
             }
           }
 
@@ -305,14 +369,21 @@ Math: any;
           this.router.navigate(['/host/properties']);
         },
         error: (error) => {
-          console.error('Error creating property:', error);
+          console.error('❌ Error creating property:', error);
+          console.error('Error details:', error.error);
           
           if (error.status === 401) {
             alert('Authentication required. Please login first.');
-            // You can redirect to login page here if needed
-            // this.router.navigate(['/auth/login']);
+            this.router.navigate(['/login']);
+          } else if (error.status === 400) {
+            const errorMessage = error?.error?.errors 
+              ? 'Validation errors:\n' + JSON.stringify(error.error.errors, null, 2)
+              : error?.error?.message || 'Invalid data. Please check your input.';
+            alert(errorMessage);
           } else {
-            const errorMessage = error?.error?.message || error?.message || 'Failed to create property';
+            const errorMessage = error?.error?.message 
+              || error?.message 
+              || 'Failed to create property. Please try again.';
             alert(errorMessage);
           }
           
@@ -320,8 +391,8 @@ Math: any;
         }
       });
     } catch (error: any) {
-      console.error('Error creating property:', error);
-      alert(error?.message || 'Failed to create property');
+      console.error('❌ Unexpected error creating property:', error);
+      alert(error?.message || 'An unexpected error occurred');
       this.isSubmitting = false;
     }
   }
