@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Airbnb.API.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class data : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -54,6 +56,11 @@ namespace Airbnb.API.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsVerified = table.Column<bool>(type: "bit", nullable: false),
+                    VerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsBlocked = table.Column<bool>(type: "bit", nullable: false),
+                    BlockReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BlockedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -72,6 +79,25 @@ namespace Airbnb.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PropertyTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    IconType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    DisplayOrder = table.Column<int>(type: "int", nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PropertyTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -181,6 +207,34 @@ namespace Airbnb.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserVerifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IdType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IdNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IdImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    AdminNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RejectionReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReviewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ReviewedByAdminId = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserVerifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserVerifications_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Properties",
                 columns: table => new
                 {
@@ -195,7 +249,7 @@ namespace Airbnb.API.Migrations
                     PostalCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
-                    PropertyType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PropertyTypeId = table.Column<int>(type: "int", nullable: false),
                     NumberOfBedrooms = table.Column<int>(type: "int", nullable: false),
                     NumberOfBathrooms = table.Column<int>(type: "int", nullable: false),
                     MaxGuests = table.Column<int>(type: "int", nullable: false),
@@ -208,7 +262,11 @@ namespace Airbnb.API.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     IsApproved = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ApprovedByAdminId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RejectionReason = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -217,6 +275,12 @@ namespace Airbnb.API.Migrations
                         name: "FK_Properties_AspNetUsers_HostId",
                         column: x => x.HostId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Properties_PropertyTypes_PropertyTypeId",
+                        column: x => x.PropertyTypeId,
+                        principalTable: "PropertyTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -236,7 +300,7 @@ namespace Airbnb.API.Migrations
                     PricePerNight = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     CleaningFee = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<int>(type: "int", maxLength: 50, nullable: false),
                     SpecialRequests = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     CancellationReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -385,6 +449,25 @@ namespace Airbnb.API.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.InsertData(
+                table: "PropertyTypes",
+                columns: new[] { "Id", "Category", "Code", "Description", "DisplayOrder", "IconType", "IsActive", "Name" },
+                values: new object[,]
+                {
+                    { 1, "RESIDENTIAL", "HOUSE", "A standalone house", 1, "house", true, "House" },
+                    { 2, "RESIDENTIAL", "APARTMENT", "A unit in a multi-unit building", 2, "apartment", true, "Apartment" },
+                    { 3, "UNIQUE", "BARN", "A converted barn", 3, "barn", true, "Barn" },
+                    { 4, "RESIDENTIAL", "BED_BREAKFAST", "A small lodging establishment", 4, "bed-breakfast", true, "Bed & breakfast" },
+                    { 5, "UNIQUE", "BOAT", "A watercraft for accommodation", 5, "boat", true, "Boat" },
+                    { 6, "OUTDOOR", "CABIN", "A small house in a rural area", 6, "cabin", true, "Cabin" },
+                    { 7, "OUTDOOR", "CAMPER", "A recreational vehicle", 7, "camper", true, "Camper/RV" },
+                    { 8, "RESIDENTIAL", "CASA_PARTICULAR", "A Cuban home stay", 8, "casa", true, "Casa particular" },
+                    { 9, "UNIQUE", "CASTLE", "A historic castle", 9, "castle", true, "Castle" },
+                    { 10, "UNIQUE", "CAVE", "A natural cave dwelling", 10, "cave", true, "Cave" },
+                    { 11, "UNIQUE", "CONTAINER", "A shipping container home", 11, "container", true, "Container" },
+                    { 12, "UNIQUE", "CYCLADIC_HOME", "A traditional Greek island home", 12, "cycladic", true, "Cycladic home" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Amenities_Category",
                 table: "Amenities",
@@ -481,6 +564,11 @@ namespace Airbnb.API.Migrations
                 column: "PricePerNight");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Properties_PropertyTypeId",
+                table: "Properties",
+                column: "PropertyTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PropertyAmenities_AmenityId",
                 table: "PropertyAmenities",
                 column: "AmenityId");
@@ -501,6 +589,17 @@ namespace Airbnb.API.Migrations
                 name: "IX_PropertyImages_PropertyId_IsPrimary",
                 table: "PropertyImages",
                 columns: new[] { "PropertyId", "IsPrimary" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PropertyTypes_Category",
+                table: "PropertyTypes",
+                column: "Category");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PropertyTypes_Code",
+                table: "PropertyTypes",
+                column: "Code",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_BookingId",
@@ -532,6 +631,12 @@ namespace Airbnb.API.Migrations
                 name: "IX_Reviews_ReviewerId_RevieweeId",
                 table: "Reviews",
                 columns: new[] { "ReviewerId", "RevieweeId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserVerifications_UserId",
+                table: "UserVerifications",
+                column: "UserId",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -565,6 +670,9 @@ namespace Airbnb.API.Migrations
                 name: "Reviews");
 
             migrationBuilder.DropTable(
+                name: "UserVerifications");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -578,6 +686,9 @@ namespace Airbnb.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "PropertyTypes");
         }
     }
 }
