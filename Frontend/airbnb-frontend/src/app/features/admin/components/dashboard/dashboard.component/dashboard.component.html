@@ -116,24 +116,6 @@
         <div class="action-arrow">→</div>
       </div>
 
-      <!-- Open Disputes -->
-      <div class="action-card warning" *ngIf="stats.openDisputes > 0" 
-           (click)="navigateTo('disputes')">
-        <div class="action-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-            <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2"/>
-            <line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2"/>
-          </svg>
-        </div>
-        <div class="action-content">
-          <h4>Open Disputes</h4>
-          <p class="action-count">{{ stats.openDisputes }}</p>
-          <p class="action-description">Disputes requiring admin attention</p>
-        </div>
-        <div class="action-arrow">→</div>
-      </div>
-
       <!-- Blocked Users -->
       <div class="action-card info" *ngIf="stats.blockedUsers > 0" 
            (click)="navigateTo('users?filter=blocked')">
