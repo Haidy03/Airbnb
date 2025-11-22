@@ -18,6 +18,8 @@ import { PropertyIntroComponent } from './features/host/components/property-step
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
 import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
+import { BookingFormComponent } from './features/guest/components/booking-form/booking-form';
+import { CheckoutComponent } from './features/guest/components/checkout/checkout';
 
 export const routes: Routes = [
   {
@@ -89,8 +91,16 @@ export const routes: Routes = [
 },
   {
     path: '',
-    redirectTo: 'test-login',
+    redirectTo:'test-login',
     pathMatch: 'full'
+  },
+  {
+    path: 'booking',
+    component: BookingFormComponent
+  },
+   {
+    path: 'checkout',
+    component: CheckoutComponent
   },
 
   // ✅ Catch-all redirect
