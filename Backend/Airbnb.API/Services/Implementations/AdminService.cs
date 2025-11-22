@@ -100,7 +100,7 @@ namespace Airbnb.API.Services.Implementations
                 .GroupBy(p => p.PropertyType)
                 .Select(g => new PropertyTypeStatsDto
                 {
-                    PropertyType = g.Key,
+                    PropertyType = g.Key.ToString(),
                     Count = g.Count(),
                     TotalRevenue = g.SelectMany(p => p.Bookings)
                         .Where(b => b.Status == BookingStatus.Completed)
