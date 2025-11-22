@@ -6,14 +6,11 @@ import { MyProperties } from './features/host/components/my-properties/my-proper
 import { HostMessages } from './features/host/components/host-messages/host-messages';
 import { AddProperty } from './features/host/components/add-property/add-property';
 import { EditProperty } from './features/host/components/edit-property/edit-property';
-import { AdminGuard } from './core/guards/admin.guard';
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
 import { LoginComponent } from './features/auth/components/login.component/login.component';
-
-// ✅ Import auth guards
-import { authGuard, noAuthGuard } from './features/auth/services/auth.guard';
+import { authGuard, noAuthGuard, hostGuard, adminGuard } from './features/auth/services/auth.guard';
 import { PropertyIntroComponent } from './features/host/components/property-steps/property-intro/property-intro';
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
@@ -27,29 +24,29 @@ export const routes: Routes = [
   {
     path: 'login', 
     component: LoginComponent,
-    canActivate: [noAuthGuard]
+    canActivate: [noAuthGuard] // ✅ Redirects to appropriate dashboard if already logged in
   },
   
-  // ✅ Host routes - protected by auth guard
+  // ✅ Host routes - protected by hostGuard (ONLY for Hosts)
   {
     path: 'host',
     component: HostLayoutComponent,
-    canActivate: [authGuard], // ✅ Protect entire host section
+    canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
-      {path: 'properties/addd', component: AddProperty },
-      {path: 'properties/edit/:id', component: EditProperty },
+      { path: 'properties/addd', component: AddProperty },
+      { path: 'properties/edit/:id', component: EditProperty },
     ]
   },
 
-    // ✅ Property creation flow - full-screen, no host layout
+  // ✅ Property creation flow - full-screen, no host layout
   {
     path: 'host/properties',
-    canActivate: [authGuard],
+    canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       { 
         path: 'intro', 
@@ -67,12 +64,14 @@ export const routes: Routes = [
         path: 'location', 
         component: PropertyLocationComponent
       },
-      // Add more steps here as you create them:
-      // { path: 'privacy-type', component: PropertyPrivacyComponent },
-      // { path: 'location', component: PropertyLocationComponent },
-      // { path: 'amenities', component: PropertyAmenitiesComponent },
-      // etc.
     ]
+  },
+  
+  // ✅ Admin routes - protected by adminGuard (ONLY for Admins)
+  {
+    path: 'admin',
+    loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes),
+    canActivate: [adminGuard] // ✅ Changed from AdminGuard to adminGuard
   },
   
   // Reviews routes
@@ -81,11 +80,7 @@ export const routes: Routes = [
     loadChildren: () => import('./features/reviews/review.routes')
       .then(m => m.reviewRoutes)
   },
-  {
-  path: 'admin',
-  loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes),
-  canActivate: [AdminGuard] // Make sure user is Admin
-},
+  
   {
     path: '',
     redirectTo: 'test-login',

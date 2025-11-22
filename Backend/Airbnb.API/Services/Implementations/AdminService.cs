@@ -29,56 +29,65 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<DashboardStatsDto> GetDashboardStatsAsync()
         {
-            var now = DateTime.UtcNow;
-            var startOfMonth = new DateTime(now.Year, now.Month, 1);
-
-            var stats = new DashboardStatsDto
+            try
             {
-                // Users Stats
-                TotalUsers = await _adminRepository.GetTotalUsersCountAsync(),
-                TotalHosts = await _adminRepository.GetUsersCountByRoleAsync("Host"),
-                TotalGuests = await _adminRepository.GetUsersCountByRoleAsync("Guest"),
-                ActiveUsers = await _adminRepository.GetActiveUsersCountAsync(),
-                BlockedUsers = await _adminRepository.GetBlockedUsersCountAsync(),
-                PendingVerifications = (await _adminRepository.GetAllVerificationsAsync(VerificationStatus.Pending)).Count,
+                var now = DateTime.UtcNow;
+                var startOfMonth = new DateTime(now.Year, now.Month, 1);
 
-                // Properties Stats
-                TotalProperties = await _adminRepository.GetTotalPropertiesCountAsync(),
-                ActiveProperties = await _adminRepository.GetPropertiesCountByStatusAsync(PropertyStatus.Active),
-                PendingProperties = await _adminRepository.GetPropertiesCountByStatusAsync(PropertyStatus.PendingApproval),
+                var stats = new DashboardStatsDto
+                {
+                    // Users Stats
+                    TotalUsers = await _adminRepository.GetTotalUsersCountAsync(),
+                    TotalHosts = await _adminRepository.GetUsersCountByRoleAsync("Host"),
+                    TotalGuests = await _adminRepository.GetUsersCountByRoleAsync("Guest"),
+                    ActiveUsers = await _adminRepository.GetActiveUsersCountAsync(),
+                    BlockedUsers = await _adminRepository.GetBlockedUsersCountAsync(),
+                    PendingVerifications = (await _adminRepository.GetAllVerificationsAsync(VerificationStatus.Pending))?.Count ?? 0,
 
-                // Bookings Stats
-                TotalBookings = await _adminRepository.GetTotalBookingsCountAsync(),
-                ActiveBookings = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Confirmed),
-                CompletedBookings = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Completed),
-                CancelledBookings = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Cancelled),
+                    // Properties Stats
+                    TotalProperties = await _adminRepository.GetTotalPropertiesCountAsync(),
+                    ActiveProperties = await _adminRepository.GetPropertiesCountByStatusAsync(PropertyStatus.Active),
+                    PendingProperties = await _adminRepository.GetPropertiesCountByStatusAsync(PropertyStatus.PendingApproval),
 
-                // Revenue Stats
-                TotalRevenue = await _adminRepository.GetTotalRevenueAsync(),
-                MonthlyRevenue = await _adminRepository.GetRevenueByDateRangeAsync(startOfMonth, now),
-                PlatformFees = await _adminRepository.GetTotalRevenueAsync() * 0.15m,
+                    // Bookings Stats
+                    TotalBookings = await _adminRepository.GetTotalBookingsCountAsync(),
+                    ActiveBookings = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Confirmed),
+                    CompletedBookings = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Completed),
+                    CancelledBookings = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Cancelled),
 
-                // Reviews Stats
-                TotalReviews = await _adminRepository.GetTotalReviewsCountAsync(),
-                AverageRating = await _adminRepository.GetAverageRatingAsync(),
+                    // Revenue Stats
+                    TotalRevenue = await _adminRepository.GetTotalRevenueAsync(),
+                    MonthlyRevenue = await _adminRepository.GetRevenueByDateRangeAsync(startOfMonth, now),
+                    PlatformFees = await _adminRepository.GetTotalRevenueAsync() * 0.15m,
 
-                // Disputes Stats (Set to 0 if disputes are removed)
-                OpenDisputes = 0,
-                ResolvedDisputes = 0,
+                    // Reviews Stats
+                    TotalReviews = await _adminRepository.GetTotalReviewsCountAsync(),
+                    AverageRating = await _adminRepository.GetAverageRatingAsync(),
 
-                // Charts Data
-                RevenueByMonth = await GetMonthlyRevenueAsync(),
-                PropertyTypeStats = await GetPropertyTypeStatsAsync(),
-                BookingStatusStats = await GetBookingStatusStatsAsync()
-            };
+                    // Charts Data - with null checks
+                    RevenueByMonth = await GetMonthlyRevenueAsync() ?? new List<MonthlyRevenueDto>(),
+                    PropertyTypeStats = await GetPropertyTypeStatsAsync() ?? new List<PropertyTypeStatsDto>(),
+                    BookingStatusStats = await GetBookingStatusStatsAsync() ?? new List<BookingStatusStatsDto>()
+                };
 
-            return stats;
+                return stats;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting dashboard stats");
+                throw;
+            }
         }
-
         private async Task<List<MonthlyRevenueDto>> GetMonthlyRevenueAsync()
         {
             var sixMonthsAgo = DateTime.UtcNow.AddMonths(-6);
             var bookings = await _adminRepository.GetAllBookingsAsync(BookingStatus.Completed, sixMonthsAgo, null, 1, 10000);
+
+            // Check if bookings is null or empty
+            if (bookings == null || !bookings.Any())
+            {
+                return new List<MonthlyRevenueDto>();
+            }
 
             return bookings
                 .GroupBy(b => new { b.CreatedAt.Year, b.CreatedAt.Month })
@@ -96,11 +105,19 @@ namespace Airbnb.API.Services.Implementations
         {
             var properties = await _adminRepository.GetAllPropertiesAsync(null, null, 1, 10000);
 
+            // Check if properties is null or empty
+            if (properties == null || !properties.Any())
+            {
+                return new List<PropertyTypeStatsDto>();
+            }
+
+            // Filter out properties with null PropertyType and group by PropertyType Name
             return properties
-                .GroupBy(p => p.PropertyType)
+                .Where(p => p.PropertyType != null && p.PropertyType.Name != null)
+                .GroupBy(p => p.PropertyType.Name) // Use PropertyType.Name instead of PropertyType object
                 .Select(g => new PropertyTypeStatsDto
                 {
-                    PropertyType = g.Key.ToString(),
+                    PropertyType = g.Key, // This is now the PropertyType Name string
                     Count = g.Count(),
                     TotalRevenue = g.SelectMany(p => p.Bookings ?? Enumerable.Empty<Booking>())
                         .Where(b => b.Status == BookingStatus.Completed)
@@ -109,22 +126,30 @@ namespace Airbnb.API.Services.Implementations
                 .ToList();
         }
 
+
         private async Task<List<BookingStatusStatsDto>> GetBookingStatusStatsAsync()
         {
-            var completed = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Completed);
-            var confirmed = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Confirmed);
-            var pending = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Pending);
-            var cancelled = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Cancelled);
-
-            return new List<BookingStatusStatsDto>
+            try
             {
-                new BookingStatusStatsDto { Status = "Completed", Count = completed },
-                new BookingStatusStatsDto { Status = "Confirmed", Count = confirmed },
-                new BookingStatusStatsDto { Status = "Pending", Count = pending },
-                new BookingStatusStatsDto { Status = "Cancelled", Count = cancelled }
-            };
-        }
+                var completed = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Completed);
+                var confirmed = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Confirmed);
+                var pending = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Pending);
+                var cancelled = await _adminRepository.GetBookingsCountByStatusAsync(BookingStatus.Cancelled);
 
+                return new List<BookingStatusStatsDto>
+        {
+            new BookingStatusStatsDto { Status = "Completed", Count = completed },
+            new BookingStatusStatsDto { Status = "Confirmed", Count = confirmed },
+            new BookingStatusStatsDto { Status = "Pending", Count = pending },
+            new BookingStatusStatsDto { Status = "Cancelled", Count = cancelled }
+        };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting booking status stats");
+                return new List<BookingStatusStatsDto>();
+            }
+        }
         public async Task<RevenueReportDto> GetRevenueReportAsync(DateTime startDate, DateTime endDate)
         {
             var bookings = await _adminRepository.GetAllBookingsAsync(BookingStatus.Completed, startDate, endDate, 1, 10000);
