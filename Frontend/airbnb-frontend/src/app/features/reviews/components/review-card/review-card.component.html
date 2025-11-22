@@ -1,0 +1,52 @@
+<div class="review-card">
+  <div class="review-header">
+    <img
+      [src]="review.reviewerProfileImage || getDefaultAvatar()" 
+      [alt]="review.reviewerName + ' profile picture'"
+      [title]="review.reviewerName"
+      role="img"
+      [attr.aria-label]="review.reviewerName"
+      class="reviewer-avatar"
+      loading="lazy">
+    
+    <div class="reviewer-info">
+      <h4 class="reviewer-name">{{ review.reviewerName }}</h4>
+      <div class="review-meta">
+        <app-star-rating 
+          [rating]="review.rating" 
+          [readonly]="true"
+          size="small">
+        </app-star-rating>
+        <span class="review-date">{{ formatDate(review.createdAt) }}</span>
+      </div>
+      <p *ngIf="showPropertyName" class="property-name">
+        {{ review.propertyTitle }}
+      </p>
+    </div>
+  </div>
+
+  <div class="review-body">
+    <p *ngIf="review.comment" class="review-comment">
+      {{ review.comment }}
+    </p>
+
+    <div *ngIf="review.cleanlinessRating" class="detailed-ratings">
+      <div class="rating-badge" *ngIf="review.cleanlinessRating">
+        <span class="label">Cleanliness</span>
+        <span class="value">{{ review.cleanlinessRating }}/5</span>
+      </div>
+      <div class="rating-badge" *ngIf="review.communicationRating">
+        <span class="label">Communication</span>
+        <span class="value">{{ review.communicationRating }}/5</span>
+      </div>
+      <div class="rating-badge" *ngIf="review.locationRating">
+        <span class="label">Location</span>
+        <span class="value">{{ review.locationRating }}/5</span>
+      </div>
+      <div class="rating-badge" *ngIf="review.valueRating">
+        <span class="label">Value</span>
+        <span class="value">{{ review.valueRating }}/5</span>
+      </div>
+    </div>
+  </div>
+</div>

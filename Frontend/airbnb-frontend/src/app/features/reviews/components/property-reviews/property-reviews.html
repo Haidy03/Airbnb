@@ -1,0 +1,65 @@
+<div class="property-reviews-container">
+  
+  <!-- Loading State -->
+  <div *ngIf="loading && !reviewsSummary" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading reviews...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !loading" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Reviews Content -->
+  <div *ngIf="reviewsSummary && !loading" class="reviews-content">
+    
+    <!-- Summary Section -->
+    <app-review-summary 
+      *ngIf="reviewsSummary.totalReviews > 0"
+      [summary]="reviewsSummary">
+    </app-review-summary>
+
+    <!-- No Reviews State -->
+    <div *ngIf="reviewsSummary.totalReviews === 0" class="no-reviews">
+      <div class="no-reviews-icon">📝</div>
+      <h3>No reviews yet</h3>
+      <p>Be the first to review this property!</p>
+    </div>
+
+    <!-- Reviews List -->
+    <div *ngIf="reviewsSummary.totalReviews > 0" class="reviews-list-section">
+      <h2 class="section-title">
+        All Reviews ({{ reviewsSummary.totalReviews }})
+      </h2>
+
+      <div class="reviews-list">
+        <app-review-card 
+          *ngFor="let review of reviewsSummary.reviews" 
+          [review]="review"
+          [showPropertyName]="false">
+        </app-review-card>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="reviewsSummary.totalReviews > pageSize">
+        <button 
+          class="btn btn-pagination" 
+          (click)="goToPreviousPage()"
+          [disabled]="currentPage === 1">
+          ← Previous
+        </button>
+        
+        <span class="page-info">Page {{ currentPage }}</span>
+        
+        <button 
+          class="btn btn-pagination" 
+          (click)="goToNextPage()"
+          [disabled]="!hasMoreReviews">
+          Next →
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

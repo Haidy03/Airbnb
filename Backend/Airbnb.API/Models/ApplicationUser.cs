@@ -27,11 +27,17 @@ namespace Airbnb.API.Models
         public DateTime? UpdatedAt { get; set; }
 
         public bool IsActive { get; set; } = true;
+        public bool IsVerified { get; set; } = false;
+        public DateTime? VerifiedAt { get; set; }
+        public bool IsBlocked { get; set; } = false;
+        public string? BlockReason { get; set; }
+        public DateTime? BlockedAt { get; set; }
 
         // Navigation Properties
         public virtual ICollection<Property> Properties { get; set; } = new List<Property>();
         public virtual ICollection<Booking> GuestBookings { get; set; } = new List<Booking>();
         public virtual ICollection<Review> ReviewsGiven { get; set; } = new List<Review>();
         public virtual ICollection<Review> ReviewsReceived { get; set; } = new List<Review>();
+        public UserVerification? Verification { get; set; }
     }
 }
