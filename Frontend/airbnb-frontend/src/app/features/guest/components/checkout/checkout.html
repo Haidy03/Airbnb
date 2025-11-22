@@ -1,0 +1,349 @@
+<div class="checkout-container" *ngIf="booking">
+  <!-- Header -->
+  <div class="checkout-header">
+    <button class="back-btn" (click)="cancelCheckout()">
+      <svg viewBox="0 0 32 32">
+        <path d="m20 28-11.29289-11.2929a1 1 0 0 1 0-1.41421L20 4"></path>
+      </svg>
+    </button>
+    <h1 class="page-title">Confirm and pay</h1>
+  </div>
+
+  <div class="checkout-layout">
+    <!-- Main Content -->
+    <div class="checkout-main">
+
+      <!-- Step 1: Choose when to pay -->
+      <div class="checkout-section">
+        <div class="section-header">
+          <span class="step-number">1.</span>
+          <h2 class="section-title">Choose when to pay</h2>
+        </div>
+        <div class="section-content">
+          <div class="payment-timing">
+            <label class="radio-option selected">
+              <input type="radio" name="paymentTiming" checked>
+              <div class="option-content">
+                <div class="option-title">Pay {{ booking.pricing.currency }} {{ booking.pricing.totalPrice | number:'1.2-2' }} now</div>
+              </div>
+              <div class="radio-check"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Add payment method -->
+      <div class="checkout-section" *ngIf="currentStep >= 1">
+        <div class="section-header">
+          <span class="step-number">2.</span>
+          <h2 class="section-title">Add a payment method</h2>
+        </div>
+
+        <div class="section-content" *ngIf="currentStep === 1">
+          <div class="payment-methods">
+            <div
+              *ngFor="let option of paymentOptions"
+              class="payment-method"
+              [class.selected]="selectedPaymentMethod === option.id"
+              (click)="selectPaymentMethod(option.id)"
+            >
+              <div class="method-info">
+                <svg viewBox="0 0 32 32" class="method-icon">
+                  <rect width="28" height="20" x="2" y="6" rx="2"/>
+                  <path d="M2 12h28v2H2z"/>
+                </svg>
+                <span>{{ option.label }}</span>
+              </div>
+              <div class="radio-check" [class.checked]="selectedPaymentMethod === option.id"></div>
+            </div>
+          </div>
+          <button class="next-btn" (click)="nextStep()">Next</button>
+        </div>
+
+        <!-- Payment Details Form -->
+        <div class="section-content" *ngIf="currentStep === 2">
+          <form [formGroup]="paymentForm" class="payment-form">
+            <!-- Card Number -->
+            <div class="form-group">
+              <label class="form-label">Card number</label>
+              <input
+                type="text"
+                formControlName="cardNumber"
+                class="form-input"
+                placeholder="0000 0000 0000 0000"
+                maxlength="16"
+              />
+            </div>
+
+            <!-- Expiration and CVV -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Expiration</label>
+                <div class="expiration-inputs">
+                  <input
+                    type="number"
+                    formControlName="expirationMonth"
+                    class="form-input small"
+                    placeholder="MM"
+                    min="1"
+                    max="12"
+                  />
+                  <span class="separator">/</span>
+                  <input
+                    type="number"
+                    formControlName="expirationYear"
+                    class="form-input small"
+                    placeholder="YYYY"
+                    min="2024"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">CVV</label>
+                <input
+                  type="text"
+                  formControlName="cvv"
+                  class="form-input"
+                  placeholder="123"
+                  maxlength="4"
+                />
+              </div>
+            </div>
+
+            <!-- Billing Address -->
+            <div class="form-divider"></div>
+            <h3 class="form-section-title">Billing address</h3>
+
+            <div class="form-group">
+              <label class="form-label">Street address</label>
+              <input
+                type="text"
+                formControlName="billingAddress"
+                class="form-input"
+                placeholder="Enter street address"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Apt or suite number</label>
+              <input
+                type="text"
+                formControlName="apt"
+                class="form-input"
+                placeholder="Optional"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <input
+                type="text"
+                formControlName="city"
+                class="form-input"
+                placeholder="Enter city"
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">State</label>
+                <input
+                  type="text"
+                  formControlName="state"
+                  class="form-input"
+                  placeholder="State"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">ZIP code</label>
+                <input
+                  type="text"
+                  formControlName="zipCode"
+                  class="form-input"
+                  placeholder="00000"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Country/region</label>
+              <select formControlName="country" class="form-select">
+                <option *ngFor="let country of countries" [value]="country">
+                  {{ country }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="form-actions">
+              <button type="button" class="back-step-btn" (click)="previousStep()">
+                Back
+              </button>
+              <button type="button" class="next-btn" (click)="nextStep()">
+                Next
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Step 3: Review your reservation -->
+      <div class="checkout-section" *ngIf="currentStep >= 3">
+        <div class="section-header">
+          <span class="step-number">3.</span>
+          <h2 class="section-title">Review your reservation</h2>
+        </div>
+
+        <div class="section-content">
+          <!-- Review Summary -->
+          <div class="review-summary">
+            <div class="review-item">
+              <h4>Dates</h4>
+              <p>{{ booking.checkIn | date:'mediumDate' }} - {{ booking.checkOut | date:'mediumDate' }}</p>
+            </div>
+            <div class="review-item">
+              <h4>Guests</h4>
+              <p>{{ booking.guests.adults + booking.guests.children }} guest(s)</p>
+            </div>
+            <div class="review-item">
+              <h4>Payment Method</h4>
+              <p>{{ getPaymentMethodLabel() }}</p>
+            </div>
+          </div>
+
+          <!-- Terms and Conditions -->
+          <div class="terms-section">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="agreeToTerms">
+              <span>I agree to the <a href="#">House Rules</a>, <a href="#">Cancellation Policy</a>, and the <a href="#">Guest Refund Policy</a></span>
+            </label>
+
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="agreeToPolicy">
+              <span>I agree to pay the total amount shown, which includes Service Fees</span>
+            </label>
+          </div>
+
+          <!-- Error Message -->
+          <div class="error-box" *ngIf="errorMessage">
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zm0 10.2a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm.8-6.6H7.2v5.2h1.6V3.6z"/>
+            </svg>
+            <span>{{ errorMessage }}</span>
+          </div>
+
+          <!-- Confirm Button -->
+          <button
+            class="confirm-btn"
+            [disabled]="isProcessing || !paymentForm.get('agreeToTerms')?.value || !paymentForm.get('agreeToPolicy')?.value"
+            (click)="confirmAndPay()"
+          >
+            <span *ngIf="!isProcessing">Confirm and pay</span>
+            <div *ngIf="isProcessing" class="btn-spinner"></div>
+          </button>
+
+          <!-- Back Button -->
+          <button class="back-step-btn centered" (click)="previousStep()">
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="checkout-sidebar">
+      <div class="booking-summary">
+        <!-- Property Info -->
+        <div class="property-card">
+          <img [src]="booking.property.image" alt="{{ booking.property.title }}" class="property-img">
+          <div class="property-info">
+            <h3 class="property-title">{{ booking.property.title }}</h3>
+            <div class="property-rating">
+              <span class="star">★</span>
+              <span>5.0</span>
+              <span class="dot">·</span>
+              <span>Guest favorite</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cancellation Policy -->
+        <div class="policy-notice">
+          <h4>Free cancellation</h4>
+          <p>Cancel before {{ booking.checkIn | date:'longDate' }} for a full refund. <a href="#">Full policy</a></p>
+        </div>
+
+        <!-- Booking Details -->
+        <div class="booking-details">
+          <div class="detail-row">
+            <span class="detail-label">Dates</span>
+            <button class="change-btn">Change</button>
+          </div>
+          <div class="detail-value">
+            {{ booking.checkIn | date:'MMM d' }} - {{ booking.checkOut | date:'MMM d, y' }}
+          </div>
+        </div>
+
+        <div class="booking-details">
+          <div class="detail-row">
+            <span class="detail-label">Guests</span>
+            <button class="change-btn">Change</button>
+          </div>
+          <div class="detail-value">
+            {{ booking.guests.adults + booking.guests.children }} guest{{ (booking.guests.adults + booking.guests.children) > 1 ? 's' : '' }}
+          </div>
+        </div>
+
+        <!-- Price Breakdown -->
+        <div class="price-breakdown">
+          <h4 class="breakdown-title">Price details</h4>
+
+          <div class="price-line">
+            <span>{{ booking.pricing.currency }} {{ booking.pricing.pricePerNight | number:'1.0-0' }} x {{ booking.pricing.numberOfNights }} nights</span>
+            <span>{{ booking.pricing.currency }} {{ booking.pricing.basePrice | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="price-line" *ngIf="booking.pricing.cleaningFee > 0">
+            <span>Cleaning fee</span>
+            <span>{{ booking.pricing.currency }} {{ booking.pricing.cleaningFee | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="price-line" *ngIf="booking.pricing.serviceFee > 0">
+            <span>Service fee</span>
+            <span>{{ booking.pricing.currency }} {{ booking.pricing.serviceFee | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="price-line discount" *ngIf="booking.pricing.discount">
+            <span>Long stay discount</span>
+            <span>-{{ booking.pricing.currency }} {{ booking.pricing.discount | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="price-line" *ngIf="booking.pricing.tax > 0">
+            <span>Taxes</span>
+            <span>{{ booking.pricing.currency }} {{ booking.pricing.tax | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="price-divider"></div>
+
+          <div class="price-line total">
+            <span>Total ({{ booking.pricing.currency }})</span>
+            <span>{{ booking.pricing.currency }} {{ booking.pricing.totalPrice | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <!-- Rare Find Badge -->
+        <div class="rare-find">
+          <svg viewBox="0 0 32 32" fill="currentColor">
+            <path d="m16 1 2.4 8.5h8.9l-7.2 5.2 2.7 8.5-7.1-5.1-7.1 5.1 2.7-8.5-7.2-5.2h8.9z"/>
+          </svg>
+          <div>
+            <h4>This is a rare find.</h4>
+            <p>{{ booking.property.hostName }}'s place is usually booked.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
