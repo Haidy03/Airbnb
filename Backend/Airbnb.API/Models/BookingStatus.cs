@@ -5,12 +5,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Airbnb.API.Models
 {
-    public static class BookingStatus
+    public enum BookingStatus
     {
-        public const string Pending = "Pending";
-        public const string Confirmed = "Confirmed";
-        public const string Cancelled = "Cancelled";
-        public const string Completed = "Completed";
-        public const string Rejected = "Rejected";
+        Pending = 0,
+        Confirmed = 1,
+        Cancelled = 2,
+        Completed = 3,
+        Rejected = 4
     }
 }

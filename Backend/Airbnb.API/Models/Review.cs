@@ -58,6 +58,6 @@ namespace Airbnb.API.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
-        public bool IsApproved { get; set; } = true; // Admin moderation
+        public bool IsApproved { get; set; } = false; // Admin moderation
     }
 }

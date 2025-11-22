@@ -145,7 +145,7 @@ namespace Airbnb.API.Services.Implementations
                 PricePerNight = booking.PricePerNight,
                 CleaningFee = booking.CleaningFee,
                 TotalPrice = booking.TotalPrice,
-                Status = booking.Status,
+                Status = booking.Status.ToString(),
                 SpecialRequests = booking.SpecialRequests,
                 CreatedAt = booking.CreatedAt,
                 ConfirmedAt = booking.ConfirmedAt

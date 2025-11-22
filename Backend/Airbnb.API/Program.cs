@@ -100,6 +100,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 // ============================================
 // 6. Register Services
 // ============================================
@@ -107,6 +108,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 
 // ============================================
@@ -278,10 +280,12 @@ async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
             FirstName = "Admin",
             LastName = "User",
             EmailConfirmed = true,
-            IsActive = true
+            IsActive = true,
+            IsVerified = true
         };
 
         var result = await userManager.CreateAsync(adminUser, "Admin@123");
+        await userManager.AddToRoleAsync(adminUser, "Admin");
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
@@ -400,7 +404,6 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
                 Latitude = 30.0444,
                 Longitude = 31.2357,
                 HostId = host.Id,
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
 
