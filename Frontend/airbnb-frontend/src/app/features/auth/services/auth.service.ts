@@ -19,6 +19,7 @@ interface LoginResponse {
   token: string;
   userId: string;
   email: string;
+  role?: string;
 }
 
 interface RegisterResponse {
@@ -36,7 +37,7 @@ export class AuthService {
   private readonly TOKEN_KEY = 'token';
   private readonly USER_ID_KEY = 'userId';
   private readonly EMAIL_KEY = 'email';
-
+private readonly ROLE_KEY = 'userRole';
   private userSubject = new BehaviorSubject<AuthUser | null>(this.getUserFromStorage());
   public user$ = this.userSubject.asObservable();
 
@@ -62,18 +63,22 @@ export class AuthService {
     if (user.email) {
       localStorage.setItem(this.EMAIL_KEY, user.email);
     }
+     if (user.role) {
+    localStorage.setItem(this.ROLE_KEY, user.role); 
+  }
     this.userSubject.next(user);
   }
 
   private getUserFromStorage(): AuthUser | null {
     const userId = localStorage.getItem(this.USER_ID_KEY);
     const email = localStorage.getItem(this.EMAIL_KEY);
-    
+    const role = localStorage.getItem(this.ROLE_KEY);
     if (!userId) return null;
     
     return {
       id: userId,
       email: email || undefined,
+      role: role || 'Guest',
       isEmailVerified: true,
       isPhoneVerified: false
     };
@@ -92,6 +97,7 @@ export class AuthService {
           const user: AuthUser = {
             id: response.userId,
             email: response.email,
+            role: response.role || 'Guest', 
             isEmailVerified: true,
             isPhoneVerified: false
           };
@@ -193,11 +199,13 @@ export class AuthService {
       ) as any;
   }
 
+  
   // ✅ FIXED: Proper logout
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_ID_KEY);
     localStorage.removeItem(this.EMAIL_KEY);
+    localStorage.removeItem(this.ROLE_KEY);
     this.userSubject.next(null);
     this.router.navigate(['/']);
   }

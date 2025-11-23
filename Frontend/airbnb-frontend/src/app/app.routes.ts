@@ -40,6 +40,7 @@ export const routes: Routes = [
   {
     path: 'profile',
     component: ProfileComponent,
+   // canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       //{ path: '', redirectTo: 'about', pathMatch: 'full' },
       { path: 'about', component: AboutMeComponent },
