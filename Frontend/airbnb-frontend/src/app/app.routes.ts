@@ -18,6 +18,12 @@ import { PropertyFloorPlanComponent } from './features/host/components/property-
 import { StandOutComponent } from './features/host/components/property-steps/stand-out/stand-out';
 import { AmenitiesStepComponent } from './features/host/components/property-steps/amenities/amenities';
 import { PropertyPhotosComponent } from './features/host/components/property-steps/photos/photos';
+import { PropertyTitleComponent } from './features/host/components/property-steps/title/title';
+import { PropertyDescriptionComponent } from './features/host/components/property-steps/description/description';
+import { FinishsetupComponent } from './features/host/components/property-steps/finish-setup/finish-setup';
+import { PricingComponent } from './features/host/components/property-steps/pricing/pricing';
+import { instantBookComponent } from './features/host/components/property-steps/instant-book/instant-book';
+import { legalandcreateComponent } from './features/host/components/property-steps/legal-and-create/legal-and-create';
 
 export const routes: Routes = [
   {
@@ -82,6 +88,30 @@ export const routes: Routes = [
       {
         path: 'photos',
         component: PropertyPhotosComponent
+      },
+      {
+        path: 'title',
+        component: PropertyTitleComponent
+      },
+      {
+        path: 'description',
+        component: PropertyDescriptionComponent           
+      },
+      {
+        path: 'instant-book',
+        component: instantBookComponent           
+      },
+      {
+        path: 'finish-setup',
+        component: FinishsetupComponent           
+      },
+      {
+        path: 'pricing',
+        component: PricingComponent           
+      },
+      {
+        path: 'legal-and-create',
+        component: legalandcreateComponent           
       },
     ]
   },

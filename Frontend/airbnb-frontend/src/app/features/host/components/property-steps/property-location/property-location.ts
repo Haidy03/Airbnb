@@ -434,7 +434,7 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
       ).subscribe({
         next: () => {
           this.isLoading.set(false);
-          this.router.navigate(['/host/properties/amenities']);
+          this.router.navigate(['/host/properties/floor-plan']);
         },
         error: (error) => {
           this.isLoading.set(false);

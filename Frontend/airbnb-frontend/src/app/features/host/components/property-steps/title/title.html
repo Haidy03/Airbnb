@@ -1,0 +1,122 @@
+<header class="header">
+  <div class="logo" [routerLink]="['/']">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 1c-5.5 0-10 4.5-10 10 0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/>
+    </svg>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" (click)="showQuestionsModal()">
+      Questions?
+    </button>
+    <button 
+      class="btn-primary" 
+      (click)="saveAndExit()"
+      [disabled]="isLoading()">
+      <span *ngIf="!isLoading()">Save & exit</span>
+      <span *ngIf="isLoading()">Saving...</span>
+    </button>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="content-container">
+    <!-- Step Header -->
+    <div class="step-header">
+      <h1 class="main-title">Now, let's give your cave a title</h1>
+      <p class="step-description">
+        Short titles work best. Have fun with it—you can always change it later.
+      </p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="titleForm" class="title-form">
+      
+      <!-- Title Input -->
+      <div class="form-group">
+        <textarea
+          class="title-input"
+          formControlName="title"
+          placeholder="e.g. Cozy cave with city views"
+          (input)="titleForm.updateValueAndValidity()"
+          rows="3"
+          maxlength="50">
+        </textarea>
+
+        <!-- Character Counter -->
+        <div class="char-counter">
+          <span 
+            class="counter-text"
+            [style.color]="getCharCountColor()">
+            {{ getRemainingChars() }} / {{ maxChars }}
+          </span>
+          
+          <!-- Visual indicator -->
+          <div class="counter-bar">
+            <div 
+              class="counter-fill"
+              [style.width.%]="(50 - getRemainingChars()) * 2"
+              [class.counter-warning]="isCharCountLow()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Validation Messages -->
+      <div class="validation-messages" *ngIf="titleForm.get('title')?.touched">
+        <p class="error-message" *ngIf="titleForm.get('title')?.hasError('required')">
+          ✕ Title is required
+        </p>
+        <p class="error-message" *ngIf="titleForm.get('title')?.hasError('minlength')">
+          ✕ Title must be at least 10 characters
+        </p>
+        <p class="error-message" *ngIf="titleForm.get('title')?.hasError('maxlength')">
+          ✕ Title cannot exceed 50 characters
+        </p>
+      </div>
+
+      <!-- Tips Section -->
+      <div class="tips-section">
+        <h3 class="tips-title">Tips for a great title:</h3>
+        <ul class="tips-list">
+          <li>
+            <svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+            Be specific and descriptive
+          </li>
+          <li>
+            <svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+            Highlight unique features
+          </li>
+          <li>
+            <svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+            Keep it short and punchy
+          </li>
+          <li>
+            <svg class="tip-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+            Example: "Luxury cave with ocean views"
+          </li>
+        </ul>
+      </div>
+
+    </form>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="progress-bar" style="width: 75%"></div>
+  <button class="btn-back" (click)="goBack()">Back</button>
+  <button 
+    class="btn-next" 
+    [disabled]="!titleForm.valid || isLoading()"
+    (click)="goNext()">
+    <span *ngIf="!isLoading()">Next</span>
+    <span *ngIf="isLoading()">Saving...</span>
+  </button>
+</footer>
