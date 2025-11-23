@@ -111,7 +111,8 @@
               {{ user.name }}
               <span *ngIf="user.isSuperhost" class="superhost-badge">⭐</span>
             </div>
-            <a [routerLink]="['/host/profile']" 
+            <!-- /host/profile -->
+            <a [routerLink]="['/profile']" 
                (click)="toggleMobileMenu()"
                class="mobile-profile-link">
               View profile

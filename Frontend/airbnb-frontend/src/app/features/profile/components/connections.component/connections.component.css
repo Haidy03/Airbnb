@@ -1,0 +1,147 @@
+.connections-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+}
+
+.subtitle {
+  color: #717171;
+  margin: 6px 0 0 0;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 16px;
+  color: #717171;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid #ebebeb;
+  border-top-color: #e61e4d;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+  text-align: center;
+  color: #717171;
+  padding: 40px 16px;
+}
+
+.connections-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.connection-card {
+  background: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.conn-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.conn-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.conn-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.conn-initial {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.conn-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.conn-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+}
+
+.mutual {
+  font-size: 13px;
+  color: #717171;
+  margin: 4px 0 0 0;
+}
+
+.conn-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.message-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #222;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.remove-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #fdecea;
+  color: #8b1f1f;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .connection-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .conn-actions {
+    justify-content: flex-end;
+  }
+}

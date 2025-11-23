@@ -1,0 +1,129 @@
+<div class="edit-container">
+  <div class="edit-content">
+    <!-- Avatar Section -->
+    <div class="avatar-section">
+      <div class="large-avatar">
+        <img *ngIf="profileImage" [src]="profileImage" alt="Profile" class="avatar-img">
+        <span *ngIf="!profileImage" class="avatar-initial">{{ user?.initial }}</span>
+      </div>
+      <button class="add-photo-btn" (click)="fileInput.click()">
+        <span class="camera-icon">📷</span>
+        Add
+      </button>
+      <input 
+        #fileInput 
+        type="file" 
+        accept="image/*" 
+        (change)="onFileSelected($event)" 
+        style="display: none">
+    </div>
+
+    <h2 class="edit-title">My profile</h2>
+    <p class="edit-description">
+      Hosts and guests can see your profile and it may appear across Airbnb to help us build trust in our community. 
+      <a href="#" class="learn-more-link">Learn more</a>
+    </p>
+
+    <!-- Profile Questions Grid -->
+    <div class="questions-grid">
+      <button 
+        *ngFor="let question of questions" 
+        class="question-item"
+        [class.filled]="profileDetails[question.field]"
+        (click)="openModal(question)">
+        <span class="question-icon">{{ question.icon }}</span>
+        <span class="question-label">
+          {{ profileDetails[question.field] || question.label }}
+        </span>
+      </button>
+    </div>
+
+    <!-- About Me Section -->
+    <div class="about-section">
+      <h3 class="section-title">About me</h3>
+      <div class="about-input-container">
+        <textarea 
+          [(ngModel)]="profileDetails.aboutMe"
+          placeholder="Write something fun and punchy.
+Add intro"
+          maxlength="500"
+          class="about-textarea"></textarea>
+      </div>
+    </div>
+
+    <!-- Where I've Been Section -->
+    <div class="stamps-section">
+      <div class="section-header">
+        <h3 class="section-title">Where I've been</h3>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="showTravelStamps">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <p class="section-description">Pick the stamps you want other people to see on your profile.</p>
+      
+      <div *ngIf="showTravelStamps" class="stamps-grid">
+        <div class="stamp-card">
+          <span class="stamp-icon">🌍</span>
+          <p class="stamp-label">Next destination</p>
+        </div>
+        <div class="stamp-card">
+          <span class="stamp-icon">☀️</span>
+          <p class="stamp-label">Next destination</p>
+        </div>
+        <div class="stamp-card">
+          <span class="stamp-icon">✈️</span>
+          <p class="stamp-label">Next destination</p>
+        </div>
+        <div class="stamp-card">
+          <span class="stamp-icon">🔒</span>
+          <p class="stamp-label">Next destination</p>
+        </div>
+      </div>
+      <button class="edit-stamps-btn">Edit travel stamps</button>
+    </div>
+
+    <!-- My Interests Section -->
+    <div class="interests-section">
+      <h3 class="section-title">My interests</h3>
+      <p class="section-description">Find common ground with other guests and hosts by adding interests to your profile.</p>
+      <div class="interests-placeholder">
+        <button class="add-circle">+</button>
+        <button class="add-circle">+</button>
+        <button class="add-circle">+</button>
+      </div>
+      <button class="add-interests-btn">Add interests</button>
+    </div>
+
+    <!-- Done Button -->
+    <div class="actions">
+      <button class="done-btn" (click)="onDone()" [disabled]="isSaving">
+        {{ isSaving ? 'Saving...' : 'Done' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="activeModal" class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeModal()">✕</button>
+      
+      <h3 class="modal-title">{{ getModalTitle() }}</h3>
+      <p class="modal-description">{{ getModalDescription() }}</p>
+      
+      <input 
+        type="text"
+        [(ngModel)]="modalValue"
+        [placeholder]="activeModal.placeholder"
+        [maxLength]="activeModal.maxLength"
+        class="modal-input"
+        (keyup.enter)="saveModal()">
+      
+      <div class="modal-footer">
+        <span class="char-count">{{ activeModal.maxLength - modalValue.length }} characters available</span>
+      </div>
+
+      <button class="modal-save-btn" (click)="saveModal()">Save</button>
+    </div>
+  </div>
+</div>

@@ -10,6 +10,7 @@ export interface AuthUser {
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
   provider?: AuthProvider;
+  role?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

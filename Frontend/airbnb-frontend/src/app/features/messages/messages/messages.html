@@ -1,0 +1,72 @@
+<div class="messages-container">
+  <!-- Header -->
+  <div class="messages-header">
+    <h1 class="title">Messages</h1>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading conversations...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="error-state">
+    <p>{{ error() }}</p>
+    <button (click)="loadConversations()">Retry</button>
+  </div>
+
+  <!-- Conversations List -->
+  <div *ngIf="!isLoading() && !error()" class="conversations-list">
+    
+    <!-- Empty State -->
+    <div *ngIf="conversations().length === 0" class="empty-state">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="40" r="38" stroke="#DDDDDD" stroke-width="2"/>
+        <path d="M25 35h30M25 45h20" stroke="#DDDDDD" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <h2>No messages yet</h2>
+      <p>When you contact a host or guest, your messages will appear here.</p>
+    </div>
+
+    <!-- Conversation Items -->
+    <div 
+      *ngFor="let conversation of conversations()"
+      class="conversation-item"
+      [class.unread]="hasUnreadMessages(conversation)"
+      (click)="openConversation(conversation)">
+      
+      <div class="conversation-avatar">
+        <img 
+          [src]="getOtherParticipant(conversation)?.avatar || '/assets/default-avatar.png'" 
+          [alt]="getOtherParticipant(conversation)?.name"
+          class="avatar">
+        <span 
+          *ngIf="getOtherParticipant(conversation)?.isOnline" 
+          class="online-indicator"></span>
+      </div>
+
+      <div class="conversation-content">
+        <div class="conversation-header">
+          <div class="user-info">
+            <span class="user-name">{{ getOtherParticipant(conversation)?.name }}</span>
+            <span class="user-type">{{ getOtherParticipant(conversation)?.userType }}</span>
+          </div>
+          <span class="timestamp">{{ formatDate(conversation.lastMessage?.sentAt!) }}</span>
+        </div>
+
+        <div class="conversation-preview">
+          <p class="property-name" *ngIf="conversation.propertyTitle">
+            {{ conversation.propertyTitle }}
+          </p>
+          <p class="last-message">{{ conversation.lastMessage?.content }}</p>
+        </div>
+      </div>
+
+      <div class="conversation-badge" *ngIf="hasUnreadMessages(conversation)">
+        <span class="unread-count">{{ conversation.unreadCount }}</span>
+      </div>
+    </div>
+
+  </div>
+</div>
