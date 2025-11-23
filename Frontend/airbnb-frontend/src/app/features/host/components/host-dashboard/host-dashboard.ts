@@ -1,8 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { BookingService } from '../../services/booking';
-import { Booking, BookingStatus } from '../../models/booking.model';
+import { BookingService, Booking } from '../../services/booking';
 
 @Component({
   selector: 'app-host-dashboard',
@@ -36,47 +35,32 @@ export class HostDashboardComponent implements OnInit {
     this.activeTab.set(tab);
     if (tab === 'upcoming') {
       this.loadUpcomingBookings();
+    } else {
+      this.loadTodayBookings();
     }
   }
 
   /**
-   * Load today's bookings (check-ins and check-outs)
+   * ✅ Load today's bookings (check-ins and check-outs)
    */
   loadTodayBookings(): void {
     this.loading.set(true);
     
-    this.bookingService.getAllBookings().subscribe({
+    this.bookingService.getTodayBookings().subscribe({
       next: (bookings) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        // Filter bookings for today (check-ins or check-outs)
-        const todayBookings = bookings.filter(booking => {
-          const checkIn = new Date(booking.checkInDate);
-          const checkOut = new Date(booking.checkOutDate);
-          checkIn.setHours(0, 0, 0, 0);
-          checkOut.setHours(0, 0, 0, 0);
-          
-          return (checkIn.getTime() === today.getTime() || 
-                  checkOut.getTime() === today.getTime()) &&
-                 (booking.status === BookingStatus.CONFIRMED || 
-                  booking.status === BookingStatus.CHECKED_IN);
-        });
-
-        this.todayBookings.set(todayBookings);
+        this.todayBookings.set(bookings);
         this.loading.set(false);
+        console.log('✅ Today bookings loaded:', bookings.length);
       },
       error: (err) => {
-        console.error('Error loading bookings:', err);
+        console.error('Error loading today bookings:', err);
         this.loading.set(false);
       }
     });
   }
 
   /**
-   * Load upcoming bookings
+   * ✅ Load upcoming bookings
    */
   loadUpcomingBookings(): void {
     this.loading.set(true);
@@ -85,6 +69,7 @@ export class HostDashboardComponent implements OnInit {
       next: (bookings) => {
         this.upcomingBookings.set(bookings);
         this.loading.set(false);
+        console.log('✅ Upcoming bookings loaded:', bookings.length);
       },
       error: (err) => {
         console.error('Error loading upcoming bookings:', err);
@@ -97,15 +82,16 @@ export class HostDashboardComponent implements OnInit {
    * Navigate to complete listing
    */
   completeYourListing(): void {
-    this.router.navigate(['/host/properties/add']);
+    this.router.navigate(['/host/properties/intro']);
   }
 
   /**
-   * Get booking event type
+   * Get booking event type (check-in or check-out)
    */
   getEventType(booking: Booking): 'check-in' | 'check-out' {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
     const checkIn = new Date(booking.checkInDate);
     checkIn.setHours(0, 0, 0, 0);
     
@@ -130,4 +116,15 @@ export class HostDashboardComponent implements OnInit {
     const checkOutFormatted = this.formatDate(checkOut);
     return `${checkInFormatted} - ${checkOutFormatted}`;
   }
+
+  /**
+ * Get check-in or check-out time for display
+ */
+getCheckInOutTime(booking: Booking): string {
+  // Default times if not provided
+  const checkInTime = '3:00 PM';
+  const checkOutTime = '11:00 AM';
+  
+  return this.getEventType(booking) === 'check-in' ? checkInTime : checkOutTime;
+}
 }

@@ -45,6 +45,7 @@ import { ChatComponent } from './features/messages/chat/chat';
 import { MessageTestComponent } from './test/test/test';
 import { ListingDetails } from './features/guest/components/listing-details/listing-details';
 import { Checkout } from './features/guest/components/checkout/checkout';
+import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
 
 export const routes: Routes = [
   // =================================================
@@ -115,7 +116,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
-      // { path: 'calendar', component: HostCalendar },
+      { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       // { path: 'messages', component: HostMessages },
       // { path: 'properties/addd', component: AddProperty },
