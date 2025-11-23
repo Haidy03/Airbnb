@@ -221,7 +221,10 @@ export class PropertyPhotosComponent implements OnInit {
       formData.append('file', image.file, image.file.name);
 
       const token = localStorage.getItem('authToken');
-      const headers = new HttpHeaders(token ? { 'Authorization': `Bearer ${token}` } : {});
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
       this.http.post(
         `${environment.apiUrl}/host/property/${this.currentDraft!.id}/images`,
@@ -329,11 +332,29 @@ export class PropertyPhotosComponent implements OnInit {
     
     if (!this.currentDraft?.id) return;
 
-    const imageNumId = Number(imageId);
+    // Get the image to find its actual server ID
+    const image = this.uploadedImages().find(img => img.id === imageId);
+    if (!image || !image.uploaded) {
+      alert('Can only set uploaded images as primary');
+      return;
+    }
 
-    this.propertyService.setPrimaryImage(imageNumId).subscribe({
+    // Extract numeric ID if available, otherwise use the full ID
+    let actualImageId: any = image.id;
+    
+    // Try to parse if it's in format "img-123-abc"
+    if (image.id.startsWith('img-')) {
+      const parts = image.id.split('-');
+      if (parts.length > 1 && !isNaN(parseInt(parts[1]))) {
+        actualImageId = parseInt(parts[1]);
+      }
+    }
+
+    console.log('🔧 Setting primary image:', { imageId, actualImageId, image });
+
+    this.propertyService.setPrimaryImage(actualImageId).subscribe({
       next: () => {
-        // Update local state
+        // Update local state - remove primary from all, set on this one
         const updated = this.uploadedImages();
         updated.forEach(img => img.isPrimary = false);
         const targetImg = updated.find(img => img.id === imageId);
@@ -341,11 +362,13 @@ export class PropertyPhotosComponent implements OnInit {
           targetImg.isPrimary = true;
         }
         this.uploadedImages.set([...updated]);
-        console.log('✅ Primary image set');
+        console.log('✅ Primary image set successfully');
+        alert('✓ Primary image updated');
       },
       error: (error) => {
         console.error('❌ Error setting primary image:', error);
-        alert('Failed to set primary image');
+        console.log('Error details:', error.error);
+        alert('Failed to set primary image: ' + (error.error?.message || error.message));
       }
     });
   }
@@ -462,7 +485,7 @@ export class PropertyPhotosComponent implements OnInit {
       next: () => {
         console.log('✅ Photos saved, moving to pricing');
         this.isLoading.set(false);
-        this.router.navigate(['/host/properties/pricing']);
+        this.router.navigate(['/host/properties/title']);
       },
       error: (error) => {
         this.isLoading.set(false);
