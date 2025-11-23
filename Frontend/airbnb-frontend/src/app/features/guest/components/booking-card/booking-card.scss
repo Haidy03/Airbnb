@@ -1,0 +1,162 @@
+.booking-card {
+  background: white;
+  border: 1px solid rgb(221, 221, 221);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 6px 16px;
+  width: 100%;
+  max-width: 370px; /* حجم الكارت المعتاد */
+  position: sticky; /* هذا ما يجعله يثبت أثناء النزول */
+  top: 120px; /* المسافة من أعلى الشاشة */
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+
+    .price {
+      .amount { font-weight: 600; font-size: 22px; color: #222; }
+      .period { font-size: 16px; color: #717171; margin-left: 4px; }
+    }
+    .rating {
+      font-size: 14px; font-weight: 600;
+      .star { margin-right: 4px; }
+      .reviews a { color: #717171; text-decoration: underline; }
+    }
+  }
+
+  .booking-form {
+    border: 1px solid #b0b0b0;
+    border-radius: 8px;
+    margin-bottom: 16px;
+
+    .date-picker-wrapper {
+      display: flex;
+      border-bottom: 1px solid #b0b0b0;
+
+      .date-input {
+        flex: 1;
+        padding: 10px 12px;
+        position: relative;
+
+        &.check-in { border-right: 1px solid #b0b0b0; }
+
+        label {
+          display: block;
+          font-size: 10px;
+          font-weight: 800;
+          color: #222;
+        }
+        input {
+          border: none;
+          width: 100%;
+          outline: none;
+          font-size: 14px;
+          color: #717171;
+          background: transparent;
+        }
+      }
+    }
+
+   .guests-dropdown {
+      position: absolute;
+      top: 100%; left: -1px; // عشان تغطي البوردر
+      right: -1px; // تاخد العرض بالكامل
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      z-index: 100; // عشان تظهر فوق أي حاجة تانية
+      margin-top: 4px;
+
+      .guest-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px; // مسافة بين كل صف
+
+        .info {
+          .type { font-weight: 600; font-size: 16px; color: #222; }
+          .sub { font-size: 13px; color: #717171; margin-top: 2px; }
+          .sub.link { text-decoration: underline; font-weight: 500; color: #222; cursor: pointer; }
+        }
+
+        .controls {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          .round-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: 1px solid #b0b0b0;
+            background: white;
+            color: #717171;
+            font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+
+            &:hover:not(:disabled) { border-color: #222; color: #222; }
+            &:disabled { opacity: 0.3; cursor: not-allowed; border-color: #ebebeb; }
+          }
+
+          .count {
+            font-size: 16px; width: 20px; text-align: center; color: #222;
+          }
+        }
+      }
+
+      .disclaimer {
+        font-size: 12px; color: #717171; margin-bottom: 20px; line-height: 1.4;
+      }
+
+      .dropdown-footer {
+        text-align: right;
+        .close-link {
+          background: none; border: none;
+          text-decoration: underline;
+          font-weight: 600; font-size: 16px;
+          cursor: pointer; color: #222;
+          &:hover { background: #f7f7f7; border-radius: 4px; padding: 4px 8px; margin: -4px -8px; }
+        }
+      }
+    }
+  }
+}
+
+
+  .reserve-btn {
+    width: 100%;
+    background: linear-gradient(to right, #E61E4D 0%, #E31C5F 50%, #D70466 100%);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s;
+
+    &:active { transform: scale(0.98); }
+  }
+
+  .no-charge-text {
+    text-align: center; margin-top: 16px; font-size: 14px; color: #717171;
+  }
+
+  .price-breakdown {
+    margin-top: 24px;
+
+    .line-item {
+      display: flex; justify-content: space-between; margin-bottom: 12px;
+      font-size: 16px; color: #222; text-decoration: underline;
+
+      &.total {
+        font-weight: 800; text-decoration: none; margin-top: 16px;
+      }
+    }
+    hr { border: 0; border-top: 1px solid #dddddd; }
+  }
+
