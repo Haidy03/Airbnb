@@ -1,0 +1,368 @@
+<!-- Account Settings Page -->
+<div class="min-vh-100 bg-white">
+  <!-- Header -->
+  <header class="border-bottom">
+    <div class="container py-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+          <button (click)="goBack()" class="btn btn-light rounded-circle p-2">
+            <svg class="bi" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+          </button>
+          <h1 class="h4 mb-0 fw-bold text-dark">Account settings</h1>
+        </div>
+        <button (click)="goBack()" class="btn btn-link text-decoration-none text-dark fw-bold">
+          Done
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container py-5">
+    <div class="row g-5">
+
+      <!-- Sidebar Navigation -->
+      <aside class="col-lg-3">
+        <div class="list-group list-group-flush">
+          <button
+            (click)="selectSection('personal')"
+            [class.active]="activeSection === 'personal'"
+            class="list-group-item list-group-item-action border-0 d-flex align-items-center gap-3 py-3 rounded-3 mb-1"
+            [ngClass]="activeSection === 'personal' ? 'bg-light text-dark fw-bold' : 'bg-transparent text-secondary'">
+            <svg class="bi" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            <span>Personal information</span>
+          </button>
+
+          <button
+            (click)="selectSection('security')"
+            [class.active]="activeSection === 'security'"
+            class="list-group-item list-group-item-action border-0 d-flex align-items-center gap-3 py-3 rounded-3"
+            [ngClass]="activeSection === 'security' ? 'bg-light text-dark fw-bold' : 'bg-transparent text-secondary'">
+            <svg class="bi" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            <span>Login & security</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Content Area -->
+      <main class="col-lg-9">
+
+        <!-- Personal Information Section -->
+        <div *ngIf="activeSection === 'personal'">
+          <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="h4 fw-bold text-dark mb-0">Personal information</h2>
+            <button
+              *ngIf="!isEditingPersonal"
+              (click)="enableEditPersonal()"
+              class="btn btn-link text-dark text-decoration-underline fw-bold">
+              Edit
+            </button>
+          </div>
+
+          <form [formGroup]="personalInfoForm">
+            <!-- Legal Name -->
+            <div class="border-bottom pb-4 mb-4">
+              <div class="row">
+                <div class="col-12">
+                  <h3 class="h6 fw-bold text-dark mb-1">Legal name</h3>
+                  <div *ngIf="!isEditingPersonal" class="text-muted">
+                    {{ currentUser?.firstName }} {{ currentUser?.lastName }}
+                  </div>
+                  <div *ngIf="isEditingPersonal" class="mt-3">
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label text-secondary small">First name</label>
+                        <input
+                          type="text"
+                          formControlName="firstName"
+                          class="form-control form-control-lg">
+                        <div *ngIf="personalInfoForm.get('firstName')?.invalid && personalInfoForm.get('firstName')?.touched"
+                             class="text-danger small mt-1">
+                          First name is required
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label text-secondary small">Last name</label>
+                        <input
+                          type="text"
+                          formControlName="lastName"
+                          class="form-control form-control-lg">
+                        <div *ngIf="personalInfoForm.get('lastName')?.invalid && personalInfoForm.get('lastName')?.touched"
+                             class="text-danger small mt-1">
+                          Last name is required
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email Address -->
+            <div class="border-bottom pb-4 mb-4">
+              <div class="row">
+                <div class="col-12">
+                  <h3 class="h6 fw-bold text-dark mb-1">Email address</h3>
+                  <div *ngIf="!isEditingPersonal" class="text-muted">
+                    {{ currentUser?.email }}
+                  </div>
+                  <div *ngIf="isEditingPersonal" class="mt-3">
+                    <input
+                      type="email"
+                      formControlName="email"
+                      class="form-control form-control-lg">
+                    <div *ngIf="personalInfoForm.get('email')?.invalid && personalInfoForm.get('email')?.touched"
+                         class="text-danger small mt-1">
+                      Please enter a valid email address
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="border-bottom pb-4 mb-4">
+              <div class="row">
+                <div class="col-12">
+                  <h3 class="h6 fw-bold text-dark mb-1">Phone number</h3>
+                  <div *ngIf="!isEditingPersonal" class="text-muted">
+                    {{ currentUser?.phoneNumber || 'Not provided' }}
+                  </div>
+                  <div *ngIf="isEditingPersonal" class="mt-3">
+                    <input
+                      type="tel"
+                      formControlName="phoneNumber"
+                      placeholder="+20 100 123 4567"
+                      class="form-control form-control-lg">
+                    <p class="text-muted small mt-2">
+                      Add a number so confirmed guests and Airbnb can get in touch.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="border-bottom pb-4 mb-4">
+              <div class="row">
+                <div class="col-12">
+                  <h3 class="h6 fw-bold text-dark mb-1">Date of birth</h3>
+                  <div *ngIf="!isEditingPersonal" class="text-muted">
+                    {{ currentUser?.dateOfBirth || 'Not provided' }}
+                  </div>
+                  <div *ngIf="isEditingPersonal" class="mt-3">
+                    <input
+                      type="date"
+                      formControlName="dateOfBirth"
+                      class="form-control form-control-lg">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Address -->
+            <div class="border-bottom pb-4 mb-4">
+              <div class="row">
+                <div class="col-12">
+                  <h3 class="h6 fw-bold text-dark mb-1">Address</h3>
+                  <div *ngIf="!isEditingPersonal" class="text-muted">
+                    <div>{{ currentUser?.address || 'Not provided' }}</div>
+                    <div *ngIf="currentUser?.city || currentUser?.country">
+                      {{ currentUser?.city }}{{ currentUser?.city && currentUser?.country ? ', ' : '' }}{{ currentUser?.country }}
+                    </div>
+                  </div>
+                  <div *ngIf="isEditingPersonal" class="mt-3">
+                    <div class="mb-3">
+                      <label class="form-label text-secondary small">Street address</label>
+                      <input
+                        type="text"
+                        formControlName="address"
+                        class="form-control form-control-lg">
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label text-secondary small">City</label>
+                        <input
+                          type="text"
+                          formControlName="city"
+                          class="form-control form-control-lg">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label text-secondary small">Country</label>
+                        <input
+                          type="text"
+                          formControlName="country"
+                          class="form-control form-control-lg">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div *ngIf="isEditingPersonal" class="d-flex justify-content-end gap-3 pt-2">
+              <button
+                type="button"
+                (click)="cancelEditPersonal()"
+                class="btn btn-outline-dark fw-bold px-4 py-2">
+                Cancel
+              </button>
+              <button
+                type="button"
+                (click)="savePersonalInfo()"
+                [disabled]="!personalInfoForm.valid"
+                class="btn text-white fw-bold px-4 py-2"
+                style="background-color: #FF385C;">
+                Save changes
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Login & Security Section -->
+        <div *ngIf="activeSection === 'security'">
+          <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="h4 fw-bold text-dark mb-0">Login & security</h2>
+            <button
+              *ngIf="!isEditingSecurity"
+              (click)="enableEditSecurity()"
+              class="btn btn-link text-dark text-decoration-underline fw-bold">
+              Update password
+            </button>
+          </div>
+
+          <!-- Password Section -->
+          <div class="border-bottom pb-4 mb-4">
+            <div class="row">
+              <div class="col-12">
+                <h3 class="h6 fw-bold text-dark mb-1">Password</h3>
+                <div *ngIf="!isEditingSecurity" class="text-muted">
+                  ••••••••
+                </div>
+
+                <!-- Password Change Form -->
+                <form *ngIf="isEditingSecurity" [formGroup]="securityForm" class="mt-4">
+                  <!-- Current Password -->
+                  <div class="mb-3">
+                    <label class="form-label text-secondary small">Current password</label>
+                    <div class="input-group">
+                      <input
+                        [type]="showCurrentPassword ? 'text' : 'password'"
+                        formControlName="currentPassword"
+                        class="form-control form-control-lg border-end-0">
+                      <button
+                        type="button"
+                        (click)="togglePasswordVisibility('current')"
+                        class="btn btn-outline-secondary border-start-0 bg-white">
+                        <i class="bi" [class.bi-eye]="!showCurrentPassword" [class.bi-eye-slash]="showCurrentPassword"></i>
+                        <span class="small">{{ showCurrentPassword ? 'Hide' : 'Show' }}</span>
+                      </button>
+                    </div>
+                    <div *ngIf="securityForm.get('currentPassword')?.invalid && securityForm.get('currentPassword')?.touched"
+                         class="text-danger small mt-1">
+                      Current password is required
+                    </div>
+                  </div>
+
+                  <!-- New Password -->
+                  <div class="mb-3">
+                    <label class="form-label text-secondary small">New password</label>
+                    <div class="input-group">
+                      <input
+                        [type]="showNewPassword ? 'text' : 'password'"
+                        formControlName="newPassword"
+                        class="form-control form-control-lg border-end-0">
+                      <button
+                        type="button"
+                        (click)="togglePasswordVisibility('new')"
+                        class="btn btn-outline-secondary border-start-0 bg-white">
+                        <span class="small">{{ showNewPassword ? 'Hide' : 'Show' }}</span>
+                      </button>
+                    </div>
+                    <div *ngIf="securityForm.get('newPassword')?.invalid && securityForm.get('newPassword')?.touched"
+                         class="text-danger small mt-1">
+                      Password must be at least 8 characters
+                    </div>
+                  </div>
+
+                  <!-- Confirm Password -->
+                  <div class="mb-3">
+                    <label class="form-label text-secondary small">Confirm new password</label>
+                    <div class="input-group">
+                      <input
+                        [type]="showConfirmPassword ? 'text' : 'password'"
+                        formControlName="confirmPassword"
+                        class="form-control form-control-lg border-end-0">
+                      <button
+                        type="button"
+                        (click)="togglePasswordVisibility('confirm')"
+                        class="btn btn-outline-secondary border-start-0 bg-white">
+                        <span class="small">{{ showConfirmPassword ? 'Hide' : 'Show' }}</span>
+                      </button>
+                    </div>
+                    <div *ngIf="!passwordsMatch && securityForm.get('confirmPassword')?.touched"
+                         class="text-danger small mt-1">
+                      Passwords do not match
+                    </div>
+                  </div>
+
+                  <!-- Password Requirements -->
+                  <div class="alert alert-light border p-3 rounded-3 mb-4">
+                    <p class="small fw-bold text-dark mb-2">Password must contain:</p>
+                    <ul class="list-unstyled mb-0">
+                      <li class="d-flex align-items-center gap-2 small text-muted">
+                        <svg class="bi text-success" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span>At least 8 characters</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="d-flex justify-content-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      (click)="cancelEditSecurity()"
+                      class="btn btn-outline-dark fw-bold px-4 py-2">
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      (click)="saveSecurityInfo()"
+                      [disabled]="!securityForm.valid"
+                      class="btn text-white fw-bold px-4 py-2"
+                      style="background-color: #FF385C;">
+                      Update password
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Two-Factor Authentication -->
+          <div class="border-bottom pb-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <h3 class="h6 fw-bold text-dark mb-1">Two-factor authentication</h3>
+                <p class="text-muted small mb-0">Not enabled</p>
+              </div>
+              <button class="btn btn-link text-dark text-decoration-underline fw-bold">
+                Enable
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+</div>

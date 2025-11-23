@@ -1,0 +1,168 @@
+
+<div class="header-container sticky-top"
+     [class.scrolled]="(isScrolled || currentPage === 'search') && !showExpandedSearch">
+
+  <div class="container-fluid px-4 px-md-5">
+
+    <!-- 1. Top Row (Logo & User Menu & Small Search) -->
+    <div class="nav-top row align-items-center justify-content-between">
+
+      <!-- Left: Logo -->
+      <div class="col-auto">
+        <!-- ضفت دالة navigateToHome هنا -->
+        <a (click)="navigateToHome()" class="text-decoration-none d-flex align-items-center cursor-pointer" style="color: #FF385C; cursor: pointer;">
+           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2c-4.97 0-9 4.03-9 9 0 4.97 4.03 9 9 9s9-4.03 9-9c0-4.97-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7 0-3.87 3.13-7 7-7s7 3.13 7 7c0 3.87-3.13 7-7 7z"/>
+            <path d="M12 4l-8 14h16z" fill="white" transform="scale(0.5) translate(12,8)"/>
+          </svg>
+          <span class="fw-bold fs-4 ms-1 d-none d-lg-block">airbnb</span>
+        </a>
+      </div>
+
+      <!-- Center: Small Search Pill -->
+      <div class="small-search-container"
+           *ngIf="(isScrolled || currentPage === 'search') && !showExpandedSearch">
+
+        <div class="search-pill" (click)="expandHeader()">
+          <span class="pill-text fw-semibold">{{ searchData.where || 'Anywhere' }}</span>
+          <span class="pill-separator">|</span>
+          <span class="pill-text fw-semibold">{{ searchData.checkIn ? 'Selected dates' : 'Any week' }}</span>
+          <span class="pill-separator">|</span>
+          <span class="pill-text text-secondary">{{ searchData.who || 'Add guests' }}</span>
+          <button class="search-btn-small">
+            <i class="bi bi-search" style="font-size: 12px;"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Right: User Menu -->
+      <div class="col-auto d-flex align-items-center gap-2 position-relative">
+
+        <a class="host-btn d-none d-md-block text-dark text-decoration-none fw-semibold px-3 py-2 rounded-pill hover-bg-light" href="#">
+          Become a host
+        </a>
+
+        <button class="btn btn-light rounded-circle p-2 bg-transparent border-0 host-btn px-2">
+          <i class="bi bi-globe fs-5"></i>
+        </button>
+
+        <!-- User Dropdown Trigger -->
+        <div class="position-relative">
+          <button class="user-menu-btn border rounded-pill p-1 ps-2 d-flex align-items-center gap-2 bg-white hover-shadow transition"
+                  (click)="toggleUserMenu($event)">
+            <i class="bi bi-list fs-5"></i>
+            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 30px; height: 30px;">
+              <i class="bi bi-person-fill fs-5"></i>
+            </div>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div *ngIf="isUserMenuOpen" class="custom-dropdown shadow-lg rounded-4 py-2 bg-white position-absolute end-0 mt-2"
+               style="width: 240px; z-index: 1000;"
+               (click)="$event.stopPropagation()">
+
+            <div class="d-flex flex-column">
+               <!-- Auth Links -->
+               <a routerLink="/messages" class="dropdown-item px-3 py-2 fw-semibold text-dark text-decoration-none hover-bg-light">Messages</a>
+               <a routerLink="/notifications" class="dropdown-item px-3 py-2 fw-semibold text-dark text-decoration-none hover-bg-light">Notifications</a>
+               <a routerLink="/trips" class="dropdown-item px-3 py-2 fw-semibold text-dark text-decoration-none hover-bg-light">Trips</a>
+               <a routerLink="/wishlists" class="dropdown-item px-3 py-2 fw-semibold text-dark text-decoration-none hover-bg-light">Wishlists</a>
+
+               <div class="border-bottom my-2"></div>
+
+               <a routerLink="/account-settings" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light">Account settings</a>
+               <a routerLink="/host/homes" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light">Manage listings</a>
+               <a href="#" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light">Help</a>
+               <a (click)="logout()" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light cursor-pointer">Log out</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Big Search Bar Row -->
+    <div class="row justify-content-center big-search-container pb-3"
+         *ngIf="(!isScrolled && currentPage === 'home') || showExpandedSearch">
+
+      <div class="col-12 d-flex justify-content-center">
+        <div class="big-search-bar d-flex align-items-center border rounded-pill bg-white shadow-sm">
+
+          <!-- Where -->
+          <div class="search-field px-4 py-2 rounded-pill-start position-relative hover-bg-light cursor-pointer flex-grow-1"
+               (click)="openSearchModal('where')">
+            <div class="search-label fw-bold small">Where</div>
+            <div class="search-input text-truncate" [class.text-muted]="!searchData.where">
+              {{ searchData.where || 'Search destinations' }}
+            </div>
+          </div>
+
+          <div class="field-separator border-end" style="height: 32px;"></div>
+
+          <!-- Check in -->
+          <div class="search-field px-4 py-2 position-relative hover-bg-light cursor-pointer flex-grow-1"
+               (click)="openSearchModal('when')">
+            <div class="search-label fw-bold small">Check in</div>
+            <div class="search-input text-truncate" [class.text-muted]="!searchData.checkIn">
+              {{ searchData.checkIn || 'Add dates' }}
+            </div>
+          </div>
+
+          <div class="field-separator border-end" style="height: 32px;"></div>
+
+          <!-- Check out -->
+          <div class="search-field px-4 py-2 position-relative hover-bg-light cursor-pointer flex-grow-1"
+               (click)="openSearchModal('when')">
+            <div class="search-label fw-bold small">Check out</div>
+            <div class="search-input text-truncate" [class.text-muted]="!searchData.checkOut">
+              {{ searchData.checkOut || 'Add dates' }}
+            </div>
+          </div>
+
+          <div class="field-separator border-end" style="height: 32px;"></div>
+
+          <!-- Who + Search Button -->
+          <div class="search-field ps-4 pe-2 py-2 rounded-pill-end position-relative hover-bg-light cursor-pointer flex-grow-1 d-flex align-items-center justify-content-between"
+               (click)="openSearchModal('who')">
+            <div class="d-flex flex-column">
+               <div class="search-label fw-bold small">Who</div>
+               <div class="search-input text-truncate" [class.text-muted]="!searchData.who">
+                 {{ searchData.who || 'Add guests' }}
+               </div>
+            </div>
+
+            <!-- Search Button -->
+            <button (click)="$event.stopPropagation(); handleSearch()"
+                    class="btn btn-danger rounded-circle d-flex align-items-center justify-content-center p-3 ms-3 shadow-sm"
+                    style="background-color: #FF385C; border: none; width: 48px; height: 48px;">
+              <i class="bi bi-search text-white fs-5"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Code (زي ما هو بالظبط) -->
+<div *ngIf="isSearchModalOpen" class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" (click)="closeSearchModal()">
+    <div class="modal-dialog modal-lg modal-dialog-centered" (click)="$event.stopPropagation()">
+        <div class="modal-content rounded-4 shadow-lg p-3">
+             <div class="modal-header border-0">
+                <h5 class="fw-bold">Search</h5>
+                <button class="btn-close" (click)="closeSearchModal()"></button>
+             </div>
+             <div class="modal-body">
+                <p class="text-muted">Select your dates and guests...</p>
+                <!-- هنا ممكن تضيف الـ inputs الحقيقية لملء searchData -->
+             </div>
+             <div class="modal-footer border-0">
+                <button (click)="handleSearch()" class="btn btn-danger w-100 py-2 fw-bold fs-5" style="background-color: #FF385C;">
+                  Search
+                </button>
+             </div>
+        </div>
+    </div>
+</div>

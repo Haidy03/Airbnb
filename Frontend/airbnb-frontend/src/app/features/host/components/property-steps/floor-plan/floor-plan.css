@@ -1,0 +1,306 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #FFFFFF;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: white;
+  border-bottom: 1px solid #EBEBEB;
+  z-index: 100;
+}
+
+.logo {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.logo:hover {
+  opacity: 0.8;
+}
+
+.logo svg {
+  width: 32px;
+  height: 32px;
+  fill: #FF385C;
+}
+
+.header-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.btn-secondary, .btn-primary {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-secondary {
+  background: white;
+  color: #222;
+  border: 1px solid transparent;
+}
+
+.btn-secondary:hover {
+  border-color: #222;
+}
+
+.btn-primary {
+  background: #222;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #000;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Main Content */
+.main-content {
+  margin-top: 80px;
+  padding: 48px 40px 120px;
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-container {
+  max-width: 600px;
+  width: 100%;
+}
+
+/* Step Header */
+.step-header {
+  margin-bottom: 48px;
+  text-align: left;
+}
+
+.main-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+}
+
+.step-description {
+  font-size: 16px;
+  color: #717171;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Floor Plan Container */
+.floor-plan-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: white;
+}
+
+/* Floor Plan Item */
+.floor-plan-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 0;
+  border-bottom: 1px solid #EBEBEB;
+}
+
+.floor-plan-item:last-child {
+  border-bottom: none;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #222;
+  margin: 0;
+}
+
+/* Item Controls */
+.item-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.control-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid #B0B0B0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #717171;
+  padding: 0;
+}
+
+.control-btn:hover:not(:disabled) {
+  border-color: #222;
+  color: #222;
+  transform: scale(1.05);
+}
+
+.control-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: #EBEBEB;
+  color: #B0B0B0;
+}
+
+.item-value {
+  min-width: 32px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 400;
+  color: #222;
+}
+
+/* Footer */
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: white;
+  border-top: 1px solid #EBEBEB;
+  z-index: 100;
+}
+
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: #222;
+  transition: width 0.3s ease;
+}
+
+.btn-back, .btn-next {
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-family: inherit;
+}
+
+.btn-back {
+  background: white;
+  color: #222;
+  text-decoration: underline;
+  padding: 14px 0;
+}
+
+.btn-back:hover {
+  color: #000;
+}
+
+.btn-next {
+  background: #222;
+  color: white;
+  min-width: 100px;
+}
+
+.btn-next:hover:not(:disabled) {
+  background: #000;
+  transform: scale(1.02);
+}
+
+.btn-next:disabled {
+  background: #DDDDDD;
+  color: #717171;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 24px;
+  }
+
+  .main-content {
+    padding: 40px 24px 100px;
+  }
+
+  .content-container {
+    max-width: 100%;
+  }
+
+  .main-title {
+    font-size: 26px;
+  }
+
+  .step-description {
+    font-size: 15px;
+  }
+
+  .floor-plan-item {
+    padding: 24px 0;
+  }
+
+  .item-title {
+    font-size: 16px;
+  }
+
+  .control-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .footer {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-title {
+    font-size: 22px;
+  }
+
+  .floor-plan-item {
+    padding: 20px 0;
+  }
+
+  .item-controls {
+    gap: 12px;
+  }
+}

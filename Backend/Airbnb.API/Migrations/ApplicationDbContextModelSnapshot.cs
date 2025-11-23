@@ -288,10 +288,22 @@ namespace Airbnb.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CurrentStep")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("HasExteriorCamera")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasNoiseMonitor")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasWeapons")
+                        .HasColumnType("bit");
 
                     b.Property<string>("HostId")
                         .IsRequired()
@@ -338,6 +350,10 @@ namespace Airbnb.API.Migrations
 
                     b.Property<string>("RejectionReason")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoomType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");

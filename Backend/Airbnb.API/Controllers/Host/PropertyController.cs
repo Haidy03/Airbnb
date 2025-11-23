@@ -1,8 +1,9 @@
 ﻿using Airbnb.API.DTOs.Properties;
+using Airbnb.API.Models;
 using Airbnb.API.Services.Interfaces;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace Airbnb.API.Controllers.Host
@@ -62,7 +63,7 @@ namespace Airbnb.API.Controllers.Host
         // ----------------------------------------------------------------------
         // GET PROPERTY BY ID
         // ----------------------------------------------------------------------
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetPropertyById(int id)
         {
             try
@@ -124,7 +125,7 @@ namespace Airbnb.API.Controllers.Host
         // ----------------------------------------------------------------------
         // UPDATE PROPERTY
         // ----------------------------------------------------------------------
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateProperty(int id, [FromBody] UpdatePropertyDto dto)
         {
             try
@@ -163,7 +164,7 @@ namespace Airbnb.API.Controllers.Host
         // ----------------------------------------------------------------------
         // DELETE PROPERTY
         // ----------------------------------------------------------------------
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteProperty(int id)
         {
             try
@@ -192,9 +193,9 @@ namespace Airbnb.API.Controllers.Host
         // UPLOAD IMAGE
         // ----------------------------------------------------------------------
 
-        
 
-        [HttpPost("{id}/images")]
+
+        [HttpPost("{id:int}/images")]
         public async Task<IActionResult> UploadPropertyImage(int id, IFormFile file)
         {
             try
@@ -210,14 +211,13 @@ namespace Airbnb.API.Controllers.Host
                 // ✅ Validate file type
                 var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp" };
                 if (!allowedTypes.Contains(file.ContentType.ToLower()))
-                    return BadRequest(new { success = false, message = "Invalid file type. Only JPEG, PNG, and WebP are allowed." });
+                    return BadRequest(new { success = false, message = "Invalid file type" });
 
                 var hostId = GetHostId();
 
                 // ✅ Upload image
                 var image = await _propertyService.UploadPropertyImageAsync(id, hostId, file);
 
-                // ✅ Return success response with image data
                 return Ok(new
                 {
                     success = true,
@@ -231,22 +231,14 @@ namespace Airbnb.API.Controllers.Host
                     message = "Image uploaded successfully"
                 });
             }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { success = false, message = "Property not found" });
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading property image for property {PropertyId}", id);
+                _logger.LogError(ex, "Error uploading property image");
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Internal server error",
-                    details = ex.Message // ✅ Include error details for debugging
+                    message = "Failed to upload image",
+                    details = ex.Message
                 });
             }
         }
@@ -261,12 +253,17 @@ namespace Airbnb.API.Controllers.Host
             {
                 var hostId = GetHostId();
 
+                // ✅ Controller delegates to service
                 var result = await _propertyService.DeletePropertyImageAsync(imageId, hostId);
 
                 if (!result)
                     return NotFound(new { success = false, message = "Image not found" });
 
                 return Ok(new { success = true, message = "Image deleted successfully" });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
             }
             catch (Exception ex)
             {
@@ -285,12 +282,17 @@ namespace Airbnb.API.Controllers.Host
             {
                 var hostId = GetHostId();
 
+                // ✅ Controller delegates to service
                 var result = await _propertyService.SetPrimaryImageAsync(imageId, hostId);
 
                 if (!result)
                     return NotFound(new { success = false, message = "Image not found" });
 
                 return Ok(new { success = true, message = "Primary image set successfully" });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
             }
             catch (Exception ex)
             {
@@ -411,6 +413,72 @@ namespace Airbnb.API.Controllers.Host
                 errors.Add("Country is required");
 
             return errors;
+        }
+
+        // ----------------------------------------------------------------------
+        // ✅ NEW: CREATE DRAFT (Matches CreatePropertyDto)
+        // ----------------------------------------------------------------------
+        [HttpPost("draft")]
+        public async Task<IActionResult> CreateDraft()
+        {
+            try
+            {
+                var hostId = GetHostId();
+
+                // We create the DTO with placeholder values to satisfy database constraints.
+                var draftDto = new CreatePropertyDto
+                {
+                    Title = "Untitled Listing",
+                    Description = "Draft description...",
+
+                    // ⚠️ IMPORTANT: This ID must exist in your PropertyTypes table!
+                    // If your DB uses IDs starting at 1, use 1.
+                    PropertyTypeId = 1,
+
+                    // Location Defaults (Strings are required in your DTO)
+                    Address = "Draft Address",
+                    City = "Draft City",
+                    Country = "Draft Country",
+                    PostalCode = "00000",
+                    Latitude = 0,
+                    Longitude = 0,
+
+                    // Capacity Defaults
+                    NumberOfBedrooms = 1,
+                    NumberOfBathrooms = 1,
+                    MaxGuests = 1,
+
+                    // Pricing Defaults
+                    PricePerNight = 0, // 0 is fine for a draft
+                    CleaningFee = 0,
+
+                    // Amenities
+                    AmenityIds = new List<int>(), // Empty list is fine
+
+                    // Rules
+                    MinimumStay = 1
+                };
+
+                // Save to DB
+                // Ensure your Service sets property.Status = PropertyStatus.Draft
+                var property = await _propertyService.CreatePropertyAsync(hostId, draftDto);
+
+                // Map back to response DTO
+                var resultDto = _mapper.Map<PropertyResponseDto>(property);
+
+                return Ok(new
+                {
+                    success = true,
+                    data = resultDto,
+                    message = "Draft created successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating draft");
+                // Returns the inner error so you can see if it's a Foreign Key issue (like PropertyTypeId)
+                return StatusCode(500, new { error = ex.Message, inner = ex.InnerException?.Message });
+            }
         }
     }
 }

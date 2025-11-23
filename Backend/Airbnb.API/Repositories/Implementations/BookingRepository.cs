@@ -80,5 +80,17 @@ namespace Airbnb.API.Repositories.Implementations
                 .Where(b => b.PropertyId == propertyId)
                 .CountAsync();
         }
+
+        public async Task<bool> IsDateRangeAvailableAsync(int propertyId, DateTime checkIn, DateTime checkOut)
+        {
+            // Check if any booking exists that overlaps with the requested dates
+            // AND is not Cancelled or Rejected
+            return !await _context.Bookings.AnyAsync(b =>
+                b.PropertyId == propertyId &&
+                b.Status != BookingStatus.Cancelled &&
+                b.Status != BookingStatus.Rejected &&
+                (checkIn < b.CheckOutDate && checkOut > b.CheckInDate)
+            );
+        }
     }
 }

@@ -150,6 +150,8 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API for Airbnb Clone Project"
     });
 
+    c.CustomSchemaIds(type => type.ToString());
+
     // JWT Authentication in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {

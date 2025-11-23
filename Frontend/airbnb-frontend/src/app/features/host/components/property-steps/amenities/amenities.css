@@ -1,0 +1,231 @@
+:host {
+  display: block;
+  --primary-color: #222222;
+  --secondary-color: #717171;
+  --border-color: #DDDDDD;
+  --hover-bg: #F7F7F7;
+  --focus-ring: black;
+  background: white;
+
+  min-height: 100vh;
+}
+
+/* --- Header --- */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  background: white;
+  z-index: 100;
+}
+.logo {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.logo:hover {
+  opacity: 0.8;
+}
+
+.logo svg {
+  width: 32px;
+  height: 32px;
+  fill: #FF385C;
+}
+.header-actions { display: flex; gap: 12px; }
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 30px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--primary-color);
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background: var(--hover-bg); }
+.btn-secondary.outlined { border-color: #DDDDDD; }
+
+/* --- Main Content --- */
+.main-content {
+  margin-top: 88px; /* Header height */
+  padding: 32px 48px 120px; /* Bottom padding for footer */
+  display: flex;
+  justify-content: center;
+}
+
+.content-container {
+  max-width: 640px; /* Airbnb standard width for this step */
+  width: 100%;
+}
+
+/* Typography */
+.main-header {
+  margin-bottom: 32px;
+}
+
+.main-header h1 {
+  font-size: 32px;
+  line-height: 36px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--primary-color);
+}
+
+.subtitle {
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--secondary-color);
+  font-weight: 400;
+}
+
+/* --- Sections --- */
+.amenity-section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--primary-color);
+}
+
+/* --- Grid & Cards --- */
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns strictly */
+  gap: 16px;
+}
+
+.amenity-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Push content apart */
+  align-items: flex-start;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 24px;
+  min-height: 140px; /* Square-ish shape */
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  text-align: left;
+  position: relative;
+}
+
+.amenity-card:hover {
+  border-color: black;
+}
+
+.amenity-card.selected {
+  border: 2px solid black; /* Thicker black border when selected */
+  background-color: #F7F7F7; /* Subtle background change */
+  padding: 23px; /* Adjust padding to prevent layout shift from border */
+}
+
+/* Icons */
+.icon-wrapper {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 16px;
+  color: var(--primary-color);
+}
+
+.icon-wrapper svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.amenity-name {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--primary-color);
+}
+
+/* --- Footer --- */
+.footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  background: white;
+  border-top: 1px solid var(--border-color);
+  z-index: 100;
+}
+
+.progress-bar {
+  position: absolute;
+  top: 0; left: 0;
+  height: 4px;
+  background: var(--primary-color); /* Black fill */
+  transition: width 0.3s ease;
+  background-color: #DDDDDD; /* Gray track */
+}
+.progress-bar::after {
+  content: '';
+  display: block;
+  background: black;
+  height: 100%;
+  width: 100%; /* Set dynamically in HTML */
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  text-decoration: underline;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--primary-color);
+}
+
+.btn-next {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-next:hover { background: black; }
+
+/* --- Responsive --- */
+@media (max-width: 744px) {
+  .header, .footer, .main-content {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  
+  .amenities-grid {
+    grid-template-columns: 1fr 1fr; /* 2 cols on tablet */
+  }
+}
+
+@media (max-width: 480px) {
+  .amenities-grid {
+    grid-template-columns: 1fr; /* 1 col on mobile? Or stick to 2 small ones */
+    grid-template-columns: 1fr 1fr; 
+  }
+  
+  .amenity-card {
+    min-height: 120px;
+    padding: 16px;
+  }
+
+  .main-header h1 {
+    font-size: 26px;
+  }
+}
