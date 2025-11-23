@@ -1,0 +1,23 @@
+<div class="min-h-screen bg-gray-50">
+  <app-header></app-header>
+
+  <main class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-20 py-12">
+    <div class="mb-8">
+      <h1 class="text-3xl font-semibold text-gray-900">Wishlists</h1>
+      <p class="text-gray-600 mt-2">Your saved properties</p>
+    </div>
+
+    <div *ngIf="(wishlistService.wishlist$ | async)?.length === 0" class="text-center py-16">
+      <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+      </svg>
+      <h3 class="text-xl font-medium text-gray-900 mb-2">No wishlists yet</h3>
+      <p class="text-gray-600 mb-6">Start exploring and save your favorite places!</p>
+      <a routerLink="/" class="inline-block px-6 py-3 bg-[#FF385C] text-white rounded-lg hover:bg-[#E31C5F] transition-colors">
+        Explore homes
+      </a>
+    </div>
+
+    <!-- Wishlist grid will be added here -->
+  </main>
+</div>

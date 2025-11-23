@@ -1,0 +1,36 @@
+.home-page {
+  padding: 2rem 0;
+}
+
+.property-section {
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  color: #222;
+  font-size: 22px;
+}
+
+.btn-link {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0;
+}
+
+.btn-link:hover {
+  text-decoration: underline !important;
+}
+
+.row {
+  margin: 0 -0.5rem;
+}
+
+@media (max-width: 768px) {
+  .home-page {
+    padding: 1rem 0;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+}
