@@ -1,0 +1,157 @@
+<div class="booking-card">
+
+  <!-- Header: Price & Rating -->
+  <div class="card-header">
+    <div class="price">
+      <span class="amount">{{ pricePerNight | number }} {{ currency }}</span>
+      <span class="period">night</span>
+    </div>
+    <div class="rating" *ngIf="reviewsCount > 0">
+      <span class="star">★</span>
+      <span class="score">{{ rating }}</span>
+      <span class="reviews"> · <u>{{ reviewsCount }} reviews</u></span>
+    </div>
+  </div>
+
+  <!-- Input Form -->
+  <div class="booking-form">
+    <div class="date-picker-wrapper">
+      <div class="date-input check-in">
+         <label>CHECK-IN</label>
+        <!-- ضفنا [min]="minDate" عشان يمنع الأيام اللي فاتت -->
+        <input
+          type="date"
+          [min]="minDate"
+          [(ngModel)]="checkInDate"
+          (change)="onDateChange()">
+      </div>
+      <div class="date-input check-out">
+        <label>CHECK-OUT</label>
+        <!--
+          هنا التريك: الـ min هو تاريخ الـ checkIn لو اختاره،
+          أو تاريخ النهارده لو مختارش حاجة لسه
+        -->
+        <input
+          type="date"
+          [min]="checkInDate ? checkInDate : minDate"
+          [(ngModel)]="checkOutDate"
+          (change)="onDateChange()">
+      </div>
+    </div>
+
+   <div class="guests-input-container">
+
+      <!-- الصندوق اللي بنضغط عليه -->
+      <div class="guests-trigger" (click)="toggleGuestMenu()">
+        <div class="label-text">
+          <label>GUESTS</label>
+          <span>{{ guestLabel }}</span>
+        </div>
+        <!-- سهم بيتغير اتجاهه -->
+        <i class="fa-solid" [class.fa-chevron-up]="isGuestMenuOpen" [class.fa-chevron-down]="!isGuestMenuOpen"></i>
+      </div>
+
+      <!-- القائمة المنسدلة (بتظهر وتختفي حسب isGuestMenuOpen) -->
+      <div class="guests-dropdown" *ngIf="isGuestMenuOpen">
+
+        <!-- 1. Adults -->
+        <div class="guest-row">
+          <div class="info">
+            <div class="type">Adults</div>
+            <div class="sub">Age 13+</div>
+          </div>
+          <div class="controls">
+            <!-- زرار الناقص (Disabled لو 1) -->
+            <button class="round-btn" [disabled]="guests.adults <= 1" (click)="updateCount('adults', -1)">-</button>
+            <span class="count">{{ guests.adults }}</span>
+            <button class="round-btn" (click)="updateCount('adults', 1)">+</button>
+          </div>
+        </div>
+
+        <!-- 2. Children -->
+        <div class="guest-row">
+          <div class="info">
+            <div class="type">Children</div>
+            <div class="sub">Ages 2–12</div>
+          </div>
+          <div class="controls">
+            <button class="round-btn" [disabled]="guests.children <= 0" (click)="updateCount('children', -1)">-</button>
+            <span class="count">{{ guests.children }}</span>
+            <button class="round-btn" (click)="updateCount('children', 1)">+</button>
+          </div>
+        </div>
+
+        <!-- 3. Infants -->
+        <div class="guest-row">
+          <div class="info">
+            <div class="type">Infants</div>
+            <div class="sub">Under 2</div>
+          </div>
+          <div class="controls">
+            <button class="round-btn" [disabled]="guests.infants <= 0" (click)="updateCount('infants', -1)">-</button>
+            <span class="count">{{ guests.infants }}</span>
+            <button class="round-btn" (click)="updateCount('infants', 1)">+</button>
+          </div>
+        </div>
+
+        <!-- 4. Pets -->
+        <div class="guest-row">
+          <div class="info">
+            <div class="type">Pets</div>
+            <div class="sub link">Bringing a service animal?</div>
+          </div>
+          <div class="controls">
+            <button class="round-btn" [disabled]="guests.pets <= 0" (click)="updateCount('pets', -1)">-</button>
+            <span class="count">{{ guests.pets }}</span>
+            <button class="round-btn" (click)="updateCount('pets', 1)">+</button>
+          </div>
+        </div>
+
+        <p class="disclaimer">
+          This place has a maximum of 2 guests, not including infants. If you're bringing more than 2 pets, please let your host know.
+        </p>
+
+        <!-- زر الإغلاق في الأسفل -->
+        <div class="dropdown-footer">
+          <button class="close-link" (click)="toggleGuestMenu()">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Reserve Button -->
+  <button class="reserve-btn" (click)="onReserve()">Reserve</button>
+
+  <p class="no-charge-text">You won't be charged yet</p>
+
+  <!-- Price Breakdown -->
+  <!-- التعديل الثاني: الاعتماد على priceBreakdown -->
+  <div class="price-breakdown" *ngIf="priceBreakdown">
+
+    <div class="line-item">
+      <span class="desc">{{ priceBreakdown.basePrice | number }} {{ currency }} x {{ priceBreakdown.totalNights }} nights</span>
+      <span class="value">{{ priceBreakdown.subTotal | number }} {{ currency }}</span>
+    </div>
+
+    <div class="line-item" *ngIf="priceBreakdown.cleaningFee > 0">
+      <span class="desc">Cleaning fee</span>
+      <span class="value">{{ priceBreakdown.cleaningFee | number }} {{ currency }}</span>
+    </div>
+
+    <div class="line-item">
+      <span class="desc">Airbnb service fee</span>
+      <span class="value">{{ priceBreakdown.serviceFee | number }} {{ currency }}</span>
+    </div>
+
+    <hr>
+
+    <div class="line-item total">
+      <span>Total before taxes</span>
+      <!-- التعديل الثالث: استخدام finalTotalPrice -->
+      <span>{{ priceBreakdown.finalTotalPrice | number }} {{ currency }}</span>
+    </div>
+  </div>
+
+
