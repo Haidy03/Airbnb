@@ -87,10 +87,7 @@ private readonly ROLE_KEY = 'userRole';
   private getUserFromStorage(): AuthUser | null {
     const userId = localStorage.getItem(this.USER_ID_KEY);
     const email = localStorage.getItem(this.EMAIL_KEY);
-
     const role = localStorage.getItem(this.ROLE_KEY);
-
-
 
     if (!userId) return null;
 
