@@ -1,4 +1,6 @@
-﻿namespace Airbnb.API.DTOs.Properties
+﻿using Airbnb.API.Models;
+
+namespace Airbnb.API.DTOs.Properties
 {
     public class PropertyResponseDto
     {
@@ -36,10 +38,21 @@
         public bool IsActive { get; set; }
         public bool IsApproved { get; set; }
 
+        // Draft tracking
+        public PropertyStatus Status { get; set; }
+        public string? CurrentStep { get; set; }
+
+        // RoomType
+        public string? RoomType { get; set; }
+
         // Stats
         public double AverageRating { get; set; }
         public int TotalReviews { get; set; }
         public int TotalBookings { get; set; }
+
+        public bool HasExteriorCamera { get; set; }
+        public bool HasNoiseMonitor { get; set; }
+        public bool HasWeapons { get; set; }
 
         // Images
         public List<PropertyImageDto> Images { get; set; } = new();
@@ -68,4 +81,3 @@
         public string? Icon { get; set; }
     }
 }
-

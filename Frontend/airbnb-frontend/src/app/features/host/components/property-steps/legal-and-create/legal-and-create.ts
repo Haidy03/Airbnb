@@ -123,7 +123,7 @@ export class legalandcreateComponent implements OnInit {
     this.router.navigate(['/host/properties/booking-settings']);
   }
 
-  createListing(): void {
+createListing(): void {
     this.isLoading.set(true);
 
     if (this.currentDraftId) {
@@ -143,6 +143,10 @@ export class legalandcreateComponent implements OnInit {
           this.propertyService.publishProperty(this.currentDraftId!).subscribe({
             next: () => {
               this.isLoading.set(false);
+              
+              // ✅ Clear ALL localStorage after successful publish
+              this.clearAllLocalStorage();
+              
               alert('✅ Your listing has been published successfully!');
               this.router.navigate(['/host/properties']);
             },
@@ -161,5 +165,31 @@ export class legalandcreateComponent implements OnInit {
     } else {
       this.isLoading.set(false);
     }
+  }
+
+  /**
+   * ✅ Clear ALL localStorage after publish
+   */
+  private clearAllLocalStorage(): void {
+    const keysToRemove = [
+      'currentDraftId',
+      'property_photos',
+      'selected_amenities',
+      'property_type_id',
+      'property_room_type',
+      'property_location',
+      'property_floor_plan',
+      'property_pricing',
+      'property_title',
+      'property_description',
+      'property_instant_book',
+      'property_safety_details'
+    ];
+
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+    });
+
+    console.log('✅ All localStorage cleared after publish');
   }
 }

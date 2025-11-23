@@ -90,33 +90,35 @@
 
       <!-- Property Info -->
       <div class="property-info">
-        <div class="property-header">
+         <div class="property-header">
           <div class="property-title-section">
             <h3 class="property-title" (click)="editProperty(property)">
               {{ getPropertyTitle(property) }}
             </h3>
             
             <!-- Step badge for drafts -->
-            <span class="step-badge" *ngIf="isDraft(property)">
+            <span class="step-badge" *ngIf="isDraft(property) && getProgressPercentage(property) < 100">
               {{ getCurrentStep(property) }}
             </span>
           </div>
           
-          <!-- Publish Toggle - Only for complete properties -->
+          <!-- ✅ FIXED: Show toggle for published properties OR ready-to-publish button for complete drafts -->
+          
+          <!-- Toggle for already published properties -->
           <label class="publish-toggle" 
-                 *ngIf="!isDraft(property)"
+                 *ngIf="isPublished(property)"
                  (click)="$event.stopPropagation()"
                  title="Publish/Unpublish">
             <input 
               type="checkbox" 
-              [checked]="isPublished(property)"
+              [checked]="true"
               (change)="togglePublishStatus(property, $event)">
             <span class="toggle-slider"></span>
           </label>
 
-          <!-- Ready to Publish Button for Complete Drafts -->
+          <!-- Publish Button for complete drafts (100% progress) -->
           <button class="ready-publish-btn" 
-                  *ngIf="isDraft(property) && getProgressPercentage(property) === 100"
+                  *ngIf="isDraft(property) && getProgressPercentage(property) === 100 && !isPublished(property)"
                   (click)="togglePublishStatus(property, $event)"
                   title="Publish this listing">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">

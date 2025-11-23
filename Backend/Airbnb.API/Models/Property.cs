@@ -51,6 +51,9 @@ namespace Airbnb.API.Models
         [ForeignKey("PropertyTypeId")]
         public virtual PropertyType PropertyType { get; set; }
 
+        [MaxLength(50)]
+        public string? RoomType { get; set; }
+
         public string? CurrentStep { get; set; }                                    // for the stepss in the front
 
         public int NumberOfBedrooms { get; set; }
@@ -103,6 +106,10 @@ namespace Airbnb.API.Models
         public DateTime? ApprovedAt { get; set; }
         public string? ApprovedByAdminId { get; set; }
         public string? RejectionReason { get; set; }
+
+        public bool HasExteriorCamera { get; set; } = false;
+        public bool HasNoiseMonitor { get; set; } = false;
+        public bool HasWeapons { get; set; } = false;
 
         // Navigation Properties
         public virtual ICollection<PropertyImage> Images { get; set; } = new List<PropertyImage>();
