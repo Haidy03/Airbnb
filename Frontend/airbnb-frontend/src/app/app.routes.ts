@@ -14,6 +14,15 @@ import { PropertyIntroComponent } from './features/host/components/property-step
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
 import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
+import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
+import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
+import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
+import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
+import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
+import { PropertyFloorPlanComponent } from './features/host/components/property-steps/floor-plan/floor-plan';
+import { AmenitiesStepComponent } from './features/host/components/property-steps/amenities/amenities';
+import { PropertyPhotosComponent } from './features/host/components/property-steps/photos/photos';
+import { StandOutComponent } from './features/host/components/property-steps/stand-out/stand-out';
 
 export const routes: Routes = [
   {
