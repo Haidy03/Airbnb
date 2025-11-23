@@ -1,24 +1,50 @@
 import { Injectable, signal } from '@angular/core';
-import { Observable, of, delay, throwError } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { 
-  Booking, 
-  BookingStatus, 
-  BookingFilters,
-  BookingActionDto,
-  BookingResponse,
-  BookingStats,
-  CalendarBooking,
-  PaymentStatus
-} from '../models/booking.model';
-import { MOCK_BOOKINGS } from '../models/mock-data';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
+
+// Booking Interface
+export interface Booking {
+  id: number;
+  propertyId: number;
+  propertyTitle: string;
+  propertyImage: string;
+  
+  // Guest Information
+  guestId: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string;
+  
+  // Dates
+  checkInDate: Date;
+  checkOutDate: Date;
+  numberOfGuests: number;
+  numberOfNights: number;
+  
+  // Pricing
+  pricePerNight: number;
+  cleaningFee: number;
+  totalPrice: number;
+  
+  // Status
+  status: string; // 'Pending', 'Confirmed', 'Cancelled', 'Completed'
+  
+  // Additional
+  specialRequests?: string;
+  createdAt: Date;
+  confirmedAt?: Date;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class BookingService {
-  // Reactive state with signals
-  private bookingsSignal = signal<Booking[]>([...MOCK_BOOKINGS]);
+  private apiUrl = `${environment.apiUrl}/host/booking`;
+  
+  // Reactive state
+  private bookingsSignal = signal<Booking[]>([]);
   private loadingSignal = signal<boolean>(false);
   private errorSignal = signal<string | null>(null);
 
@@ -27,456 +53,233 @@ export class BookingService {
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
-  constructor() {
-    this.loadBookings();
-  }
+  constructor(private http: HttpClient) {}
 
   /**
-   * Load all bookings
+   * Get HTTP headers with auth token
    */
-  loadBookings(): void {
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
-
-    setTimeout(() => {
-      this.bookingsSignal.set([...MOCK_BOOKINGS]);
-      this.loadingSignal.set(false);
-    }, 500);
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
   }
 
   /**
-   * Get all bookings
+   * Map API response to Booking model
+   */
+  private mapApiToBooking(apiData: any): Booking {
+    return {
+      id: apiData.id,
+      propertyId: apiData.propertyId,
+      propertyTitle: apiData.propertyTitle || '',
+      propertyImage: apiData.propertyImage 
+        ? `${environment.apiUrl.replace('/api', '')}${apiData.propertyImage}`
+        : '/assets/images/placeholder-property.jpg',
+      guestId: apiData.guestId,
+      guestName: apiData.guestName || 'Guest',
+      guestEmail: apiData.guestEmail || '',
+      guestPhone: apiData.guestPhone,
+      checkInDate: new Date(apiData.checkInDate),
+      checkOutDate: new Date(apiData.checkOutDate),
+      numberOfGuests: apiData.numberOfGuests,
+      numberOfNights: apiData.numberOfNights,
+      pricePerNight: apiData.pricePerNight,
+      cleaningFee: apiData.cleaningFee,
+      totalPrice: apiData.totalPrice,
+      status: apiData.status,
+      specialRequests: apiData.specialRequests,
+      createdAt: new Date(apiData.createdAt),
+      confirmedAt: apiData.confirmedAt ? new Date(apiData.confirmedAt) : undefined
+    };
+  }
+
+  /**
+   * ✅ Get all bookings
    */
   getAllBookings(): Observable<Booking[]> {
     this.loadingSignal.set(true);
-    
-    return of([...MOCK_BOOKINGS]).pipe(
-      delay(300),
-      map(bookings => {
+    this.errorSignal.set(null);
+
+    return this.http.get<{ success: boolean; data: any[] }>(
+      this.apiUrl,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => {
+        const bookings = response.data.map(b => this.mapApiToBooking(b));
+        this.bookingsSignal.set(bookings);
         this.loadingSignal.set(false);
         return bookings;
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message || 'Failed to load bookings');
+        console.error('Error loading bookings:', error);
+        return of([]);
       })
     );
   }
 
   /**
-   * Get booking by ID
+   * ✅ Get today's bookings (check-ins & check-outs)
    */
-  getBookingById(id: string): Observable<Booking | undefined> {
+  getTodayBookings(): Observable<Booking[]> {
     this.loadingSignal.set(true);
-    
-    return of(MOCK_BOOKINGS.find(b => b.id === id)).pipe(
-      delay(300),
-      map(booking => {
+    this.errorSignal.set(null);
+
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/today`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => {
+        const bookings = response.data.map(b => this.mapApiToBooking(b));
         this.loadingSignal.set(false);
-        if (!booking) {
-          this.errorSignal.set('Booking not found');
-        }
-        return booking;
-      })
-    );
-  }
-
-  /**
-   * Get filtered bookings
-   */
-  getFilteredBookings(filters: BookingFilters): Observable<Booking[]> {
-    this.loadingSignal.set(true);
-    
-    let filtered = [...MOCK_BOOKINGS];
-
-    // Apply status filter
-    if (filters.status && filters.status.length > 0) {
-      filtered = filtered.filter(b => filters.status!.includes(b.status));
-    }
-
-    // Apply property filter
-    if (filters.propertyId) {
-      filtered = filtered.filter(b => b.propertyId === filters.propertyId);
-    }
-
-    // Apply date range filter
-    if (filters.dateFrom) {
-      filtered = filtered.filter(b => b.checkInDate >= filters.dateFrom!);
-    }
-    if (filters.dateTo) {
-      filtered = filtered.filter(b => b.checkOutDate <= filters.dateTo!);
-    }
-
-    // Apply guest name search
-    if (filters.guestName) {
-      const query = filters.guestName.toLowerCase();
-      filtered = filtered.filter(b => 
-        b.guestName.toLowerCase().includes(query)
-      );
-    }
-
-    // Apply sorting
-    if (filters.sortBy) {
-      filtered.sort((a, b) => {
-        let aValue: any, bValue: any;
-        
-        switch (filters.sortBy) {
-          case 'checkInDate':
-            aValue = a.checkInDate.getTime();
-            bValue = b.checkInDate.getTime();
-            break;
-          case 'bookedAt':
-            aValue = a.bookedAt.getTime();
-            bValue = b.bookedAt.getTime();
-            break;
-          case 'total':
-            aValue = a.pricing.total;
-            bValue = b.pricing.total;
-            break;
-          default:
-            return 0;
-        }
-
-        const order = filters.sortOrder === 'desc' ? -1 : 1;
-        return (aValue - bValue) * order;
-      });
-    }
-
-    return of(filtered).pipe(
-      delay(300),
-      map(bookings => {
-        this.loadingSignal.set(false);
+        console.log('✅ Today bookings loaded:', bookings.length);
         return bookings;
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message || 'Failed to load today bookings');
+        console.error('Error loading today bookings:', error);
+        return of([]);
       })
     );
   }
 
   /**
-   * Get bookings by status
-   */
-  getBookingsByStatus(status: BookingStatus): Observable<Booking[]> {
-    return this.getFilteredBookings({ status: [status] });
-  }
-
-  /**
-   * Get upcoming bookings (confirmed and within next 30 days)
+   * ✅ Get upcoming bookings (next 30 days)
    */
   getUpcomingBookings(): Observable<Booking[]> {
-    const today = new Date();
-    const thirtyDaysLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-    
-    const upcoming = MOCK_BOOKINGS.filter(b => 
-      (b.status === BookingStatus.CONFIRMED || b.status === BookingStatus.PENDING) &&
-      b.checkInDate >= today &&
-      b.checkInDate <= thirtyDaysLater
-    );
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
 
-    return of(upcoming).pipe(delay(300));
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/upcoming`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => {
+        const bookings = response.data.map(b => this.mapApiToBooking(b));
+        this.loadingSignal.set(false);
+        console.log('✅ Upcoming bookings loaded:', bookings.length);
+        return bookings;
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message || 'Failed to load upcoming bookings');
+        console.error('Error loading upcoming bookings:', error);
+        return of([]);
+      })
+    );
   }
 
   /**
-   * Get pending bookings (requiring action)
+   * ✅ Get pending bookings
    */
   getPendingBookings(): Observable<Booking[]> {
-    return this.getBookingsByStatus(BookingStatus.PENDING);
-  }
-
-  /**
-   * Get current guests (checked in)
-   */
-  getCurrentGuests(): Observable<Booking[]> {
-    return this.getBookingsByStatus(BookingStatus.CHECKED_IN);
-  }
-
-  /**
-   * Approve booking
-   */
-  approveBooking(bookingId: string): Observable<BookingResponse> {
     this.loadingSignal.set(true);
-    
-    const current = this.bookingsSignal();
-    const index = current.findIndex(b => b.id === bookingId);
+    this.errorSignal.set(null);
 
-    if (index === -1) {
-      return throwError(() => new Error('Booking not found'));
-    }
-
-    const updatedBooking: Booking = {
-      ...current[index],
-      status: BookingStatus.CONFIRMED,
-      paymentStatus: PaymentStatus.PAID,
-      updatedAt: new Date()
-    };
-
-    return of({
-      success: true,
-      message: 'Booking approved successfully',
-      booking: updatedBooking
-    }).pipe(
-      delay(500),
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/pending`,
+      { headers: this.getHeaders() }
+    ).pipe(
       map(response => {
-        const updated = [...current];
-        updated[index] = updatedBooking;
-        this.bookingsSignal.set(updated);
+        const bookings = response.data.map(b => this.mapApiToBooking(b));
         this.loadingSignal.set(false);
-        return response;
-      })
-    );
-  }
-
-  /**
-   * Decline booking
-   */
-  declineBooking(bookingId: string, reason?: string): Observable<BookingResponse> {
-    this.loadingSignal.set(true);
-    
-    const current = this.bookingsSignal();
-    const index = current.findIndex(b => b.id === bookingId);
-
-    if (index === -1) {
-      return throwError(() => new Error('Booking not found'));
-    }
-
-    const updatedBooking: Booking = {
-      ...current[index],
-      status: BookingStatus.DECLINED,
-      cancelledBy: 'host',
-      cancellationReason: reason,
-      cancelledAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    return of({
-      success: true,
-      message: 'Booking declined',
-      booking: updatedBooking
-    }).pipe(
-      delay(500),
-      map(response => {
-        const updated = [...current];
-        updated[index] = updatedBooking;
-        this.bookingsSignal.set(updated);
+        return bookings;
+      }),
+      catchError(error => {
         this.loadingSignal.set(false);
-        return response;
+        this.errorSignal.set(error.message);
+        return of([]);
       })
     );
   }
 
   /**
-   * Cancel booking
+   * ✅ Get booking by ID
    */
-  cancelBooking(bookingId: string, reason?: string): Observable<BookingResponse> {
-    this.loadingSignal.set(true);
-    
-    const current = this.bookingsSignal();
-    const index = current.findIndex(b => b.id === bookingId);
-
-    if (index === -1) {
-      return throwError(() => new Error('Booking not found'));
-    }
-
-    const booking = current[index];
-    const refundAmount = this.calculateRefund(booking);
-
-    const updatedBooking: Booking = {
-      ...booking,
-      status: BookingStatus.CANCELLED,
-      cancelledBy: 'host',
-      cancellationReason: reason,
-      cancelledAt: new Date(),
-      refundAmount,
-      paymentStatus: refundAmount > 0 ? PaymentStatus.PARTIALLY_REFUNDED : booking.paymentStatus,
-      updatedAt: new Date()
-    };
-
-    return of({
-      success: true,
-      message: `Booking cancelled. Refund: $${refundAmount}`,
-      booking: updatedBooking
-    }).pipe(
-      delay(500),
-      map(response => {
-        const updated = [...current];
-        updated[index] = updatedBooking;
-        this.bookingsSignal.set(updated);
-        this.loadingSignal.set(false);
-        return response;
+  getBookingById(id: number): Observable<Booking> {
+    return this.http.get<{ success: boolean; data: any }>(
+      `${this.apiUrl}/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => this.mapApiToBooking(response.data)),
+      catchError(error => {
+        console.error('Error loading booking:', error);
+        throw error;
       })
     );
   }
 
   /**
-   * Calculate refund based on cancellation policy
+   * ✅ Approve booking
    */
-  private calculateRefund(booking: Booking): number {
-    const today = new Date();
-    const daysUntilCheckIn = Math.floor(
-      (booking.checkInDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    // Simple cancellation policy
-    if (daysUntilCheckIn >= 14) {
-      return booking.pricing.total; // Full refund
-    } else if (daysUntilCheckIn >= 7) {
-      return booking.pricing.total * 0.5; // 50% refund
-    } else {
-      return 0; // No refund
-    }
-  }
-
-  /**
-   * Mark booking as checked in
-   */
-  checkIn(bookingId: string): Observable<BookingResponse> {
-    const current = this.bookingsSignal();
-    const index = current.findIndex(b => b.id === bookingId);
-
-    if (index === -1) {
-      return throwError(() => new Error('Booking not found'));
-    }
-
-    const updatedBooking: Booking = {
-      ...current[index],
-      status: BookingStatus.CHECKED_IN,
-      actualCheckInTime: new Date(),
-      updatedAt: new Date()
-    };
-
-    return of({
-      success: true,
-      message: 'Guest checked in',
-      booking: updatedBooking
-    }).pipe(
-      delay(300),
-      map(response => {
-        const updated = [...current];
-        updated[index] = updatedBooking;
-        this.bookingsSignal.set(updated);
-        return response;
+  approveBooking(bookingId: number): Observable<boolean> {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiUrl}/${bookingId}/approve`,
+      {},
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.success),
+      tap(() => console.log('✅ Booking approved')),
+      catchError(error => {
+        console.error('Error approving booking:', error);
+        throw error;
       })
     );
   }
 
   /**
-   * Mark booking as checked out
+   * ✅ Decline booking
    */
-  checkOut(bookingId: string): Observable<BookingResponse> {
-    const current = this.bookingsSignal();
-    const index = current.findIndex(b => b.id === bookingId);
-
-    if (index === -1) {
-      return throwError(() => new Error('Booking not found'));
-    }
-
-    const updatedBooking: Booking = {
-      ...current[index],
-      status: BookingStatus.CHECKED_OUT,
-      actualCheckOutTime: new Date(),
-      updatedAt: new Date()
-    };
-
-    return of({
-      success: true,
-      message: 'Guest checked out',
-      booking: updatedBooking
-    }).pipe(
-      delay(300),
-      map(response => {
-        const updated = [...current];
-        updated[index] = updatedBooking;
-        this.bookingsSignal.set(updated);
-        return response;
+  declineBooking(bookingId: number): Observable<boolean> {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiUrl}/${bookingId}/decline`,
+      {},
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.success),
+      tap(() => console.log('✅ Booking declined')),
+      catchError(error => {
+        console.error('Error declining booking:', error);
+        throw error;
       })
     );
   }
 
   /**
-   * Get bookings for calendar view
+   * ✅ Cancel booking
    */
-  getCalendarBookings(propertyId?: string): Observable<CalendarBooking[]> {
-    let bookings = [...MOCK_BOOKINGS];
-    
-    if (propertyId) {
-      bookings = bookings.filter(b => b.propertyId === propertyId);
-    }
-
-    const calendarBookings: CalendarBooking[] = bookings.map(b => ({
-      id: b.id,
-      propertyId: b.propertyId,
-      guestName: b.guestName,
-      checkInDate: b.checkInDate,
-      checkOutDate: b.checkOutDate,
-      status: b.status,
-      pricing: {
-        total: b.pricing.total,
-        currency: b.pricing.currency
-      }
-    }));
-
-    return of(calendarBookings).pipe(delay(300));
+  cancelBooking(bookingId: number): Observable<boolean> {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiUrl}/${bookingId}/cancel`,
+      {},
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.success),
+      tap(() => console.log('✅ Booking cancelled')),
+      catchError(error => {
+        console.error('Error cancelling booking:', error);
+        throw error;
+      })
+    );
   }
 
   /**
-   * Get booking statistics
+   * ✅ Get bookings for specific property
    */
-  getBookingStats(): Observable<BookingStats> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-
-    const stats: BookingStats = {
-      todayCheckIns: MOCK_BOOKINGS.filter(b => 
-        b.checkInDate >= today && b.checkInDate < tomorrow
-      ).length,
-      todayCheckOuts: MOCK_BOOKINGS.filter(b => 
-        b.checkOutDate >= today && b.checkOutDate < tomorrow
-      ).length,
-      currentGuests: MOCK_BOOKINGS.filter(b => 
-        b.status === BookingStatus.CHECKED_IN
-      ).length,
-      upcomingBookings: MOCK_BOOKINGS.filter(b => 
-        b.status === BookingStatus.CONFIRMED && b.checkInDate >= today
-      ).length,
-      pendingApprovals: MOCK_BOOKINGS.filter(b => 
-        b.status === BookingStatus.PENDING
-      ).length,
-      thisMonthBookings: MOCK_BOOKINGS.filter(b => 
-        b.checkInDate >= thisMonth && b.checkInDate < nextMonth
-      ).length,
-      thisMonthEarnings: MOCK_BOOKINGS
-        .filter(b => b.checkInDate >= thisMonth && b.checkInDate < nextMonth)
-        .reduce((sum, b) => sum + b.pricing.hostEarnings, 0),
-      nextMonthBookings: MOCK_BOOKINGS.filter(b => 
-        b.checkInDate >= nextMonth
-      ).length,
-      occupancyRate: 76 // This would be calculated based on available vs booked nights
-    };
-
-    return of(stats).pipe(delay(300));
-  }
-
-  /**
-   * Mark message as read
-   */
-  markMessagesRead(bookingId: string): Observable<boolean> {
-    const current = this.bookingsSignal();
-    const index = current.findIndex(b => b.id === bookingId);
-
-    if (index === -1) {
-      return of(false);
-    }
-
-    const updated = [...current];
-    updated[index] = { ...updated[index], hasUnreadMessages: false };
-    this.bookingsSignal.set(updated);
-
-    return of(true).pipe(delay(200));
-  }
-
-  /**
-   * Get bookings by property
-   */
-  getBookingsByProperty(propertyId: string): Observable<Booking[]> {
-    return this.getFilteredBookings({ propertyId });
+  getPropertyBookings(propertyId: number): Observable<Booking[]> {
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/property/${propertyId}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.data.map(b => this.mapApiToBooking(b))),
+      catchError(error => {
+        console.error('Error loading property bookings:', error);
+        return of([]);
+      })
+    );
   }
 }

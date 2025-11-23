@@ -77,6 +77,37 @@ export class PropertyService {
     });
   }
 
+  /**
+ * Get all properties for calendar (published only)
+ */
+getAllProperties(): Observable<Property[]> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  return this.http.get<{ success: boolean; data: any[] }>(
+    this.apiUrl,
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      // Filter only published/active properties for calendar
+      const properties = response.data
+        .filter(item => item.isActive || item.status === 'Active' || item.status === 'Approved')
+        .map(item => this.mapApiToProperty(item));
+      
+      this.propertiesSignal.set(properties);
+      this.loadingSignal.set(false);
+      console.log('✅ Properties loaded for calendar:', properties.length);
+      return properties;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      this.errorSignal.set(error.message || 'Failed to load properties');
+      console.error('Error loading properties:', error);
+      return of([]);
+    })
+  );
+}
+
   // ============================================
   // DRAFT MANAGEMENT
   // ============================================
