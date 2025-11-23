@@ -1,11 +1,10 @@
 import { Routes } from '@angular/router';
 import { HostLayoutComponent } from './layouts/host-layout/host-layout';
 import { HostDashboardComponent } from './features/host/components/host-dashboard/host-dashboard';
-import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
+// import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
 import { MyProperties } from './features/host/components/my-properties/my-properties';
 import { HostMessages } from './features/host/components/host-messages/host-messages';
-import { AddProperty } from './features/host/components/add-property/add-property';
-import { EditProperty } from './features/host/components/edit-property/edit-property';
+
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
@@ -15,12 +14,6 @@ import { PropertyIntroComponent } from './features/host/components/property-step
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
 import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
-import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
-import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
-import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
-import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
-import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
-
 
 export const routes: Routes = [
   {
@@ -56,11 +49,11 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
-      { path: 'calendar', component: HostCalendar },
+      // { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
-      { path: 'properties/addd', component: AddProperty },
-      { path: 'properties/edit/:id', component: EditProperty },
+      // { path: 'properties/addd', component: AddProperty },
+      // { path: 'properties/edit/:id', component: EditProperty },
     ]
   },
 
@@ -84,6 +77,22 @@ export const routes: Routes = [
       { 
         path: 'location', 
         component: PropertyLocationComponent
+      },
+      {
+        path: 'floor-plan',
+        component: PropertyFloorPlanComponent
+      },
+      {
+        path: 'stand-out',
+        component: StandOutComponent
+      },
+      {
+        path: 'amenities',
+        component: AmenitiesStepComponent
+      },
+      {
+        path: 'photos',
+        component: PropertyPhotosComponent
       },
     ]
   },

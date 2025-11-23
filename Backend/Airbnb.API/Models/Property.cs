@@ -51,7 +51,7 @@ namespace Airbnb.API.Models
         [ForeignKey("PropertyTypeId")]
         public virtual PropertyType PropertyType { get; set; }
 
-       
+        public string? CurrentStep { get; set; }                                    // for the stepss in the front
 
         public int NumberOfBedrooms { get; set; }
         public int NumberOfBathrooms { get; set; }

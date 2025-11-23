@@ -1,88 +1,50 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router ,RouterLink} from '@angular/router';
-import { PropertyService } from '../../../services/property';
+import { Router, RouterLink } from '@angular/router';
+import { PropertyService } from '../../../services/property'; // ✅ Use the correct Service
 
 @Component({
   selector: 'app-property-intro',
   standalone: true,
-  imports: [CommonModule,RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './property-intro.html',
   styleUrls: ['./property-intro.css']
 })
 export class PropertyIntroComponent implements OnInit {
   isLoading = signal(false);
-  draftPropertyId = signal<string | null>(null);
+  
+  // ✅ Match the style of PropertyTypeComponent
+  currentDraftId: string | null = null; 
 
   constructor(
     private router: Router,
-    private propertyService: PropertyService
+    private propertyService: PropertyService // ✅ Inject PropertyService only
   ) {}
 
   ngOnInit(): void {
-    // Check if there's a draft in progress
-    const savedDraft = localStorage.getItem('property_draft_id');
-    if (savedDraft) {
-      this.draftPropertyId.set(savedDraft);
+    this.getCurrentDraft(); // ✅ Check for existing draft on load
+  }
+
+  /**
+   * Get current draft if exists (Matching PropertyType pattern)
+   */
+  getCurrentDraft(): void {
+    this.currentDraftId = localStorage.getItem('currentDraftId');
+    
+    // Optional: You could verify it exists with the backend here if needed, 
+    // but for the Intro page, just knowing we have an ID is usually enough.
+    if (this.currentDraftId) {
+      console.log('✅ Resuming existing draft:', this.currentDraftId);
     }
   }
 
   /**
    * Save progress and exit
    */
-  async saveAndExit(): Promise<void> {
-    const confirmed = confirm(
-      'Save your progress and exit? You can continue later from where you left off.'
-    );
-    
-    if (!confirmed) return;
-
-    this.isLoading.set(true);
-
-    try {
-      // If we have a draft, just exit
-      if (this.draftPropertyId()) {
-        this.router.navigate(['/host/properties']);
-        return;
-      }
-
-      // Create a minimal draft property
-      const draftProperty = {
-        title: 'Untitled Property',
-        description: 'Property listing in progress',
-        propertyType: 'HOUSE',
-        address: '',
-        city: '',
-        country: '',
-        latitude: 0,
-        longitude: 0,
-        numberOfBedrooms: 1,
-        numberOfBathrooms: 1,
-        maxGuests: 1,
-        pricePerNight: 0,
-        cleaningFee: null,
-        houseRules: null,
-        checkInTime: null,
-        checkOutTime: null,
-        minimumStay: 1,
-        amenityIds: []
-      };
-
-      this.propertyService.createProperty(draftProperty as any).subscribe({
-        next: (property) => {
-          console.log('✅ Draft property created:', property.id);
-          localStorage.setItem('property_draft_id', property.id);
-          this.router.navigate(['/host/properties']);
-        },
-        error: (error) => {
-          console.error('❌ Failed to create draft:', error);
-          alert('Failed to save draft. Please try again.');
-          this.isLoading.set(false);
-        }
-      });
-    } catch (error) {
-      console.error('❌ Error saving draft:', error);
-      this.isLoading.set(false);
+  saveAndExit(): void {
+    const confirmed = confirm('Save your progress and exit?');
+    if (confirmed) {
+      this.router.navigate(['/host/properties']);
     }
   }
 
@@ -102,9 +64,29 @@ export class PropertyIntroComponent implements OnInit {
 
   /**
    * Start the multi-step property creation
+   * ✅ UPDATED: Uses PropertyService and handles the redirect
    */
   startPropertyCreation(): void {
-    // Navigate to the actual add property form
-    this.router.navigate(['/host/properties/property-type']);
+    this.isLoading.set(true);
+
+    // ✅ Calls the FIXED createPropertyDraft() from PropertyService
+    this.propertyService.createPropertyDraft().subscribe({
+      next: (draft) => {
+        console.log('✅ Draft created:', draft.id);
+        
+        if (draft.id) {
+          // ✅ Store ID in localStorage so the Next Step can find it
+          localStorage.setItem('currentDraftId', draft.id);
+          
+          this.isLoading.set(false);
+          this.router.navigate(['/host/properties/property-type']);
+        }
+      },
+      error: (error) => {
+        this.isLoading.set(false);
+        console.error('Error creating draft:', error);
+        alert('Failed to create property. Please try again.');
+      }
+    });
   }
 }

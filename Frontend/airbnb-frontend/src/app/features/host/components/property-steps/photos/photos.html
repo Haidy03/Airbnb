@@ -1,0 +1,204 @@
+<header class="header">
+  <div class="logo" [routerLink]="['/']">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 1c-5.5 0-10 4.5-10 10 0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/>
+    </svg>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" (click)="showQuestionsModal()">
+      Questions?
+    </button>
+    <button 
+      class="btn-primary" 
+      (click)="saveAndExit()"
+      [disabled]="isLoading()">
+      <span *ngIf="!isLoading()">Save & exit</span>
+      <span *ngIf="isLoading()">Saving...</span>
+    </button>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="content-container">
+    <!-- Step Header -->
+    <div class="step-header">
+      <h1 class="main-title">Add some photos of your apartment</h1>
+      <p class="step-description">
+        You'll need {{ minPhotos }} photos to get started. You can add more or make changes later.
+      </p>
+    </div>
+
+    <!-- Upload Area -->
+    <div class="upload-container">
+      <div 
+        class="upload-box"
+        [class.dragging]="isDragging()"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)">
+        
+        <!-- Camera Icon -->
+        <svg class="camera-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="35" r="20" fill="none" stroke="#222" stroke-width="3"/>
+          <path d="M 20 50 L 20 85 Q 20 90 25 90 L 75 90 Q 80 90 80 85 L 80 50 Z" 
+                fill="none" stroke="#222" stroke-width="3"/>
+          <rect x="30" y="15" width="20" height="15" fill="#222"/>
+          <rect x="55" y="15" width="10" height="12" fill="#222"/>
+        </svg>
+
+        <!-- Upload Text -->
+        <p class="upload-text">Drag and drop your photos here</p>
+        <p class="upload-subtext">or</p>
+
+        <!-- File Input -->
+        <label class="add-photos-btn">
+          Add photos
+          <input 
+            type="file" 
+            multiple 
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            (change)="onFileSelected($event)"
+            hidden>
+        </label>
+
+        <!-- Tips -->
+        <p class="upload-tips">
+          Supported formats: JPEG, PNG, WebP (max 5MB each, max {{ maxPhotos }} photos)
+        </p>
+      </div>
+    </div>
+
+    <!-- Photo Counter -->
+    <div class="photo-counter" *ngIf="uploadedImages().length > 0">
+      <div class="counter-info">
+        <span class="counter-label">Photos uploaded</span>
+        <span class="counter-value">{{ getUploadedCount() }}/{{ minPhotos }}</span>
+      </div>
+      <div class="counter-bar">
+        <div class="counter-fill" [style.width.%]="getProgressPercentage()"></div>
+      </div>
+      <p class="counter-text" *ngIf="getRemaining() > 0">
+        You need {{ getRemaining() }} more photo(s) to continue
+      </p>
+      <p class="counter-text success" *ngIf="getRemaining() === 0">
+        ✓ Great! You have enough photos
+      </p>
+    </div>
+
+    <!-- Upload Progress -->
+    <div class="upload-progress" *ngIf="isUploading()">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="uploadProgress()"></div>
+      </div>
+      <p class="progress-text">Uploading... {{ uploadProgress() }}%</p>
+    </div>
+
+    <!-- Photos Gallery -->
+    <div class="photos-gallery" *ngIf="uploadedImages().length > 0">
+      <div class="gallery-header">
+        <h2 class="gallery-title">
+          Your Photos 
+          <span class="photo-count">{{ uploadedImages().length }}</span>
+        </h2>
+      </div>
+
+      <!-- Photos Grid -->
+      <div class="photos-grid">
+        <div class="photo-card" *ngFor="let image of uploadedImages(); let i = index">
+          <div class="photo-image-wrapper">
+            <img [src]="image.preview" [alt]="'Photo ' + (i + 1)" class="photo-image">
+            
+            <!-- Status Badge -->
+            <div class="status-badge" *ngIf="image.uploaded">
+              <svg class="check-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L9 17L4 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- Loading Badge -->
+            <div class="loading-badge" *ngIf="!image.uploaded && image.progress > 0">
+              <span class="progress-percent">{{ image.progress }}%</span>
+            </div>
+
+            <!-- Error Badge -->
+            <div class="error-badge" *ngIf="image.error">
+              <span class="error-text">✕ {{ image.error }}</span>
+            </div>
+
+            <!-- Primary Badge -->
+            <div class="primary-badge" *ngIf="image.isPrimary">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="white" width="14" height="14">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              <span>Primary</span>
+            </div>
+          </div>
+
+          <!-- Photo Actions -->
+          <div class="photo-actions">
+            <button 
+              class="action-btn primary"
+              (click)="setPrimary(image.id, $event)"
+              [disabled]="!image.uploaded"
+              [class.active]="image.isPrimary"
+              title="Set as primary photo">
+              <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="14" height="14">
+                <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm-2 12l-4-4 1-1 3 3 5-5 1 1-6 6z"/>
+              </svg>
+              Primary
+            </button>
+            <button 
+              class="action-btn danger"
+              (click)="removeImage(image.id, $event)"
+              title="Remove photo">
+              <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="14" height="14">
+                <path d="M6 2L4 4v14c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V4l-2-2H6zm0 2h8v12H6V4zm3 2h2v8H9V8zm4 0h2v8h-2V8z"/>
+              </svg>
+              Delete
+            </button>
+          </div>
+
+          <!-- Photo Info -->
+          <div class="photo-info">
+            <p class="photo-number">Photo {{ i + 1 }}</p>
+            <p class="photo-status" *ngIf="image.uploaded" class="uploaded">Uploaded ✓</p>
+            <p class="photo-status" *ngIf="image.error" class="error">Failed</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State Info -->
+    <div class="info-section" *ngIf="uploadedImages().length === 0">
+      <div class="info-box">
+        <svg class="info-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#717171" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div class="info-content">
+          <h3 class="info-title">Good photos make all the difference</h3>
+          <ul class="info-list">
+            <li>Show all rooms and outdoor areas</li>
+            <li>Use natural lighting when possible</li>
+            <li>Avoid blurry or dark photos</li>
+            <li>Include wide shots and close-up details</li>
+            <li>Start with a bedroom or living room</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="progress-bar" style="width: 60%"></div>
+  <button class="btn-back" (click)="goBack()">Back</button>
+  <button 
+    class="btn-next" 
+    [disabled]="!canProceed() || isLoading()"
+    (click)="goNext()">
+    <span *ngIf="!isLoading()">Next</span>
+    <span *ngIf="isLoading()">Processing...</span>
+  </button>
+</footer>
