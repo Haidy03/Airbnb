@@ -222,5 +222,80 @@ namespace Airbnb.API.Repositories.Implementations
                 })
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// Get image by ID with its related property
+        /// </summary>
+        public async Task<PropertyImage?> GetImageByIdWithPropertyAsync(int imageId)
+        {
+            return await _context.PropertyImages
+                .Include(img => img.Property)
+                .FirstOrDefaultAsync(img => img.Id == imageId);
+        }
+
+        /// <summary>
+        /// Delete a property image
+        /// </summary>
+        public async Task DeleteImageAsync(int imageId)
+        {
+            var image = await _context.PropertyImages.FindAsync(imageId);
+
+            if (image != null)
+            {
+                // Delete from storage if needed
+                try
+                {
+                    var webRootPath = "wwwroot"; // Configure this via DI if needed
+                    var filePath = Path.Combine(webRootPath, image.ImageUrl.TrimStart('/'));
+
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't fail the database deletion
+                    Console.WriteLine($"Warning: Could not delete image file: {ex.Message}");
+                }
+
+                _context.PropertyImages.Remove(image);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Set an image as primary for a property
+        /// </summary>
+        public async Task SetPrimaryImageAsync(int imageId, int propertyId)
+        {
+            // Get all images for this property
+            var allImages = await _context.PropertyImages
+                .Where(img => img.PropertyId == propertyId)
+                .ToListAsync();
+
+            // Remove primary flag from all images
+            foreach (var img in allImages)
+            {
+                img.IsPrimary = false;
+            }
+
+            // Set the selected image as primary
+            var targetImage = allImages.FirstOrDefault(img => img.Id == imageId);
+            if (targetImage != null)
+            {
+                targetImage.IsPrimary = true;
+                targetImage.DisplayOrder = 0; // Move to front
+
+                // Reorder other images
+                int order = 1;
+                foreach (var img in allImages.Where(img => img.Id != imageId))
+                {
+                    img.DisplayOrder = order++;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

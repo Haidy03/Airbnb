@@ -1,27 +1,84 @@
 import { Routes } from '@angular/router';
+
+// Layouts & Core Components
 import { HostLayoutComponent } from './layouts/host-layout/host-layout';
+import { HomeComponent } from './features/guest/components/home/home';
+
+// Features Components (Host)
 import { HostDashboardComponent } from './features/host/components/host-dashboard/host-dashboard';
-import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
+// import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
 import { MyProperties } from './features/host/components/my-properties/my-properties';
 import { HostMessages } from './features/host/components/host-messages/host-messages';
-import { AddProperty } from './features/host/components/add-property/add-property';
-import { EditProperty } from './features/host/components/edit-property/edit-property';
-import { AdminGuard } from './core/guards/admin.guard';
+
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
-import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
-import { LoginComponent } from './features/auth/components/login.component/login.component';
 
-// ✅ Import auth guards
-import { authGuard, noAuthGuard } from './features/auth/services/auth.guard';
 import { PropertyIntroComponent } from './features/host/components/property-steps/property-intro/property-intro';
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
 import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
-import { BookingFormComponent } from './features/guest/components/booking-form/booking-form';
-import { CheckoutComponent } from './features/guest/components/checkout/checkout';
+import { PropertyFloorPlanComponent } from './features/host/components/property-steps/floor-plan/floor-plan';
+import { StandOutComponent } from './features/host/components/property-steps/stand-out/stand-out';
+import { AmenitiesStepComponent } from './features/host/components/property-steps/amenities/amenities';
+import { PropertyPhotosComponent } from './features/host/components/property-steps/photos/photos';
+import { PropertyTitleComponent } from './features/host/components/property-steps/title/title';
+import { PropertyDescriptionComponent } from './features/host/components/property-steps/description/description';
+import { FinishsetupComponent } from './features/host/components/property-steps/finish-setup/finish-setup';
+import { PricingComponent } from './features/host/components/property-steps/pricing/pricing';
+import { instantBookComponent } from './features/host/components/property-steps/instant-book/instant-book';
+import { legalandcreateComponent } from './features/host/components/property-steps/legal-and-create/legal-and-create';
+
+// Auth Components
+import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
+import { LoginComponent } from './features/auth/components/login.component/login.component';
+
+// Guards
+import { authGuard, noAuthGuard, hostGuard, adminGuard } from './features/auth/services/auth.guard';
 
 export const routes: Routes = [
+  // =================================================
+  // 1. Public / Guest Routes (Merged from Claude's suggestion)
+  // =================================================
+  {
+    path: '',
+    component: HomeComponent
+  },
+  {
+    path: 'search',
+    loadComponent: () => import('./features/guest/components/search/components/search-results/search-results')
+      .then(m => m.SearchResultsComponent)
+  },
+  {
+    path: 'wishlists',
+    loadComponent: () => import('./features/guest/components/wishlists/wishlists')
+      .then(m => m.WishlistsComponent)
+  },
+  {
+    path: 'trips',
+    loadComponent: () => import('./features/guest/components/trips/trips')
+      .then(m => m.TripsComponent)
+  },
+  {
+    path: 'messages',
+    loadComponent: () => import('./features/guest/components/messages/messages')
+      .then(m => m.MessagesComponent)
+  },
+  // {
+  //   path: 'profile',
+  //   loadComponent: () => import('./features/guest/profile/profile.component')
+  //     .then(m => m.ProfileComponent),
+  //   canActivate: [authGuard] // ✅ Added authGuard as profile should be protected
+  // },
+  {
+    path: 'account-settings',
+    loadComponent: () => import('./features/guest/components/account-settings/account-settings')
+      .then(m => m.AccountSettingsComponent),
+    canActivate: [authGuard] // ✅ Added authGuard
+  },
+
+  // =================================================
+  // 2. Auth Routes (Your original work)
+  // =================================================
   {
     path: 'test-login',
     component: TestLoginComponent
@@ -33,25 +90,31 @@ export const routes: Routes = [
   },
 
   // ✅ Host routes - protected by auth guard
+
+  // =================================================
+  // 3. Host Routes (Your original work - Protected)
+  // =================================================
   {
     path: 'host',
     component: HostLayoutComponent,
-    canActivate: [authGuard], // ✅ Protect entire host section
+    canActivate: [hostGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
-      { path: 'calendar', component: HostCalendar },
+      // { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'messages', component: HostMessages },
-      {path: 'properties/addd', component: AddProperty },
-      {path: 'properties/edit/:id', component: EditProperty },
+      // { path: 'properties/addd', component: AddProperty },
+      // { path: 'properties/edit/:id', component: EditProperty },
     ]
   },
 
-    // ✅ Property creation flow - full-screen, no host layout
+  // =================================================
+  // 4. Property Creation Flow (Your original work)
+  // =================================================
   {
     path: 'host/properties',
-    canActivate: [authGuard],
+    canActivate: [hostGuard],
     children: [
       {
         path: 'intro',
@@ -69,43 +132,76 @@ export const routes: Routes = [
         path: 'location',
         component: PropertyLocationComponent
       },
-      // Add more steps here as you create them:
-      // { path: 'privacy-type', component: PropertyPrivacyComponent },
-      // { path: 'location', component: PropertyLocationComponent },
-      // { path: 'amenities', component: PropertyAmenitiesComponent },
-      // etc.
-    ]
+      {
+        path: 'floor-plan',
+        component: PropertyFloorPlanComponent
+      },
+      {
+        path: 'stand-out',
+        component: StandOutComponent
+      },
+      {
+        path: 'amenities',
+        component: AmenitiesStepComponent
+      },
+      {
+        path: 'photos',
+        component: PropertyPhotosComponent
+      },
+      {
+        path: 'title',
+        component: PropertyTitleComponent
+      },
+      {
+        path: 'description',
+        component: PropertyDescriptionComponent
+      },
+      {
+        path: 'instant-book',
+        component: instantBookComponent
+      },
+      {
+        path: 'finish-setup',
+        component: FinishsetupComponent
+      },
+      {
+        path: 'pricing',
+        component: PricingComponent
+      },
+      {
+        path: 'legal-and-create',
+        component: legalandcreateComponent
+      },
 
+    ]
+  },
+
+  // =================================================
+  // 5. Admin Routes (Your original work)
+  // =================================================
+  {
+    path: 'admin',
+    loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes),
+    canActivate: [adminGuard]
   },
 
   // Reviews routes
+
+  // =================================================
+  // 6. Feature Routes (Reviews)
+  // =================================================
   {
     path: 'reviews',
     loadChildren: () => import('./features/reviews/review.routes')
       .then(m => m.reviewRoutes)
   },
-  {
-  path: 'admin',
-  loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes),
-  canActivate: [AdminGuard] // Make sure user is Admin
-},
-  {
-    path: '',
-    redirectTo:'test-login',
-    pathMatch: 'full'
-  },
-  {
-    path: 'booking',
-    component: BookingFormComponent
-  },
-   {
-    path: 'checkout',
-    component: CheckoutComponent
-  },
 
-  // ✅ Catch-all redirect
+  // =================================================
+  // 7. Wildcard / 404 Handling
+  // =================================================
+  // Note: Changed catch-all to redirect to Home instead of test-login for better UX
   {
     path: '**',
-    redirectTo: 'test-login'
+    redirectTo: ''
   }
 ];

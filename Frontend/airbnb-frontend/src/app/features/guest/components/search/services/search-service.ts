@@ -1,4 +1,3 @@
-// src/app/features/guest/components/search/services/search.service.ts
 
 import { Injectable } from '@angular/core';
 import { Observable, of, BehaviorSubject, delay } from 'rxjs';

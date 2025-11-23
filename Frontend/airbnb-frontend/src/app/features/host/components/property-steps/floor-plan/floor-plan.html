@@ -1,0 +1,148 @@
+<header class="header">
+  <div class="logo" [routerLink]="['/']">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 1c-5.5 0-10 4.5-10 10 0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/>
+    </svg>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" (click)="showQuestionsModal()">
+      Questions?
+    </button>
+    <button class="btn-primary" (click)="saveAndExit()">
+      Save & exit
+    </button>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="content-container">
+    <!-- Step Header -->
+    <div class="step-header">
+      <h1 class="main-title">Share some basics about your place</h1>
+      <p class="step-description">
+        You'll add more details later, like bed types.
+      </p>
+    </div>
+
+    <!-- Floor Plan Items -->
+    <div class="floor-plan-container">
+      
+      <!-- Guests -->
+      <div class="floor-plan-item">
+        <div class="item-info">
+          <h3 class="item-title">Guests</h3>
+        </div>
+        <div class="item-controls">
+          <button 
+            class="control-btn"
+            [disabled]="!canDecrement('guests')"
+            (click)="decrement('guests')">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </button>
+          <span class="item-value">{{ floorPlan().guests }}</span>
+          <button 
+            class="control-btn"
+            [disabled]="!canIncrement('guests')"
+            (click)="increment('guests')">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bedrooms -->
+      <div class="floor-plan-item">
+        <div class="item-info">
+          <h3 class="item-title">Bedrooms</h3>
+        </div>
+        <div class="item-controls">
+          <button 
+            class="control-btn"
+            [disabled]="!canDecrement('bedrooms')"
+            (click)="decrement('bedrooms')">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </button>
+          <span class="item-value">{{ floorPlan().bedrooms }}</span>
+          <button 
+            class="control-btn"
+            [disabled]="!canIncrement('bedrooms')"
+            (click)="increment('bedrooms')">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Beds -->
+      <div class="floor-plan-item">
+        <div class="item-info">
+          <h3 class="item-title">Beds</h3>
+        </div>
+        <div class="item-controls">
+          <button 
+            class="control-btn"
+            [disabled]="!canDecrement('beds')"
+            (click)="decrement('beds')">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </button>
+          <span class="item-value">{{ floorPlan().beds }}</span>
+          <button 
+            class="control-btn"
+            [disabled]="!canIncrement('beds')"
+            (click)="increment('beds')">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bathrooms -->
+      <div class="floor-plan-item">
+        <div class="item-info">
+          <h3 class="item-title">Bathrooms</h3>
+        </div>
+        <div class="item-controls">
+          <button 
+            class="control-btn"
+            [disabled]="!canDecrement('bathrooms')"
+            (click)="decrement('bathrooms', 0.5)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </button>
+          <span class="item-value">{{ formatBathrooms(floorPlan().bathrooms) }}</span>
+          <button 
+            class="control-btn"
+            [disabled]="!canIncrement('bathrooms')"
+            (click)="increment('bathrooms', 0.5)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="progress-bar" style="width: 40%"></div>
+  <button class="btn-back" (click)="goBack()">Back</button>
+  <button 
+    class="btn-next" 
+    [disabled]="!isFormValid()"
+    (click)="goNext()">
+    Next
+  </button>
+</footer>

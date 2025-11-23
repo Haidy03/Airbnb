@@ -1,8 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-
 import { SearchBarComponent } from './features/guest/components/search/components/search-bar/search-bar';
 import { SearchResultsComponent } from './features/guest/components/search/components/search-results/search-results';
+import { ToastComponent } from './shared/components/toast/toast';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +10,8 @@ import { SearchResultsComponent } from './features/guest/components/search/compo
   imports: [
     RouterOutlet,
     SearchBarComponent,
-    SearchResultsComponent // 👈 ده كان ناقص
+    SearchResultsComponent,
+    ToastComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'

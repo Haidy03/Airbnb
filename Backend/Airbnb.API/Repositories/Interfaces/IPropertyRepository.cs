@@ -16,5 +16,8 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<bool> IsHostOwnerAsync(int propertyId, string hostId);
         Task<PagedResult<PropertySearchResultDto>> SearchPropertiesAsync(SearchRequestDto searchDto);
         Task<List<PropertySearchResultDto>> GetFeaturedPropertiesAsync(int count);
+        Task<PropertyImage?> GetImageByIdWithPropertyAsync(int imageId);
+        Task DeleteImageAsync(int imageId);
+        Task SetPrimaryImageAsync(int imageId, int propertyId);
     }
 }
