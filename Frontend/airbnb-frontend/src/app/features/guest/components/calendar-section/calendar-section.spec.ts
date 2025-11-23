@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Checkout } from './checkout';
+import { CalendarSection } from './calendar-section';
 
-describe('Checkout', () => {
-  let component: Checkout;
-  let fixture: ComponentFixture<Checkout>;
+describe('CalendarSection', () => {
+  let component: CalendarSection;
+  let fixture: ComponentFixture<CalendarSection>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Checkout]
+      imports: [CalendarSection]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Checkout);
+    fixture = TestBed.createComponent(CalendarSection);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
