@@ -253,12 +253,17 @@ namespace Airbnb.API.Controllers.Host
             {
                 var hostId = GetHostId();
 
+                // ✅ Controller delegates to service
                 var result = await _propertyService.DeletePropertyImageAsync(imageId, hostId);
 
                 if (!result)
                     return NotFound(new { success = false, message = "Image not found" });
 
                 return Ok(new { success = true, message = "Image deleted successfully" });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
             }
             catch (Exception ex)
             {
@@ -277,12 +282,17 @@ namespace Airbnb.API.Controllers.Host
             {
                 var hostId = GetHostId();
 
+                // ✅ Controller delegates to service
                 var result = await _propertyService.SetPrimaryImageAsync(imageId, hostId);
 
                 if (!result)
                     return NotFound(new { success = false, message = "Image not found" });
 
                 return Ok(new { success = true, message = "Primary image set successfully" });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
             }
             catch (Exception ex)
             {

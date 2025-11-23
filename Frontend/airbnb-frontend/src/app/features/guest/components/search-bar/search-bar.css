@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+.btn-airbnb {
+  background-color: #FF385C;
+  color: white;
+  border: none;
+}
+
+.btn-airbnb:hover {
+  background-color: #E31C5F;
+  color: white;
+}
+
+.rounded-pill-custom {
+  border-radius: 50rem !important;
+}
+
+.form-control-lg {
+  border-radius: 1rem;
+  padding: 1rem;
+}

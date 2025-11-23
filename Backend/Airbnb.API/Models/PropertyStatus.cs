@@ -7,6 +7,7 @@
         Rejected = 2,
         Suspended = 3,
         Active = 4,
-        Inactive = 5
+        Inactive = 5,
+        Draft = 6
     }
 }

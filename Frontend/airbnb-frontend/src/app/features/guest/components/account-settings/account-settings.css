@@ -1,0 +1,238 @@
+/* =========================================
+   Global & Typography
+   ========================================= */
+:root {
+  --primary-color: #FF385C;
+  --primary-hover: #d93250;
+  --text-dark: #222222;
+  --text-light: #717171;
+  --bg-input: #f7f7f7;
+  --border-radius: 12px;
+}
+
+/* Smooth fade-in for the whole page */
+:host {
+  display: block;
+  animation: fadeInPage 0.5s ease-out;
+}
+
+@keyframes fadeInPage {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+* {
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* =========================================
+   Sidebar Navigation (Creative Touch)
+   ========================================= */
+.list-group-item {
+  border-radius: var(--border-radius) !important;
+  margin-bottom: 8px;
+  border: 1px solid transparent; /* Prepare for hover border */
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Hover Effect: Slight slide and background change */
+.list-group-item:hover:not(.active) {
+  background-color: #f8f9fa;
+  transform: translateX(5px);
+  border-color: #eee;
+}
+
+/* Active State: Airbnb Style Indicator */
+.list-group-item.active {
+  background-color: #F7F7F7 !important; /* Keep it light grey */
+  color: var(--text-dark) !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* The Creative "Red Line" Indicator */
+.list-group-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60%;
+  width: 4px;
+  background-color: var(--primary-color);
+  border-radius: 0 4px 4px 0;
+}
+
+/* =========================================
+   Inputs & Forms (Modern Look)
+   ========================================= */
+.form-label {
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Custom Input Styling: More padding, rounded, light bg */
+.form-control {
+  border-radius: var(--border-radius);
+  border: 1px solid #DDDDDD;
+  padding: 14px 16px;
+  font-size: 1rem;
+  background-color: #ffffff;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+}
+
+/* Focus State: Floating Shadow */
+.form-control:focus {
+  background-color: #ffffff;
+  border-color: var(--text-dark); /* Airbnb uses black border on focus usually */
+  box-shadow: 0 0 0 2px rgba(34, 34, 34, 0.1), 0 4px 12px rgba(0,0,0,0.05);
+  transform: translateY(-2px);
+}
+
+/* Password Toggle Button Integration */
+.input-group .form-control {
+  border-right: none;
+}
+
+.input-group .btn-outline-secondary {
+  border: 1px solid #DDDDDD;
+  border-left: none;
+  border-top-right-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  background: white;
+  color: var(--text-dark);
+  font-weight: 600;
+  padding-right: 16px;
+}
+
+.input-group .btn-outline-secondary:hover {
+  background-color: #f8f9fa;
+  color: var(--primary-color);
+}
+
+/* Fix focus overlap in input groups */
+.input-group:focus-within .form-control,
+.input-group:focus-within .btn-outline-secondary {
+  border-color: var(--text-dark);
+  z-index: 2;
+}
+
+/* =========================================
+   Buttons (High Interaction)
+   ========================================= */
+/* Save Button */
+.btn[style*="background-color: #FF385C"] {
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 6px rgba(255, 56, 92, 0.2);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn[style*="background-color: #FF385C"]::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(rgba(255,255,255,0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.btn[style*="background-color: #FF385C"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(255, 56, 92, 0.3);
+  background-color: var(--primary-hover) !important;
+}
+
+.btn[style*="background-color: #FF385C"]:hover::after {
+  opacity: 1;
+}
+
+/* Cancel Button */
+.btn-outline-dark {
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 12px 24px;
+}
+
+.btn-outline-dark:hover {
+  background-color: #f7f7f7;
+  color: #000;
+  border-color: #000;
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   Animations & Feedback
+   ========================================= */
+/* Validation Shake */
+.text-danger {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.text-danger::before {
+  content: '!';
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 16px;
+  height: 16px;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  font-size: 10px;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* Section Transitions */
+form {
+  animation: slideUpFade 0.4s ease-out forwards;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   Layout Refinements
+   ========================================= */
+/* Header Clean up */
+header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Section Separators */
+.border-bottom {
+  border-bottom: 1px solid #EBEBEB !important;
+}

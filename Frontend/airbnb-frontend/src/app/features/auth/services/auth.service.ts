@@ -1,4 +1,3 @@
-
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError, throwError } from 'rxjs';
@@ -14,7 +13,7 @@ import {
   AuthProvider
 } from '../models/auth-user.model';
 
-// ✅ FIXED: Match backend response structure
+// ✅ FIXED: Match backend response structure (From Colleague)
 interface LoginResponse {
   token: string;
   userId: string;
@@ -26,6 +25,21 @@ interface RegisterResponse {
   message: string;
 }
 
+// ✅ NEW: Interface for User Profile (For Settings Page)
+export interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  avatar?: string;
+  isEmailVerified?: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -33,7 +47,8 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  private readonly API_URL = 'https://localhost:5202/api/Auth'; // ✅ Use your actual backend URL
+  // ✅ Using Colleague's API URL configuration
+  private readonly API_URL = 'https://localhost:5202/api/Auth';
   private readonly TOKEN_KEY = 'token';
   private readonly USER_ID_KEY = 'userId';
   private readonly EMAIL_KEY = 'email';
@@ -72,9 +87,13 @@ private readonly ROLE_KEY = 'userRole';
   private getUserFromStorage(): AuthUser | null {
     const userId = localStorage.getItem(this.USER_ID_KEY);
     const email = localStorage.getItem(this.EMAIL_KEY);
+<<<<<<< HEAD
     const role = localStorage.getItem(this.ROLE_KEY);
+=======
+
+>>>>>>> origin
     if (!userId) return null;
-    
+
     return {
       id: userId,
       email: email || undefined,
@@ -84,16 +103,20 @@ private readonly ROLE_KEY = 'userRole';
     };
   }
 
+  // =================================================================
+  //  COLLEAGUE'S AUTH METHODS (Login, Register, Social, etc.)
+  // =================================================================
+
   // ✅ FIXED: Email Login to match backend response
   loginWithEmail(request: EmailLoginRequest): Observable<{ success: boolean }> {
     return this.http.post<LoginResponse>(`${this.API_URL}/login`, request)
       .pipe(
         tap(response => {
           console.log('✅ Login response:', response);
-          
+
           // Store token and user info
           this.setToken(response.token);
-          
+
           const user: AuthUser = {
             id: response.userId,
             email: response.email,
@@ -101,7 +124,7 @@ private readonly ROLE_KEY = 'userRole';
             isEmailVerified: true,
             isPhoneVerified: false
           };
-          
+
           this.setUser(user);
         }),
         catchError(error => {
@@ -225,5 +248,84 @@ private readonly ROLE_KEY = 'userRole';
         }),
         tap(() => ({ success: true }))
       ) as any;
+  }
+
+  // =================================================================
+  //  NEW METHODS FOR ACCOUNT SETTINGS (Merged seamlessly)
+  // =================================================================
+
+  // 1. Get Current User Profile
+  // Note: Adjusted endpoint to match your API structure potentially
+  getCurrentUser(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.API_URL}/user/profile`);
+  }
+
+  // 2. Update User Profile
+  updateUserProfile(data: Partial<UserProfile>): Observable<UserProfile> {
+    return this.http.put<UserProfile>(`${this.API_URL}/user/profile`, data)
+      .pipe(
+        tap(updatedUser => {
+          // We update the local behavior subject if email changed,
+          // to keep the app state consistent
+          const currentUser = this.userSubject.value;
+          if (currentUser && updatedUser.email) {
+             // Only updating fields that AuthUser tracks
+             const newAuthUser: AuthUser = {
+               ...currentUser,
+               email: updatedUser.email
+             };
+             this.setUser(newAuthUser);
+          }
+        })
+      );
+  }
+
+  // 3. Change Password
+  changePassword(currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.put(`${this.API_URL}/change-password`, {
+      currentPassword,
+      newPassword
+    });
+  }
+
+  // 4. Upload Avatar
+  uploadAvatar(file: File): Observable<{ avatarUrl: string }> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    return this.http.post<{ avatarUrl: string }>(`${this.API_URL}/user/avatar`, formData);
+  }
+
+  // 5. Delete Account
+  deleteAccount(password: string): Observable<void> {
+    // Using HTTP Delete with body option
+    return this.http.delete<void>(`${this.API_URL}/user/account`, {
+      body: { password }
+    }).pipe(
+      tap(() => {
+        // Logout the user immediately after deletion
+        this.logout();
+      })
+    );
+  }
+
+  // 6. Request Email Verification
+  requestEmailVerification(): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/verify-email/request`, {});
+  }
+
+  // 7. Verify Email with Code
+  confirmEmailVerification(code: string): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/verify-email/confirm`, { code })
+      .pipe(
+        tap(() => {
+          const currentUser = this.userSubject.value;
+          if (currentUser) {
+            // Update local state to show email is verified
+            const updatedUser: AuthUser = { ...currentUser, isEmailVerified: true };
+            this.setUser(updatedUser);
+          }
+        })
+      );
   }
 }

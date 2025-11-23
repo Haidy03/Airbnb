@@ -3,9 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../services/property';
 import { Property, PropertyStatus, RoomType } from '../../models/property.model';
-
-// Import the PropertyDraft interface from PropertyService
 import { PropertyDraft } from '../../services/property';
+import { environment } from '../../../../../environments/environment'; // ✅ Import environment
 
 @Component({
   selector: 'app-my-properties',
@@ -14,11 +13,8 @@ import { PropertyDraft } from '../../services/property';
   styleUrl: './my-properties.css',
 })
 export class MyProperties implements OnInit {
-  // Properties data - now includes both published and drafts
   properties = signal<(Property | PropertyDraft)[]>([]);
   isLoading = signal(false);
-  
-  // View mode: 'grid' or 'list'
   viewMode = signal<'grid' | 'list'>('grid');
 
   constructor(
@@ -31,7 +27,7 @@ export class MyProperties implements OnInit {
   }
 
   /**
-   * Load all drafts and properties
+   * ✅ Load all drafts and properties
    */
   loadAllDrafts(): void {
     this.isLoading.set(true);
@@ -49,35 +45,92 @@ export class MyProperties implements OnInit {
     });
   }
 
-  /**
-   * Toggle view mode
-   */
   toggleViewMode(): void {
     const current = this.viewMode();
     this.viewMode.set(current === 'grid' ? 'list' : 'grid');
   }
 
   /**
-   * Navigate to add new property
+   * ✅ Check for incomplete drafts before creating new one
    */
   addNewProperty(): void {
+    this.isLoading.set(true);
+
+    const incompleteDraft = this.properties().find(p => {
+      if ('currentStep' in p && p.currentStep) {
+        const progress = this.getProgressPercentage(p);
+        return progress < 100;
+      }
+      return false;
+    });
+
+    if (incompleteDraft) {
+      const continueExisting = confirm(
+        'You have an incomplete listing in progress. Do you want to continue it?\n\n' +
+        'Click OK to continue, or Cancel to start a new listing.'
+      );
+
+      this.isLoading.set(false);
+
+      if (continueExisting) {
+        this.editProperty(incompleteDraft);
+      } else {
+        this.createNewDraft();
+      }
+    } else {
+      this.createNewDraft();
+    }
+  }
+
+  /**
+   * ✅ Create a new draft
+   */
+  private createNewDraft(): void {
+    this.isLoading.set(true);
+
+    // ✅ Clear localStorage before creating new draft
+    this.clearAllLocalStorage();
+
     this.propertyService.createPropertyDraft().subscribe({
       next: (draft) => {
         if (draft.id) {
-          // Store draft ID in localStorage
           localStorage.setItem('currentDraftId', draft.id);
-          // Navigate to first step
+          this.isLoading.set(false);
           this.router.navigate(['/host/properties/intro']);
         }
       },
       error: (error) => {
+        this.isLoading.set(false);
         alert('Failed to create property: ' + error.message);
       }
     });
   }
 
   /**
-   * Edit/Continue draft or edit property
+   * ✅ Clear all localStorage related to property creation
+   */
+  private clearAllLocalStorage(): void {
+    const keysToRemove = [
+      'property_photos',
+      'selected_amenities',
+      'property_type_id',
+      'property_room_type',
+      'property_location',
+      'property_floor_plan',
+      'property_pricing',
+      'property_title',
+      'property_description'
+    ];
+
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+    });
+
+    console.log('✅ LocalStorage cleared for new draft');
+  }
+
+  /**
+   * ✅ Edit/Continue draft or edit property
    */
   editProperty(property: Property | PropertyDraft, event?: Event): void {
     if (event) {
@@ -91,26 +144,40 @@ export class MyProperties implements OnInit {
       return;
     }
 
-    // Check if it's a draft (incomplete) or published property
-    const isDraft = 'currentStep' in property;
+    localStorage.setItem('currentDraftId', propertyId);
+
+    const isDraft = 'currentStep' in property && property.currentStep;
 
     if (isDraft) {
-      // For drafts, load and navigate to the current step
       const draft = property as PropertyDraft;
-      localStorage.setItem('currentDraftId', propertyId);
+      const step = draft.currentStep || 'intro';
       
-      const step = draft.currentStep || 'property-type';
       console.log(`📍 Resuming draft at step: ${step}`);
-      this.router.navigate([`/host/properties/${step}`]);
+      
+      const stepRoutes: { [key: string]: string } = {
+        'intro': 'intro',
+        'property-type': 'property-type',
+        'room-type': 'room-type',
+        'location': 'location',
+        'floor-plan': 'floor-plan',
+        'amenities': 'amenities',
+        'photos': 'photos',
+        'title': 'title',
+        'description': 'description',
+        'pricing': 'pricing',
+        'booking-settings': 'instant-book',
+        'legal-and-create': 'legal-and-create'
+      };
+
+      const route = stepRoutes[step] || 'intro';
+      this.router.navigate([`/host/properties/${route}`]);
     } else {
-      // For published properties, navigate to edit
-      localStorage.setItem('currentDraftId', propertyId);
       this.router.navigate(['/host/properties/edit', propertyId]);
     }
   }
 
   /**
-   * Delete draft
+   * ✅ Delete draft
    */
   deleteDraft(property: Property | PropertyDraft, event: Event): void {
     event.stopPropagation();
@@ -118,11 +185,20 @@ export class MyProperties implements OnInit {
     const propertyId = property.id?.toString();
     if (!propertyId) return;
 
-    if (confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
+    const propertyTitle = this.getPropertyTitle(property);
+    
+    if (confirm(`Are you sure you want to delete "${propertyTitle}"? This action cannot be undone.`)) {
       this.propertyService.deleteDraft(propertyId).subscribe({
         next: (success) => {
           if (success) {
             console.log('✅ Draft deleted');
+            
+            const currentDraftId = localStorage.getItem('currentDraftId');
+            if (currentDraftId === propertyId) {
+              this.clearAllLocalStorage();
+              localStorage.removeItem('currentDraftId');
+            }
+            
             this.loadAllDrafts();
           }
         },
@@ -134,7 +210,7 @@ export class MyProperties implements OnInit {
   }
 
   /**
-   * Quick publish/unpublish toggle
+   * ✅ Quick publish/unpublish toggle
    */
   togglePublishStatus(property: Property | PropertyDraft, event: Event): void {
     event.stopPropagation();
@@ -142,62 +218,85 @@ export class MyProperties implements OnInit {
     const propertyId = property.id?.toString();
     if (!propertyId) return;
 
-    // Check if property is a draft - cannot publish incomplete drafts
-    const isDraft = 'currentStep' in property;
-    const isActive = (property as any).isActive || false;
+    const isDraft = 'currentStep' in property && property.currentStep;
+    const progress = this.getProgressPercentage(property);
 
-    if (!isActive && !isDraft) {
-      // For published properties
-      const willPublish = (property as Property).status !== PropertyStatus.PUBLISHED;
-      
-      const confirmMsg = willPublish 
-        ? 'Publish this listing? It will be visible to guests.'
-        : 'Unpublish this listing? It will be hidden from guests.';
-      
-      if (!confirm(confirmMsg)) return;
-      
-      const action$ = willPublish 
-        ? this.propertyService.publishProperty(propertyId)
-        : this.propertyService.unpublishProperty(propertyId);
-      
-      action$.subscribe({
-        next: () => {
-          const msg = willPublish ? 'Published successfully!' : 'Unpublished successfully!';
-          alert(msg);
-          this.loadAllDrafts();
-        },
-        error: (error) => {
-          alert(error.message || 'Failed to update status');
-        }
-      });
-    } else if (isDraft) {
-      // Drafts must be completed before publishing
+    if (isDraft && progress < 100) {
       alert('Please complete all steps before publishing this property.');
       this.editProperty(property);
+      return;
     }
+
+    const isActive = (property as any).isActive || false;
+    const willPublish = !isActive;
+    
+    const confirmMsg = willPublish 
+      ? 'Publish this listing? It will be visible to guests.'
+      : 'Unpublish this listing? It will be hidden from guests.';
+    
+    if (!confirm(confirmMsg)) return;
+    
+    const action$ = willPublish 
+      ? this.propertyService.publishProperty(propertyId)
+      : this.propertyService.unpublishProperty(propertyId);
+    
+    action$.subscribe({
+      next: () => {
+        const msg = willPublish ? '✅ Published successfully!' : '✅ Unpublished successfully!';
+        alert(msg);
+        
+        // ✅ Clear localStorage after successful publish
+        if (willPublish) {
+          this.clearAllLocalStorage();
+          localStorage.removeItem('currentDraftId');
+        }
+        
+        this.loadAllDrafts();
+      },
+      error: (error) => {
+        alert(error.message || 'Failed to update status');
+      }
+    });
   }
 
   /**
-   * Get progress percentage based on current step
+   * ✅ Get progress percentage - FIXED for published properties
    */
   getProgressPercentage(property: Property | PropertyDraft): number {
-    if (!('currentStep' in property)) {
-      return 100; // Published property
+    // ✅ If property is published (no currentStep or isActive), return 100%
+    const isActive = (property as any).isActive;
+    const hasCurrentStep = 'currentStep' in property && property.currentStep;
+    
+    // Debug logs
+    console.log('Property Progress Check:', {
+      id: property.id,
+      title: property.title,
+      isActive,
+      hasCurrentStep,
+      currentStep: (property as any).currentStep
+    });
+    
+    if (isActive || !hasCurrentStep) {
+      return 100;
     }
-    return this.propertyService.getProgressPercentage(
-      (property as PropertyDraft).currentStep || 'intro'
-    );
+    
+    // ✅ For drafts, calculate progress based on current step
+    const progress = this.propertyService.getProgressPercentage(property.currentStep!);
+    console.log('Calculated Progress:', progress);
+    return progress;
   }
 
-  /**
-   * Get status badge class
-   */
   getStatusBadgeClass(property: Property | PropertyDraft): string {
-    const isDraft = 'currentStep' in property;
+    const isDraft = 'currentStep' in property && property.currentStep;
+    const isActive = (property as any).isActive;
+    
+    // ✅ Check if published first
+    if (isActive) {
+      return 'status-published';
+    }
     
     if (isDraft) {
-      const draft = property as PropertyDraft;
-      const progress = this.getProgressPercentage(draft);
+      const progress = this.getProgressPercentage(property);
       
       if (progress === 100) {
         return 'status-ready';
@@ -225,15 +324,17 @@ export class MyProperties implements OnInit {
     }
   }
 
-  /**
-   * Get status label
-   */
   getStatusLabel(property: Property | PropertyDraft): string {
-    const isDraft = 'currentStep' in property;
+    const isActive = (property as any).isActive;
+    const isDraft = 'currentStep' in property && property.currentStep;
+    
+    // ✅ Check if published first
+    if (isActive) {
+      return 'Published';
+    }
     
     if (isDraft) {
-      const draft = property as PropertyDraft;
-      const progress = this.getProgressPercentage(draft);
+      const progress = this.getProgressPercentage(property);
       
       if (progress === 100) {
         return 'Ready to publish';
@@ -257,76 +358,87 @@ export class MyProperties implements OnInit {
       case PropertyStatus.BLOCKED:
         return 'Action required';
       default:
-        return prop.status;
+        return 'Draft';
     }
   }
 
-  /**
-   * Get step name
-   */
   getStepName(step?: string): string {
     const stepNames: { [key: string]: string } = {
       'intro': 'Getting Started',
       'property-type': 'Property Type',
       'room-type': 'Room Type',
       'location': 'Location',
+      'floor-plan': 'Floor Plan',
       'amenities': 'Amenities',
       'photos': 'Photos',
+      'title': 'Title',
+      'description': 'Description',
       'pricing': 'Pricing',
-      'review': 'Review'
+      'booking-settings': 'Booking Settings',
+      'legal-and-create': 'Legal & Create'
     };
     return stepNames[step || 'intro'] || 'In Progress';
   }
 
-  /**
-   * Get current step for draft
-   */
   getCurrentStep(property: Property | PropertyDraft): string {
-    if ('currentStep' in property) {
-      const draft = property as PropertyDraft;
-      return this.getStepName(draft.currentStep);
+    if ('currentStep' in property && property.currentStep) {
+      return this.getStepName(property.currentStep);
     }
     return 'Published';
   }
 
-  /**
-   * Get property title or default
-   */
   getPropertyTitle(property: Property | PropertyDraft): string {
-    return property.title || 'Untitled Property';
+    const title = property.title || 'Untitled Property';
+    return title === 'Untitled Listing' ? 'New Draft' : title;
   }
 
   /**
-   * Get property images
+   * ✅ FIXED: Get property image with full URL
    */
   getPropertyImage(property: Property | PropertyDraft): string {
     if ('images' in property && property.images && property.images.length > 0) {
       const primaryImage = property.images.find((img: any) => img.isPrimary);
-      return primaryImage?.imageUrl || property.images[0]?.imageUrl || '';
+      const imageToUse = primaryImage || property.images[0];
+      
+      if (imageToUse?.imageUrl) {
+        const imageUrl = imageToUse.imageUrl;
+        
+        // ✅ If URL starts with /, prepend the base URL
+        if (imageUrl.startsWith('/')) {
+          return `${environment.apiUrl.replace('/api', '')}${imageUrl}`;
+        }
+        
+        // ✅ If it's already a full URL, return as is
+        if (imageUrl.startsWith('http')) {
+          return imageUrl;
+        }
+        
+        // ✅ Otherwise, construct the full URL
+        return `${environment.imageBaseUrl}${imageUrl}`;
+      }
     }
-    return '/assets/placeholder.jpg';
+    return '';
   }
 
   /**
-   * Check if property is a draft
+   * ✅ Check if property is a draft
    */
   isDraft(property: Property | PropertyDraft): boolean {
-    return 'currentStep' in property;
+    // ✅ Property is draft if it has currentStep AND is not active
+    const hasCurrentStep = 'currentStep' in property && !!property.currentStep;
+    const isActive = (property as any).isActive;
+    
+    return hasCurrentStep && !isActive;
   }
 
   /**
-   * Check if property is published
+   * ✅ Check if property is published
    */
   isPublished(property: Property | PropertyDraft): boolean {
-    if (this.isDraft(property)) {
-      return false;
-    }
-    return (property as Property).status === PropertyStatus.PUBLISHED;
+    const isActive = (property as any).isActive;
+    return isActive === true;
   }
 
-  /**
-   * Get property location string
-   */
   getLocationString(property: Property | PropertyDraft): string {
     const parts = [];
     
@@ -334,7 +446,7 @@ export class MyProperties implements OnInit {
       parts.push(this.getRoomTypeLabel(property.roomType as string));
     }
     
-    if ('city' in property && property.city) {
+    if ('city' in property && property.city && property.city !== 'Draft City') {
       parts.push(property.city);
     }
     
@@ -342,16 +454,13 @@ export class MyProperties implements OnInit {
       parts.push(property.state);
     }
     
-    if ('country' in property && property.country) {
+    if ('country' in property && property.country && property.country !== 'Draft Country') {
       parts.push(property.country);
     }
     
-    return parts.join(', ') || 'Property';
+    return parts.length > 0 ? parts.join(', ') : 'Location not set';
   }
 
-  /**
-   * Get room type label
-   */
   getRoomTypeLabel(roomType: string): string {
     const labels: { [key: string]: string } = {
       'entire_place': 'Entire place',
@@ -362,15 +471,12 @@ export class MyProperties implements OnInit {
     return labels[roomType] || 'Place';
   }
 
-  /**
-   * Check if property needs action
-   */
   needsAction(property: Property | PropertyDraft): boolean {
     const isDraft = this.isDraft(property);
     
     if (isDraft) {
       const progress = this.getProgressPercentage(property);
-      return progress < 100; // Incomplete drafts need action
+      return progress < 100;
     }
 
     const prop = property as Property;
@@ -380,7 +486,7 @@ export class MyProperties implements OnInit {
   }
 
   /**
-   * Get number of images
+   * ✅ Get number of images
    */
   getImageCount(property: Property | PropertyDraft): number {
     if ('images' in property && property.images) {
@@ -390,20 +496,22 @@ export class MyProperties implements OnInit {
   }
 
   /**
-   * Get amenities count
+   * ✅ FIXED: Get amenities count
    */
   getAmenitiesCount(property: Property | PropertyDraft): number {
+    // ✅ Check amenityIds first (for drafts)
     if ('amenityIds' in property && property.amenityIds) {
       return property.amenityIds.length;
-    } else if ('amenities' in property && property.amenities) {
-      return (property as any).amenities.length;
     }
+    
+    // ✅ Then check amenities array (for published properties)
+    if ('amenities' in property && property.amenities) {
+      return Array.isArray(property.amenities) ? property.amenities.length : 0;
+    }
+    
     return 0;
   }
 
-  /**
-   * Format price
-   */
   formatPrice(price: number): string {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -411,62 +519,43 @@ export class MyProperties implements OnInit {
     }).format(price);
   }
 
-    /*
-      Get the price per night for published property
-    */
-
- 
   getPricePerNight(property: Property | PropertyDraft): string {
-    // 1. If it is a Published Property, look inside 'pricing.basePrice'
     if ('pricing' in property && property.pricing) {
       return this.formatPrice(property.pricing.basePrice);
     }
     
-    // 2. If it is a Draft, look at 'pricePerNight'
-    if ('pricePerNight' in property && property.pricePerNight) {
+    if ('pricePerNight' in property && property.pricePerNight && property.pricePerNight > 0) {
       return this.formatPrice(property.pricePerNight);
     }
 
-    // 3. Fallback
-    return 'N/A';
+    return 'Not set';
   }
-  /**
-   * Safe getter for Average Rating
-   */
+
   getAverageRating(property: Property | PropertyDraft): string {
-    // Check if 'stats' property exists (it only exists on Published Property)
     if ('stats' in property && property.stats && property.stats.averageRating) {
       return property.stats.averageRating.toFixed(1);
     }
     return 'N/A';
   }
 
-  /**
-   * Safe getter for Total Reviews
-   */
   getTotalReviews(property: Property | PropertyDraft): number {
-    // Check if 'stats' property exists
     if ('stats' in property && property.stats && property.stats.totalReviews) {
       return property.stats.totalReviews;
     }
     return 0;
   }
 
-/**
- * Get a specific statistic property safely.
- */
-getPropertyStat(property: Property | PropertyDraft, key: 'averageRating' | 'totalReviews'): number | string {
-  if (this.isPublished(property)) {
-    const publishedProperty = property as Property;
-    // Use optional chaining in TS file for safety
-    const statValue = (publishedProperty as any).stats?.[key]; 
-    
-    if (key === 'averageRating') {
-      return statValue != null ? statValue.toFixed(1) : 'N/A';
+  getPropertyStat(property: Property | PropertyDraft, key: 'averageRating' | 'totalReviews'): number | string {
+    if (this.isPublished(property)) {
+      const publishedProperty = property as Property;
+      const statValue = (publishedProperty as any).stats?.[key]; 
+      
+      if (key === 'averageRating') {
+        return statValue != null ? statValue.toFixed(1) : 'N/A';
+      }
+      
+      return statValue != null ? statValue : 0;
     }
-    
-    return statValue != null ? statValue : 0;
+    return key === 'averageRating' ? 'N/A' : 0;
   }
-  return key === 'averageRating' ? 'N/A' : 0;
-}
 }

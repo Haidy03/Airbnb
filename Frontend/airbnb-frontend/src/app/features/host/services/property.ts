@@ -37,6 +37,13 @@ export interface PropertyDraft {
   updatedAt?: Date;
   currentStep?: string;
   isActive?: boolean;
+  status?: PropertyStatus;
+  bookingMode?: 'instant' | 'approval'; // Default: 'approval'
+  safetyDetails?: {
+    exteriorCamera: boolean;
+    noiseMonitor: boolean;
+    weapons: boolean;
+  };
 }
 
 @Injectable({
@@ -172,6 +179,7 @@ export class PropertyService {
       ...stepData,
       currentStep: stepName
     };
+    console.log('📝 Updating draft at step:', stepName, updateData);
 
     return this.http.put<{ success: boolean; data: any }>(
       `${this.apiUrl}/${draftId}`,
@@ -181,7 +189,7 @@ export class PropertyService {
       map(response => {
         const draft = this.mapApiToDraft(response.data);
         this.loadingSignal.set(false);
-        console.log(`✅ Draft saved at step: ${stepName}`);
+        console.log(`✅ Draft saved at step: ${stepName}`,draft);
         return draft;
       }),
       catchError(error => {
@@ -340,52 +348,91 @@ export class PropertyService {
   /**
    * Delete property image
    */
-  deletePropertyImage(imageId: number): Observable<boolean> {
-    return this.http.delete<{ success: boolean }>(
-      `${this.apiUrl}/images/${imageId}`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      map(response => response.success),
-      catchError(error => {
-        this.errorSignal.set(error.message);
-        throw error;
-      })
-    );
-  }
+  deletePropertyImage(imageId: number | string): Observable<boolean> {
+  console.log('🗑️ Deleting image:', imageId);
+
+  return this.http.delete<{ success: boolean; message?: string }>(
+    `${this.apiUrl}/images/${imageId}`,
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      if (response.success) {
+        console.log('✅ Image deleted successfully');
+        return true;
+      }
+      throw new Error(response.message || 'Failed to delete image');
+    }),
+    catchError(error => {
+      console.error('❌ Error deleting image:', error);
+      this.errorSignal.set(error.error?.message || error.message || 'Failed to delete image');
+      throw error;
+    })
+  );
+}
 
   /**
    * Set primary image for property
    */
-  setPrimaryImage(imageId: number): Observable<boolean> {
-    return this.http.patch<{ success: boolean }>(
-      `${this.apiUrl}/images/${imageId}/set-primary`,
-      {},
-      { headers: this.getHeaders() }
-    ).pipe(
-      map(response => response.success),
-      catchError(error => {
-        this.errorSignal.set(error.message);
-        throw error;
-      })
-    );
-  }
+  setPrimaryImage(imageId: number | string): Observable<boolean> {
+  console.log('🔧 API Call - Setting primary image:', { imageId });
+
+  return this.http.patch<{ success: boolean; data?: any; message?: string }>(
+    `${this.apiUrl}/images/${imageId}/set-primary`,
+    {},
+    { headers: this.getHeaders() }
+  ).pipe(
+    tap(response => {
+      console.log('✅ API Response:', response);
+    }),
+    map(response => {
+      if (response.success) {
+        console.log('✅ Primary image set successfully');
+        return true;
+      }
+      throw new Error(response.message || 'Failed to set primary image');
+    }),
+    catchError(error => {
+      console.error('❌ Error setting primary image:', error);
+      
+      // Log more details for debugging
+      if (error.error?.message) {
+        console.error('Server message:', error.error.message);
+      }
+      if (error.statusText) {
+        console.error('Status:', error.statusText);
+      }
+      
+      this.errorSignal.set(error.error?.message || error.message || 'Failed to set primary image');
+      throw error;
+    })
+  );
+}
 
   /**
    * Reorder property images
    */
-  reorderImages(propertyId: string, imageIds: number[]): Observable<boolean> {
-    return this.http.patch<{ success: boolean }>(
-      `${this.apiUrl}/${propertyId}/images/reorder`,
-      { imageIds },
-      { headers: this.getHeaders() }
-    ).pipe(
-      map(response => response.success),
-      catchError(error => {
-        this.errorSignal.set(error.message);
-        throw error;
-      })
-    );
-  }
+  reorderImages(propertyId: string, imageIds: (number | string)[]): Observable<boolean> {
+  console.log('🔄 Reordering images:', { propertyId, imageIds });
+
+  return this.http.patch<{ success: boolean; message?: string }>(
+    `${this.apiUrl}/${propertyId}/images/reorder`,
+    { imageIds },
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      if (response.success) {
+        console.log('✅ Images reordered successfully');
+        return true;
+      }
+      throw new Error(response.message || 'Failed to reorder images');
+    }),
+    catchError(error => {
+      console.error('❌ Error reordering images:', error);
+      this.errorSignal.set(error.error?.message || error.message || 'Failed to reorder images');
+      throw error;
+    })
+  );
+}
 
   // ============================================
   // PUBLISH/UNPUBLISH
@@ -488,7 +535,13 @@ export class PropertyService {
       createdAt: new Date(apiData.createdAt),
       updatedAt: new Date(apiData.updatedAt),
       currentStep: apiData.currentStep || 'intro',
-      isActive: apiData.isActive || false
+      isActive: apiData.isActive || false,
+      status: apiData.status || PropertyStatus.DRAFT ,// ✅ Map status
+      safetyDetails: {
+      exteriorCamera: apiData.hasExteriorCamera || false,
+      noiseMonitor: apiData.hasNoiseMonitor || false,
+      weapons: apiData.hasWeapons || false
+    }
     };
   }
 
