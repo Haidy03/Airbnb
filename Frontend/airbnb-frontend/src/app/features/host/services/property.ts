@@ -224,6 +224,98 @@ export class PropertyService {
     );
   }
 
+  /**
+ * Submit property for approval
+ */
+submitForApproval(propertyId: string): Observable<PropertyDraft> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  return this.http.post<{ success: boolean; data: any; message?: string; errors?: string[] }>(
+    `${this.apiUrl}/${propertyId}/submit-for-approval`,
+    {},
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to submit property');
+      }
+      const draft = this.mapApiToDraft(response.data);
+      this.loadingSignal.set(false);
+      console.log('✅ Property submitted for approval');
+      return draft;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      
+      if (error.error?.errors) {
+        const errorMsg = 'Property is not ready:\n' + error.error.errors.join('\n');
+        this.errorSignal.set(errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      this.errorSignal.set(error.message);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Activate approved property
+ */
+activateProperty(propertyId: string): Observable<PropertyDraft> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  return this.http.post<{ success: boolean; data: any; message?: string }>(
+    `${this.apiUrl}/${propertyId}/activate`,
+    {},
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to activate property');
+      }
+      const draft = this.mapApiToDraft(response.data);
+      this.loadingSignal.set(false);
+      console.log('✅ Property activated');
+      return draft;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      this.errorSignal.set(error.error?.message || error.message);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Deactivate property
+ */
+deactivateProperty(propertyId: string): Observable<PropertyDraft> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  return this.http.post<{ success: boolean; data: any }>(
+    `${this.apiUrl}/${propertyId}/deactivate`,
+    {},
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      const draft = this.mapApiToDraft(response.data);
+      this.loadingSignal.set(false);
+      console.log('✅ Property deactivated');
+      return draft;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      this.errorSignal.set(error.message);
+      throw error;
+    })
+  );
+}
+
+
   // ============================================
   // IMAGE UPLOAD
   // ============================================

@@ -262,11 +262,13 @@ export enum RoomType {
 }
 
 export enum PropertyStatus {
-  DRAFT = 'draft',
-  PUBLISHED = 'published',
-  UNLISTED = 'unlisted',
-  UNDER_REVIEW = 'under_review',
-  BLOCKED = 'blocked'
+  DRAFT = 'draft',                    // قيد الإنشاء
+  PENDING_APPROVAL = 'pending_approval', // بانتظار الموافقة
+  APPROVED = 'approved',              // معتمد من Admin
+  REJECTED = 'rejected',              // مرفوض
+  ACTIVE = 'active',                  // مفعل وظاهر للضيوف
+  INACTIVE = 'inactive',              // غير مفعل
+  SUSPENDED = 'suspended'             // معلق
 }
 
 // ==========================================
@@ -398,10 +400,12 @@ export const ROOM_TYPE_LABELS: { [key in RoomType]: string } = {
 
 export const PROPERTY_STATUS_LABELS: { [key in PropertyStatus]: string } = {
   [PropertyStatus.DRAFT]: 'In Progress',
-  [PropertyStatus.PUBLISHED]: 'Published',
-  [PropertyStatus.UNLISTED]: 'Unlisted',
-  [PropertyStatus.UNDER_REVIEW]: 'Under Review',
-  [PropertyStatus.BLOCKED]: 'Blocked'
+  [PropertyStatus.PENDING_APPROVAL]: 'Pending Approval',
+  [PropertyStatus.APPROVED]: 'Approved',
+  [PropertyStatus.REJECTED]: 'Rejected',
+  [PropertyStatus.ACTIVE]: 'Active',
+  [PropertyStatus.INACTIVE]: 'Inactive',
+  [PropertyStatus.SUSPENDED]: 'Suspended'
 };
 
 export const STEP_LABELS: { [key: string]: string } = {

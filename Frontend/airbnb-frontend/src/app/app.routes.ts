@@ -34,6 +34,9 @@ import { LoginComponent } from './features/auth/components/login.component/login
 
 // Guards
 import { authGuard, noAuthGuard, hostGuard, adminGuard } from './features/auth/services/auth.guard';
+import { MessagesInboxComponent } from './features/messages/messages/messages';
+import { ChatComponent } from './features/messages/chat/chat';
+import { MessageTestComponent } from './test/test/test';
 
 export const routes: Routes = [
   // =================================================
@@ -58,11 +61,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/guest/components/trips/trips')
       .then(m => m.TripsComponent)
   },
-  {
-    path: 'messages',
-    loadComponent: () => import('./features/guest/components/messages/messages')
-      .then(m => m.MessagesComponent)
-  },
+  // {
+  //   path: 'messages',
+  //   loadComponent: () => import('./features/guest/components/messages/messages')
+  //     .then(m => m.MessagesComponent)
+  // },
   // {
   //   path: 'profile',
   //   loadComponent: () => import('./features/guest/profile/profile.component')
@@ -101,10 +104,16 @@ export const routes: Routes = [
       { path: 'dashboard', component: HostDashboardComponent },
       // { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
-      { path: 'messages', component: HostMessages },
+      // { path: 'messages', component: HostMessages },
       // { path: 'properties/addd', component: AddProperty },
       // { path: 'properties/edit/:id', component: EditProperty },
     ]
+  },
+
+  //TESTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+    {
+    path: 'test/messages',
+    component: MessageTestComponent
   },
 
   // =================================================
@@ -171,6 +180,39 @@ export const routes: Routes = [
         component: legalandcreateComponent           
       },
 
+    ]
+  },
+
+   {
+    path: 'messages',
+    children: [
+      {
+        path: '',
+        component: MessagesInboxComponent,
+        title: 'Messages'
+      },
+      {
+        path: ':id',
+        component: ChatComponent,
+        title: 'Chat'
+      }
+    ]
+  },
+  
+ 
+  {
+    path: 'host/messages',
+    children: [
+      {
+        path: '',
+        component: MessagesInboxComponent,
+        title: 'Host Messages'
+      },
+      {
+        path: ':id',
+        component: ChatComponent,
+        title: 'Host Chat'
+      }
     ]
   },
 

@@ -428,10 +428,11 @@ namespace Airbnb.API.Services.Implementations
                     $"Property is not ready to publish: {string.Join(", ", validationErrors)}");
             }
 
-            property.IsActive = true;
-            property.IsApproved = true;
-            property.Status = PropertyStatus.Active; // ✅ Change status
-            property.CurrentStep = null; // ✅ CRITICAL: Clear step when published
+            // ✅ تغيير الحالة إلى PendingApproval بدلاً من Active مباشرة
+            property.Status = PropertyStatus.PendingApproval;
+            property.IsActive = false; // لن تكون مفعلة حتى موافقة Admin
+            property.IsApproved = false;
+            property.CurrentStep = null; // مسح الـ step لأنها اكتملت
             property.UpdatedAt = DateTime.UtcNow;
 
             await _propertyRepository.UpdateAsync(property);
@@ -451,6 +452,11 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to unpublish this property");
 
+            if (property.Status != PropertyStatus.Active)
+            {
+                throw new InvalidOperationException("Only active properties can be deactivated");
+            }
+
             property.IsActive = false;
             property.Status = PropertyStatus.Inactive; // ✅ Change status
             property.UpdatedAt = DateTime.UtcNow;
@@ -458,6 +464,34 @@ namespace Airbnb.API.Services.Implementations
             await _propertyRepository.UpdateAsync(property);
 
             _logger.LogInformation("Property {PropertyId} unpublished by host {HostId}", id, hostId);
+
+            return true;
+        }
+
+        // ✅ دالة جديدة لتفعيل property بعد موافقة Admin
+        public async Task<bool> ActivatePropertyAsync(int id, string hostId)
+        {
+            var property = await _propertyRepository.GetByIdAsync(id);
+
+            if (property == null)
+                return false;
+
+            if (property.HostId != hostId)
+                throw new UnauthorizedAccessException("You are not authorized to activate this property");
+
+            // ✅ يمكن التفعيل فقط لو Property معتمدة من Admin
+            if (property.Status != PropertyStatus.Approved)
+            {
+                throw new InvalidOperationException("Property must be approved by admin before activation");
+            }
+
+            property.IsActive = true;
+            property.Status = PropertyStatus.Active;
+            property.UpdatedAt = DateTime.UtcNow;
+
+            await _propertyRepository.UpdateAsync(property);
+
+            _logger.LogInformation("✅ Property {PropertyId} activated by host {HostId}", id, hostId);
 
             return true;
         }
