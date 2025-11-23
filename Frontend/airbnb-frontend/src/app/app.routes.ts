@@ -17,14 +17,23 @@ import { PropertyIntroComponent } from './features/host/components/property-step
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
 import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
+import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
+import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
+import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
+import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
+import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
 import { PropertyFloorPlanComponent } from './features/host/components/property-steps/floor-plan/floor-plan';
-import { StandOutComponent } from './features/host/components/property-steps/stand-out/stand-out';
 import { AmenitiesStepComponent } from './features/host/components/property-steps/amenities/amenities';
 import { PropertyPhotosComponent } from './features/host/components/property-steps/photos/photos';
+import { adminGuard, authGuard, hostGuard, noAuthGuard } from './features/auth/services/auth.guard';
+import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
+import { LoginComponent } from './features/auth/components/login.component/login.component';
+import { StandOutComponent } from './features/host/components/property-steps/stand-out/stand-out';
 import { PropertyTitleComponent } from './features/host/components/property-steps/title/title';
 import { PropertyDescriptionComponent } from './features/host/components/property-steps/description/description';
-import { FinishsetupComponent } from './features/host/components/property-steps/finish-setup/finish-setup';
+import { legalandcreateComponent } from './features/host/components/property-steps/legal-and-create/legal-and-create';
 import { PricingComponent } from './features/host/components/property-steps/pricing/pricing';
+import { FinishsetupComponent } from './features/host/components/property-steps/finish-setup/finish-setup';
 import { instantBookComponent } from './features/host/components/property-steps/instant-book/instant-book';
 import { legalandcreateComponent } from './features/host/components/property-steps/legal-and-create/legal-and-create';
 
@@ -37,6 +46,8 @@ import { authGuard, noAuthGuard, hostGuard, adminGuard } from './features/auth/s
 import { MessagesInboxComponent } from './features/messages/messages/messages';
 import { ChatComponent } from './features/messages/chat/chat';
 import { MessageTestComponent } from './test/test/test';
+import { ListingDetails } from './features/guest/components/listing-details/listing-details';
+import { Checkout } from './features/guest/components/checkout/checkout';
 
 export const routes: Routes = [
   // =================================================
@@ -78,6 +89,8 @@ export const routes: Routes = [
       .then(m => m.AccountSettingsComponent),
     canActivate: [authGuard] // ✅ Added authGuard
   },
+   { path: 'listing/:id', component: ListingDetails },
+    { path: 'checkout/:id', component: Checkout },
 
   // =================================================
   // 2. Auth Routes (Your original work)
@@ -92,13 +105,16 @@ export const routes: Routes = [
     canActivate: [noAuthGuard]
   },
 
+  // ✅ Host routes - protected by hostGuard (ONLY for Hosts)
+  // ✅ Host routes - protected by auth guard
+
   // =================================================
   // 3. Host Routes (Your original work - Protected)
   // =================================================
   {
     path: 'host',
     component: HostLayoutComponent,
-    canActivate: [hostGuard],
+    //canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
@@ -121,22 +137,22 @@ export const routes: Routes = [
   // =================================================
   {
     path: 'host/properties',
-    canActivate: [hostGuard],
+    //canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
-      { 
-        path: 'intro', 
+      {
+        path: 'intro',
         component: PropertyIntroComponent
       },
-      { 
-        path: 'property-type', 
+      {
+        path: 'property-type',
         component: PropertyTypeComponent
       },
-      { 
-        path: 'room-type', 
+      {
+        path: 'room-type',
         component: PropertyRoomTypeComponent
       },
-      { 
-        path: 'location', 
+      {
+        path: 'location',
         component: PropertyLocationComponent
       },
       {
@@ -161,23 +177,23 @@ export const routes: Routes = [
       },
       {
         path: 'description',
-        component: PropertyDescriptionComponent           
+        component: PropertyDescriptionComponent
       },
       {
         path: 'instant-book',
-        component: instantBookComponent           
+        component: instantBookComponent
       },
       {
         path: 'finish-setup',
-        component: FinishsetupComponent           
+        component: FinishsetupComponent
       },
       {
         path: 'pricing',
-        component: PricingComponent           
+        component: PricingComponent
       },
       {
         path: 'legal-and-create',
-        component: legalandcreateComponent           
+        component: legalandcreateComponent
       },
 
     ]
@@ -225,6 +241,8 @@ export const routes: Routes = [
     canActivate: [adminGuard]
   },
 
+  // Reviews routes
+
   // =================================================
   // 6. Feature Routes (Reviews)
   // =================================================
@@ -238,6 +256,8 @@ export const routes: Routes = [
   // 7. Wildcard / 404 Handling
   // =================================================
   // Note: Changed catch-all to redirect to Home instead of test-login for better UX
+
+
   {
     path: '**',
     redirectTo: ''

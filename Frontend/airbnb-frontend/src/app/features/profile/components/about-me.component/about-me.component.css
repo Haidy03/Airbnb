@@ -1,0 +1,175 @@
+.about-container {
+  width: 100%;
+}
+
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.content-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #222;
+}
+
+.edit-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: #222;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.edit-btn:hover {
+  opacity: 0.7;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 20px;
+  color: #717171;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #ebebeb;
+  border-top-color: #e61e4d;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.profile-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 60px;
+}
+
+.profile-card {
+  background-color: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  background-color: #222;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-initial {
+  color: #fff;
+  font-size: 48px;
+  font-weight: 600;
+}
+
+.user-name {
+  font-size: 24px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+.user-role {
+  font-size: 14px;
+  color: #717171;
+  margin: 0 0 8px 0;
+}
+
+.user-email {
+  font-size: 14px;
+  color: #717171;
+  margin: 0;
+}
+
+.complete-profile-card {
+  background-color: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 16px;
+}
+
+.card-description {
+  font-size: 14px;
+  color: #717171;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  flex: 1;
+}
+
+.get-started-btn {
+  background-color: #e61e4d;
+  color: #fff;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.get-started-btn:hover {
+  background-color: #d90b63;
+}
+
+.reviews-section {
+  display: flex;
+  align-items: center;
+  padding: 24px 0;
+  border-top: 1px solid #ebebeb;
+}
+
+.reviews-icon {
+  font-size: 24px;
+  margin-right: 16px;
+}
+
+.reviews-text {
+  font-size: 16px;
+  color: #222;
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .profile-cards {
+    grid-template-columns: 1fr;
+  }
+}

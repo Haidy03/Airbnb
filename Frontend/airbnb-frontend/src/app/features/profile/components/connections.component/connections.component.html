@@ -1,0 +1,36 @@
+<div class="connections-container">
+  <div class="header">
+    <h2 class="title">Connections</h2>
+    <p class="subtitle">People you've connected with on the platform</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading connections...</p>
+  </div>
+
+  <div *ngIf="!isLoading && connections.length === 0" class="empty-state">
+    <p>You don't have any connections yet.</p>
+    <p>Connect with hosts and guests to see them here.</p>
+  </div>
+
+  <div *ngIf="!isLoading && connections.length > 0" class="connections-grid">
+    <div *ngFor="let c of connections" class="connection-card">
+      <div class="conn-left" (click)="openConnection(c)">
+        <div class="conn-avatar">
+          <img *ngIf="c.profileImage" [src]="c.profileImage" [alt]="c.name" class="conn-image">
+          <span *ngIf="!c.profileImage" class="conn-initial">{{ c.initial }}</span>
+        </div>
+        <div class="conn-info">
+          <h3 class="conn-name">{{ c.name }}</h3>
+          <p class="mutual">{{ c.mutualConnections }} mutual connections</p>
+        </div>
+      </div>
+      <div class="conn-actions">
+        <button class="message-btn">Message</button>
+        <button class="remove-btn">Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
