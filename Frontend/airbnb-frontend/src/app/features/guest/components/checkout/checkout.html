@@ -1,0 +1,179 @@
+<div class="checkout-page" *ngIf="listing">
+
+  <!-- Header -->
+  <header class="checkout-header">
+    <button class="icon-btn back-btn" (click)="goBack()">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1>Confirm and pay</h1>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- ::::: LEFT COLUMN (Payment Form) ::::: -->
+    <div class="left-section">
+
+      <!-- Step 1 Title -->
+      <div class="step-header">
+        <h2>1. Add a payment method</h2>
+      </div>
+
+      <div class="payment-card-container">
+
+        <!-- Card Selection Header -->
+        <div class="payment-method-header">
+          <div class="method-info">
+            <i class="fa-regular fa-credit-card"></i>
+            <span>Credit or debit card</span>
+          </div>
+          <div class="radio-circle"></div> <!-- الدائرة السوداء -->
+        </div>
+
+        <!-- Card Inputs -->
+        <div class="form-inputs">
+
+          <!-- Card Number -->
+          <div class="input-row top">
+            <input type="text" placeholder="Card number">
+            <i class="fa-solid fa-lock lock-icon"></i>
+          </div>
+
+          <!-- Expiry & CVV -->
+          <div class="input-row middle split">
+            <div class="half left">
+              <input type="text" placeholder="Expiration">
+            </div>
+            <div class="half right">
+              <input type="text" placeholder="CVV">
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Billing Address -->
+      <div class="billing-section">
+        <h3>Billing address</h3>
+
+        <div class="billing-inputs">
+          <div class="input-row top">
+            <input type="text" placeholder="Street address">
+          </div>
+          <div class="input-row middle">
+            <input type="text" placeholder="Apt or suite number">
+          </div>
+          <div class="input-row middle">
+            <input type="text" placeholder="City">
+          </div>
+          <div class="input-row middle split">
+            <div class="half left">
+              <input type="text" placeholder="State">
+            </div>
+            <div class="half right">
+              <input type="text" placeholder="ZIP code">
+            </div>
+          </div>
+          <div class="input-row bottom select-wrapper">
+            <select>
+              <option>Egypt</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Black Next Button -->
+      <button class="btn-black">Next</button>
+
+      <hr class="divider">
+
+      <!-- Placeholder for Step 2 -->
+      <div class="step-header disabled">
+        <h2>2. Review your reservation</h2>
+      </div>
+
+    </div>
+
+
+    <!-- ::::: RIGHT COLUMN (Summary Card) ::::: -->
+    <div class="right-section">
+      <div class="sticky-wrapper">
+
+        <!-- Main White Card -->
+        <div class="summary-card">
+
+          <!-- Listing Header -->
+          <div class="card-header-row">
+            <img [src]="listing.images[0]" alt="Listing">
+            <div class="text-info">
+              <span class="superhost-tag" *ngIf="listing.host.isSuperhost">Superhost</span>
+              <p class="listing-desc">Entire rental unit</p>
+              <h4>{{ listing.title }}</h4>
+              <div class="rating">
+                <i class="fa-solid fa-star"></i> {{ listing.rating }}
+                <span class="count">({{ listing.reviewsCount }} reviews)</span>
+              </div>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <!-- Cancellation Policy -->
+          <div class="policy-section">
+            <h4>Free cancellation</h4>
+            <p>Cancel before 3:00 PM on Nov 24 for a full refund. <a href="#">Full policy</a></p>
+          </div>
+
+          <hr class="divider">
+
+          <!-- Dates & Guests (Inside the card now) -->
+          <div class="trip-details">
+            <div class="detail-row">
+              <div class="label">
+                <h4>Dates</h4>
+                <p>{{ checkIn | date:'MMM d' }} – {{ checkOut | date:'d, y' }}</p>
+              </div>
+              <button class="link-btn">Change</button>
+            </div>
+
+            <div class="detail-row">
+              <div class="label">
+                <h4>Guests</h4>
+                <p>{{ guests }} guest{{ guests > 1 ? 's' : '' }}</p>
+              </div>
+              <button class="link-btn">Change</button>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <!-- Price Breakdown -->
+          <div class="price-section">
+            <h4>Price details</h4>
+            <div class="line-item">
+              <span>1 night x {{ listing.pricePerNight | number }} EGP</span>
+              <span>{{ listing.pricePerNight | number }} EGP</span>
+            </div>
+            <div class="line-item total">
+              <span>Total (EGP)</span>
+              <span>{{ listing.pricePerNight + 150 | number }} EGP</span>
+            </div>
+            <a href="#" class="breakdown-link">Price breakdown</a>
+          </div>
+
+        </div>
+
+        <!-- Rare Find Box (Below the card) -->
+        <div class="rare-find-box">
+          <i class="fa-regular fa-gem"></i>
+          <div class="text">
+            <h4>This is a rare find.</h4>
+            <p>{{ listing.host.name }}'s place is usually booked.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

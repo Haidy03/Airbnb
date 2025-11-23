@@ -1,0 +1,36 @@
+<div class="gallery-container" *ngIf="images && images.length >= 5">
+
+  <!-- الصورة الكبيرة على اليسار -->
+  <div class="gallery-item main-item">
+    <img [src]="images[0]" alt="Main Listing Photo">
+    <div class="overlay"></div>
+  </div>
+
+  <!-- الصور الصغيرة على اليمين -->
+  <div class="gallery-item sub-item">
+    <img [src]="images[1]" alt="Listing Photo">
+    <div class="overlay"></div>
+  </div>
+
+  <div class="gallery-item sub-item top-right">
+    <img [src]="images[2]" alt="Listing Photo">
+    <div class="overlay"></div>
+  </div>
+
+  <div class="gallery-item sub-item">
+    <img [src]="images[3]" alt="Listing Photo">
+    <div class="overlay"></div>
+  </div>
+
+  <div class="gallery-item sub-item bottom-right">
+    <img [src]="images[4]" alt="Listing Photo">
+    <div class="overlay"></div>
+  </div>
+
+  <!-- زر عرض كل الصور -->
+  <button class="show-all-btn" (click)="showAllPhotos()">
+    <i class="fa fa-th"></i> <!-- أيقونة النقاط -->
+    Show all photos
+  </button>
+
+</div>

@@ -1,0 +1,119 @@
+.gallery-container {
+  display: grid;
+  // تقسيم الشبكة: عمودين للكبيرة، وعمودين للصغار (مجموع 4 أعمدة)
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr; // صفين متساويين
+  gap: 8px; // المسافة البيضاء بين الصور
+  height: 450px; // ارتفاع المعرض (يمكنك تعديله حسب الحاجة)
+  border-radius: 12px; // تدوير حواف الحاوية بالكامل
+  overflow: hidden; // لضمان أن الصور تحترم الحواف المدورة
+  position: relative;
+  margin-bottom: 24px;
+
+  .gallery-item {
+    position: relative;
+    cursor: pointer;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; // لضمان ملء الصورة للمربع دون تمطيط
+      transition: transform 0.2s ease; // حركة ناعمة عند الزووم (اختياري)
+    }
+
+    // الـ Overlay هو الطبقة السوداء الخفيفة التي تظهر عند الضغط أو الهوفر في Airbnb
+    .overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0, 0, 0, 0.15); // لون التظليل
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    &:hover {
+      .overlay {
+        opacity: 1; // إظهار التظليل عند الوقوف بالماوس
+      }
+    }
+  }
+
+  // == تخصيص الأماكن في الشبكة == //
+
+  // الصورة الكبيرة (تأخذ أول عمودين وكل الصفوف)
+  .main-item {
+    grid-column: 1 / 2; // العمود الأول
+    grid-row: 1 / 3;    // تأخذ الصفين
+  }
+
+  // الصور الفرعية (تلقائياً ستأخذ الأماكن المتبقية، لكن نحدد الزوايا)
+
+  // التعامل مع الزوايا الدائرية (Airbnb logic)
+  // الحاوية الأساسية لديها overflow: hidden و border-radius
+  // لذا الصور الموجودة في الأركان ستأخذ الشكل تلقائياً،
+  // لكن هذا الكود للتأكد من التنسيق لو ألغيتِ الـ overflow من الأب.
+
+  // الزاوية اليمنى العليا
+  .top-right {
+    border-top-right-radius: 0;
+  }
+
+  // الزاوية اليمنى السفلى
+  .bottom-right {
+    border-bottom-right-radius: 0;
+  }
+
+  // == زر عرض كل الصور == //
+  .show-all-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: white;
+    border: 1px solid #222;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f7f7f7;
+    }
+
+    i {
+      font-size: 12px;
+    }
+  }
+}
+
+// التجاوب مع الشاشات الصغيرة (الموبايل)
+@media (max-width: 768px) {
+  .gallery-container {
+    display: flex; // تحويلها لـ Slider أو عرض صورة واحدة
+    height: 300px;
+    overflow-x: auto;
+    border-radius: 0;
+
+    .main-item {
+      width: 100%;
+      flex-shrink: 0;
+    }
+    // إخفاء باقي الصور في الموبايل وعرض الأولى فقط كمثال
+    .sub-item {
+      display: none;
+    }
+
+    .show-all-btn {
+      bottom: 10px;
+      right: 10px;
+      font-size: 12px;
+    }
+  }
+}

@@ -34,6 +34,8 @@ import { LoginComponent } from './features/auth/components/login.component/login
 
 // Guards
 import { authGuard, noAuthGuard, hostGuard, adminGuard } from './features/auth/services/auth.guard';
+import { ListingDetails } from './features/guest/components/listing-details/listing-details';
+import { Checkout } from './features/guest/components/checkout/checkout';
 
 export const routes: Routes = [
   // =================================================
@@ -75,6 +77,8 @@ export const routes: Routes = [
       .then(m => m.AccountSettingsComponent),
     canActivate: [authGuard] // ✅ Added authGuard
   },
+   { path: 'listing/:id', component: ListingDetails },
+    { path: 'checkout/:id', component: Checkout },
 
   // =================================================
   // 2. Auth Routes (Your original work)
@@ -200,6 +204,8 @@ export const routes: Routes = [
   // 7. Wildcard / 404 Handling
   // =================================================
   // Note: Changed catch-all to redirect to Home instead of test-login for better UX
+
+
   {
     path: '**',
     redirectTo: ''
