@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { PropertyService } from '../../../services/property';
 
 type RoomType = 'entire_place' | 'private_room' | 'shared_room' | 'hotel_room';
 
@@ -21,8 +22,10 @@ interface RoomTypeOption {
  
 })
 export class PropertyRoomTypeComponent implements OnInit {
-  selectedType = signal<RoomType | null>(null);
-  
+  selectedType = signal<RoomType | undefined>(undefined);
+  isLoading = signal(false);
+  currentDraftId: string | null = null;
+
   roomTypes: RoomTypeOption[] = [
     {
       id: 'entire_place',
@@ -44,12 +47,29 @@ export class PropertyRoomTypeComponent implements OnInit {
     }
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private propertyService: PropertyService // ✅ Inject PropertyService
+  ) {}
 
   ngOnInit(): void {
-    const saved = localStorage.getItem('room_type');
-    if (saved) {
-      this.selectedType.set(saved as RoomType);
+    this.getCurrentDraft();
+  }
+
+   /**
+   * Get current draft
+   */
+  getCurrentDraft(): void {
+    this.currentDraftId = localStorage.getItem('currentDraftId');
+    
+    if (this.currentDraftId) {
+      this.propertyService.getDraftById(this.currentDraftId).subscribe({
+        next: (draft) => {
+          if (draft.roomType) {
+            this.selectedType.set(draft.roomType as RoomType);
+          }
+        }
+      });
     }
   }
 
@@ -58,10 +78,26 @@ export class PropertyRoomTypeComponent implements OnInit {
   }
 
   saveAndExit(): void {
-    if (this.selectedType()) {
-      localStorage.setItem('room_type', this.selectedType()!);
+    if (!confirm('Save your progress and exit?')) return;
+
+    this.isLoading.set(true);
+
+    if (this.currentDraftId && this.selectedType()) {
+      this.propertyService.updateDraftAtStep(
+        this.currentDraftId,
+        {roomType: this.selectedType() },
+        'room-type'
+      ).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.router.navigate(['/host/properties']);
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          alert('Failed to save: ' + error.message);
+        }
+      });
     }
-    this.router.navigate(['/host/properties']);
   }
 
   showQuestionsModal(): void {
@@ -72,13 +108,30 @@ export class PropertyRoomTypeComponent implements OnInit {
     this.router.navigate(['/host/properties/property-type']);
   }
 
-  goNext(): void {
+   goNext(): void {
     if (!this.selectedType()) {
       alert('Please select a room type.');
       return;
     }
-    
-    localStorage.setItem('room_type', this.selectedType()!);
-    this.router.navigate(['/host/properties/location']);
+
+    this.isLoading.set(true);
+
+    if (this.currentDraftId) {
+      this.propertyService.updateDraftAtStep(
+        this.currentDraftId,
+        { roomType: this.selectedType() },
+        'room-type'
+      ).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.router.navigate(['/host/properties/location']);
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          alert('Failed to save: ' + error.message);
+        }
+      });
+    }
   }
+
 }

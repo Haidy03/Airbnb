@@ -1,0 +1,109 @@
+<!-- Frontend/airbnb-frontend/src/app/features/host/components/property-steps/safety-details/safety-details.html -->
+
+<header class="header">
+  <div class="logo" [routerLink]="['/']">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 1c-5.5 0-10 4.5-10 10 0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/>
+    </svg>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" (click)="showQuestionsModal()">
+      Questions?
+    </button>
+    <button 
+      class="btn-primary" 
+      (click)="exit()"
+      [disabled]="isLoading()">
+      <span *ngIf="!isLoading()">Exit</span>
+      <span *ngIf="isLoading()">Saving...</span>
+    </button>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="content-container">
+    <!-- Title -->
+    <h1 class="main-title">Share safety details</h1>
+
+    <!-- Question -->
+    <div class="question-section">
+      <p class="question-text">
+        Does your place have any of these? 
+        <button class="help-icon" title="Learn more about safety items">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 16v-4M12 8h.01"></path>
+          </svg>
+        </button>
+      </p>
+    </div>
+
+    <!-- Safety Checkboxes -->
+    <div class="safety-form">
+      <div class="safety-items">
+        <!-- Exterior Camera -->
+        <div class="safety-item">
+          <label class="checkbox-label" (click)="toggleSafety('exteriorCamera')">
+            <input
+              type="checkbox"
+              [checked]="isSafetyChecked('exteriorCamera')"
+              class="checkbox-input">
+            <span class="checkbox-custom"></span>
+            <span class="label-text">Exterior security camera present</span>
+          </label>
+        </div>
+
+        <!-- Noise Monitor -->
+        <div class="safety-item">
+          <label class="checkbox-label" (click)="toggleSafety('noiseMonitor')">
+            <input
+              type="checkbox"
+              [checked]="isSafetyChecked('noiseMonitor')"
+              class="checkbox-input">
+            <span class="checkbox-custom"></span>
+            <span class="label-text">Noise decibel monitor present</span>
+          </label>
+        </div>
+
+        <!-- Weapons -->
+        <div class="safety-item">
+          <label class="checkbox-label" (click)="toggleSafety('weapons')">
+            <input
+              type="checkbox"
+              [checked]="isSafetyChecked('weapons')"
+              class="checkbox-input">
+            <span class="checkbox-custom"></span>
+            <span class="label-text">Weapon(s) on the property</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="divider"></div>
+
+      <!-- Important Things to Know -->
+      <div class="important-section">
+        <h3 class="section-title">Important things to know</h3>
+        <p class="section-text">
+          Security cameras that monitor indoor spaces are not allowed even if they're turned off. All exterior security cameras must be disclosed.
+        </p>
+
+        <p class="compliance-text">
+          Be sure to comply with your <a href="#" class="link">local laws</a> and review Airbnb's <a href="#" class="link">anti-discrimination policy</a> and <a href="#" class="link">guest and Host fees</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="progress-bar" style="width: 100%"></div>
+  <button class="btn-back" (click)="goBack()">Back</button>
+  <button 
+    class="btn-create" 
+    [disabled]="isLoading()"
+    (click)="createListing()">
+    <span *ngIf="!isLoading()">Create listing</span>
+    <span *ngIf="isLoading()">Creating...</span>
+  </button>
+</footer>

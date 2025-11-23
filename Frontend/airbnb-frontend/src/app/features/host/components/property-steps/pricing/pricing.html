@@ -1,0 +1,106 @@
+<!-- Frontend/airbnb-frontend/src/app/features/host/components/property-steps/pricing/pricing.html -->
+
+<header class="header">
+  <div class="logo" [routerLink]="['/']">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 1c-5.5 0-10 4.5-10 10 0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/>
+    </svg>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" (click)="showQuestionsModal()">
+      Questions?
+    </button>
+    <button 
+      class="btn-primary" 
+      (click)="saveAndExit()"
+      [disabled]="isLoading()">
+      <span *ngIf="!isLoading()">Save & exit</span>
+      <span *ngIf="isLoading()">Saving...</span>
+    </button>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="content-container">
+    <h1 class="main-title">Now, set a weekday base price</h1>
+    <p class="subtitle">Tip: ${{ pricingForm.get('pricePerNight')?.value || 46 }}. You'll set a weekend price next.</p>
+
+    <form [formGroup]="pricingForm" class="price-form">
+      <!-- Price Input Slider -->
+      <div class="slider-container">
+        <input
+          type="range"
+          formControlName="pricePerNight"
+          min="10"
+          max="1000"
+          step="1"
+          class="price-slider">
+      </div>
+
+      <!-- Price Display -->
+      <div class="price-display">
+        <div class="price-amount">${{ pricingForm.get('pricePerNight')?.value || 46 }}</div>
+        <p class="guest-price">Guest price before taxes ${{ getGuestPrice() }} <span class="chevron">▼</span></p>
+      </div>
+
+      <!-- Direct Number Input -->
+      <div class="input-container">
+        <label>Set price</label>
+        <div class="number-input-wrapper">
+          <span class="currency">$</span>
+          <input
+            type="number"
+            formControlName="pricePerNight"
+            min="10"
+            max="1000"
+            class="number-input">
+          <span class="per-night">/night</span>
+        </div>
+      </div>
+    </form>
+
+    <div class="buttons-container">
+      <button class="view-listings-btn" (click)="openMap()">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5z"/>
+        </svg>
+        View similar listings
+      </button>
+      <a href="#" class="learn-link">Learn more about pricing</a>
+    </div>
+  </div>
+</main>
+
+<!-- Map Modal -->
+<div class="map-modal" *ngIf="showMap()" (click)="closeMap()">
+  <div class="map-modal-content" (click)="$event.stopPropagation()">
+    <button class="map-close-btn" (click)="closeMap()">✕</button>
+    
+    <div class="map-wrapper">
+      <div class="map-container" #mapContainer id="map"></div>
+    </div>
+
+    <div class="map-info-panel">
+      <h3>Compare similar listings</h3>
+      <p class="info-subtitle">Entire home/apt · 1 - 2 bedrooms<br>Nov 21, 2024 – Nov 21, 2025</p>
+      
+      <div class="divider"></div>
+      
+      <h4>Booked listings</h4>
+      <p class="booking-info">Most listings with reservations during these dates were an average of $15 - $100 per night.</p>
+      
+      <a href="#" class="learn-more-link">Learn more</a>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="progress-bar" style="width: 90%"></div>
+  <button class="btn-back" (click)="goBack()">Back</button>
+  <button 
+    class="btn-next" 
+    [disabled]="!pricingForm.valid || isLoading()"
+    (click)="goNext()">
+    Next
+  </button>
+</footer>

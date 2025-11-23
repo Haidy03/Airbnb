@@ -249,12 +249,69 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<bool> DeletePropertyImageAsync(int imageId, string hostId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                // ✅ Service validates and delegates to repository
+
+                // Get image with its property
+                var image = await _propertyRepository.GetImageByIdWithPropertyAsync(imageId);
+
+                if (image == null)
+                    return false;
+
+                // Verify host owns this property
+                if (image.Property.HostId != hostId)
+                    throw new UnauthorizedAccessException("You are not authorized to delete this image");
+
+                // Delete via repository
+                await _propertyRepository.DeleteImageAsync(imageId);
+
+                _logger.LogInformation("✅ Image {ImageId} deleted by host {HostId}", imageId, hostId);
+                return true;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting property image {ImageId}", imageId);
+                throw;
+            }
         }
 
         public async Task<bool> SetPrimaryImageAsync(int imageId, string hostId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                // ✅ Service validates and delegates to repository
+
+                // Get image with its property
+                var image = await _propertyRepository.GetImageByIdWithPropertyAsync(imageId);
+
+                if (image == null)
+                    return false;
+
+                // Verify host owns this property
+                if (image.Property.HostId != hostId)
+                    throw new UnauthorizedAccessException("You are not authorized to update this image");
+
+                // Set primary via repository
+                await _propertyRepository.SetPrimaryImageAsync(imageId, image.PropertyId);
+
+                _logger.LogInformation("✅ Primary image set: {ImageId} for property {PropertyId}",
+                    imageId, image.PropertyId);
+                return true;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting primary image {ImageId}", imageId);
+                throw;
+            }
         }
 
         private async Task<PropertyResponseDto> MapToResponseDto(Property property)
