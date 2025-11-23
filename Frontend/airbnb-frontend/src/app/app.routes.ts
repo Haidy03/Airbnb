@@ -15,6 +15,12 @@ import { PropertyIntroComponent } from './features/host/components/property-step
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
 import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
+import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
+import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
+import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
+import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
+import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
+
 
 export const routes: Routes = [
   {
@@ -26,12 +32,27 @@ export const routes: Routes = [
     component: LoginComponent,
     canActivate: [noAuthGuard] // ✅ Redirects to appropriate dashboard if already logged in
   },
+
+  // Profile routes
+  
+  {
+    path: 'profile',
+    component: ProfileComponent,
+    children: [
+      //{ path: '', redirectTo: 'about', pathMatch: 'full' },
+      { path: 'about', component: AboutMeComponent },
+      { path: 'edit', component: ProfileEditComponent },
+      { path: 'trips', component: PastTripsComponent },
+      { path: 'connections', component: ConnectionsComponent },
+    ]
+  },
+  
   
   // ✅ Host routes - protected by hostGuard (ONLY for Hosts)
   {
     path: 'host',
     component: HostLayoutComponent,
-    canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
+    //canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
@@ -46,7 +67,7 @@ export const routes: Routes = [
   // ✅ Property creation flow - full-screen, no host layout
   {
     path: 'host/properties',
-    canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
+    //canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       { 
         path: 'intro', 

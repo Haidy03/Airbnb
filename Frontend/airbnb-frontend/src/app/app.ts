@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 
 import { SearchBarComponent } from './features/guest/components/search/components/search-bar/search-bar';
 import { SearchResultsComponent } from './features/guest/components/search/components/search-results/search-results';
+import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
 
 @Component({
   selector: 'app-root',

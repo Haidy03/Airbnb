@@ -1,0 +1,39 @@
+<div class="about-container">
+  <div class="content-header">
+    <h2 class="content-title">About me</h2>
+    <button class="edit-btn" (click)="onEdit()">Edit</button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading profile...</p>
+  </div>
+
+  <div *ngIf="!isLoading && user" class="profile-cards">
+    <div class="profile-card">
+      <div class="avatar">
+        <img *ngIf="user.profileImage" [src]="user.profileImage" [alt]="user.name" class="avatar-image">
+        <span *ngIf="!user.profileImage" class="avatar-initial">{{ user.initial }}</span>
+      </div>
+      <h3 class="user-name">{{ user.name }}</h3>
+      <p class="user-role">{{ user.role }}</p>
+      <p *ngIf="user.email" class="user-email">{{ user.email }}</p>
+    </div>
+
+    <div class="complete-profile-card">
+      <h3 class="card-title">Complete your profile</h3>
+      <p class="card-description">
+        Your Airbnb profile is an important part of every reservation.
+        Complete yours to help other hosts and guests get to know you.
+      </p>
+      <button class="get-started-btn" (click)="onGetStarted()">
+        Get started
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && user" class="reviews-section">
+    <span class="reviews-icon">💬</span>
+    <span class="reviews-text">Reviews I've written</span>
+  </div>
+</div>
