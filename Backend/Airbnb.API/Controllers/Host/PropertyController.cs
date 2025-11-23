@@ -480,5 +480,127 @@ namespace Airbnb.API.Controllers.Host
                 return StatusCode(500, new { error = ex.Message, inner = ex.InnerException?.Message });
             }
         }
+
+        // ----------------------------------------------------------------------
+        // SUBMIT FOR APPROVAL (بدلاً من Publish مباشرة)
+        // ----------------------------------------------------------------------
+        [HttpPost("{id}/submit-for-approval")]
+        public async Task<IActionResult> SubmitForApproval(int id)
+        {
+            try
+            {
+                var hostId = GetHostId();
+
+                var property = await _propertyService.GetPropertyByIdAsync(id);
+
+                if (property == null)
+                    return NotFound(new { success = false, message = "Property not found" });
+
+                if (property.HostId != hostId)
+                    return Forbid();
+
+                var validationErrors = ValidatePropertyForPublishing(_mapper.Map<PropertyResponseDto>(property));
+                if (validationErrors.Any())
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Property is not ready to submit",
+                        errors = validationErrors
+                    });
+                }
+
+                await _propertyService.PublishPropertyAsync(id, hostId);
+
+                var dto = _mapper.Map<PropertyResponseDto>(await _propertyService.GetPropertyByIdAsync(id));
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Property submitted for approval. You will be notified once it's reviewed.",
+                    data = dto
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error submitting property for approval");
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+        // ----------------------------------------------------------------------
+        // ACTIVATE PROPERTY (بعد موافقة Admin)
+        // ----------------------------------------------------------------------
+        [HttpPost("{id}/activate")]
+        public async Task<IActionResult> ActivateProperty(int id)
+        {
+            try
+            {
+                var hostId = GetHostId();
+
+                var property = await _propertyService.GetPropertyByIdAsync(id);
+
+                if (property == null)
+                    return NotFound(new { success = false, message = "Property not found" });
+
+                if (property.HostId != hostId)
+                    return Forbid();
+
+                await _propertyService.ActivatePropertyAsync(id, hostId);
+
+                var dto = _mapper.Map<PropertyResponseDto>(await _propertyService.GetPropertyByIdAsync(id));
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Property activated successfully",
+                    data = dto
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error activating property");
+                return StatusCode(500, new { success = false, message = "Internal server error" });
+            }
+        }
+
+        // ----------------------------------------------------------------------
+        // DEACTIVATE PROPERTY
+        // ----------------------------------------------------------------------
+        [HttpPost("{id}/deactivate")]
+        public async Task<IActionResult> DeactivateProperty(int id)
+        {
+            try
+            {
+                var hostId = GetHostId();
+
+                var property = await _propertyService.GetPropertyByIdAsync(id);
+
+                if (property == null)
+                    return NotFound(new { success = false, message = "Property not found" });
+
+                if (property.HostId != hostId)
+                    return Forbid();
+
+                await _propertyService.UnpublishPropertyAsync(id, hostId);
+
+                var dto = _mapper.Map<PropertyResponseDto>(await _propertyService.GetPropertyByIdAsync(id));
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Property deactivated successfully",
+                    data = dto
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deactivating property");
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
     }
 }

@@ -83,7 +83,7 @@ export const MOCK_PROPERTIES: Property[] = [
       quietHours: { start: '22:00', end: '08:00' },
       additionalRules: ['No parties or events', 'Pets allowed with prior approval']
     },
-    status: PropertyStatus.PUBLISHED,
+    status: PropertyStatus.ACTIVE,
     isInstantBook: true,
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-11-10'),
@@ -166,7 +166,7 @@ export const MOCK_PROPERTIES: Property[] = [
       childrenAllowed: true,
       quietHours: { start: '22:00', end: '08:00' }
     },
-    status: PropertyStatus.PUBLISHED,
+    status: PropertyStatus.ACTIVE,
     isInstantBook: true,
     createdAt: new Date('2024-03-10'),
     updatedAt: new Date('2024-11-12'),
@@ -237,7 +237,7 @@ export const MOCK_PROPERTIES: Property[] = [
       eventsAllowed: false,
       childrenAllowed: true
     },
-    status: PropertyStatus.PUBLISHED,
+    status: PropertyStatus.ACTIVE,
     isInstantBook: false,
     createdAt: new Date('2024-02-01'),
     updatedAt: new Date('2024-11-01'),
