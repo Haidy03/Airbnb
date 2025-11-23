@@ -37,7 +37,7 @@ export interface PropertyDraft {
   updatedAt?: Date;
   currentStep?: string;
   isActive?: boolean;
-
+  status?: PropertyStatus;
   bookingMode?: 'instant' | 'approval'; // Default: 'approval'
   safetyDetails?: {
     exteriorCamera: boolean;
@@ -179,6 +179,7 @@ export class PropertyService {
       ...stepData,
       currentStep: stepName
     };
+    console.log('📝 Updating draft at step:', stepName, updateData);
 
     return this.http.put<{ success: boolean; data: any }>(
       `${this.apiUrl}/${draftId}`,
@@ -188,7 +189,7 @@ export class PropertyService {
       map(response => {
         const draft = this.mapApiToDraft(response.data);
         this.loadingSignal.set(false);
-        console.log(`✅ Draft saved at step: ${stepName}`);
+        console.log(`✅ Draft saved at step: ${stepName}`,draft);
         return draft;
       }),
       catchError(error => {
@@ -534,7 +535,13 @@ export class PropertyService {
       createdAt: new Date(apiData.createdAt),
       updatedAt: new Date(apiData.updatedAt),
       currentStep: apiData.currentStep || 'intro',
-      isActive: apiData.isActive || false
+      isActive: apiData.isActive || false,
+      status: apiData.status || PropertyStatus.DRAFT ,// ✅ Map status
+      safetyDetails: {
+      exteriorCamera: apiData.hasExteriorCamera || false,
+      noiseMonitor: apiData.hasNoiseMonitor || false,
+      weapons: apiData.hasWeapons || false
+    }
     };
   }
 
