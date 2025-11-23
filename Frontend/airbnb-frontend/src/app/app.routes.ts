@@ -25,9 +25,6 @@ import { ConnectionsComponent } from './features/profile/components/connections.
 import { PropertyFloorPlanComponent } from './features/host/components/property-steps/floor-plan/floor-plan';
 import { AmenitiesStepComponent } from './features/host/components/property-steps/amenities/amenities';
 import { PropertyPhotosComponent } from './features/host/components/property-steps/photos/photos';
-import { adminGuard, authGuard, hostGuard, noAuthGuard } from './features/auth/services/auth.guard';
-import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
-import { LoginComponent } from './features/auth/components/login.component/login.component';
 import { StandOutComponent } from './features/host/components/property-steps/stand-out/stand-out';
 import { PropertyTitleComponent } from './features/host/components/property-steps/title/title';
 import { PropertyDescriptionComponent } from './features/host/components/property-steps/description/description';
@@ -35,7 +32,7 @@ import { legalandcreateComponent } from './features/host/components/property-ste
 import { PricingComponent } from './features/host/components/property-steps/pricing/pricing';
 import { FinishsetupComponent } from './features/host/components/property-steps/finish-setup/finish-setup';
 import { instantBookComponent } from './features/host/components/property-steps/instant-book/instant-book';
-import { legalandcreateComponent } from './features/host/components/property-steps/legal-and-create/legal-and-create';
+
 
 // Auth Components
 import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
