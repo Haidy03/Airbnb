@@ -9,19 +9,10 @@ import { HostDashboardComponent } from './features/host/components/host-dashboar
 // import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
 import { MyProperties } from './features/host/components/my-properties/my-properties';
 import { HostMessages } from './features/host/components/host-messages/host-messages';
-<<<<<<< HEAD
-import { AddProperty } from './features/host/components/add-property/add-property';
-import { EditProperty } from './features/host/components/edit-property/edit-property';
-
-// Property Steps Components
-=======
 
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
-import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
-import { LoginComponent } from './features/auth/components/login.component/login.component';
-import { authGuard, noAuthGuard, hostGuard, adminGuard } from './features/auth/services/auth.guard';
->>>>>>> f970c4c4956a6406dc094325bc7ac378a7741582
+
 import { PropertyIntroComponent } from './features/host/components/property-steps/property-intro/property-intro';
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
@@ -123,12 +114,6 @@ export const routes: Routes = [
     path: 'host/properties',
     canActivate: [hostGuard],
     children: [
-<<<<<<< HEAD
-      { path: 'intro', component: PropertyIntroComponent },
-      { path: 'property-type', component: PropertyTypeComponent },
-      { path: 'room-type', component: PropertyRoomTypeComponent },
-      { path: 'location', component: PropertyLocationComponent },
-=======
       { 
         path: 'intro', 
         component: PropertyIntroComponent
@@ -185,7 +170,7 @@ export const routes: Routes = [
         path: 'legal-and-create',
         component: legalandcreateComponent           
       },
->>>>>>> f970c4c4956a6406dc094325bc7ac378a7741582
+
     ]
   },
 
