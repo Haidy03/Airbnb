@@ -39,7 +39,7 @@
         </svg>
       </div>
       
-      <h2 class="empty-title">You don't have any reservations</h2>
+      <h2 class="empty-title">You don't have any reservations today</h2>
       <p class="empty-description">
         To get booked, you'll need to<br>
         complete and publish your listing.
@@ -55,17 +55,20 @@
       <div *ngFor="let booking of todayBookings()" class="booking-card">
         
         <div class="booking-image">
-          <img [src]="booking.propertyImage" [alt]="booking.propertyTitle">
+          <img [src]="booking.propertyImage" 
+               [alt]="booking.propertyTitle"
+               onerror="this.src='/assets/images/placeholder-property.jpg'">
         </div>
 
         <div class="booking-info">
           <div class="booking-header">
-            <span class="event-badge" [class.check-in]="getEventType(booking) === 'check-in'"
-                                      [class.check-out]="getEventType(booking) === 'check-out'">
+            <span class="event-badge" 
+                  [class.check-in]="getEventType(booking) === 'check-in'"
+                  [class.check-out]="getEventType(booking) === 'check-out'">
               {{ getEventType(booking) === 'check-in' ? 'Check-in' : 'Check-out' }}
             </span>
             <span class="booking-time">
-              {{ getEventType(booking) === 'check-in' ? booking.checkInTime : booking.checkOutTime }}
+              {{ getCheckInOutTime(booking) }}
             </span>
           </div>
 
@@ -104,7 +107,7 @@
         </svg>
       </div>
       
-      <h2 class="empty-title">You don't have any reservations</h2>
+      <h2 class="empty-title">You don't have any upcoming reservations</h2>
       <p class="empty-description">
         To get booked, you'll need to<br>
         complete and publish your listing.
@@ -120,13 +123,15 @@
       <div *ngFor="let booking of upcomingBookings()" class="booking-card">
         
         <div class="booking-image">
-          <img [src]="booking.propertyImage" [alt]="booking.propertyTitle">
+          <img [src]="booking.propertyImage" 
+               [alt]="booking.propertyTitle"
+               onerror="this.src='assets/images/placeholder-property.jpg'">
         </div>
 
         <div class="booking-info">
           <div class="booking-header">
             <span class="event-badge check-in">Confirmed</span>
-            <span class="booking-time">Check-in: {{ booking.checkInTime }}</span>
+            <span class="booking-time">Check-in: {{ formatDate(booking.checkInDate) }}</span>
           </div>
 
           <h3 class="guest-name">{{ booking.guestName }}</h3>
@@ -147,6 +152,4 @@
       </div>
     </div>
   </div>
-
- 
 </div>

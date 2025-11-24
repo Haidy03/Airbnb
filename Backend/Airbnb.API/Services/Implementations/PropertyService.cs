@@ -341,6 +341,51 @@ namespace Airbnb.API.Services.Implementations
             }
         }
 
+        public async Task<bool> SubmitForApprovalAsync(int id, string hostId)
+        {
+            var property = await _propertyRepository.GetByIdWithDetailsAsync(id);
+
+            if (property == null)
+                return false;
+
+            if (property.HostId != hostId)
+                throw new UnauthorizedAccessException("You are not authorized to submit this property");
+
+            // ✅ Validate أن الـ property مكتملة
+            var validationErrors = new List<string>();
+
+            if (string.IsNullOrEmpty(property.Title) || property.Title == "Untitled Listing")
+                validationErrors.Add("Property title is required");
+
+            if (property.Images == null || !property.Images.Any())
+                validationErrors.Add("At least one image is required");
+
+            if (property.PricePerNight <= 0)
+                validationErrors.Add("Valid price per night is required");
+
+            if (string.IsNullOrEmpty(property.City) || property.City == "Draft City")
+                validationErrors.Add("Valid location is required");
+
+            if (validationErrors.Any())
+            {
+                throw new InvalidOperationException(
+                    $"Property is not ready to submit: {string.Join(", ", validationErrors)}");
+            }
+
+            // ✅ تغيير الـ Status
+            property.Status = PropertyStatus.PendingApproval;
+            property.IsActive = false;
+            property.IsApproved = false;
+            property.CurrentStep = null; // مسح الـ step لأنها اكتملت
+            property.UpdatedAt = DateTime.UtcNow;
+
+            await _propertyRepository.UpdateAsync(property);
+
+            _logger.LogInformation("✅ Property {PropertyId} submitted for approval by host {HostId}", id, hostId);
+
+            return true;
+        }
+
         private async Task<PropertyResponseDto> MapToResponseDto(Property property)
         {
             var totalBookings = await _bookingRepository.GetTotalBookingsByPropertyIdAsync(property.Id);

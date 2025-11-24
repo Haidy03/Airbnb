@@ -231,7 +231,7 @@ export class MyProperties implements OnInit {
     }
 
     // ✅ إذا كانت Draft مكتملة - إرسال للموافقة
-    if (isDraft && progress === 100) {
+    if (isDraft && progress === 100 || status === 'Draft') {
       if (!confirm('Submit this listing for admin approval?\n\nYour listing will be reviewed within 24-48 hours.')) return;
       
       this.propertyService.submitForApproval(propertyId).subscribe({
@@ -686,7 +686,7 @@ export class MyProperties implements OnInit {
     if (!propertyId) return;
 
     // Navigate to property detail page
-    this.router.navigate(['/properties', propertyId]);
+    this.router.navigate(['/host/properties', propertyId]);
   }
 
   /**
