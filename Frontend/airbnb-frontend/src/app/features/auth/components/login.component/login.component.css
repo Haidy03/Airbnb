@@ -1,13 +1,20 @@
 .modal-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
-  width: 100%;
-  max-width: 568px;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
+  position: fixed;            
+  top: 3vh;                   
+  left: 50%;                  
+  transform: translateX(-50%);
+  width: 90%;                 
+  max-width: 550px;          
+  box-sizing: border-box;
+   max-height: 90vh;
+  border-radius: 25px;
+  padding: 1px 2px;                                  /**/
+  z-index: 1050;             
+  background: #fff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.31);
   animation: modalSlideIn 0.3s ease-out;
+  font-weight: 500;
+  overflow-y: auto;
 }
 
 @keyframes modalSlideIn {
@@ -23,18 +30,20 @@
 
 /* ============== HEADER ============== */
 .modal-header {
-  padding: 24px;
+  font-size: 12px;
+  padding: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   border-bottom: 1px solid #ebebeb;
+  font-weight: 700;
 }
 
 .modal-header h2 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  margin: 2px 0;
+  font-size: 15px;
+  font-weight: 700;
   color: #222222;
 }
 
@@ -60,7 +69,7 @@
 
 .back-button:hover,
 .close-button:hover {
-  background-color: #f7f7f7;
+  background-color: #f7f7f7fe;
 }
 
 .back-button svg,
@@ -78,24 +87,31 @@
 }
 
 /* ============== BODY ============== */
-.modal-body {
-  padding: 24px;
+.modal-body  {
+  /* max-height: 75vh; */
+  padding: 12px;
+  overflow-y: auto ; 
+  scroll-behavior: auto;
+  
 }
+
 
 .welcome-title {
   font-size: 22px;
-  font-weight: 600;
+  font-family: work-sans, sans-serif;
+  font-weight: 548;
   color: #222222;
-  margin: 0 0 24px 0;
-  line-height: 26px;
+  margin: 12px 0 20px 0;
+  line-height: 12px;
 }
 
 .verification-description {
   font-size: 14px;
   color: #222222;
-  margin: 0 0 24px 0;
-  line-height: 20px;
+  margin: 0 0 18px 0;
+  line-height: 18px;
 }
+
 
 /* ============== COUNTRY SELECT ============== */
 .country-select-wrapper {
@@ -105,7 +121,7 @@
 
 .country-select {
   position: relative;
-  padding: 26px 40px 10px 12px;
+  padding: 24px 36px 5px 10px;
   border: 1px solid #b0b0b0;
   border-radius: 8px 8px 0 0;
   cursor: pointer;
@@ -162,18 +178,18 @@
   border-radius: 0 0 8px 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  max-height: 300px;
+  max-height: 40vh;
   overflow: hidden;
   margin-top: -1px;
 }
 
 .dropdown-list {
-  max-height: 300px;
+  max-height: 40vh;
   overflow-y: auto;
 }
 
 .dropdown-item {
-  padding: 12px;
+  padding: 10px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -191,8 +207,8 @@
 }
 
 .country-flag {
-  font-size: 20px;
-  width: 24px;
+  font-size: 14px;
+  width: 18px;
   text-align: center;
 }
 
@@ -214,11 +230,11 @@
 
 .phone-input {
   width: 100%;
-  padding: 26px 12px 10px;
+  padding: 14px 10px 10px;
   border: 1px solid #b0b0b0;
   border-top: none;
   border-radius: 0 0 8px 8px;
-  font-size: 16px;
+  font-size: 14px;
   font-family: inherit;
   outline: none;
   transition: border-color 0.2s;
@@ -227,15 +243,15 @@
 .phone-input:focus {
   border-color: #222222;
   border-width: 2px;
-  padding: 25px 11px 9px;
+  padding: 18px 11px 9px;
 }
 
 .code-input {
   width: 100%;
-  padding: 16px;
+  padding: 10px;
   border: 1px solid #b0b0b0;
   border-radius: 8px;
-  font-size: 24px;
+  font-size: 12px;
   font-family: inherit;
   outline: none;
   transition: border-color 0.2s;
@@ -262,7 +278,7 @@
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .form-group label {
@@ -278,7 +294,7 @@
   padding: 12px;
   border: 1px solid #b0b0b0;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 14px;
   font-family: inherit;
   transition: border-color 0.2s;
   outline: none;
@@ -332,14 +348,15 @@
   background-color: #fff8e6;
   border: 1px solid #ffc107;
   border-radius: 8px;
-  margin: 12px 0;
-  font-size: 14px;
+  margin: 10px 0;
+  font-size: 13px;
   color: #c13515;
 }
 
 .privacy-note,
 .resend-note {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 450 ;
   color: #222222;
   line-height: 16px;
   margin: 8px 0 16px 0;
@@ -353,7 +370,7 @@
 }
 
 .terms-text {
-  font-size: 12px;
+  font-size: 10px;
   color: #222222;
   line-height: 18px;
   margin-bottom: 20px;
@@ -367,7 +384,7 @@
 /* ============== BUTTONS ============== */
 .btn-continue {
   width: 100%;
-  padding: 14px;
+  padding: 10px ;
   background: linear-gradient(to right, #e61e4d 0%, #e31c5f 50%, #d70466 100%);
   background-color: #ff385c;
   color: white;
@@ -377,11 +394,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  margin-bottom: 16px;
+  margin-bottom: 16px ;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 48px;
+  
 }
 
 .btn-continue:hover:not(:disabled) {
@@ -416,7 +434,7 @@
 .divider-text {
   position: relative;
   text-align: center;
-  margin: 16px 0;
+  margin: 10px 0;
 }
 
 .divider-text::before,
@@ -448,8 +466,8 @@
 .bottom-link,
 .forgot-password {
   text-align: center;
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid #ebebeb;
   font-size: 14px;
   color: #222222;
@@ -474,7 +492,7 @@
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   padding: 0;
   font-family: inherit;
 }
@@ -511,6 +529,7 @@
   border-radius: 3px;
 }
 
+
 /* ============== RESPONSIVE ============== */
 @media (max-width: 600px) {
   .modal-card {
@@ -518,13 +537,12 @@
     max-height: 100vh;
     border-radius: 0;
     height: 100%;
+  
   }
 
   .form-row {
     grid-template-columns: 1fr;
   }
 
-  .modal-body {
-    padding: 20px;
-  }
+  
 }
