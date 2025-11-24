@@ -1,7 +1,48 @@
 <div class="calendar-page">
   
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="loading()">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p class="loading-text">Loading calendar...</p>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="properties().length === 0 && !loading()">
+    <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+      <circle cx="60" cy="60" r="50" stroke="#DDDDDD" stroke-width="2"/>
+      <path d="M40 45h40v30h-40z" stroke="#DDDDDD" stroke-width="2" fill="none"/>
+      <line x1="50" y1="35" x2="50" y2="45" stroke="#DDDDDD" stroke-width="2"/>
+      <line x1="70" y1="35" x2="70" y2="45" stroke="#DDDDDD" stroke-width="2"/>
+    </svg>
+    <h3>No properties found</h3>
+    <p>Create your first property to start managing your calendar</p>
+    <button class="btn-primary" routerLink="/host/properties/add">
+      Create Property
+    </button>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="errorMessage()">
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+      <circle cx="40" cy="40" r="35" stroke="#FF385C" stroke-width="2"/>
+      <path d="M40 25v20M40 55h.01" stroke="#FF385C" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <h3>Oops! Something went wrong</h3>
+    <p>{{ errorMessage() }}</p>
+    <div class="error-actions">
+      <button class="btn-secondary" (click)="loadCalendarData()">
+        Try Again
+      </button>
+      <button class="btn-secondary" (click)="clearError()">
+        Dismiss
+      </button>
+    </div>
+  </div>
+  
   <!-- Main Container -->
-  <div class="calendar-container">
+  <div class="calendar-container" *ngIf="properties().length > 0 && !errorMessage()">
     
     <!-- Left Sidebar: Properties List -->
     <div class="properties-sidebar">
@@ -15,9 +56,10 @@
           (click)="selectProperty(property)">
           
           <img 
-            [src]="property.coverImage || property.images[0]?.url" 
+            [src]="property.coverImage" 
             [alt]="property.title"
-            class="property-thumb">
+            class="property-thumb"
+            (error)="$event.target.src='/assets/images/placeholder-property.jpg'">
           
           <div class="property-details">
             <h4 class="property-name">{{ property.title }}</h4>
@@ -32,11 +74,67 @@
       
       <!-- Calendar Header -->
       <div class="calendar-header">
-        <button class="month-selector">
-          <h1 class="month-title">{{ currentMonthYear() }}</h1>
-          <span class="dropdown-icon">▼</span>
-        </button>
+        <!-- Month Selector with Dropdown -->
+        <div class="month-selector-wrapper">
+          <button class="month-selector" (click)="toggleMonthPicker()">
+            <h1 class="month-title">{{ currentMonthYear() }}</h1>
+            <svg 
+              width="20" 
+              height="20" 
+              viewBox="0 0 20 20" 
+              fill="currentColor"
+              class="dropdown-icon"
+              [class.rotated]="showMonthPicker()">
+              <path d="M5 7l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+          </button>
+          
+          <!-- Month Picker Dropdown -->
+          <div class="month-picker-dropdown" *ngIf="showMonthPicker()" [@expandCollapse]>
+            
+            <!-- Year Navigation -->
+            <div class="year-selector">
+              <button class="year-nav-btn" (click)="previousYear()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M10 12L6 8l4-4"/>
+                </svg>
+              </button>
+              
+              <span class="current-year">{{ selectedYear() }}</span>
+              
+              <button class="year-nav-btn" (click)="nextYear()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M6 4l4 4-4 4"/>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Months Grid -->
+            <div class="months-grid">
+              <button
+                *ngFor="let month of months; let i = index"
+                class="month-cell"
+                [class.selected]="isSelectedMonth(i)"
+                [class.current]="isCurrentMonth(i)"
+                [class.past]="isPastMonth(i)"
+                (click)="selectMonth(i)">
+                <span class="month-name">{{ month }}</span>
+              </button>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="month-picker-footer">
+              <button class="quick-action-btn" (click)="goToThisMonth()">
+                This Month
+              </button>
+              <button class="quick-action-btn" (click)="goToNextMonth()">
+                Next Month
+              </button>
+            </div>
+          </div>
+        </div>
 
+        <!-- Calendar Controls -->
         <div class="calendar-controls">
           <button class="nav-btn" (click)="previousMonth()" title="Previous month">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -138,7 +236,7 @@
       <div class="settings-section">
         <div class="settings-header">
           <h3 class="settings-title">Price settings</h3>
-          <button class="edit-btn" (click)="showSettingsModal.set(true)">
+          <button class="edit-btn" (click)="openSettingsModal()">
             Edit
           </button>
         </div>
@@ -160,7 +258,7 @@
       <div class="settings-section">
         <div class="settings-header">
           <h3 class="settings-title">Availability settings</h3>
-          <button class="edit-btn" (click)="showSettingsModal.set(true)">
+          <button class="edit-btn" (click)="openSettingsModal()">
             Edit
           </button>
         </div>
@@ -186,19 +284,16 @@
         </div>
       </div>
 
-      <!-- Legend -->
-      <!-- Removed as per user request -->
-
     </div>
 
   </div>
 
   <!-- Price Modal -->
-  <div class="modal-overlay" *ngIf="showPriceModal()" (click)="showPriceModal.set(false)">
+  <div class="modal-overlay" *ngIf="showPriceModal()" (click)="closePriceModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Edit Price</h2>
-        <button class="close-btn" (click)="showPriceModal.set(false)">×</button>
+        <button class="close-btn" (click)="closePriceModal()">×</button>
       </div>
       
       <form [formGroup]="priceForm" (ngSubmit)="updatePricing()">
@@ -225,7 +320,7 @@
         </div>
         
         <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="showPriceModal.set(false)">
+          <button type="button" class="btn-secondary" (click)="closePriceModal()">
             Cancel
           </button>
           <button type="submit" class="btn-primary" [disabled]="priceForm.invalid">
@@ -237,11 +332,11 @@
   </div>
 
   <!-- Availability Modal -->
-  <div class="modal-overlay" *ngIf="showAvailabilityModal()" (click)="showAvailabilityModal.set(false)">
+  <div class="modal-overlay" *ngIf="showAvailabilityModal()" (click)="closeAvailabilityModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Edit Availability</h2>
-        <button class="close-btn" (click)="showAvailabilityModal.set(false)">×</button>
+        <button class="close-btn" (click)="closeAvailabilityModal()">×</button>
       </div>
       
       <form [formGroup]="availabilityForm" (ngSubmit)="updateAvailability()">
@@ -268,7 +363,7 @@
         </div>
         
         <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="showAvailabilityModal.set(false)">
+          <button type="button" class="btn-secondary" (click)="closeAvailabilityModal()">
             Cancel
           </button>
           <button type="submit" class="btn-primary">
@@ -280,11 +375,11 @@
   </div>
 
   <!-- Settings Modal -->
-  <div class="modal-overlay" *ngIf="showSettingsModal()" (click)="showSettingsModal.set(false)">
+  <div class="modal-overlay" *ngIf="showSettingsModal()" (click)="closeSettingsModal()">
     <div class="modal-content large" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Calendar Settings</h2>
-        <button class="close-btn" (click)="showSettingsModal.set(false)">×</button>
+        <button class="close-btn" (click)="closeSettingsModal()">×</button>
       </div>
       
       <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
@@ -351,7 +446,7 @@
         </div>
         
         <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="showSettingsModal.set(false)">
+          <button type="button" class="btn-secondary" (click)="closeSettingsModal()">
             Cancel
           </button>
           <button type="submit" class="btn-primary" [disabled]="settingsForm.invalid">
@@ -360,6 +455,197 @@
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- Day Details Sidebar (Right Side) -->
+  <div class="day-details-sidebar" *ngIf="selectedDay()" [@slideIn]>
+    
+    <!-- Header -->
+    <div class="sidebar-header">
+      <button class="close-sidebar-btn" (click)="closeDaySidebar()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      
+      <div class="sidebar-date">
+        <h3>{{ formatSelectedDate() }}</h3>
+        <p class="day-name">{{ getSelectedDayName() }}</p>
+      </div>
+    </div>
+
+    <!-- Availability Toggle -->
+    <div class="sidebar-section availability-section">
+      <div class="section-header">
+        <div class="section-icon available" *ngIf="dayDetailsForm.value.isAvailable">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="8" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="section-icon unavailable" *ngIf="!dayDetailsForm.value.isAvailable">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M5 5l10 10" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <span class="section-title">Available</span>
+      </div>
+      
+      <div class="availability-toggle">
+        <label class="toggle-switch">
+          <input 
+            type="checkbox" 
+            [formControl]="getControl('isAvailable')"
+            (change)="onAvailabilityToggle()">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label" *ngIf="dayDetailsForm.value.isAvailable">
+          This date is available for booking
+        </span>
+        <span class="toggle-label blocked" *ngIf="!dayDetailsForm.value.isAvailable">
+          This date is blocked
+        </span>
+      </div>
+    </div>
+
+    <!-- Price Section -->
+    <div class="sidebar-section price-section">
+      <div class="section-header">
+        <span class="section-title">Last-minute price</span>
+      </div>
+      
+      <div class="price-input-group">
+        <div class="price-input-wrapper">
+          <span class="currency-symbol">$</span>
+          <input 
+            type="number" 
+            class="price-input"
+            [formControl]="getControl('customPrice')"
+            placeholder="{{ settings().basePrice }}"
+            min="0">
+        </div>
+        
+        <div class="price-comparison" *ngIf="dayDetailsForm.value.customPrice">
+          <span class="original-price">${{ settings().basePrice }}</span>
+          <span class="discount-badge" *ngIf="getPriceDiscount() > 0">
+            -{{ getPriceDiscount() }}%
+          </span>
+        </div>
+      </div>
+      
+      <p class="price-note">
+        Base price: ${{ settings().basePrice }} per night
+      </p>
+    </div>
+
+    <!-- Custom Settings Accordion -->
+    <div class="sidebar-section custom-settings-section">
+      <button 
+        class="accordion-header"
+        (click)="toggleCustomSettings()"
+        [class.expanded]="showCustomSettings()">
+        <span>Custom settings</span>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="accordion-icon">
+          <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      
+      <div class="accordion-content" *ngIf="showCustomSettings()" [@expandCollapse]>
+        
+        <!-- Check-in Time -->
+        <div class="setting-item">
+          <label>Check-in time</label>
+          <input 
+            type="time" 
+            class="time-input"
+            [formControl]="getControl('checkInTime')">
+        </div>
+        
+        <!-- Check-out Time -->
+        <div class="setting-item">
+          <label>Check-out time</label>
+          <input 
+            type="time" 
+            class="time-input"
+            [formControl]="getControl('checkOutTime')">
+        </div>
+        
+        <!-- Notes -->
+        <div class="setting-item">
+          <label>Notes (optional)</label>
+          <textarea 
+            class="notes-input"
+            [formControl]="getControl('notes')"
+            placeholder="Add notes about this date..."
+            rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Info (if booked) -->
+    <div class="sidebar-section booking-info-section" *ngIf="selectedDay()?.hasBooking">
+      <div class="section-header">
+        <span class="section-title">Booking Details</span>
+      </div>
+      
+      <div class="booking-card">
+        <div class="guest-info">
+          <div class="guest-avatar">
+            {{ selectedDay()?.guestName?.charAt(0) }}
+          </div>
+          <div class="guest-details">
+            <h4>{{ selectedDay()?.guestName }}</h4>
+            <p class="booking-status" [class]="'status-' + selectedDay()?.bookingStatus?.toLowerCase()">
+              {{ selectedDay()?.bookingStatus }}
+            </p>
+          </div>
+        </div>
+        
+        <div class="booking-dates">
+          <div class="date-item" *ngIf="selectedDay()?.isCheckIn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span>Check-in</span>
+          </div>
+          <div class="date-item" *ngIf="selectedDay()?.isCheckOut">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 8h12M8 2l6 6-6 6" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span>Check-out</span>
+          </div>
+        </div>
+        
+        <button class="view-booking-btn" (click)="viewBookingDetails()">
+          View full booking
+        </button>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="sidebar-footer">
+      <button 
+        class="btn-secondary" 
+        (click)="resetDayDetails()"
+        [disabled]="!isDayModified()">
+        Reset
+      </button>
+      <button 
+        class="btn-primary" 
+        (click)="saveDayDetails()"
+        [disabled]="!isDayModified() || savingDay()">
+        <span *ngIf="!savingDay()">Save</span>
+        <span *ngIf="savingDay()">Saving...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Overlay when sidebar is open -->
+  <div 
+    class="sidebar-overlay" 
+    *ngIf="selectedDay()"
+    (click)="closeDaySidebar()"
+    [@fadeIn]>
   </div>
 
 </div>

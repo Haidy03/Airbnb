@@ -118,6 +118,10 @@ export const routes: Routes = [
       { path: 'dashboard', component: HostDashboardComponent },
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
+      // {
+      //   path: 'properties/:id',
+      //   component: PropertyDetailsComponent
+      // }
       // { path: 'messages', component: HostMessages },
       // { path: 'properties/addd', component: AddProperty },
       // { path: 'properties/edit/:id', component: EditProperty },
