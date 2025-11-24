@@ -48,6 +48,7 @@ import { MessageTestComponent } from './test/test/test';
 import { ListingDetails } from './features/guest/components/listing-details/listing-details';
 import { Checkout } from './features/guest/components/checkout/checkout';
 import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
+import { ResetPasswordComponent } from './features/auth/components/reset-password.component/reset-password.component';
 
 export const routes: Routes = [
   // =================================================
@@ -104,6 +105,10 @@ export const routes: Routes = [
     path: 'login',
     component: LoginComponent,
     canActivate: [noAuthGuard]
+  },
+  { 
+    path: 'reset-password', 
+    component: ResetPasswordComponent 
   },
 
   // ✅ Host routes - protected by hostGuard (ONLY for Hosts)
