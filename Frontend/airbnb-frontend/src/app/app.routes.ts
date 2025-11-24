@@ -10,6 +10,8 @@ import { HostDashboardComponent } from './features/host/components/host-dashboar
 import { MyProperties } from './features/host/components/my-properties/my-properties';
 import { HostMessages } from './features/host/components/host-messages/host-messages';
 
+
+// Property Steps Components
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 
@@ -198,40 +200,6 @@ export const routes: Routes = [
         path: 'legal-and-create',
         component: legalandcreateComponent
       },
-
-    ]
-  },
-
-   {
-    path: 'messages',
-    children: [
-      {
-        path: '',
-        component: MessagesInboxComponent,
-        title: 'Messages'
-      },
-      {
-        path: ':id',
-        component: ChatComponent,
-        title: 'Chat'
-      }
-    ]
-  },
-  
- 
-  {
-    path: 'host/messages',
-    children: [
-      {
-        path: '',
-        component: MessagesInboxComponent,
-        title: 'Host Messages'
-      },
-      {
-        path: ':id',
-        component: ChatComponent,
-        title: 'Host Chat'
-      }
     ]
   },
 

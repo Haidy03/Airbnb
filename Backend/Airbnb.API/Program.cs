@@ -112,6 +112,7 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
 
 
 // ============================================
