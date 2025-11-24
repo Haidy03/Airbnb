@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, catchError, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, throwError, map } from 'rxjs';
 import { Router } from '@angular/router';
+import { TokenService } from './token.service';
 import {
   AuthUser,
   PhoneLoginRequest,
@@ -18,6 +19,7 @@ interface LoginResponse {
   token: string;
   userId: string;
   email: string;
+  role?: string;
 }
 
 interface RegisterResponse {
@@ -45,13 +47,14 @@ export interface UserProfile {
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private tokenService = inject(TokenService);
 
   // ✅ Using Colleague's API URL configuration
   private readonly API_URL = 'https://localhost:5202/api/Auth';
   private readonly TOKEN_KEY = 'token';
   private readonly USER_ID_KEY = 'userId';
   private readonly EMAIL_KEY = 'email';
-
+  private readonly ROLE_KEY = 'userRole';
   private userSubject = new BehaviorSubject<AuthUser | null>(this.getUserFromStorage());
   public user$ = this.userSubject.asObservable();
 
@@ -59,7 +62,7 @@ export class AuthService {
     return this.userSubject.value;
   }
 
-  get isAuthenticated(): boolean {
+  get isAuthenticated(): boolean {   //IsloggedIn
     return !!this.getToken();
   }
 
@@ -68,7 +71,7 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  private setToken(token: string): void {
+   setToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
   }
 
@@ -77,18 +80,23 @@ export class AuthService {
     if (user.email) {
       localStorage.setItem(this.EMAIL_KEY, user.email);
     }
+     if (user.role) {
+    localStorage.setItem(this.ROLE_KEY, user.role); 
+  }
     this.userSubject.next(user);
   }
 
   private getUserFromStorage(): AuthUser | null {
     const userId = localStorage.getItem(this.USER_ID_KEY);
     const email = localStorage.getItem(this.EMAIL_KEY);
+    const role = localStorage.getItem(this.ROLE_KEY);
 
     if (!userId) return null;
 
     return {
       id: userId,
       email: email || undefined,
+      role: role || 'Guest',
       isEmailVerified: true,
       isPhoneVerified: false
     };
@@ -99,30 +107,58 @@ export class AuthService {
   // =================================================================
 
   // ✅ FIXED: Email Login to match backend response
-  loginWithEmail(request: EmailLoginRequest): Observable<{ success: boolean }> {
+  // loginWithEmail(request: EmailLoginRequest): Observable<{ success: boolean }> {
+  //   return this.http.post<LoginResponse>(`${this.API_URL}/login`, request)
+  //     .pipe(
+  //       tap(response => {
+  //         console.log('✅ Login response:', response);
+
+  //         // Store token and user info
+  //         this.setToken(response.token);
+
+  //         const user: AuthUser = {
+  //           id: response.userId,
+  //           email: response.email,
+  //           role: response.role || 'Guest', 
+  //           isEmailVerified: true,
+  //           isPhoneVerified: false
+  //         };
+
+  //         this.setUser(user);
+  //       }),
+  //        map(() => ({ success: true })),
+  //       catchError(error => {
+  //         console.error('❌ Login error:', error);
+  //         return throwError(() => error);
+  //       }),
+  //       // tap(() => ({ success: true }))
+  //     ) as any;
+  // }
+    private setUserFromToken(token: string): void {
+    const userId = this.tokenService.getUserId(token);
+    const userRole = this.tokenService.getUserRole(token);
+      const user: AuthUser = {
+      id: userId,
+      role: userRole || 'Guest',
+      isEmailVerified: true, 
+      isPhoneVerified: false
+    };
+    this.setUser(user);
+  }
+   loginWithEmail(request: EmailLoginRequest): Observable<{ success: boolean }> {
     return this.http.post<LoginResponse>(`${this.API_URL}/login`, request)
       .pipe(
         tap(response => {
           console.log('✅ Login response:', response);
-
-          // Store token and user info
           this.setToken(response.token);
-
-          const user: AuthUser = {
-            id: response.userId,
-            email: response.email,
-            isEmailVerified: true,
-            isPhoneVerified: false
-          };
-
-          this.setUser(user);
+          this.setUserFromToken(response.token);
         }),
+        map(() => ({ success: true })),
         catchError(error => {
           console.error('❌ Login error:', error);
           return throwError(() => error);
-        }),
-        tap(() => ({ success: true }))
-      ) as any;
+        })
+      );
   }
 
   // ✅ FIXED: Register to match backend response
@@ -132,11 +168,12 @@ export class AuthService {
         tap(response => {
           console.log('✅ Registration response:', response);
         }),
+         map(() => ({ success: true })),
         catchError(error => {
           console.error('❌ Registration error:', error);
           return throwError(() => error);
         }),
-        tap(() => ({ success: true }))
+        //tap(() => ({ success: true }))
       ) as any;
   }
 
@@ -162,11 +199,12 @@ export class AuthService {
             }
           }
         }),
+         map(() => ({ success: true })),
         catchError(error => {
           console.error('❌ Phone verification error:', error);
           return throwError(() => error);
         }),
-        tap(() => ({ success: true }))
+        //tap(() => ({ success: true }))
       ) as any;
   }
 
@@ -204,19 +242,22 @@ export class AuthService {
             }
           }
         }),
+         map(() => ({ success: true })),
         catchError(error => {
           console.error('❌ Social login error:', error);
           return throwError(() => error);
         }),
-        tap(() => ({ success: true }))
+        //tap(() => ({ success: true }))
       ) as any;
   }
 
+  
   // ✅ FIXED: Proper logout
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_ID_KEY);
     localStorage.removeItem(this.EMAIL_KEY);
+    localStorage.removeItem(this.ROLE_KEY);
     this.userSubject.next(null);
     this.router.navigate(['/']);
   }
@@ -245,12 +286,12 @@ export class AuthService {
   // 1. Get Current User Profile
   // Note: Adjusted endpoint to match your API structure potentially
   getCurrentUser(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.API_URL}/user/profile`);
+    return this.http.get<UserProfile>(`${this.API_URL}/profile`);
   }
 
   // 2. Update User Profile
   updateUserProfile(data: Partial<UserProfile>): Observable<UserProfile> {
-    return this.http.put<UserProfile>(`${this.API_URL}/user/profile`, data)
+    return this.http.put<UserProfile>(`${this.API_URL}/profile`, data)
       .pipe(
         tap(updatedUser => {
           // We update the local behavior subject if email changed,
@@ -270,7 +311,7 @@ export class AuthService {
 
   // 3. Change Password
   changePassword(currentPassword: string, newPassword: string): Observable<any> {
-    return this.http.put(`${this.API_URL}/change-password`, {
+    return this.http.put(`${this.API_URL}/reset-password`, {
       currentPassword,
       newPassword
     });
@@ -287,7 +328,7 @@ export class AuthService {
   // 5. Delete Account
   deleteAccount(password: string): Observable<void> {
     // Using HTTP Delete with body option
-    return this.http.delete<void>(`${this.API_URL}/user/account`, {
+    return this.http.delete<void>(`${this.API_URL}/account`, {
       body: { password }
     }).pipe(
       tap(() => {

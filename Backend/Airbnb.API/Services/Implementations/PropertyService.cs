@@ -31,7 +31,7 @@ namespace Airbnb.API.Services.Implementations
                 HostId = hostId,
                 Title = dto.Title,
                 Description = dto.Description,
-                PropertyTypeId = dto.PropertyTypeId, // ✅ CHANGED from PropertyType to PropertyTypeId
+                PropertyTypeId = dto.PropertyTypeId,
                 Address = dto.Address,
                 City = dto.City,
                 Country = dto.Country,
@@ -47,12 +47,17 @@ namespace Airbnb.API.Services.Implementations
                 CheckInTime = dto.CheckInTime,
                 CheckOutTime = dto.CheckOutTime,
                 MinimumStay = dto.MinimumStay,
+                HasExteriorCamera = dto.HasExteriorCamera,
+                HasNoiseMonitor = dto.HasNoiseMonitor,
+                HasWeapons = dto.HasWeapons,
                 IsActive = false,
                 IsApproved = false,
+                Status = PropertyStatus.Draft, // ✅ Set as Draft
+                CurrentStep = "intro", // ✅ Initialize CurrentStep
                 CreatedAt = DateTime.UtcNow
             };
 
-            // Add amenities - ONLY IF THEY EXIST
+            // Add amenities
             if (dto.AmenityIds != null && dto.AmenityIds.Any())
             {
                 try
@@ -85,10 +90,17 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to update this property");
 
+            // ✅ Update CurrentStep if provided
+            if (!string.IsNullOrEmpty(dto.CurrentStep))
+            {
+                property.CurrentStep = dto.CurrentStep;
+                _logger.LogInformation("Updated CurrentStep to: {Step}", dto.CurrentStep);
+            }
+
             // Update only provided fields
             if (dto.Title != null) property.Title = dto.Title;
             if (dto.Description != null) property.Description = dto.Description;
-            if (dto.PropertyTypeId.HasValue) property.PropertyTypeId = dto.PropertyTypeId.Value; // ✅ CHANGED
+            if (dto.PropertyTypeId.HasValue) property.PropertyTypeId = dto.PropertyTypeId.Value;
             if (dto.Address != null) property.Address = dto.Address;
             if (dto.City != null) property.City = dto.City;
             if (dto.Country != null) property.Country = dto.Country;
@@ -104,6 +116,31 @@ namespace Airbnb.API.Services.Implementations
             if (dto.CheckInTime.HasValue) property.CheckInTime = dto.CheckInTime;
             if (dto.CheckOutTime.HasValue) property.CheckOutTime = dto.CheckOutTime;
             if (dto.MinimumStay.HasValue) property.MinimumStay = dto.MinimumStay.Value;
+            if (dto.RoomType != null) property.RoomType = dto.RoomType;
+            if (dto.HasExteriorCamera.HasValue) property.HasExteriorCamera = dto.HasExteriorCamera.Value;
+            if (dto.HasNoiseMonitor.HasValue) property.HasNoiseMonitor = dto.HasNoiseMonitor.Value;
+            if (dto.HasWeapons.HasValue) property.HasWeapons = dto.HasWeapons.Value;
+
+            // ✅ Update Amenities if provided
+            if (dto.AmenityIds != null)
+            {
+                _logger.LogInformation("Updating amenities for property {PropertyId}: {AmenityCount}", id, dto.AmenityIds.Count);
+
+                // Remove existing amenities
+                property.PropertyAmenities.Clear();
+
+                // Add new amenities
+                foreach (var amenityId in dto.AmenityIds)
+                {
+                    property.PropertyAmenities.Add(new PropertyAmenity
+                    {
+                        PropertyId = id,
+                        AmenityId = amenityId
+                    });
+                }
+
+                _logger.LogInformation("✅ Amenities updated successfully");
+            }
 
             property.UpdatedAt = DateTime.UtcNow;
 
@@ -251,19 +288,14 @@ namespace Airbnb.API.Services.Implementations
         {
             try
             {
-                // ✅ Service validates and delegates to repository
-
-                // Get image with its property
                 var image = await _propertyRepository.GetImageByIdWithPropertyAsync(imageId);
 
                 if (image == null)
                     return false;
 
-                // Verify host owns this property
                 if (image.Property.HostId != hostId)
                     throw new UnauthorizedAccessException("You are not authorized to delete this image");
 
-                // Delete via repository
                 await _propertyRepository.DeleteImageAsync(imageId);
 
                 _logger.LogInformation("✅ Image {ImageId} deleted by host {HostId}", imageId, hostId);
@@ -284,19 +316,14 @@ namespace Airbnb.API.Services.Implementations
         {
             try
             {
-                // ✅ Service validates and delegates to repository
-
-                // Get image with its property
                 var image = await _propertyRepository.GetImageByIdWithPropertyAsync(imageId);
 
                 if (image == null)
                     return false;
 
-                // Verify host owns this property
                 if (image.Property.HostId != hostId)
                     throw new UnauthorizedAccessException("You are not authorized to update this image");
 
-                // Set primary via repository
                 await _propertyRepository.SetPrimaryImageAsync(imageId, image.PropertyId);
 
                 _logger.LogInformation("✅ Primary image set: {ImageId} for property {PropertyId}",
@@ -314,6 +341,51 @@ namespace Airbnb.API.Services.Implementations
             }
         }
 
+        public async Task<bool> SubmitForApprovalAsync(int id, string hostId)
+        {
+            var property = await _propertyRepository.GetByIdWithDetailsAsync(id);
+
+            if (property == null)
+                return false;
+
+            if (property.HostId != hostId)
+                throw new UnauthorizedAccessException("You are not authorized to submit this property");
+
+            // ✅ Validate أن الـ property مكتملة
+            var validationErrors = new List<string>();
+
+            if (string.IsNullOrEmpty(property.Title) || property.Title == "Untitled Listing")
+                validationErrors.Add("Property title is required");
+
+            if (property.Images == null || !property.Images.Any())
+                validationErrors.Add("At least one image is required");
+
+            if (property.PricePerNight <= 0)
+                validationErrors.Add("Valid price per night is required");
+
+            if (string.IsNullOrEmpty(property.City) || property.City == "Draft City")
+                validationErrors.Add("Valid location is required");
+
+            if (validationErrors.Any())
+            {
+                throw new InvalidOperationException(
+                    $"Property is not ready to submit: {string.Join(", ", validationErrors)}");
+            }
+
+            // ✅ تغيير الـ Status
+            property.Status = PropertyStatus.PendingApproval;
+            property.IsActive = false;
+            property.IsApproved = false;
+            property.CurrentStep = null; // مسح الـ step لأنها اكتملت
+            property.UpdatedAt = DateTime.UtcNow;
+
+            await _propertyRepository.UpdateAsync(property);
+
+            _logger.LogInformation("✅ Property {PropertyId} submitted for approval by host {HostId}", id, hostId);
+
+            return true;
+        }
+
         private async Task<PropertyResponseDto> MapToResponseDto(Property property)
         {
             var totalBookings = await _bookingRepository.GetTotalBookingsByPropertyIdAsync(property.Id);
@@ -325,7 +397,8 @@ namespace Airbnb.API.Services.Implementations
                 HostName = $"{property.Host?.FirstName} {property.Host?.LastName}".Trim(),
                 Title = property.Title,
                 Description = property.Description,
-                PropertyType = property.PropertyType?.Name ?? "Unknown", // ✅ CHANGED to use navigation property
+                PropertyType = property.PropertyType?.Name ?? "Unknown",
+                RoomType = property.RoomType,
                 Address = property.Address,
                 City = property.City,
                 Country = property.Country,
@@ -341,11 +414,16 @@ namespace Airbnb.API.Services.Implementations
                 CheckInTime = property.CheckInTime,
                 CheckOutTime = property.CheckOutTime,
                 MinimumStay = property.MinimumStay,
+                HasExteriorCamera = property.HasExteriorCamera,
+                HasNoiseMonitor = property.HasNoiseMonitor,
+                HasWeapons = property.HasWeapons,
                 IsActive = property.IsActive,
                 IsApproved = property.IsApproved,
                 AverageRating = property.AverageRating,
                 TotalReviews = property.TotalReviews,
                 TotalBookings = totalBookings,
+                CurrentStep = property.CurrentStep, // ✅ Include CurrentStep
+                Status = property.Status, // ✅ Include Status
                 Images = property.Images.Select(img => new PropertyImageDto
                 {
                     Id = img.Id,
@@ -367,7 +445,7 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<bool> PublishPropertyAsync(int id, string hostId)
         {
-            var property = await _propertyRepository.GetByIdAsync(id);
+            var property = await _propertyRepository.GetByIdWithDetailsAsync(id);
 
             if (property == null)
                 return false;
@@ -375,13 +453,36 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to publish this property");
 
-            property.IsActive = true;
-            property.IsApproved = true;
+            // ✅ Validate property is complete before publishing
+            var validationErrors = new List<string>();
+
+            if (string.IsNullOrEmpty(property.Title) || property.Title == "Untitled Listing")
+                validationErrors.Add("Property title is required");
+
+            if (property.Images == null || !property.Images.Any())
+                validationErrors.Add("At least one image is required");
+
+            if (property.PricePerNight <= 0)
+                validationErrors.Add("Valid price per night is required");
+
+            if (validationErrors.Any())
+            {
+                _logger.LogWarning("Property {PropertyId} cannot be published: {Errors}",
+                    id, string.Join(", ", validationErrors));
+                throw new InvalidOperationException(
+                    $"Property is not ready to publish: {string.Join(", ", validationErrors)}");
+            }
+
+            // ✅ تغيير الحالة إلى PendingApproval بدلاً من Active مباشرة
+            property.Status = PropertyStatus.PendingApproval;
+            property.IsActive = false; // لن تكون مفعلة حتى موافقة Admin
+            property.IsApproved = false;
+            property.CurrentStep = null; // مسح الـ step لأنها اكتملت
             property.UpdatedAt = DateTime.UtcNow;
 
             await _propertyRepository.UpdateAsync(property);
 
-            _logger.LogInformation("Property {PropertyId} published by host {HostId}", id, hostId);
+            _logger.LogInformation("✅ Property {PropertyId} published by host {HostId}", id, hostId);
 
             return true;
         }
@@ -396,12 +497,46 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to unpublish this property");
 
+            if (property.Status != PropertyStatus.Active)
+            {
+                throw new InvalidOperationException("Only active properties can be deactivated");
+            }
+
             property.IsActive = false;
+            property.Status = PropertyStatus.Inactive; // ✅ Change status
             property.UpdatedAt = DateTime.UtcNow;
 
             await _propertyRepository.UpdateAsync(property);
 
             _logger.LogInformation("Property {PropertyId} unpublished by host {HostId}", id, hostId);
+
+            return true;
+        }
+
+        // ✅ دالة جديدة لتفعيل property بعد موافقة Admin
+        public async Task<bool> ActivatePropertyAsync(int id, string hostId)
+        {
+            var property = await _propertyRepository.GetByIdAsync(id);
+
+            if (property == null)
+                return false;
+
+            if (property.HostId != hostId)
+                throw new UnauthorizedAccessException("You are not authorized to activate this property");
+
+            // ✅ يمكن التفعيل فقط لو Property معتمدة من Admin
+            if (property.Status != PropertyStatus.Approved)
+            {
+                throw new InvalidOperationException("Property must be approved by admin before activation");
+            }
+
+            property.IsActive = true;
+            property.Status = PropertyStatus.Active;
+            property.UpdatedAt = DateTime.UtcNow;
+
+            await _propertyRepository.UpdateAsync(property);
+
+            _logger.LogInformation("✅ Property {PropertyId} activated by host {HostId}", id, hostId);
 
             return true;
         }

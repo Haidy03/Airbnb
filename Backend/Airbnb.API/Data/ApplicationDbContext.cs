@@ -13,7 +13,7 @@ namespace Airbnb.API.Models
         }
 
         public DbSet<Property> Properties { get; set; }
-        public DbSet<PropertyType> PropertyTypes { get; set; } // NEW
+        public DbSet<PropertyType> PropertyTypes { get; set; }
         public DbSet<PropertyImage> PropertyImages { get; set; }
         public DbSet<Amenity> Amenities { get; set; }
         public DbSet<PropertyAmenity> PropertyAmenities { get; set; }
@@ -22,12 +22,17 @@ namespace Airbnb.API.Models
         public DbSet<PropertyAvailability> PropertyAvailabilities { get; set; }
         public DbSet<UserVerification> UserVerifications { get; set; }
 
+        // ✅ NEW: Messages DbSets
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<MessageAttachment> MessageAttachments { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // ============================================
-            // PropertyType Configuration (NEW)
+            // PropertyType Configuration
             // ============================================
             modelBuilder.Entity<PropertyType>(entity =>
             {
@@ -56,7 +61,7 @@ namespace Airbnb.API.Models
                     .HasForeignKey(p => p.HostId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Relationship: Property -> PropertyType (NEW)
+                // Relationship: Property -> PropertyType
                 entity.HasOne(p => p.PropertyType)
                     .WithMany(pt => pt.Properties)
                     .HasForeignKey(p => p.PropertyTypeId)
@@ -198,6 +203,102 @@ namespace Airbnb.API.Models
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.Property(pa => pa.CustomPrice).HasPrecision(18, 2);
+            });
+
+            // ============================================
+            // ✅ NEW: Conversation Configuration
+            // ============================================
+            modelBuilder.Entity<Conversation>(entity =>
+            {
+                entity.HasKey(c => c.Id);
+
+                // Indexes for performance
+                entity.HasIndex(c => c.HostId);
+                entity.HasIndex(c => c.GuestId);
+                entity.HasIndex(c => c.PropertyId);
+                entity.HasIndex(c => c.BookingId);
+                entity.HasIndex(c => c.CreatedAt);
+
+                // Unique constraint: one conversation per property between two users
+                entity.HasIndex(c => new { c.HostId, c.GuestId, c.PropertyId })
+                    .IsUnique()
+                    .HasFilter("[PropertyId] IS NOT NULL"); // Allow multiple conversations without property
+
+                // Relationships
+                entity.HasOne(c => c.Host)
+                    .WithMany()
+                    .HasForeignKey(c => c.HostId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(c => c.Guest)
+                    .WithMany()
+                    .HasForeignKey(c => c.GuestId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(c => c.Property)
+                    .WithMany()
+                    .HasForeignKey(c => c.PropertyId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(c => c.Booking)
+                    .WithMany()
+                    .HasForeignKey(c => c.BookingId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // ============================================
+            // ✅ NEW: Message Configuration
+            // ============================================
+            modelBuilder.Entity<Message>(entity =>
+            {
+                entity.HasKey(m => m.Id);
+
+                // Indexes for performance
+                entity.HasIndex(m => m.ConversationId);
+                entity.HasIndex(m => m.SenderId);
+                entity.HasIndex(m => m.ReceiverId);
+                entity.HasIndex(m => m.SentAt);
+                entity.HasIndex(m => new { m.ReceiverId, m.IsRead });
+                entity.HasIndex(m => m.DeletedAt);
+
+                // Relationships
+                entity.HasOne(m => m.Conversation)
+                    .WithMany(c => c.Messages)
+                    .HasForeignKey(m => m.ConversationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(m => m.Sender)
+                    .WithMany()
+                    .HasForeignKey(m => m.SenderId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(m => m.Receiver)
+                    .WithMany()
+                    .HasForeignKey(m => m.ReceiverId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Default values
+                entity.Property(m => m.IsRead).HasDefaultValue(false);
+                entity.Property(m => m.IsDelivered).HasDefaultValue(false);
+                entity.Property(m => m.SentAt).HasDefaultValueSql("GETUTCDATE()");
+            });
+
+            // ============================================
+            // ✅ NEW: MessageAttachment Configuration
+            // ============================================
+            modelBuilder.Entity<MessageAttachment>(entity =>
+            {
+                entity.HasKey(ma => ma.Id);
+
+                entity.HasIndex(ma => ma.MessageId);
+
+                entity.HasOne(ma => ma.Message)
+                    .WithMany(m => m.Attachments)
+                    .HasForeignKey(ma => ma.MessageId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(ma => ma.UploadedAt)
+                    .HasDefaultValueSql("GETUTCDATE()");
             });
 
             // ============================================

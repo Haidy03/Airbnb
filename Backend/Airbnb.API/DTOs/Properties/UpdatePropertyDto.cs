@@ -4,7 +4,7 @@
     {
         public string? Title { get; set; }
         public string? Description { get; set; }
-        public int? PropertyTypeId { get; set; } // ✅ CHANGED from string PropertyType to int PropertyTypeId
+        public int? PropertyTypeId { get; set; }
 
         public string? Address { get; set; }
         public string? City { get; set; }
@@ -26,5 +26,15 @@
         public int? MinimumStay { get; set; }
 
         public List<int>? AmenityIds { get; set; }
+
+        // CurrentStep to track progress
+        public string? CurrentStep { get; set; }
+
+        //  RoomType
+        public string? RoomType { get; set; }
+
+        public bool? HasExteriorCamera { get; set; }
+        public bool? HasNoiseMonitor { get; set; }
+        public bool? HasWeapons { get; set; }
     }
 }

@@ -31,6 +31,10 @@ namespace Airbnb.API.Services.Implementations
             DateTime startDate,
             DateTime endDate)
         {
+
+            startDate = startDate.Date;  // Strip time component
+            endDate = endDate.Date;
+
             // Verify property ownership
             var property = await _propertyRepository.GetByIdWithDetailsAsync(propertyId);
             if (property == null)
@@ -64,7 +68,8 @@ namespace Airbnb.API.Services.Implementations
 
                 // Check if day has booking
                 var dayBooking = periodBookings.FirstOrDefault(b =>
-                    b.CheckInDate.Date <= currentDate && b.CheckOutDate.Date > currentDate &&
+                    b.CheckInDate.Date <= currentDate &&
+                    b.CheckOutDate.Date > currentDate &&
                     (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Pending)
                 );
 

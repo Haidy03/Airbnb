@@ -7,7 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SocialButtonsComponent } from '../social-buttons.component/social-buttons.component';
 import { COUNTRY_CODES, CountryCode } from '../../models/auth-user.model';
-
+import { TokenService } from '../../services/token.service';
 type LoginMode = 'phone' | 'email' | 'register';
 type PhoneStep = 'input' | 'verify';
 
@@ -21,6 +21,7 @@ type PhoneStep = 'input' | 'verify';
 export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private tokenService = inject(TokenService);
   private modalService = inject(ModalService);
   private router = inject(Router);
 
@@ -142,10 +143,36 @@ export class LoginComponent {
     this.verificationForm.reset();
     this.errorMessage.set('');
   }
+  private redirectBasedOnRole(role: string): void {
+    this.closeModal();
+    
+    switch (role) {
+      case 'admin':
+        console.log('🚀 Navigating to /admin/dashboard');
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      case 'host':
+        console.log('🚀 Navigating to /host/dashboard');
+        this.router.navigate(['/host/dashboard']);
+        break;
+      default:
+        console.log('🚀 Navigating to /');
+        this.router.navigate(['/']);
+        break;
+    }
+  }
+
+
+  private getErrorMessage(error: any): string {
+    if (error?.error?.message) return error.error.message;
+    if (error?.message) return error.message;
+    if (error?.status === 0) return 'Unable to connect to server';
+    return 'Invalid email or password';
+  }
 
   // ✅ FIXED: Email Login Flow with proper navigation
   onEmailLogin() {
-    if (this.emailLoginForm.invalid || this.isLoading()) return;
+     if (this.emailLoginForm.invalid || this.isLoading()) return;
 
     this.isLoading.set(true);
     this.errorMessage.set('');
@@ -155,34 +182,30 @@ export class LoginComponent {
       password: this.emailLoginForm.value.password!
     };
 
-    console.log('🔐 Attempting login with:', { email: request.email });
-
     this.authService.loginWithEmail(request).subscribe({
       next: (response) => {
         this.isLoading.set(false);
         console.log('✅ Login successful!');
         
-        // Close modal
-        this.closeModal();
         
-        // Navigate to host dashboard
-        console.log('🚀 Navigating to /host/dashboard');
-        this.router.navigate(['/host/dashboard']).then(success => {
-          if (success) {
-            console.log('✅ Navigation successful');
-          } else {
-            console.error('❌ Navigation failed');
-          }
-        });
+        const token = this.authService.getToken();
+        if (token) {
+          const userRole = this.tokenService.getUserRole(token);
+          const userId = this.tokenService.getUserId(token);
+          
+          console.log('👤 User Role:', userRole);
+          console.log('🆔 User ID:', userId);
+          
+          // ✅ التوجيه بناءً على الـ role
+          this.redirectBasedOnRole(userRole);
+        } else {
+          this.errorMessage.set('Login failed - no token received');
+        }
       },
       error: (error) => {
         this.isLoading.set(false);
         console.error('❌ Login failed:', error);
-        
-        const errorMsg = error?.error?.message || 
-                        error?.message || 
-                        'Invalid email or password';
-        this.errorMessage.set(errorMsg);
+        this.errorMessage.set(this.getErrorMessage(error));
       }
     });
   }
@@ -215,8 +238,9 @@ export class LoginComponent {
         };
         
         this.authService.loginWithEmail(loginRequest).subscribe({
-          next: () => {
+          next: (response:any) => {
             console.log('✅ Auto-login successful after registration');
+            this.authService.setToken(response.token);
             this.closeModal();
             this.router.navigate(['/host/dashboard']);
           },

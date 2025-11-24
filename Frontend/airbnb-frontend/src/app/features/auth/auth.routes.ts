@@ -10,7 +10,7 @@ export const authRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: '/',
+        redirectTo: '/host/dashboard',
         pathMatch: 'full'
       }
     ]

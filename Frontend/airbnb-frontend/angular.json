@@ -19,11 +19,14 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
-            ],
+                "src/assets",
+                "src/favicon.ico",
+                {
+                  "glob": "**/*",
+                  "input": "public",
+                  "output": "/"
+                }
+              ],
             "styles": [
               "node_modules/leaflet/dist/leaflet.css",
               "./node_modules/@fortawesome/fontawesome-free/css/all.min.css",

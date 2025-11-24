@@ -1,52 +1,48 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn, UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
+import { TokenService } from './token.service'; // ✅ استيراد TokenService
 
 // ✅ Auth Guard - Protects routes that require authentication
 export const authGuard: CanActivateFn = (): boolean | UrlTree => {
   const authService = inject(AuthService);
+  const tokenService = inject(TokenService); // ✅ حقن TokenService
   const router = inject(Router);
 
   console.log('🔒 Auth Guard - Checking authentication...');
-  console.log('🔒 Is Authenticated:', authService.isAuthenticated);
-  console.log('🔒 Token:', authService.getToken());
-
-  if (authService.isAuthenticated) {
-    console.log('✅ Auth Guard - User is authenticated');
-    return true;
+  
+  const token = authService.getToken();
+  
+  // ✅ التحقق من وجود التوكن وعدم انتهاء صلاحيته
+  if (!token || tokenService.isTokenExpired(token)) {
+    console.log('❌ Auth Guard - Token is missing or expired');
+    authService.logout(); // تنظيف التوكن المنتهي
+    return router.createUrlTree(['/login'], {
+      queryParams: { returnUrl: router.url }
+    });
   }
 
-  console.log('❌ Auth Guard - User is NOT authenticated, redirecting to login');
-  // Redirect to login page and store return URL
-  return router.createUrlTree(['/login'], {
-    queryParams: { returnUrl: router.url }
-  });
+  console.log('✅ Auth Guard - User is authenticated');
+  return true;
 };
 
 // ✅ No Auth Guard - Redirects authenticated users away from login pages
 export const noAuthGuard: CanActivateFn = (): boolean | UrlTree => {
   const authService = inject(AuthService);
+  const tokenService = inject(TokenService); // ✅ حقن TokenService
   const router = inject(Router);
 
   console.log('🔓 No Auth Guard - Checking if user is already logged in...');
 
-  if (!authService.isAuthenticated) {
+  const token = authService.getToken();
+  
+  if (!token || tokenService.isTokenExpired(token)) {
     console.log('✅ No Auth Guard - User is NOT authenticated, allowing access to login');
     return true;
   }
 
-  // Get current user role from token or user object
-  const token = authService.getToken();
-  let userRole = '';
-  
-  if (token) {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      userRole = (payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || '').toLowerCase();
-    } catch (e) {
-      console.error('Error parsing token:', e);
-    }
-  }
+  // ✅ استخدام TokenService لاستخراج الـ role
+  const userRole = tokenService.getUserRole(token);
 
   console.log('👤 No Auth Guard - User is authenticated, role:', userRole);
 
@@ -66,27 +62,20 @@ export const noAuthGuard: CanActivateFn = (): boolean | UrlTree => {
 // ✅ Host Guard - Only allows Hosts to access
 export const hostGuard: CanActivateFn = (): boolean | UrlTree => {
   const authService = inject(AuthService);
+  const tokenService = inject(TokenService); // ✅ حقن TokenService
   const router = inject(Router);
 
   console.log('🏠 Host Guard - Checking if user is Host...');
 
-  if (!authService.isAuthenticated) {
+  const token = authService.getToken();
+  
+  if (!token || tokenService.isTokenExpired(token)) {
     console.log('❌ Host Guard - User not authenticated, redirecting to login');
     return router.createUrlTree(['/login']);
   }
 
-  // Get current user role from token
-  const token = authService.getToken();
-  let userRole = '';
-  
-  if (token) {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      userRole = (payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || '').toLowerCase();
-    } catch (e) {
-      console.error('Error parsing token:', e);
-    }
-  }
+  // ✅ استخدام TokenService لاستخراج الـ role
+  const userRole = tokenService.getUserRole(token);
 
   console.log('👤 Host Guard - User role:', userRole);
 
@@ -108,27 +97,20 @@ export const hostGuard: CanActivateFn = (): boolean | UrlTree => {
 // ✅ Admin Guard - Only allows Admins to access
 export const adminGuard: CanActivateFn = (): boolean | UrlTree => {
   const authService = inject(AuthService);
+  const tokenService = inject(TokenService); // ✅ حقن TokenService
   const router = inject(Router);
 
   console.log('👑 Admin Guard - Checking if user is Admin...');
 
-  if (!authService.isAuthenticated) {
+  const token = authService.getToken();
+  
+  if (!token || tokenService.isTokenExpired(token)) {
     console.log('❌ Admin Guard - User not authenticated, redirecting to login');
     return router.createUrlTree(['/login']);
   }
 
-  // Get current user role from token
-  const token = authService.getToken();
-  let userRole = '';
-  
-  if (token) {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      userRole = (payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || '').toLowerCase();
-    } catch (e) {
-      console.error('Error parsing token:', e);
-    }
-  }
+  // ✅ استخدام TokenService لاستخراج الـ role
+  const userRole = tokenService.getUserRole(token);
 
   console.log('👤 Admin Guard - User role:', userRole);
 

@@ -86,15 +86,29 @@ export class AmenitiesStepComponent implements OnInit{
     /**
    * Get current draft
    */
-  getCurrentDraft(): void {
+   getCurrentDraft(): void {
     this.currentDraftId = localStorage.getItem('currentDraftId');
     
     if (this.currentDraftId) {
       this.propertyService.getDraftById(this.currentDraftId).subscribe({
         next: (draft) => {
+          console.log('✅ Draft loaded:', draft);
+          
+          // ✅ Load amenities from draft
           if (draft.amenityIds && draft.amenityIds.length > 0) {
+            console.log('✅ Loading amenities:', draft.amenityIds);
             this.selectedAmenities.set(draft.amenityIds);
           }
+          
+          // ✅ Also check if amenities array exists (for published properties)
+          if (!draft.amenityIds && (draft as any).amenities && Array.isArray((draft as any).amenities)) {
+            const amenityIds = (draft as any).amenities.map((a: any) => a.id);
+            console.log('✅ Loading amenities from amenities array:', amenityIds);
+            this.selectedAmenities.set(amenityIds);
+          }
+        },
+        error: (error) => {
+          console.error('❌ Error loading draft:', error);
         }
       });
     }

@@ -37,7 +37,7 @@ export interface PropertyDraft {
   updatedAt?: Date;
   currentStep?: string;
   isActive?: boolean;
-
+  status?: PropertyStatus;
   bookingMode?: 'instant' | 'approval'; // Default: 'approval'
   safetyDetails?: {
     exteriorCamera: boolean;
@@ -76,6 +76,37 @@ export class PropertyService {
       'Authorization': token ? `Bearer ${token}` : ''
     });
   }
+
+  /**
+ * Get all properties for calendar (published only)
+ */
+getAllProperties(): Observable<Property[]> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  return this.http.get<{ success: boolean; data: any[] }>(
+    this.apiUrl,
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      // Filter only published/active properties for calendar
+      const properties = response.data
+        .filter(item => item.isActive || item.status === 'Active' || item.status === 'Approved')
+        .map(item => this.mapApiToProperty(item));
+      
+      this.propertiesSignal.set(properties);
+      this.loadingSignal.set(false);
+      console.log('✅ Properties loaded for calendar:', properties.length);
+      return properties;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      this.errorSignal.set(error.message || 'Failed to load properties');
+      console.error('Error loading properties:', error);
+      return of([]);
+    })
+  );
+}
 
   // ============================================
   // DRAFT MANAGEMENT
@@ -179,6 +210,7 @@ export class PropertyService {
       ...stepData,
       currentStep: stepName
     };
+    console.log('📝 Updating draft at step:', stepName, updateData);
 
     return this.http.put<{ success: boolean; data: any }>(
       `${this.apiUrl}/${draftId}`,
@@ -188,7 +220,7 @@ export class PropertyService {
       map(response => {
         const draft = this.mapApiToDraft(response.data);
         this.loadingSignal.set(false);
-        console.log(`✅ Draft saved at step: ${stepName}`);
+        console.log(`✅ Draft saved at step: ${stepName}`,draft);
         return draft;
       }),
       catchError(error => {
@@ -222,6 +254,98 @@ export class PropertyService {
       })
     );
   }
+
+  /**
+ * Submit property for approval
+ */
+submitForApproval(propertyId: string): Observable<PropertyDraft> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  return this.http.post<{ success: boolean; data: any; message?: string; errors?: string[] }>(
+    `${this.apiUrl}/${propertyId}/submit-for-approval`,
+    {},
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to submit property');
+      }
+      const draft = this.mapApiToDraft(response.data);
+      this.loadingSignal.set(false);
+      console.log('✅ Property submitted for approval');
+      return draft;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      
+      if (error.error?.errors) {
+        const errorMsg = 'Property is not ready:\n' + error.error.errors.join('\n');
+        this.errorSignal.set(errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      this.errorSignal.set(error.message);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Activate approved property
+ */
+activateProperty(propertyId: string): Observable<PropertyDraft> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  return this.http.post<{ success: boolean; data: any; message?: string }>(
+    `${this.apiUrl}/${propertyId}/activate`,
+    {},
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to activate property');
+      }
+      const draft = this.mapApiToDraft(response.data);
+      this.loadingSignal.set(false);
+      console.log('✅ Property activated');
+      return draft;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      this.errorSignal.set(error.error?.message || error.message);
+      throw error;
+    })
+  );
+}
+
+/**
+ * Deactivate property
+ */
+deactivateProperty(propertyId: string): Observable<PropertyDraft> {
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
+
+  return this.http.post<{ success: boolean; data: any }>(
+    `${this.apiUrl}/${propertyId}/deactivate`,
+    {},
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      const draft = this.mapApiToDraft(response.data);
+      this.loadingSignal.set(false);
+      console.log('✅ Property deactivated');
+      return draft;
+    }),
+    catchError(error => {
+      this.loadingSignal.set(false);
+      this.errorSignal.set(error.message);
+      throw error;
+    })
+  );
+}
+
 
   // ============================================
   // IMAGE UPLOAD
@@ -534,7 +658,13 @@ export class PropertyService {
       createdAt: new Date(apiData.createdAt),
       updatedAt: new Date(apiData.updatedAt),
       currentStep: apiData.currentStep || 'intro',
-      isActive: apiData.isActive || false
+      isActive: apiData.isActive || false,
+      status: apiData.status || PropertyStatus.DRAFT ,// ✅ Map status
+      safetyDetails: {
+      exteriorCamera: apiData.hasExteriorCamera || false,
+      noiseMonitor: apiData.hasNoiseMonitor || false,
+      weapons: apiData.hasWeapons || false
+    }
     };
   }
 

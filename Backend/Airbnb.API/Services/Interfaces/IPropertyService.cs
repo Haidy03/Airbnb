@@ -13,9 +13,10 @@ namespace Airbnb.API.Services.Interfaces
         Task<PropertyImageDto> UploadPropertyImageAsync(int propertyId, string hostId, IFormFile file);
         Task<bool> DeletePropertyImageAsync(int imageId, string hostId);
         Task<bool> SetPrimaryImageAsync(int imageId, string hostId);
-   
 
+        Task<bool> SubmitForApprovalAsync(int id, string hostId);
         Task<bool> PublishPropertyAsync(int id, string hostId);
         Task<bool> UnpublishPropertyAsync(int id, string hostId);
+        Task<bool> ActivatePropertyAsync(int id, string hostId);
     }
 }
