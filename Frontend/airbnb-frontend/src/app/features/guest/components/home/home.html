@@ -1,4 +1,4 @@
-<div class="min-vh-100 bg-white" style="padding-top: 120px;">
+<div class="min-vh-100 bg-white" style="padding-top: 180px;">
 
   <!-- Header Component -->
   <app-header></app-header>
@@ -16,23 +16,17 @@
         </button>
       </div>
 
-      <!-- Grid System (Your Responsive Layout) -->
       <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6">
-
         <div class="col" *ngFor="let property of sheikhZayedProperties">
           <div class="card border-0 h-100 property-card" style="cursor: pointer;" (click)="onPropertyClick(property)">
 
-            <!-- Image & Wishlist Button -->
+            <!-- Image & Wishlist -->
             <div class="position-relative rounded-4 overflow-hidden mb-2" style="padding-top: 95%;">
               <img [src]="property.image" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" [alt]="property.title">
-
-              <!-- Wishlist Toggle Button -->
               <button (click)="onToggleWishlist(property); $event.stopPropagation()"
                       class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 p-1 border-0 shadow-sm opacity-75 d-flex align-items-center justify-content-center"
                       style="width: 32px; height: 32px;">
-                <!-- Filled Heart if in Wishlist -->
                 <i *ngIf="isPropertyInWishlist(property.id)" class="bi bi-heart-fill text-danger" style="font-size: 16px;"></i>
-                <!-- Outline Heart if not -->
                 <i *ngIf="!isPropertyInWishlist(property.id)" class="bi bi-heart text-dark" style="font-size: 16px;"></i>
               </button>
             </div>
@@ -40,13 +34,13 @@
             <!-- Card Details -->
             <div class="card-body p-0">
               <div class="d-flex justify-content-between align-items-start">
-                <h6 class="card-title fw-bold mb-0 text-truncate" style="font-size: 15px;">{{ property.title }}</h6>
+                <h6 class="card-title fw-bold mb-0 text-truncate" style="font-size: 15px;">{{ property.location }}</h6>
                 <div class="d-flex align-items-center gap-1 small">
                   <i class="bi bi-star-fill text-dark" style="font-size: 12px;"></i>
                   <span>{{ property.rating }}</span>
                 </div>
               </div>
-              <p class="text-muted small mb-0 text-truncate">Hosted by professional</p>
+              <p class="text-muted small mb-0 text-truncate">{{ property.title }}</p>
               <p class="text-muted small mb-1">{{ property.nights }} nights</p>
               <div class="d-flex align-items-baseline gap-1">
                 <span class="fw-bold text-dark">${{ property.price }}</span>
@@ -56,7 +50,6 @@
 
           </div>
         </div>
-
       </div>
     </section>
 
@@ -74,7 +67,6 @@
       <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6">
         <div class="col" *ngFor="let property of dahabProperties">
           <div class="card border-0 h-100 property-card" style="cursor: pointer;" (click)="onPropertyClick(property)">
-            <!-- Image -->
             <div class="position-relative rounded-4 overflow-hidden mb-2" style="padding-top: 95%;">
               <img [src]="property.image" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" [alt]="property.title">
               <button (click)="onToggleWishlist(property); $event.stopPropagation()"
@@ -84,16 +76,15 @@
                 <i *ngIf="!isPropertyInWishlist(property.id)" class="bi bi-heart text-dark" style="font-size: 16px;"></i>
               </button>
             </div>
-            <!-- Details -->
             <div class="card-body p-0">
               <div class="d-flex justify-content-between align-items-start">
-                <h6 class="card-title fw-bold mb-0 text-truncate" style="font-size: 15px;">{{ property.title }}</h6>
+                <h6 class="card-title fw-bold mb-0 text-truncate" style="font-size: 15px;">{{ property.location }}</h6>
                 <div class="d-flex align-items-center gap-1 small">
                   <i class="bi bi-star-fill text-dark" style="font-size: 12px;"></i>
                   <span>{{ property.rating }}</span>
                 </div>
               </div>
-              <p class="text-muted small mb-0 text-truncate">Beachfront view</p>
+              <p class="text-muted small mb-0 text-truncate">{{ property.title }}</p>
               <p class="text-muted small mb-1">{{ property.nights }} nights</p>
               <div class="d-flex align-items-baseline gap-1">
                 <span class="fw-bold text-dark">${{ property.price }}</span>
@@ -119,7 +110,6 @@
       <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6">
         <div class="col" *ngFor="let property of parisProperties">
           <div class="card border-0 h-100 property-card" style="cursor: pointer;" (click)="onPropertyClick(property)">
-            <!-- Image -->
             <div class="position-relative rounded-4 overflow-hidden mb-2" style="padding-top: 95%;">
               <img [src]="property.image" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" [alt]="property.title">
               <button (click)="onToggleWishlist(property); $event.stopPropagation()"
@@ -129,16 +119,15 @@
                 <i *ngIf="!isPropertyInWishlist(property.id)" class="bi bi-heart text-dark" style="font-size: 16px;"></i>
               </button>
             </div>
-            <!-- Details -->
             <div class="card-body p-0">
               <div class="d-flex justify-content-between align-items-start">
-                <h6 class="card-title fw-bold mb-0 text-truncate" style="font-size: 15px;">{{ property.title }}</h6>
+                <h6 class="card-title fw-bold mb-0 text-truncate" style="font-size: 15px;">{{ property.location }}</h6>
                 <div class="d-flex align-items-center gap-1 small">
                   <i class="bi bi-star-fill text-dark" style="font-size: 12px;"></i>
                   <span>{{ property.rating }}</span>
                 </div>
               </div>
-              <p class="text-muted small mb-0 text-truncate">City center</p>
+              <p class="text-muted small mb-0 text-truncate">{{ property.title }}</p>
               <p class="text-muted small mb-1">{{ property.nights }} nights</p>
               <div class="d-flex align-items-baseline gap-1">
                 <span class="fw-bold text-dark">${{ property.price }}</span>

@@ -1,23 +1,69 @@
-<div class="min-h-screen bg-gray-50">
+<div class="min-vh-100 bg-white" style="padding-top: 180px;">
+
   <app-header></app-header>
 
-  <main class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-20 py-12">
-    <div class="mb-8">
-      <h1 class="text-3xl font-semibold text-gray-900">Wishlists</h1>
-      <p class="text-gray-600 mt-2">Your saved properties</p>
+  <main class="container py-5">
+
+    <!-- Title -->
+    <div class="mb-5 border-bottom pb-4">
+      <h1 class="fw-bold text-dark display-6">Wishlists</h1>
+      <p class="text-muted fs-5">Your saved properties</p>
     </div>
 
-    <div *ngIf="(wishlistService.wishlist$ | async)?.length === 0" class="text-center py-16">
-      <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-      </svg>
-      <h3 class="text-xl font-medium text-gray-900 mb-2">No wishlists yet</h3>
-      <p class="text-gray-600 mb-6">Start exploring and save your favorite places!</p>
-      <a routerLink="/" class="inline-block px-6 py-3 bg-[#FF385C] text-white rounded-lg hover:bg-[#E31C5F] transition-colors">
-        Explore homes
+    <!-- 1. EMPTY STATE (يظهر لو المصفوفة فاضية) -->
+    <div *ngIf="wishlistItems.length === 0"
+         class="d-flex flex-column align-items-center justify-content-center py-5 text-center">
+
+      <div class="mb-4 p-4 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#dddddd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+      </div>
+      <h3 class="fw-bold text-dark mb-2">No wishlists yet</h3>
+      <p class="text-muted mb-4" style="max-width: 400px;">
+        As you search, click the heart icon to save your favorite places here.
+      </p>
+      <a routerLink="/" class="btn btn-airbnb btn-lg px-5 py-2 fw-semibold">
+        Start exploring
       </a>
     </div>
 
-    <!-- Wishlist grid will be added here -->
+    <!-- 2. GRID OF ITEMS (يظهر لو فيه عناصر) -->
+    <div *ngIf="wishlistItems.length > 0" class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+
+      <div class="col" *ngFor="let item of wishlistItems">
+        <div class="card border-0 h-100 shadow-sm" style="cursor: pointer; transition: transform 0.2s;">
+
+          <!-- Image -->
+          <div class="position-relative rounded-3 overflow-hidden" style="padding-top: 95%;">
+             <img [src]="item.image" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" [alt]="item.title">
+
+             <!-- زر الحذف من المفضلة (X أو قلب ممتلئ) -->
+             <button (click)="removeFromWishlist(item.id); $event.stopPropagation()"
+                     class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 p-1 border-0 shadow-sm d-flex align-items-center justify-content-center"
+                     style="width: 32px; height: 32px; background: rgba(255,255,255,0.9);">
+                <i class="bi bi-x-lg text-dark" style="font-size: 14px;"></i>
+             </button>
+          </div>
+
+          <!-- Info -->
+          <div class="card-body px-0 pt-3">
+            <h6 class="card-title fw-bold text-truncate mb-1">{{ item.location }}</h6>
+            <p class="text-muted small mb-1 text-truncate">{{ item.title }}</p>
+            <div class="d-flex align-items-center gap-1 small mb-2">
+               <i class="bi bi-star-fill text-dark" style="font-size: 12px;"></i>
+               <span>{{ item.rating }}</span>
+            </div>
+            <div class="d-flex align-items-baseline gap-1">
+              <span class="fw-bold text-dark">${{ item.price }}</span>
+              <span class="text-dark small">night</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
   </main>
 </div>

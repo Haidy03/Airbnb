@@ -1,5 +1,3 @@
-<!-- src/app/features/guest/components/search/components/search-bar/search-bar.component.html -->
-
 <div class="search-bar-container">
   <div class="search-bar">
     <!-- Location Input -->
@@ -16,12 +14,7 @@
         (focus)="onInputFocus('location')"
         (blur)="onInputBlur()"
       >
-      <button
-        *ngIf="location"
-        class="clear-btn"
-        (click)="clearLocation()"
-        type="button"
-      >
+      <button *ngIf="location" class="clear-btn" (click)="clearLocation()" type="button">
         <i class="bi bi-x-circle-fill"></i>
       </button>
     </div>
@@ -61,12 +54,7 @@
         (focus)="onInputFocus('checkOut')"
         (blur)="onInputBlur()"
       >
-      <button
-        *ngIf="checkIn || checkOut"
-        class="clear-btn"
-        (click)="clearDates()"
-        type="button"
-      >
+      <button *ngIf="checkIn || checkOut" class="clear-btn" (click)="clearDates()" type="button">
         <i class="bi bi-x-circle-fill"></i>
       </button>
     </div>
@@ -84,12 +72,13 @@
         class="search-input"
         [value]="guestsText"
         readonly
+        placeholder="Add guests"
         (focus)="onInputFocus('guests')"
         (blur)="onInputBlur()"
       >
 
       <!-- Guests Dropdown -->
-      <div *ngIf="showGuestsDropdown" class="guests-dropdown">
+      <div *ngIf="showGuestsDropdown" class="guests-dropdown" (mousedown)="$event.preventDefault()">
         <!-- Adults -->
         <div class="guest-row">
           <div class="guest-info">
@@ -97,23 +86,9 @@
             <div class="guest-description">Ages 13 or above</div>
           </div>
           <div class="guest-controls">
-            <button
-              class="guest-btn"
-              [disabled]="adultsCount <= 1"
-              (click)="decrementGuests('adults')"
-              type="button"
-            >
-              <i class="bi bi-dash-circle"></i>
-            </button>
+            <button class="guest-btn" [disabled]="adultsCount <= 0" (click)="decrementGuests('adults')" type="button"><i class="bi bi-dash-circle"></i></button>
             <span class="guest-count">{{ adultsCount }}</span>
-            <button
-              class="guest-btn"
-              [disabled]="adultsCount >= 16"
-              (click)="incrementGuests('adults')"
-              type="button"
-            >
-              <i class="bi bi-plus-circle"></i>
-            </button>
+            <button class="guest-btn" [disabled]="adultsCount >= 16" (click)="incrementGuests('adults')" type="button"><i class="bi bi-plus-circle"></i></button>
           </div>
         </div>
 
@@ -124,23 +99,9 @@
             <div class="guest-description">Ages 2–12</div>
           </div>
           <div class="guest-controls">
-            <button
-              class="guest-btn"
-              [disabled]="childrenCount <= 0"
-              (click)="decrementGuests('children')"
-              type="button"
-            >
-              <i class="bi bi-dash-circle"></i>
-            </button>
+            <button class="guest-btn" [disabled]="childrenCount <= 0" (click)="decrementGuests('children')" type="button"><i class="bi bi-dash-circle"></i></button>
             <span class="guest-count">{{ childrenCount }}</span>
-            <button
-              class="guest-btn"
-              [disabled]="childrenCount >= 15"
-              (click)="incrementGuests('children')"
-              type="button"
-            >
-              <i class="bi bi-plus-circle"></i>
-            </button>
+            <button class="guest-btn" [disabled]="childrenCount >= 15" (click)="incrementGuests('children')" type="button"><i class="bi bi-plus-circle"></i></button>
           </div>
         </div>
 
@@ -151,23 +112,9 @@
             <div class="guest-description">Under 2</div>
           </div>
           <div class="guest-controls">
-            <button
-              class="guest-btn"
-              [disabled]="infantsCount <= 0"
-              (click)="decrementGuests('infants')"
-              type="button"
-            >
-              <i class="bi bi-dash-circle"></i>
-            </button>
+            <button class="guest-btn" [disabled]="infantsCount <= 0" (click)="decrementGuests('infants')" type="button"><i class="bi bi-dash-circle"></i></button>
             <span class="guest-count">{{ infantsCount }}</span>
-            <button
-              class="guest-btn"
-              [disabled]="infantsCount >= 5"
-              (click)="incrementGuests('infants')"
-              type="button"
-            >
-              <i class="bi bi-plus-circle"></i>
-            </button>
+            <button class="guest-btn" [disabled]="infantsCount >= 5" (click)="incrementGuests('infants')" type="button"><i class="bi bi-plus-circle"></i></button>
           </div>
         </div>
 
@@ -175,28 +122,12 @@
         <div class="guest-row">
           <div class="guest-info">
             <div class="guest-type">Pets</div>
-            <div class="guest-description">
-              <a href="javascript:void(0)" class="pets-link">Bringing a service animal?</a>
-            </div>
+            <div class="guest-description">Bringing a service animal?</div>
           </div>
           <div class="guest-controls">
-            <button
-              class="guest-btn"
-              [disabled]="petsCount <= 0"
-              (click)="decrementGuests('pets')"
-              type="button"
-            >
-              <i class="bi bi-dash-circle"></i>
-            </button>
+            <button class="guest-btn" [disabled]="petsCount <= 0" (click)="decrementGuests('pets')" type="button"><i class="bi bi-dash-circle"></i></button>
             <span class="guest-count">{{ petsCount }}</span>
-            <button
-              class="guest-btn"
-              [disabled]="petsCount >= 5"
-              (click)="incrementGuests('pets')"
-              type="button"
-            >
-              <i class="bi bi-plus-circle"></i>
-            </button>
+            <button class="guest-btn" [disabled]="petsCount >= 5" (click)="incrementGuests('pets')" type="button"><i class="bi bi-plus-circle"></i></button>
           </div>
         </div>
       </div>
@@ -209,8 +140,8 @@
     </button>
   </div>
 
-  <!-- Filters Button -->
-  <button class="filters-toggle-btn" (click)="onFiltersClick()" type="button">
+  <!-- Filters Button (Controlled by Input) -->
+  <button *ngIf="showFilters" class="filters-toggle-btn" (click)="onFiltersClick()" type="button">
     <i class="bi bi-sliders"></i>
     <span>Filters</span>
   </button>
