@@ -10,6 +10,9 @@ import { HostDashboardComponent } from './features/host/components/host-dashboar
 import { MyProperties } from './features/host/components/my-properties/my-properties';
 import { HostMessages } from './features/host/components/host-messages/host-messages';
 
+
+// Property Steps Components
+
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 import { PropertyIntroComponent } from './features/host/components/property-steps/property-intro/property-intro';
@@ -57,11 +60,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/guest/components/trips/trips')
       .then(m => m.TripsComponent)
   },
-  {
-    path: 'messages',
-    loadComponent: () => import('./features/guest/components/messages/messages')
-      .then(m => m.MessagesComponent)
-  },
+
   // {
   //   path: 'profile',
   //   loadComponent: () => import('./features/guest/profile/profile.component')
