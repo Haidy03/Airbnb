@@ -75,3 +75,17 @@ export const COUNTRY_CODES: CountryCode[] = [
   { name: 'United States', code: 'US', dialCode: '+1', flag: '🇺🇸' },
   { name: 'United Kingdom', code: 'GB', dialCode: '+44', flag: '🇬🇧' },
 ];
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;  
+  newPassword: string;
+  confirmPassword?: string; 
+}
+
+export interface VerifyResetTokenRequest {
+  token: string;
+}

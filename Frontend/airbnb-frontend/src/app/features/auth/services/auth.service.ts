@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError, throwError, map } from 'rxjs';
 import { Router } from '@angular/router';
 import { TokenService } from './token.service';
+import { ErrorService } from './error.service';
 import {
   AuthUser,
   PhoneLoginRequest,
@@ -11,7 +12,10 @@ import {
   EmailLoginRequest,
   RegisterRequest,
   SocialLoginRequest,
-  AuthProvider
+  AuthProvider,
+  ResetPasswordRequest,
+  ForgotPasswordRequest,
+  VerifyResetTokenRequest
 } from '../models/auth-user.model';
 
 // ✅ FIXED: Match backend response structure (From Colleague)
@@ -48,6 +52,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private tokenService = inject(TokenService);
+  private errorService = inject(ErrorService);
 
   // ✅ Using Colleague's API URL configuration
   private readonly API_URL = 'https://localhost:5202/api/Auth';
@@ -156,7 +161,9 @@ export class AuthService {
         map(() => ({ success: true })),
         catchError(error => {
           console.error('❌ Login error:', error);
-          return throwError(() => error);
+          const errorMessage = this.handleAuthError(error);
+          return throwError(() => new Error(errorMessage));
+          
         })
       );
   }
@@ -171,7 +178,9 @@ export class AuthService {
          map(() => ({ success: true })),
         catchError(error => {
           console.error('❌ Registration error:', error);
-          return throwError(() => error);
+          //return throwError(() => error);
+          const errorMessage = this.handleAuthError(error);
+          return throwError(() => new Error(errorMessage));
         }),
         //tap(() => ({ success: true }))
       ) as any;
@@ -183,6 +192,7 @@ export class AuthService {
       .pipe(
         catchError(error => {
           console.error('❌ Phone login error:', error);
+          return throwError(() => new Error(error));
           return throwError(() => error);
         })
       );
@@ -357,4 +367,114 @@ export class AuthService {
         })
       );
   }
+
+   // ✅ طلب إعادة تعيين كلمة المرور
+  forgotPassword(email: string): Observable<{ success: boolean; message: string }> {
+    const request: ForgotPasswordRequest = { email };
+    
+    return this.http.post<{ message: string }>(`${this.API_URL}/forgot-password`, request)
+      .pipe(
+        map(response => {
+          console.log('✅ Forgot password request sent:', response);
+          return { 
+            success: true, 
+            message: response.message || 'Reset instructions sent to your email' 
+          };
+        }),
+        catchError(error => {
+          console.error('❌ Forgot password error:', error);
+          const errorMessage = this.handleAuthError(error);
+          return throwError(() => new Error(errorMessage));
+        })
+      );
+  }
+
+  // ✅ إعادة تعيين كلمة المرور
+  resetPassword(token: string, newPassword: string): Observable<{ success: boolean; message: string }> {
+    const request: ResetPasswordRequest = { 
+      token, 
+      newPassword 
+    };
+
+    return this.http.post<{ message: string }>(`${this.API_URL}/reset-password`, request)
+      .pipe(
+        map(response => {
+          console.log('✅ Password reset successful:', response);
+          return { 
+            success: true, 
+            message: response.message || 'Password reset successfully' 
+          };
+        }),
+        catchError(error => {
+          console.error('❌ Reset password error:', error);
+          const errorMessage = this.handleAuthError(error);
+          return throwError(() => new Error(errorMessage));
+        })
+      );
+  }
+
+  // ✅ التحقق من صحة توكن إعادة التعيين (اختياري)
+  verifyResetToken(token: string): Observable<{ valid: boolean; email?: string }> {
+    const request: VerifyResetTokenRequest = { token };
+
+    return this.http.post<{ valid: boolean; email?: string }>(`${this.API_URL}/verify-reset-token`, request)
+      .pipe(
+        catchError(error => {
+          console.error('❌ Verify token error:', error);
+          return throwError(() => new Error('Invalid or expired reset token'));
+        })
+      );
+  }
+
+
+   private handleAuthError(error: any): string {
+    if (!error) return 'An unknown error occurred';
+
+    // ✅ معالجة أخطاء HTTP
+    if (error.status === 0) {
+      return 'Unable to connect to server. Please check your internet connection.';
+    }
+
+    if (error.status === 401) {
+      return 'Invalid email or password.';
+    }
+  
+    if (error.status === 403) {
+      return 'Access denied. Please contact administrator.';
+    }
+
+    if (error.status === 429) {
+      return 'Too many attempts. Please try again later.';
+    }
+
+    if (error.status === 400) {
+      return 'Password must contain an uppercase letter, a lowercase letter, a number, and a special character';
+    }
+
+    if (error.status === 404) {
+      return 'Requested resource not found.';
+    }
+
+    if (error.status >= 500) {
+      return 'Server error. Please try again later.';
+    }
+
+    // ✅ معالجة أخطاء الـ API المخصصة
+    if (error.error?.message) {
+      return error.error.message;
+    }
+
+    if (error.error?.errors) {
+      // معالجة أخطاء الـ Validation
+      const validationErrors = error.error.errors;
+      return Object.values(validationErrors).flat().join(', ');
+    }
+
+    if (error.message) {
+      return error.message;
+    }
+
+    return 'An unexpected error occurred. Please try again.';
+  }
 }
+
