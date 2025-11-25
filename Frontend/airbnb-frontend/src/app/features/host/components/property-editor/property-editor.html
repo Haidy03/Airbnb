@@ -1,0 +1,178 @@
+<div class="editor-layout" *ngIf="!isLoading(); else loadingTpl">
+
+  <!-- Header -->
+  <header class="editor-header">
+    <div class="header-start">
+      <button class="btn-back" routerLink="/host/properties">
+        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M20 28 8.7 16.7a1 1 0 0 1 0-1.4L20 4" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+      </button>
+      <h1 class="header-title">Listing editor</h1>
+    </div>
+    
+    <!-- Tabs like real Airbnb -->
+    <div class="header-center">
+       <div class="tabs-pill">
+         <button class="tab active">Your space</button>
+         <button class="tab">Arrival guide</button>
+       </div>
+    </div>
+
+    <div class="header-end">
+      <button class="btn-view">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 14c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6zm-1-9h2v5H7V5zm0 6h2v2H7v-2z"/></svg>
+        View
+      </button>
+    </div>
+  </header>
+
+  <div class="editor-body">
+    
+    <!-- LEFT SIDEBAR (Navigation) -->
+    <aside class="editor-sidebar">
+      
+      <!-- Photos Card -->
+      <div class="nav-card" 
+           [class.active]="activeSection() === 'photos'"
+           (click)="setActiveSection('photos')">
+        <div class="nav-header">
+          <span class="nav-label">Photos</span>
+          <button class="btn-edit-icon" *ngIf="activeSection() === 'photos'">Edit</button>
+        </div>
+        <div class="nav-content photo-preview">
+          <img [src]="getCoverImage()" alt="Cover">
+          <span class="photo-count">{{ property()?.images?.length }} photos</span>
+        </div>
+      </div>
+
+      <!-- Title Card -->
+      <div class="nav-card" 
+           [class.active]="activeSection() === 'title'"
+           (click)="setActiveSection('title')">
+        <div class="nav-header">
+          <span class="nav-label">Title</span>
+        </div>
+        <div class="nav-content text-content">
+          {{ property()?.title }}
+        </div>
+      </div>
+
+      <!-- Description Card -->
+      <div class="nav-card" 
+           [class.active]="activeSection() === 'description'"
+           (click)="setActiveSection('description')">
+        <div class="nav-header">
+          <span class="nav-label">Description</span>
+        </div>
+        <div class="nav-content text-content truncate-multi">
+          {{ property()?.description }}
+        </div>
+      </div>
+
+      <!-- Property Type Card -->
+      <div class="nav-card"
+           [class.active]="activeSection() === 'propertyType'"
+           (click)="setActiveSection('propertyType')">
+        <div class="nav-header">
+           <span class="nav-label">Property type</span>
+        </div>
+        <div class="nav-content text-content">
+          {{ property()?.roomType }} · {{ property()?.propertyType }}
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT CONTENT (Editor) -->
+    <main class="editor-main">
+      
+      <!-- TITLE EDITOR -->
+      <section *ngIf="activeSection() === 'title'" class="editor-section">
+        <div class="section-info">
+          <h2>Title</h2>
+          <p>Your listing title should highlight what makes your place special.</p>
+        </div>
+
+        <div class="section-content">
+          <!-- View Mode -->
+          <div *ngIf="!isEditing()" class="view-display">
+             <h3 class="display-value title-display">{{ property()?.title }}</h3>
+             <!-- Floating edit button that appears on hover usually, but explicitly here -->
+          </div>
+
+          <!-- Edit Mode -->
+          <div *ngIf="isEditing()" class="edit-form">
+            <textarea 
+              [(ngModel)]="tempValue"
+              class="airbnb-textarea large"
+              maxlength="50"
+              rows="3"></textarea>
+            <div class="char-count">{{ tempValue()?.length }}/50</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DESCRIPTION EDITOR -->
+      <section *ngIf="activeSection() === 'description'" class="editor-section">
+        <div class="section-info">
+          <h2>Description</h2>
+          <p>Give guests a sense of what it's like to stay at your place.</p>
+        </div>
+
+        <div class="section-content">
+           <div *ngIf="!isEditing()" class="view-display">
+             <p class="display-value desc-display">{{ property()?.description }}</p>
+           </div>
+
+           <div *ngIf="isEditing()" class="edit-form">
+             <textarea 
+               [(ngModel)]="tempValue"
+               class="airbnb-textarea"
+               maxlength="500"
+               rows="8"></textarea>
+             <div class="char-count">{{ tempValue()?.length }}/500</div>
+           </div>
+        </div>
+      </section>
+
+      <!-- PHOTOS EDITOR (Placeholder) -->
+      <section *ngIf="activeSection() === 'photos'" class="editor-section">
+         <div class="section-info">
+           <h2>Photos</h2>
+           <p>Manage photos and add details.</p>
+         </div>
+         <div class="section-content">
+           <div class="photos-grid-preview">
+             <div *ngFor="let img of property()?.images" class="photo-thumb">
+               <img [src]="img.url" alt="Property image">
+             </div>
+           </div>
+         </div>
+      </section>
+
+      <!-- FOOTER ACTIONS (Only visible in Edit Mode) -->
+      <div class="editor-footer" *ngIf="isEditing()">
+        <div class="footer-content">
+          <button class="btn-link" (click)="cancelEdit()">Cancel</button>
+          <button class="btn-black" (click)="saveChanges()">Save</button>
+        </div>
+      </div>
+
+      <!-- EDIT TRIGGER (Only visible in View Mode) -->
+      <div class="edit-trigger-area" *ngIf="!isEditing() && activeSection() !== 'photos'">
+         <button class="btn-edit-floating" (click)="startEdit()">
+           <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M26 6a4 4 0 0 1 1 7.5l-14 14a4 4 0 0 1-2.3 1.1L5 29a1 1 0 0 1-1.3-1.3l.4-5.7a4 4 0 0 1 1-2.3l14-14A4 4 0 0 1 26 6z" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+           Edit
+         </button>
+      </div>
+
+    </main>
+
+  </div>
+
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading-screen">
+    <div class="spinner"></div>
+  </div>
+</ng-template>

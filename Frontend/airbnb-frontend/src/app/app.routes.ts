@@ -46,6 +46,7 @@ import { MessageTestComponent } from './test/test/test';
 import { ListingDetails } from './features/guest/components/listing-details/listing-details';
 import { Checkout } from './features/guest/components/checkout/checkout';
 import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
+import { PropertyEditorComponent } from './features/host/components/property-editor/property-editor';
 
 export const routes: Routes = [
   // =================================================
@@ -118,6 +119,10 @@ export const routes: Routes = [
       { path: 'dashboard', component: HostDashboardComponent },
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
+      { 
+        path: 'properties/editor/:id', // ✅ المسار الجديد
+        component: PropertyEditorComponent 
+      },
       // {
       //   path: 'properties/:id',
       //   component: PropertyDetailsComponent

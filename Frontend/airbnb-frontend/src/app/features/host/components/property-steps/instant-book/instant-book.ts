@@ -1,7 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { PropertyService, PropertyDraft } from '../../../services/property';
+import { PropertyService } from '../../../services/property';
+import { Property } from '../../../models/property.model'; 
 
 @Component({
   selector: 'app-booking-settings',
@@ -13,7 +14,7 @@ import { PropertyService, PropertyDraft } from '../../../services/property';
 export class instantBookComponent implements OnInit {
   isLoading = signal(false);
   currentDraftId: string | null = null;
-  currentDraft: PropertyDraft | null = null;
+  currentDraft: Property | null = null;
 
   // Booking settings state
   bookingMode = signal<'instant' | 'approval'>('approval');

@@ -1,10 +1,10 @@
-// Frontend/airbnb-frontend/src/app/features/host/components/property-steps/pricing/pricing.ts
-
 import { Component, OnInit, signal, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { PropertyService, PropertyDraft } from '../../../services/property';
+import { PropertyService } from '../../../services/property';
+import { Property } from '../../../models/property.model'; 
+
 import * as L from 'leaflet';
 
 @Component({
@@ -21,7 +21,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
   isLoading = signal(false);
   showMap = signal(false);
   currentDraftId: string | null = null;
-  currentDraft: PropertyDraft | null = null;
+  currentDraft: Property | null = null;
 
   private map!: L.Map;
 

@@ -188,13 +188,19 @@ export class HostCalendar implements OnInit {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
     
+    // ✅ استخدام getAllProperties التي ترجع Property[]
     this.propertyService.getAllProperties().subscribe({
       next: (properties) => {
+        // ✅ Mapping صحيح باستخدام البيانات من الـ Model المحدث
         const calendarProperties: CalendarProperty[] = properties.map(p => ({
           id: p.id,
           title: p.title,
-          coverImage: p.coverImage || p.images[0]?.url || '/assets/images/placeholder-property.jpg',
-          location: { city: p.location.city, country: p.location.country }
+          // ✅ coverImage موجودة الآن في الـ Property Model
+          coverImage: p.coverImage || '/assets/images/placeholder-property.jpg',
+          location: { 
+            city: p.location?.city || '', 
+            country: p.location?.country || '' 
+          }
         }));
         
         this.properties.set(calendarProperties);
@@ -205,7 +211,7 @@ export class HostCalendar implements OnInit {
           this.loadingSignal.set(false);
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('❌ Error loading properties:', err);
         this.errorSignal.set('Failed to load properties. Please try again.');
         this.loadingSignal.set(false);

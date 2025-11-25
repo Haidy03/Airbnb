@@ -4,7 +4,8 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpEventType, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../../../environments/environment';
-import { PropertyService, PropertyDraft } from '../../../services/property';
+import { PropertyService } from '../../../services/property';
+import { Property } from '../../../models/property.model'; 
 
 interface UploadedImage {
   id: string;
@@ -33,7 +34,7 @@ export class PropertyPhotosComponent implements OnInit {
   isLoading = signal(false);
   
   // Draft data
-  currentDraft: PropertyDraft | null = null;
+  currentDraft: Property | null = null;
   currentDraftId: string | null = null;
 
   // Constants
