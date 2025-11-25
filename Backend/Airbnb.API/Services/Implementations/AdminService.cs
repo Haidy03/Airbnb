@@ -558,6 +558,8 @@ namespace Airbnb.API.Services.Implementations
             property.Status = PropertyStatus.Approved;
             property.ApprovedAt = DateTime.UtcNow;
             property.ApprovedByAdminId = adminId;
+            property.IsApproved = true;
+            property.IsActive = true;
 
             await _adminRepository.UpdatePropertyAsync(property);
             _logger.LogInformation($"Property {propertyId} approved by admin {adminId}");

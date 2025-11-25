@@ -480,6 +480,9 @@ namespace Airbnb.API.Migrations
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsInstantBook")
+                        .HasColumnType("bit");
+
                     b.Property<double>("Latitude")
                         .HasColumnType("float");
 

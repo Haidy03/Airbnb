@@ -1,9 +1,8 @@
-// Frontend/airbnb-frontend/src/app/features/host/components/property-steps/safety-details/safety-details.ts
-
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { PropertyService, PropertyDraft } from '../../../services/property';
+import { PropertyService } from '../../../services/property';
+import { Property } from '../../../models/property.model'; 
 
 @Component({
   selector: 'app-safety-details',
@@ -15,7 +14,7 @@ import { PropertyService, PropertyDraft } from '../../../services/property';
 export class legalandcreateComponent implements OnInit {
   isLoading = signal(false);
   currentDraftId: string | null = null;
-  currentDraft: PropertyDraft | null = null;
+  currentDraft: Property | null = null;
 
   // Safety checkboxes state
   exteriorCamera = signal(false);

@@ -19,11 +19,6 @@ import { PropertyIntroComponent } from './features/host/components/property-step
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
 import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
-import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
-import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
-import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
-import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
-import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
 import { PropertyFloorPlanComponent } from './features/host/components/property-steps/floor-plan/floor-plan';
 import { AmenitiesStepComponent } from './features/host/components/property-steps/amenities/amenities';
 import { PropertyPhotosComponent } from './features/host/components/property-steps/photos/photos';
@@ -49,6 +44,8 @@ import { ListingDetails } from './features/guest/components/listing-details/list
 import { Checkout } from './features/guest/components/checkout/checkout';
 import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
 import { ResetPasswordComponent } from './features/auth/components/reset-password.component/reset-password.component';
+import { PropertyEditorComponent } from './features/host/components/property-editor/property-editor';
+import { BookingDetailsComponent } from './features/host/components/booking-details/booking-details';
 
 export const routes: Routes = [
   // =================================================
@@ -126,6 +123,11 @@ export const routes: Routes = [
       { path: 'dashboard', component: HostDashboardComponent },
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
+      { path: 'bookings/:id', component: BookingDetailsComponent },
+      { 
+        path: 'properties/editor/:id', 
+        component: PropertyEditorComponent 
+      },
       // {
       //   path: 'properties/:id',
       //   component: PropertyDetailsComponent
