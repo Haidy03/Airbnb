@@ -52,6 +52,15 @@ export class PropertyService {
       tap(() => this.loadingSignal.set(false))
     );
   }
+
+  getAmenities(): Observable<any[]> {
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/amenities`, 
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(res => res.data)
+    );
+  }
   
   getPropertyById(id: string): Observable<Property> {
     return this.getDraftById(id);

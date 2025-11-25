@@ -615,5 +615,20 @@ namespace Airbnb.API.Controllers.Host
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
+        [HttpGet("amenities")]
+        public async Task<IActionResult> GetAmenities()
+        {
+            try
+            {
+                var amenities = await _propertyService.GetAmenitiesListAsync();
+                return Ok(new { success = true, data = amenities });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching amenities");
+                return StatusCode(500, new { success = false, message = "Error fetching amenities" });
+            }
+        }
     }
 }

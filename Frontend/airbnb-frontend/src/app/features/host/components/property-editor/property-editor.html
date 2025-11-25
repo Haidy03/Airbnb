@@ -4,27 +4,47 @@
   <header class="editor-header">
     <div class="header-start">
       <button class="btn-back" routerLink="/host/properties">
-        <svg viewBox="0 0 32 32" width="16" height="16" stroke="currentColor" stroke-width="3"><path d="M20 28 8.7 16.7a1 1 0 0 1 0-1.4L20 4" fill="none" /></svg>
+        <svg viewBox="0 0 32 32" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M20 28 8.7 16.7a1 1 0 0 1 0-1.4L20 4" /></svg>
       </button>
       <h1 class="header-title">Listing editor</h1>
     </div>
     <div class="header-center">
-       <div class="tabs-pill">
-         <button class="tab active">Your space</button>
-         <button class="tab">Arrival guide</button>
+       <!-- 1. Toggle Switch (Visible for Approved/Active/Inactive) -->
+       <div class="status-toggle-wrapper" *ngIf="canToggleStatus(); else statusBadge">
+         <span class="status-label" [class.active]="property()?.isActive">
+            {{ getStatusText() }}
+         </span>
+         <label class="switch">
+           <input type="checkbox" 
+                  [checked]="property()?.isActive" 
+                  (change)="onStatusToggle($event)">
+           <span class="slider round"></span>
+         </label>
        </div>
+
+       <!-- 2. Fallback Badge (For Drafts/Pending/Rejected) -->
+       <ng-template #statusBadge>
+         <span class="status-pill" 
+               [class.pending]="property()?.status == 1"
+               [class.rejected]="property()?.status == 3">
+           {{ property()?.status == 1 ? 'Pending Review' : (property()?.status == 3 ? 'Action Required' : 'In Progress') }}
+         </span>
+       </ng-template>
     </div>
     <div class="header-end">
-      <button class="btn-view">View listing</button>
+      <!-- تم إضافة (click) -->
+      <button class="btn-view" (click)="viewListing()" [disabled]="!property()?.id">
+        View listing
+      </button>
     </div>
   </header>
 
   <div class="editor-body">
     
-    <!-- ================= LEFT SIDEBAR (Navigation) ================= -->
+    <!-- ================= LEFT SIDEBAR ================= -->
     <aside class="editor-sidebar">
       
-      <!-- Photos -->
+      <!-- 1. Photos -->
       <div class="nav-card" [class.active]="activeSection() === 'photos'" (click)="setActiveSection('photos')">
         <div class="nav-header"> <span class="nav-label">Photos</span> </div>
         <div class="nav-content photo-preview">
@@ -33,74 +53,102 @@
         </div>
       </div>
 
-      <!-- Title -->
+      <!-- 2. Title -->
       <div class="nav-card" [class.active]="activeSection() === 'title'" (click)="setActiveSection('title')">
         <div class="nav-header"> <span class="nav-label">Title</span> </div>
         <div class="nav-content text-truncate">{{ property()?.title }}</div>
       </div>
 
-      <!-- Property Type (Matches Screenshot) -->
+      <!-- 3. Property Type -->
       <div class="nav-card" [class.active]="activeSection() === 'propertyType'" (click)="setActiveSection('propertyType')">
         <div class="nav-header"> <span class="nav-label">Property type</span> </div>
-        <div class="nav-content">{{ property()?.roomType }} · {{ property()?.propertyType }}</div>
+        <div class="nav-content">{{ property()?.propertyType }}</div>
       </div>
 
-      <!-- Description -->
+      <!-- 4. Pricing -->
+      <div class="nav-card" [class.active]="activeSection() === 'pricing'" (click)="setActiveSection('pricing')">
+        <div class="nav-header"> <span class="nav-label">Pricing</span> </div>
+        <div class="nav-content">${{ property()?.pricing?.basePrice }}</div>
+      </div>
+
+      <!-- 5. Number of Guests (Capacity) -->
+      <div class="nav-card" [class.active]="activeSection() === 'capacity'" (click)="setActiveSection('capacity')">
+        <div class="nav-header"> <span class="nav-label">Number of guests</span> </div>
+        <div class="nav-content">{{ property()?.capacity?.guests }} guests</div>
+      </div>
+
+      <!-- 6. Description -->
       <div class="nav-card" [class.active]="activeSection() === 'description'" (click)="setActiveSection('description')">
         <div class="nav-header"> <span class="nav-label">Description</span> </div>
         <div class="nav-content text-truncate">{{ property()?.description }}</div>
       </div>
 
-      <!-- Pricing -->
-      <div class="nav-card" [class.active]="activeSection() === 'pricing'" (click)="setActiveSection('pricing')">
-        <div class="nav-header"> <span class="nav-label">Pricing</span> </div>
-        <div class="nav-content">${{ property()?.pricing?.basePrice }} per night</div>
-      </div>
-
-      <!-- Location -->
-      <div class="nav-card" [class.active]="activeSection() === 'location'" (click)="setActiveSection('location')">
-        <div class="nav-header"> <span class="nav-label">Location</span> </div>
-        <div class="nav-content text-truncate">{{ property()?.location?.address }}</div>
-      </div>
-
-      <!-- Amenities -->
+      <!-- 7. Amenities -->
       <div class="nav-card" [class.active]="activeSection() === 'amenities'" (click)="setActiveSection('amenities')">
         <div class="nav-header"> <span class="nav-label">Amenities</span> </div>
         <div class="nav-content">{{ property()?.amenities?.length }} amenities</div>
       </div>
 
+      <!-- 8. Location -->
+      <div class="nav-card" [class.active]="activeSection() === 'location'" (click)="setActiveSection('location')">
+        <div class="nav-header"> <span class="nav-label">Location</span> </div>
+        <div class="nav-content text-truncate">{{ property()?.location?.city }}</div>
+      </div>
+
+      <!-- 9. About the Host (Direct Link) -->
+      <div class="nav-card link-card" (click)="setActiveSection('host')">
+        <div class="nav-header"> <span class="nav-label">About the host</span> </div>
+        <div class="nav-content">
+          <img src="assets/images/user-placeholder.png" class="host-avatar" alt="Host">
+          <span>View profile</span>
+        </div>
+      </div>
+
+      <!-- 10. Booking Settings -->
+      <div class="nav-card" [class.active]="activeSection() === 'booking'" (click)="setActiveSection('booking')">
+        <div class="nav-header"> <span class="nav-label">Booking settings</span> </div>
+        <div class="nav-content">{{ property()?.isInstantBook ? 'Instant Book' : 'Request' }}</div>
+      </div>
+
+      <!-- 11. House Rules -->
+      <div class="nav-card" [class.active]="activeSection() === 'rules'" (click)="setActiveSection('rules')">
+        <div class="nav-header"> <span class="nav-label">House rules</span> </div>
+        <div class="nav-content">{{ property()?.houseRules?.checkInTime }} check-in</div>
+      </div>
+
+      <!-- 12. Guest Safety -->
+      <div class="nav-card" [class.active]="activeSection() === 'safety'" (click)="setActiveSection('safety')">
+        <div class="nav-header"> <span class="nav-label">Guest safety</span> </div>
+        <div class="nav-content">Safety details</div>
+      </div>
+
+      <!-- ✅ Delete Button at the bottom of Sidebar -->
+  <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #EBEBEB;">
+    <button class="btn-delete" (click)="deleteProperty()">
+      <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" style="margin-right:8px">
+        <path d="M28 6h-6V2.996c0-.55-.446-1.004-.996-1.004H10.996A.997.997 0 0 0 10 2.996V6H4v2h2v20.996c0 .55.446 1.004.996 1.004h18.008a.997.997 0 0 0 .996-1.004V8h2V6zm-4 22H8V8h16v20zM12 2.996h8V6h-8V2.996z"/>
+      </svg>
+      Delete listing
+    </button>
+  </div>
+
     </aside>
 
-    <!-- ================= RIGHT CONTENT (Forms) ================= -->
+    <!-- ================= RIGHT CONTENT ================= -->
     <main class="editor-main">
       
-      <!-- 1. PROPERTY TYPE EDITOR (Like Screenshot) -->
-      <section *ngIf="activeSection() === 'propertyType'" class="editor-section">
-        <h2 class="section-title">Property type</h2>
-        
-        <div class="form-group">
-          <label>Property type</label>
-          <div class="select-wrapper">
-            <select [(ngModel)]="tempPropertyType">
-              <option *ngFor="let type of propertyTypesList" [value]="type">{{ type }}</option>
-            </select>
-            <span class="chevron">▼</span>
+      <!-- 1. PHOTOS (View Only Placeholder) -->
+      <section *ngIf="activeSection() === 'photos'" class="editor-section">
+        <h2 class="section-title">Photos</h2>
+        <div class="photos-grid">
+          <div *ngFor="let img of property()?.images" class="photo-card">
+            <img [src]="img.url" alt="Prop">
           </div>
         </div>
-
-        <div class="form-group">
-          <label>Listing type</label>
-          <div class="select-wrapper">
-            <select [(ngModel)]="tempRoomType">
-              <option *ngFor="let room of roomTypesList" [value]="room">{{ room }}</option>
-            </select>
-            <span class="chevron">▼</span>
-          </div>
-          <p class="input-hint">Guests have their own room for sleeping. Other areas can be shared.</p>
-        </div>
+        <button class="btn-secondary" style="margin-top: 20px;">Manage photos</button>
       </section>
 
-      <!-- 2. TITLE EDITOR -->
+      <!-- 2. TITLE -->
       <section *ngIf="activeSection() === 'title'" class="editor-section">
         <h2 class="section-title">Title</h2>
         <div class="form-group">
@@ -109,20 +157,34 @@
         </div>
       </section>
 
-      <!-- 3. DESCRIPTION EDITOR -->
-      <section *ngIf="activeSection() === 'description'" class="editor-section">
-        <h2 class="section-title">Description</h2>
+      <!-- 3. PROPERTY TYPE -->
+      <section *ngIf="activeSection() === 'propertyType'" class="editor-section">
+        <h2 class="section-title">Property type</h2>
         <div class="form-group">
-          <textarea class="airbnb-input" rows="10" maxlength="500" [(ngModel)]="tempDescription"></textarea>
-          <div class="char-count">{{ tempDescription().length }}/500</div>
+          <label>Which is most like your place?</label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="tempPropertyType">
+              <option *ngFor="let type of propertyTypesList" [value]="type">{{ type }}</option>
+            </select>
+            <span class="chevron">▼</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Listing type</label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="tempRoomType">
+              <option *ngFor="let room of roomTypesList" [value]="room">{{ room }}</option>
+            </select>
+            <span class="chevron">▼</span>
+          </div>
         </div>
       </section>
 
-      <!-- 4. PRICING EDITOR -->
+      <!-- 4. PRICING -->
       <section *ngIf="activeSection() === 'pricing'" class="editor-section">
         <h2 class="section-title">Pricing</h2>
         <div class="form-group">
-          <label>Base price per night</label>
+          <label>Base price</label>
           <div class="price-input-wrapper">
             <span class="currency">$</span>
             <input type="number" class="airbnb-input price" [(ngModel)]="tempPrice">
@@ -130,7 +192,66 @@
         </div>
       </section>
 
-      <!-- 5. LOCATION EDITOR -->
+      <!-- 5. NUMBER OF GUESTS (Capacity) -->
+      <section *ngIf="activeSection() === 'capacity'" class="editor-section">
+        <h2 class="section-title">Basics</h2>
+        <div class="counter-row">
+          <span>Guests</span>
+          <div class="counter-controls">
+            <button class="circle-btn" (click)="updateCapacity('guests', -1)">-</button>
+            <span>{{ tempCapacity().guests }}</span>
+            <button class="circle-btn" (click)="updateCapacity('guests', 1)">+</button>
+          </div>
+        </div>
+        <div class="counter-row">
+          <span>Bedrooms</span>
+          <div class="counter-controls">
+            <button class="circle-btn" (click)="updateCapacity('bedrooms', -1)">-</button>
+            <span>{{ tempCapacity().bedrooms }}</span>
+            <button class="circle-btn" (click)="updateCapacity('bedrooms', 1)">+</button>
+          </div>
+        </div>
+        <div class="counter-row">
+          <span>Beds</span>
+          <div class="counter-controls">
+            <button class="circle-btn" (click)="updateCapacity('beds', -1)">-</button>
+            <span>{{ tempCapacity().beds }}</span>
+            <button class="circle-btn" (click)="updateCapacity('beds', 1)">+</button>
+          </div>
+        </div>
+        <div class="counter-row">
+          <span>Bathrooms</span>
+          <div class="counter-controls">
+            <button class="circle-btn" (click)="updateCapacity('bathrooms', -1)">-</button>
+            <span>{{ tempCapacity().bathrooms }}</span>
+            <button class="circle-btn" (click)="updateCapacity('bathrooms', 1)">+</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. DESCRIPTION -->
+      <section *ngIf="activeSection() === 'description'" class="editor-section">
+        <h2 class="section-title">Description</h2>
+        <textarea class="airbnb-input" rows="10" maxlength="500" [(ngModel)]="tempDescription"></textarea>
+        <div class="char-count">{{ tempDescription().length }}/500</div>
+      </section>
+
+      <!-- 7. AMENITIES -->
+      <section *ngIf="activeSection() === 'amenities'" class="editor-section">
+        <h2 class="section-title">Amenities</h2>
+        <div class="amenities-list">
+          <div *ngFor="let amenity of availableAmenities" class="amenity-item">
+            <label class="checkbox-label">
+              <input type="checkbox" 
+                     [checked]="tempAmenities().includes(amenity.id)"
+                     (change)="toggleAmenity(amenity.id)">
+              <span class="check-text">{{ amenity.name }}</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. LOCATION (Map Update) -->
       <section *ngIf="activeSection() === 'location'" class="editor-section">
         <h2 class="section-title">Location</h2>
         <div class="form-group">
@@ -147,35 +268,99 @@
             <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().country">
           </div>
         </div>
+        
+        <!-- ✅ Real Map Container -->
+        <div class="map-container-wrapper">
+          <div id="editor-map" class="map-view"></div>
+        </div>
       </section>
 
-      <!-- 6. AMENITIES EDITOR -->
-      <section *ngIf="activeSection() === 'amenities'" class="editor-section">
-        <h2 class="section-title">Amenities</h2>
+      <!-- 10. BOOKING SETTINGS -->
+      <section *ngIf="activeSection() === 'booking'" class="editor-section">
+        <h2 class="section-title">Booking settings</h2>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" [value]="true" [(ngModel)]="tempInstantBook">
+            <div>
+              <strong>Instant Book</strong>
+              <p class="radio-desc">Guests who meet your requirements can book instantly.</p>
+            </div>
+          </label>
+          <label class="radio-label">
+            <input type="radio" [value]="false" [(ngModel)]="tempInstantBook">
+            <div>
+              <strong>Request to Book</strong>
+              <p class="radio-desc">You approve or decline all booking requests.</p>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- 11. HOUSE RULES -->
+      <section *ngIf="activeSection() === 'rules'" class="editor-section">
+        <h2 class="section-title">House rules</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Check-in time</label>
+            <input type="time" class="airbnb-input" [(ngModel)]="tempRules().checkInTime">
+          </div>
+          <div class="form-group">
+            <label>Check-out time</label>
+            <input type="time" class="airbnb-input" [(ngModel)]="tempRules().checkOutTime">
+          </div>
+        </div>
+
         <div class="amenities-list">
-          <div *ngFor="let amenity of availableAmenities" class="amenity-item">
+          <div class="amenity-item">
             <label class="checkbox-label">
-              <input type="checkbox" 
-                     [checked]="tempAmenities().includes(amenity.id)"
-                     (change)="toggleAmenity(amenity.id)">
-              <span>{{ amenity.name }}</span>
+              <input type="checkbox" [(ngModel)]="tempRules().petsAllowed">
+              <span class="check-text">Pets allowed</span>
+            </label>
+          </div>
+          <div class="amenity-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="tempRules().smokingAllowed">
+              <span class="check-text">Smoking allowed</span>
+            </label>
+          </div>
+          <div class="amenity-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="tempRules().eventsAllowed">
+              <span class="check-text">Events allowed</span>
             </label>
           </div>
         </div>
       </section>
 
-      <!-- PHOTOS PLACEHOLDER -->
-      <section *ngIf="activeSection() === 'photos'" class="editor-section">
-        <h2 class="section-title">Photos</h2>
-        <div class="photos-grid">
-          <div *ngFor="let img of property()?.images" class="photo-card">
-            <img [src]="img.url" alt="Prop">
+      <!-- 12. GUEST SAFETY -->
+      <section *ngIf="activeSection() === 'safety'" class="editor-section">
+        <h2 class="section-title">Guest safety</h2>
+        <p class="desc">Does your place have any of these?</p>
+        
+        <div class="amenities-list">
+          <div class="amenity-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="tempSafety().exteriorCamera">
+              <span class="check-text">Exterior security camera</span>
+            </label>
+          </div>
+          <div class="amenity-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="tempSafety().noiseMonitor">
+              <span class="check-text">Noise decibel monitor</span>
+            </label>
+          </div>
+          <div class="amenity-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="tempSafety().weapons">
+              <span class="check-text">Weapons on property</span>
+            </label>
           </div>
         </div>
-        <button class="btn-secondary" style="margin-top: 20px;">Photo Tour</button>
       </section>
 
-      <!-- SAVE BUTTON (Sticky Bottom) -->
+      <!-- SAVE BAR -->
       <div class="save-bar">
         <button class="btn-black" (click)="saveChanges()">Save</button>
       </div>

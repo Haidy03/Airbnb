@@ -124,29 +124,16 @@ namespace Airbnb.API.Services.Implementations
             // ✅ Update Amenities if provided
             if (dto.AmenityIds != null)
             {
-                _logger.LogInformation("Updating amenities for property {PropertyId}: {AmenityCount}", id, dto.AmenityIds.Count);
-
-                // Remove existing amenities
-                property.PropertyAmenities.Clear();
-
-                // Add new amenities
-                foreach (var amenityId in dto.AmenityIds)
-                {
-                    property.PropertyAmenities.Add(new PropertyAmenity
-                    {
-                        PropertyId = id,
-                        AmenityId = amenityId
-                    });
-                }
-
-                _logger.LogInformation("✅ Amenities updated successfully");
+                await _propertyRepository.UpdatePropertyAmenitiesAsync(id, dto.AmenityIds);
             }
 
             property.UpdatedAt = DateTime.UtcNow;
 
             await _propertyRepository.UpdateAsync(property);
 
-            return await MapToResponseDto(property);
+            var updatedProperty = await _propertyRepository.GetByIdWithDetailsAsync(id);
+
+            return await MapToResponseDto(updatedProperty);
         }
 
         public async Task<PropertyResponseDto?> GetPropertyByIdAsync(int id)
@@ -525,9 +512,9 @@ namespace Airbnb.API.Services.Implementations
                 throw new UnauthorizedAccessException("You are not authorized to activate this property");
 
             // ✅ يمكن التفعيل فقط لو Property معتمدة من Admin
-            if (property.Status != PropertyStatus.Approved)
+            if (property.Status != PropertyStatus.Approved && property.Status != PropertyStatus.Inactive)
             {
-                throw new InvalidOperationException("Property must be approved by admin before activation");
+                throw new InvalidOperationException("Property must be approved by admin or previously active before activation");
             }
 
             property.IsActive = true;
@@ -539,6 +526,19 @@ namespace Airbnb.API.Services.Implementations
             _logger.LogInformation("✅ Property {PropertyId} activated by host {HostId}", id, hostId);
 
             return true;
+        }
+
+        public async Task<IEnumerable<AmenityDto>> GetAmenitiesListAsync()
+        {
+            var amenities = await _propertyRepository.GetAllAmenitiesAsync();
+
+            return amenities.Select(a => new AmenityDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Icon = a.Icon,
+                Category = a.Category
+            });
         }
     }
 }

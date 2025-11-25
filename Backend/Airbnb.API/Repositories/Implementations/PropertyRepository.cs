@@ -297,5 +297,45 @@ namespace Airbnb.API.Repositories.Implementations
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task UpdatePropertyAmenitiesAsync(int propertyId, List<int> amenityIds)
+        {
+            // 1. Remove existing amenities for this property
+            var existingLinks = await _context.PropertyAmenities
+                .Where(pa => pa.PropertyId == propertyId)
+                .ToListAsync();
+
+            if (existingLinks.Any())
+            {
+                _context.PropertyAmenities.RemoveRange(existingLinks);
+            }
+
+            // 2. Validate IDs: Only select IDs that actually exist in the Amenities table
+            // This PREVENTS the 500 Foreign Key Error
+            var validAmenityIds = await _context.Amenities
+                .Where(a => amenityIds.Contains(a.Id))
+                .Select(a => a.Id)
+                .ToListAsync();
+
+            // 3. Add new links
+            foreach (var amenityId in validAmenityIds)
+            {
+                await _context.PropertyAmenities.AddAsync(new PropertyAmenity
+                {
+                    PropertyId = propertyId,
+                    AmenityId = amenityId
+                });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        // دالة إضافية لجلب كل الـ Amenities عشان الـ Frontend يعرضهم
+        public async Task<IEnumerable<Amenity>> GetAllAmenitiesAsync()
+        {
+            return await _context.Amenities
+                .Where(a => a.IsActive)
+                .ToListAsync();
+        }
     }
 }

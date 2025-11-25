@@ -29,7 +29,7 @@ export class AmenitiesStepComponent implements OnInit{
   currentDraftId: string | null = null;
  
   // --- State ---
-
+  allAmenities = signal<any[]>([]);
   
   // Data matching your database screenshot
   readonly amenities: Amenity[] = [
@@ -58,8 +58,8 @@ export class AmenitiesStepComponent implements OnInit{
   // --- Computed Groups ---
   
   // Group 1: "Guest favorites" (Combines Basic, Kitchen, Ent, Parking, etc.)
-  guestFavorites = computed(() => this.amenities.filter(a => 
-    ['Basic', 'Entertainment', 'Kitchen', 'HeatingCooling', 'InternetOffice', 'Parking'].includes(a.category)
+  guestFavorites = computed(() => this.allAmenities().filter(a => 
+    ['Basic', 'Entertainment', 'Kitchen', 'InternetOffice', 'Parking', 'HeatingCooling'].includes(a.category)
   ));
 
   // Group 2: "Standout amenities" (Outdoor)
@@ -79,8 +79,21 @@ export class AmenitiesStepComponent implements OnInit{
   ) {}
 
   ngOnInit(): void {
-    this.getCurrentDraft();
+    this.loadSystemAmenities();
  
+  }
+  loadSystemAmenities() {
+    // 1. Get real amenities from backend
+    this.propertyService.getAmenities().subscribe({
+      next: (data) => {
+        console.log('✅ Backend Amenities:', data);
+        this.allAmenities.set(data);
+        
+        // 2. After loading list, load current draft selection
+        this.getCurrentDraft();
+      },
+      error: (err) => console.error('Failed to load amenities list', err)
+    });
   }
 
     /**
