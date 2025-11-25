@@ -755,3 +755,221 @@
     font-size: 12px;
   }
 }
+
+/* تنسيق النصوص */
+.main-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 12px;
+}
+
+.step-description {
+  font-size: 16px;
+  color: #717171;
+  margin-bottom: 40px;
+}
+
+/* --- Upload Box Styling --- */
+.upload-container {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.upload-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #B0B0B0; /* حدود متقطعة */
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  height: 420px;
+  transition: all 0.2s ease;
+  position: relative;
+  text-align: center;
+}
+
+.upload-box:hover {
+  background-color: #F7F7F7;
+  border-color: #222;
+}
+
+.upload-box.dragging {
+  background-color: #F0F0F0;
+  border-color: #222;
+  border-width: 2px;
+}
+
+/* صورة الكاميرا */
+.camera-illustration img {
+  width: 100px;
+  height: auto;
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+.drag-text {
+  font-size: 20px;
+  font-weight: 500;
+  color: #222;
+  margin: 0 0 8px 0;
+}
+
+.or-text {
+  font-size: 12px;
+  color: #222;
+  margin-bottom: 24px;
+}
+
+/* زر الرفع */
+.add-photos-btn {
+  background-color: #FFFFFF;
+  color: #222222;
+  border: 1px solid #222222;
+  border-radius: 24px; /* حواف دائرية أكثر */
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.add-photos-btn:hover {
+  background-color: #F7F7F7;
+}
+
+/* نصوص التعليمات */
+.upload-hint {
+  font-size: 14px;
+  color: #222;
+  margin: 0 0 4px 0;
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.upload-formats {
+  font-size: 12px;
+  color: #717171;
+  margin: 0;
+}
+
+/* --- Photos Grid & Cards --- */
+.photos-gallery {
+  margin-top: 40px;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gallery-title { font-size: 22px; margin-bottom: 16px; }
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.photo-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  background-color: #f0f0f0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.photo-image-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.photo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Action Buttons (Delete & Primary) --- */
+.card-actions {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  /* الأزرار تظهر فوق الصورة */
+  pointer-events: none; 
+}
+
+/* زر الحذف (أعلى اليمين) */
+.delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0,0,0,0.08);
+  cursor: pointer;
+  pointer-events: auto; /* تفعيل النقر */
+  transition: transform 0.2s;
+  color: #222;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.delete-btn:hover {
+  transform: scale(1.1);
+  background-color: #FFF0F0;
+  color: #C13515;
+}
+
+/* حالة الصورة الأساسية (أسفل اليسار) */
+.primary-status {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  pointer-events: auto;
+}
+
+/* شارة Cover Photo */
+.cover-badge {
+  background-color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #222;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* زر تعيين كصورة أساسية */
+.text-action-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #222;
+  opacity: 0; /* مخفي افتراضياً */
+  transition: opacity 0.2s;
+}
+
+.photo-card:hover .text-action-btn {
+  opacity: 1; /* يظهر عند تمرير الماوس */
+}
+
+/* Loading Spinner */
+.loading-overlay {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.6);
+  display: flex; align-items: center; justify-content: center;
+}
+.spinner { width: 30px; height: 30px; border: 3px solid #ddd; border-top: 3px solid #222; border-radius: 50%; animation: spin 1s infinite linear; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
