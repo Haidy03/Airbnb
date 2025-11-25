@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+ import { Routes } from '@angular/router';
 
 // Layouts & Core Components
 import { HostLayoutComponent } from './layouts/host-layout/host-layout';
@@ -106,9 +106,9 @@ export const routes: Routes = [
     component: LoginComponent,
     canActivate: [noAuthGuard]
   },
-  { 
-    path: 'reset-password', 
-    component: ResetPasswordComponent 
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent
   },
 
   // ✅ Host routes - protected by hostGuard (ONLY for Hosts)
