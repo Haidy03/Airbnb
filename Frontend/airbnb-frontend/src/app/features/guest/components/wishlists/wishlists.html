@@ -23,7 +23,7 @@
       <p class="text-muted mb-4" style="max-width: 400px;">
         As you search, click the heart icon to save your favorite places here.
       </p>
-      <a routerLink="/" class="btn btn-airbnb btn-lg px-5 py-2 fw-semibold">
+      <a routerLink="/" class="btn btn-danger btn-lg px-5 py-2 fw-semibold" style="background-color: #FF385C; border: none;">
         Start exploring
       </a>
     </div>
@@ -36,9 +36,14 @@
 
           <!-- Image -->
           <div class="position-relative rounded-3 overflow-hidden" style="padding-top: 95%;">
-             <img [src]="item.image" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" [alt]="item.title">
+             <!-- التعديل هنا: استخدام الصورة الأولى من المصفوفة -->
+             <img [src]="item.images && item.images.length > 0 ? item.images[0].url : 'assets/placeholder.jpg'"
+                  class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
+                  [alt]="item.title"
+                  onerror="this.src='assets/placeholder.jpg'">
 
-             <!-- زر الحذف من المفضلة (X أو قلب ممتلئ) -->
+             <!-- زر الحذف من المفضلة -->
+             <!-- تحويل الـ id لرقم للتأكيد -->
              <button (click)="removeFromWishlist(item.id); $event.stopPropagation()"
                      class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 p-1 border-0 shadow-sm d-flex align-items-center justify-content-center"
                      style="width: 32px; height: 32px; background: rgba(255,255,255,0.9);">
@@ -48,14 +53,14 @@
 
           <!-- Info -->
           <div class="card-body px-0 pt-3">
-            <h6 class="card-title fw-bold text-truncate mb-1">{{ item.location }}</h6>
+            <h6 class="card-title fw-bold text-truncate mb-1">{{ item.location.city }}, {{ item.location.country }}</h6>
             <p class="text-muted small mb-1 text-truncate">{{ item.title }}</p>
             <div class="d-flex align-items-center gap-1 small mb-2">
                <i class="bi bi-star-fill text-dark" style="font-size: 12px;"></i>
-               <span>{{ item.rating }}</span>
+               <span>{{ item.rating | number:'1.1-2' }}</span>
             </div>
             <div class="d-flex align-items-baseline gap-1">
-              <span class="fw-bold text-dark">${{ item.price }}</span>
+              <span class="fw-bold text-dark">{{ item.price | currency: item.currency :'symbol':'1.0-0' }}</span>
               <span class="text-dark small">night</span>
             </div>
           </div>

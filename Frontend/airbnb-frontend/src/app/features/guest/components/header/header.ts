@@ -16,12 +16,7 @@ export interface SearchData {
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    FormsModule,
-    SearchBarComponent
-  ],
+  imports: [CommonModule, RouterModule, FormsModule, SearchBarComponent],
   templateUrl: './header.html',
   styleUrls: ['./header.css']
 })
@@ -30,54 +25,37 @@ export class HeaderComponent implements OnInit {
   isUserMenuOpen = false;
   isScrolled = false;
   showExpandedSearch = false;
-
-  // متغير جديد للتحكم في ظهور البحث بالكامل
   isSearchEnabled = true;
 
   constructor(private router: Router) {}
 
   ngOnInit() {
     this.checkCurrentRoute();
-
-    // مراقبة تغيير الصفحات لتحديث حالة البحث
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
       this.checkCurrentRoute();
     });
   }
 
-  // دالة لتحديد هل نظهر البحث أم لا بناءً على الصفحة الحالية
   private checkCurrentRoute() {
     const url = this.router.url;
-
-    // يظهر فقط في الصفحة الرئيسية وصفحة البحث
     if (url === '/' || url.startsWith('/search') || url.startsWith('/?')) {
       this.isSearchEnabled = true;
-
-      // لو إحنا في صفحة السيرش، نصغر الهيدر تلقائياً
       if (url.startsWith('/search')) {
-        this.isScrolled = true;
+        this.isScrolled = true; // صفحة السيرش تبدأ بالبار الصغير
         this.showExpandedSearch = false;
       } else {
-        // لو في الهوم، نرجعه لحالته الطبيعية (كبير في الأول)
-        // إلا لو المستخدم كان عامل سكرول، دي ههتظبط من الـ HostListener
-        if (window.scrollY < 50) {
-          this.isScrolled = false;
-        }
+        if (window.scrollY < 50) this.isScrolled = false;
       }
     } else {
-      // أي صفحة تانية (Wishlist, Trips, etc) نخفي السيرش الكبير
       this.isSearchEnabled = false;
-      this.isScrolled = true; // نخليه في وضع "صغير" عشان ياخد مساحة أقل
+      this.isScrolled = true;
     }
   }
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
     const scrollY = window.scrollY || window.pageYOffset;
-    this.isScrolled = scrollY > 20; // قللت الرقم شوية عشان الاستجابة تكون أسرع
-
+    this.isScrolled = scrollY > 20;
     if (this.isScrolled) {
       this.showExpandedSearch = false;
       this.isUserMenuOpen = false;
@@ -92,7 +70,6 @@ export class HeaderComponent implements OnInit {
   }
 
   expandHeader() {
-    // التوسيع مسموح فقط لو إحنا في صفحة تدعم البحث
     if (this.isSearchEnabled) {
       this.isScrolled = false;
       this.showExpandedSearch = true;
@@ -114,17 +91,8 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
-  openSearchModal(type: string) {
-    // التأكد إننا بنفتح المودال فقط لو البحث مسموح
-    if (this.isSearchEnabled) {
-      this.isUserMenuOpen = false;
-      this.expandHeader();
-    }
-  }
-
   handleSearch(filters: SearchFilters) {
-    this.showExpandedSearch = false; // لم الكومبوننت بعد البحث
-
+    this.showExpandedSearch = false;
     this.router.navigate(['/search'], {
       queryParams: {
         location: filters.location,
