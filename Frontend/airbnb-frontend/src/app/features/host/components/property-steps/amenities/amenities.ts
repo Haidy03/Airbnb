@@ -165,7 +165,7 @@ export class AmenitiesStepComponent implements OnInit{
   }
 
   goBack(): void {
-    this.router.navigate(['/host/properties/location']);
+    this.router.navigate(['/host/properties/stand-out']);
   }
 
 

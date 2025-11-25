@@ -112,7 +112,7 @@ namespace Airbnb.API.Services.Implementations
             if (dto.NumberOfBathrooms.HasValue) property.NumberOfBathrooms = dto.NumberOfBathrooms.Value;
             if (dto.MaxGuests.HasValue) property.MaxGuests = dto.MaxGuests.Value;
             if (dto.PricePerNight.HasValue) property.PricePerNight = dto.PricePerNight.Value;
-            if (dto.CleaningFee.HasValue) property.CleaningFee = dto.CleaningFee;
+            if (dto.CleaningFee.HasValue) property.CleaningFee = dto.CleaningFee.Value;
             if (dto.HouseRules != null) property.HouseRules = dto.HouseRules;
             if (dto.CheckInTime.HasValue) property.CheckInTime = dto.CheckInTime;
             if (dto.CheckOutTime.HasValue) property.CheckOutTime = dto.CheckOutTime;
@@ -127,6 +127,10 @@ namespace Airbnb.API.Services.Implementations
             if (dto.AmenityIds != null)
             {
                 await _propertyRepository.UpdatePropertyAmenitiesAsync(id, dto.AmenityIds);
+            }
+            else if (dto.CurrentStep == "pricing")
+            {
+                property.CleaningFee = null;
             }
 
             property.UpdatedAt = DateTime.UtcNow;

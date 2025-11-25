@@ -4,7 +4,6 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../../services/property';
 import { Property } from '../../../models/property.model'; 
-
 import * as L from 'leaflet';
 
 @Component({
@@ -22,6 +21,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
   showMap = signal(false);
   currentDraftId: string | null = null;
   currentDraft: Property | null = null;
+  showCleaningFee = signal(false); // ✅ للتحكم في ظهور الحقل
 
   private map!: L.Map;
 
@@ -49,7 +49,8 @@ export class PricingComponent implements OnInit, AfterViewInit {
         Validators.required,
         Validators.min(10),
         Validators.max(10000)
-      ]]
+      ]],
+      cleaningFee: [null] // ✅ الحقل الخاص برسوم التنظيف
     });
 
     // Watch for price changes
@@ -67,9 +68,14 @@ export class PricingComponent implements OnInit, AfterViewInit {
           this.currentDraft = draft;
           
           this.pricingForm.patchValue({
-            pricePerNight: draft.pricePerNight || 46
+            pricePerNight: draft.pricePerNight || 46,
+            cleaningFee: draft.pricing?.cleaningFee || null
           });
-          
+
+          // ✅ إظهار الحقل إذا كانت هناك قيمة محفوظة
+          if (draft.pricing?.cleaningFee) {
+            this.showCleaningFee.set(true);
+          }
           console.log('✅ Draft loaded:', draft);
         },
         error: (error) => {
@@ -84,56 +90,82 @@ export class PricingComponent implements OnInit, AfterViewInit {
   }
 
   private initializeMap(): void {
-    if (this.map) return;
+    if (!this.mapContainer) return;
 
-    // Get property location from draft
-    let center = [30.0444, 31.2357]; // Default Cairo
-    if (this.currentDraft && this.currentDraft.latitude && this.currentDraft.longitude) {
-      center = [this.currentDraft.latitude, this.currentDraft.longitude];
+    if (this.map) {
+      setTimeout(() => { this.map.invalidateSize(); }, 200);
+      return;
     }
-    
-    this.map = L.map(this.mapContainer.nativeElement).setView(
-      [center[0], center[1]],
-      13
-    );
 
-    // Add tile layer
+    // 1. تحديد المركز (موقعك الحالي أو الافتراضي)
+    let lat = 30.0444;
+    let lng = 31.2357;
+    
+    if (this.currentDraft?.location?.coordinates) {
+      lat = this.currentDraft.location.coordinates.lat;
+      lng = this.currentDraft.location.coordinates.lng;
+    } else if (this.currentDraft?.latitude !== undefined && this.currentDraft?.longitude !== undefined) {
+      lat = this.currentDraft.latitude;
+      lng = this.currentDraft.longitude;
+    }
+
+    // 2. إنشاء الخريطة
+    this.map = L.map(this.mapContainer.nativeElement).setView([lat, lng], 13);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
+      attribution: '© OpenStreetMap'
     }).addTo(this.map);
 
-    // Add marker for property
-    const customIcon = L.icon({
-      iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCAzMiA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTYgNDhDMTYgNDggMCAyNi41IDAgMTZDMCA3LjE2MzQ0IDcuMTYzNDQgMCAxNiAwQzI0LjgzNjYgMCAzMiA3LjE2MzQ0IDMyIDE2QzMyIDI2LjUgMTYgNDggMTYgNDhaIiBmaWxsPSIjRkYzODVDIi8+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iOCIgZmlsbD0id2hpdGUiLz48L3N2Zz4K',
-      iconSize: [32, 48],
-      iconAnchor: [16, 48],
-      popupAnchor: [0, -48]
+    // 3. أيقونة منزلك (You)
+    const homeIcon = L.divIcon({
+      className: 'custom-marker home',
+      html: `<div style="background:#222;color:white;padding:6px 12px;border-radius:20px;font-weight:bold;box-shadow:0 2px 5px rgba(0,0,0,0.3); white-space:nowrap;">You ($${this.pricingForm.get('pricePerNight')?.value})</div>`
     });
 
-    L.marker([center[0], center[1]], { icon: customIcon })
-      .bindPopup(`<div style="padding: 8px; font-weight: bold;">${this.pricingForm.get('pricePerNight')?.value}</div>`)
-      .addTo(this.map);
+    L.marker([lat, lng], { icon: homeIcon, zIndexOffset: 1000 }).addTo(this.map);
 
-    // Add some comparison properties around the location
-    const offset = 0.05;
-    const properties = [
-      { lat: center[0] + offset, lng: center[1], price: 45 },
-      { lat: center[0] - offset, lng: center[1] + offset, price: 55 },
-      { lat: center[0], lng: center[1] - offset, price: 100 },
-      { lat: center[0] + offset, lng: center[1] - offset, price: 50 }
-    ];
+    // 4. ✅ جلب العقارات الحقيقية من السيرفر
+    this.propertyService.getAllProperties().subscribe({
+      next: (properties) => {
+        const realListings = properties.filter(p => 
+          p.isActive && 
+          p.id !== this.currentDraft?.id && 
+          p.location?.coordinates
+        );
 
-    properties.forEach(prop => {
-      L.marker([prop.lat, prop.lng])
-        .bindPopup(`<div style="padding: 8px; font-weight: bold;">${prop.price}</div>`)
-        .addTo(this.map);
+        console.log('✅ Found similar listings:', realListings.length);
+
+        realListings.forEach(prop => {
+          const pLat = prop.location.coordinates.lat;
+          const pLng = prop.location.coordinates.lng;
+          const price = prop.pricing?.basePrice || 0;
+          
+          const priceIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="background:white;padding:4px 8px;border-radius:12px;font-weight:bold;border:1px solid #ddd;box-shadow:0 2px 4px rgba(0,0,0,0.1); font-size:12px; white-space:nowrap;">$${price}</div>`
+          });
+
+          L.marker([pLat, pLng], { icon: priceIcon })
+            .bindPopup(`
+              <strong>${prop.title}</strong><br>
+              $${price} / night
+            `)
+            .addTo(this.map);
+        });
+      },
+      error: (err) => console.error('Failed to load similar listings', err)
     });
 
-    // Resize map when modal opens
     setTimeout(() => {
       this.map.invalidateSize();
-    }, 100);
+    }, 300);
+  }
+
+  toggleCleaningFee(): void {
+    this.showCleaningFee.update(v => !v);
+    if (!this.showCleaningFee()) {
+      this.pricingForm.get('cleaningFee')?.setValue(null);
+    }
   }
 
   getGuestPrice(): number {
@@ -143,23 +175,46 @@ export class PricingComponent implements OnInit, AfterViewInit {
 
   saveAndExit(): void {
     if (!confirm('Save your progress and exit?')) return;
+    // ✅ استخدام الدالة الموحدة للحفظ
+    this.saveData(() => this.router.navigate(['/host/properties']));
+  }
 
+  goNext(): void {
+    if (!this.pricingForm.valid) {
+      alert('Please enter valid pricing information');
+      return;
+    }
+    // ✅ استخدام الدالة الموحدة للحفظ
+    this.saveData(() => this.router.navigate(['/host/properties/legal-and-create']));
+  }
+
+  // ✅✅✅ الدالة المساعدة للحفظ (Added Here) ✅✅✅
+  private saveData(onSuccess: () => void): void {
     this.isLoading.set(true);
 
-    if (this.currentDraftId && this.pricingForm.valid) {
+    if (this.currentDraftId) {
+      // تجهيز البيانات (التأكد من إرسال cleaningFee حتى لو null)
+      const feeValue = this.showCleaningFee() ? this.pricingForm.get('cleaningFee')?.value : null;
+      
+      const payload = {
+        pricePerNight: this.pricingForm.get('pricePerNight')?.value,
+        cleaningFee: feeValue
+      };
+
+      console.log('📤 Saving Pricing:', payload); // Debug
+
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
-        {
-          pricePerNight: this.pricingForm.get('pricePerNight')?.value
-        },
+        payload,
         'pricing'
       ).subscribe({
         next: () => {
           this.isLoading.set(false);
-          this.router.navigate(['/host/properties']);
+          onSuccess();
         },
         error: (error) => {
           this.isLoading.set(false);
+          console.error('Save error:', error);
           alert('Failed to save: ' + error.message);
         }
       });
@@ -174,7 +229,6 @@ export class PricingComponent implements OnInit, AfterViewInit {
 
   openMap(): void {
     this.showMap.set(true);
-    // Initialize map after modal is shown
     setTimeout(() => {
       this.initializeMap();
     }, 100);
@@ -185,34 +239,6 @@ export class PricingComponent implements OnInit, AfterViewInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/host/properties/description']);
-  }
-
-  goNext(): void {
-    if (!this.pricingForm.valid) {
-      alert('Please enter valid pricing information');
-      return;
-    }
-
-    this.isLoading.set(true);
-
-    if (this.currentDraftId) {
-      this.propertyService.updateDraftAtStep(
-        this.currentDraftId,
-        {
-          pricePerNight: this.pricingForm.get('pricePerNight')?.value
-        },
-        'pricing'
-      ).subscribe({
-        next: () => {
-          this.isLoading.set(false);
-          this.router.navigate(['/host/properties/legal-and-create']);
-        },
-        error: (error) => {
-          this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
-        }
-      });
-    }
+    this.router.navigate(['/host/properties/instant-book']);
   }
 }

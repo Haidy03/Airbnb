@@ -129,7 +129,7 @@ export class PropertyDescriptionComponent implements OnInit {
       ).subscribe({
         next: () => {
           this.isLoading.set(false);
-          this.router.navigate(['/host/properties/instant-book']);
+          this.router.navigate(['/host/properties/finish-setup']);
         },
         error: (error) => {
           this.isLoading.set(false);

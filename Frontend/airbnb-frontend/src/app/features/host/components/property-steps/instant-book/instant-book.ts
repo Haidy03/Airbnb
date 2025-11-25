@@ -88,7 +88,7 @@ export class instantBookComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/host/properties/pricing']);
+    this.router.navigate(['/host/properties/finish-setup']);
   }
 
   goNext(): void {
