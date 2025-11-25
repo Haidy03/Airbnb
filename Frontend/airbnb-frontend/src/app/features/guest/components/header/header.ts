@@ -1,8 +1,10 @@
-import { Component, HostListener, Input, Output, EventEmitter } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../../../core/services/auth.service';
+import { filter } from 'rxjs/operators';
+import { SearchBarComponent } from '../search/components/search-bar/search-bar';
+import { SearchFilters } from '../search/models/property.model';
 
 export interface SearchData {
   where: string;
@@ -14,37 +16,67 @@ export interface SearchData {
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    SearchBarComponent
+  ],
   templateUrl: './header.html',
   styleUrls: ['./header.css']
 })
-export class HeaderComponent {
-  @Input() currentPage: 'home' | 'search' = 'home';
-  @Output() searchEvent = new EventEmitter<SearchData>();
+export class HeaderComponent implements OnInit {
 
   isUserMenuOpen = false;
-  isSearchModalOpen = false;
   isScrolled = false;
-
   showExpandedSearch = false;
 
-  searchData: SearchData = {
-    where: '',
-    checkIn: '',
-    checkOut: '',
-    who: ''
-  };
+  // متغير جديد للتحكم في ظهور البحث بالكامل
+  isSearchEnabled = true;
 
-  constructor(
-    private router: Router,
-   private authService: AuthService
-  ) {}
+  constructor(private router: Router) {}
+
+  ngOnInit() {
+    this.checkCurrentRoute();
+
+    // مراقبة تغيير الصفحات لتحديث حالة البحث
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.checkCurrentRoute();
+    });
+  }
+
+  // دالة لتحديد هل نظهر البحث أم لا بناءً على الصفحة الحالية
+  private checkCurrentRoute() {
+    const url = this.router.url;
+
+    // يظهر فقط في الصفحة الرئيسية وصفحة البحث
+    if (url === '/' || url.startsWith('/search') || url.startsWith('/?')) {
+      this.isSearchEnabled = true;
+
+      // لو إحنا في صفحة السيرش، نصغر الهيدر تلقائياً
+      if (url.startsWith('/search')) {
+        this.isScrolled = true;
+        this.showExpandedSearch = false;
+      } else {
+        // لو في الهوم، نرجعه لحالته الطبيعية (كبير في الأول)
+        // إلا لو المستخدم كان عامل سكرول، دي ههتظبط من الـ HostListener
+        if (window.scrollY < 50) {
+          this.isScrolled = false;
+        }
+      }
+    } else {
+      // أي صفحة تانية (Wishlist, Trips, etc) نخفي السيرش الكبير
+      this.isSearchEnabled = false;
+      this.isScrolled = true; // نخليه في وضع "صغير" عشان ياخد مساحة أقل
+    }
+  }
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
     const scrollY = window.scrollY || window.pageYOffset;
-
-    this.isScrolled = scrollY > 50;
+    this.isScrolled = scrollY > 20; // قللت الرقم شوية عشان الاستجابة تكون أسرع
 
     if (this.isScrolled) {
       this.showExpandedSearch = false;
@@ -52,7 +84,7 @@ export class HeaderComponent {
     }
   }
 
-    navigateToHome() {
+  navigateToHome() {
     this.showExpandedSearch = false;
     this.isScrolled = false;
     this.router.navigate(['/']);
@@ -60,9 +92,11 @@ export class HeaderComponent {
   }
 
   expandHeader() {
-    this.isScrolled = false;
-    this.showExpandedSearch = true;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // التوسيع مسموح فقط لو إحنا في صفحة تدعم البحث
+    if (this.isSearchEnabled) {
+      this.isScrolled = false;
+      this.showExpandedSearch = true;
+    }
   }
 
   toggleUserMenu(event: Event) {
@@ -81,23 +115,23 @@ export class HeaderComponent {
   }
 
   openSearchModal(type: string) {
-    this.isSearchModalOpen = true;
-    this.isUserMenuOpen = false;
-    this.expandHeader();
+    // التأكد إننا بنفتح المودال فقط لو البحث مسموح
+    if (this.isSearchEnabled) {
+      this.isUserMenuOpen = false;
+      this.expandHeader();
+    }
   }
 
-  closeSearchModal() {
-    this.isSearchModalOpen = false;
-    this.showExpandedSearch = false;
-  }
-
-  handleSearch() {
-    this.closeSearchModal();
-
-    this.searchEvent.emit(this.searchData);
+  handleSearch(filters: SearchFilters) {
+    this.showExpandedSearch = false; // لم الكومبوننت بعد البحث
 
     this.router.navigate(['/search'], {
-      queryParams: this.searchData
+      queryParams: {
+        location: filters.location,
+        checkIn: filters.checkIn ? new Date(filters.checkIn).toISOString() : undefined,
+        checkOut: filters.checkOut ? new Date(filters.checkOut).toISOString() : undefined,
+        guests: filters.guests
+      }
     });
   }
 }

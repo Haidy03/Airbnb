@@ -203,8 +203,8 @@
         </button>
       </form>
 
-      <div class="forgot-password">
-        <a href="#">Forgot password?</a>
+      <div class="forgot-password-link" *ngIf="isEmailMode">
+        <a href="#" (click)="openForgotPassword($event)">Forgot password?</a>
       </div>
 
       <!-- Register Link -->

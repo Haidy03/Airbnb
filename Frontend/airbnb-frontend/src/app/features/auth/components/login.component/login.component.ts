@@ -8,6 +8,7 @@ import { ModalService } from '../../services/modal.service';
 import { SocialButtonsComponent } from '../social-buttons.component/social-buttons.component';
 import { COUNTRY_CODES, CountryCode } from '../../models/auth-user.model';
 import { TokenService } from '../../services/token.service';
+import { ErrorService } from '../../services/error.service'; 
 type LoginMode = 'phone' | 'email' | 'register';
 type PhoneStep = 'input' | 'verify';
 
@@ -22,6 +23,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private tokenService = inject(TokenService);
+  private errorService = inject(ErrorService);
   private modalService = inject(ModalService);
   private router = inject(Router);
 
@@ -184,7 +186,7 @@ export class LoginComponent {
 
     this.authService.loginWithEmail(request).subscribe({
       next: (response) => {
-        this.isLoading.set(false);
+        this.isLoading.set(true);
         console.log('✅ Login successful!');
         
         
@@ -196,7 +198,7 @@ export class LoginComponent {
           console.log('👤 User Role:', userRole);
           console.log('🆔 User ID:', userId);
           
-          // ✅ التوجيه بناءً على الـ role
+          
           this.redirectBasedOnRole(userRole);
         } else {
           this.errorMessage.set('Login failed - no token received');
@@ -204,8 +206,10 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading.set(false);
+
         console.error('❌ Login failed:', error);
         this.errorMessage.set(this.getErrorMessage(error));
+         this.errorService.handleError(error); 
       }
     });
   }
@@ -249,6 +253,7 @@ export class LoginComponent {
             // If auto-login fails, switch to login mode
             this.switchMode('email');
             this.errorMessage.set('Registration successful! Please log in.');
+            this.errorService.handleError(loginError); 
           }
         });
       },
@@ -260,6 +265,7 @@ export class LoginComponent {
                         error?.message || 
                         'Registration failed';
         this.errorMessage.set(errorMsg);
+        this.errorService.handleError(error);
       }
     });
   }
@@ -274,6 +280,7 @@ export class LoginComponent {
     }
     
     this.errorMessage.set(`${provider} login will be implemented`);
+    
   }
 
   // Password Visibility
@@ -363,5 +370,16 @@ export class LoginComponent {
     } else {
       this.switchMode('phone');
     }
+  }
+
+  // ✅ فتح نافذة نسيت كلمة المرور
+  openForgotPassword(event: Event) {
+    event.preventDefault();
+    this.closeModal();
+    
+    // استيراد المكون ديناميكياً لتجنب circular dependencies
+    import('../forogt-password.component/forogt-password.component').then(module => {
+      this.modalService.open(module.ForgotPasswordComponent);
+    });
   }
 }

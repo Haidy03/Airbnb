@@ -1,0 +1,23 @@
+/* تنسيق زرار Airbnb */
+.btn-airbnb {
+  background-color: #FF385C;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-airbnb:hover {
+  background-color: #E31C5F;
+  color: white;
+  transform: scale(1.02);
+}
+
+/* تحسين شكل الأيقونة */
+.empty-icon-wrapper {
+  background-color: #f7f7f7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

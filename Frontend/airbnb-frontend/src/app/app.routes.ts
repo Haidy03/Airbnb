@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+ import { Routes } from '@angular/router';
 
 // Layouts & Core Components
 import { HostLayoutComponent } from './layouts/host-layout/host-layout';
@@ -8,6 +8,12 @@ import { HomeComponent } from './features/guest/components/home/home';
 import { HostDashboardComponent } from './features/host/components/host-dashboard/host-dashboard';
 // import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
 import { MyProperties } from './features/host/components/my-properties/my-properties';
+import { HostMessages } from './features/host/components/host-messages/host-messages';
+
+
+// Property Steps Components
+import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
+import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 
 import { PropertyIntroComponent } from './features/host/components/property-steps/property-intro/property-intro';
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
@@ -37,6 +43,7 @@ import { MessageTestComponent } from './test/test/test';
 import { ListingDetails } from './features/guest/components/listing-details/listing-details';
 import { Checkout } from './features/guest/components/checkout/checkout';
 import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
+import { ResetPasswordComponent } from './features/auth/components/reset-password.component/reset-password.component';
 import { PropertyEditorComponent } from './features/host/components/property-editor/property-editor';
 import { BookingDetailsComponent } from './features/host/components/booking-details/booking-details';
 
@@ -63,6 +70,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/guest/components/trips/trips')
       .then(m => m.TripsComponent)
   },
+
   // {
   //   path: 'messages',
   //   loadComponent: () => import('./features/guest/components/messages/messages')
@@ -94,6 +102,10 @@ export const routes: Routes = [
     path: 'login',
     component: LoginComponent,
     canActivate: [noAuthGuard]
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent
   },
 
   // ✅ Host routes - protected by hostGuard (ONLY for Hosts)
@@ -195,40 +207,6 @@ export const routes: Routes = [
         path: 'legal-and-create',
         component: legalandcreateComponent
       },
-
-    ]
-  },
-
-   {
-    path: 'messages',
-    children: [
-      {
-        path: '',
-        component: MessagesInboxComponent,
-        title: 'Messages'
-      },
-      {
-        path: ':id',
-        component: ChatComponent,
-        title: 'Chat'
-      }
-    ]
-  },
-  
- 
-  {
-    path: 'host/messages',
-    children: [
-      {
-        path: '',
-        component: MessagesInboxComponent,
-        title: 'Host Messages'
-      },
-      {
-        path: ':id',
-        component: ChatComponent,
-        title: 'Host Chat'
-      }
     ]
   },
 
