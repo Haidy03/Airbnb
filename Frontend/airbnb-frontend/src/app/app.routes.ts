@@ -125,7 +125,7 @@ export const routes: Routes = [
       { path: 'properties', component: MyProperties },
       { path: 'bookings/:id', component: BookingDetailsComponent },
       { 
-        path: 'properties/editor/:id', // ✅ المسار الجديد
+        path: 'properties/editor/:id', 
         component: PropertyEditorComponent 
       },
       // {
