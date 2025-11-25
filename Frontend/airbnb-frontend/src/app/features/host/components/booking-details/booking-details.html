@@ -1,1 +1,125 @@
-<p>booking-details works!</p>
+<div class="details-page" *ngIf="!isLoading(); else loadingTpl">
+  
+  <!-- Header -->
+  <header class="details-header">
+    <button class="btn-back" (click)="goBack()">
+      <svg viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 28 8.7 16.7a1 1 0 0 1 0-1.4L20 4" /></svg>
+    </button>
+    <h1 class="page-title">
+      {{ isPending() ? 'Request to book' : 'Reservation details' }}
+    </h1>
+    <span class="status-badge" [class]="booking()?.status?.toLowerCase()">
+      {{ booking()?.status }}
+    </span>
+  </header>
+
+  <div class="content-grid">
+    
+    <!-- LEFT COLUMN: Guest Info & Actions -->
+    <div class="main-content">
+      
+      <!-- Guest Card -->
+      <div class="info-card guest-card">
+        <div class="guest-header">
+          <div class="guest-avatar">
+            <!-- صورة افتراضية لو مفيش صورة -->
+            <img [src]="'assets/images/user-placeholder.png'" alt="Guest">
+          </div>
+          <div class="guest-info">
+            <h2>{{ booking()?.guestName }}</h2>
+            <p class="guest-meta">Joined Airbnb in 2024</p>
+          </div>
+        </div>
+
+        <!-- Guest Message -->
+        <div class="guest-message" *ngIf="booking()?.specialRequests">
+          <h3>Message from guest</h3>
+          <p class="message-text">"{{ booking()?.specialRequests }}"</p>
+        </div>
+      </div>
+
+      <!-- Trip Details -->
+      <div class="info-card trip-card">
+        <h3>Trip details</h3>
+        
+        <div class="detail-row">
+          <div class="detail-icon">📅</div>
+          <div class="detail-content">
+            <h4>Dates</h4>
+            <p>{{ booking()?.checkInDate | date:'mediumDate' }} – {{ booking()?.checkOutDate | date:'mediumDate' }}</p>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-icon">👥</div>
+          <div class="detail-content">
+            <h4>Guests</h4>
+            <p>{{ booking()?.numberOfGuests }} guest{{ booking()?.numberOfGuests !== 1 ? 's' : '' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS (Only if Pending) -->
+      <div class="action-bar" *ngIf="isPending()">
+        <div class="action-text">
+          <h3>Accept this request?</h3>
+          <p>You have 24 hours to respond. If you accept, the reservation will be confirmed immediately.</p>
+        </div>
+        <div class="action-buttons">
+          <button class="btn-decline" (click)="decline()" [disabled]="isProcessing()">Decline</button>
+          <button class="btn-accept" (click)="approve()" [disabled]="isProcessing()">
+            {{ isProcessing() ? 'Processing...' : 'Accept' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Payment Info -->
+    <div class="sidebar">
+      <div class="info-card payment-card">
+        
+        <!-- Property Preview -->
+        <div class="property-preview">
+          <img [src]="booking()?.propertyImage || 'assets/images/placeholder-property.jpg'" alt="Property">
+          <div class="property-text">
+            <h4>{{ booking()?.propertyTitle }}</h4>
+            <p>Entire rental unit</p>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Payout Breakdown -->
+        <h3>Payout details</h3>
+        <div class="price-row">
+          <span>${{ booking()?.pricePerNight }} x {{ nightsCount() }} nights</span>
+          <span>${{ (booking()?.pricePerNight || 0) * nightsCount() }}</span>
+        </div>
+        <div class="price-row">
+          <span>Cleaning fee</span>
+          <span>${{ booking()?.cleaningFee }}</span>
+        </div>
+        <div class="price-row" style="color: #008A05;">
+          <span>Service fee (Host)</span>
+          <span>-$0.00</span>
+        </div>
+        
+        <hr class="divider">
+        
+        <div class="price-row total">
+          <span>Total payout</span>
+          <span>${{ booking()?.totalPrice }}</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading-screen">
+    <div class="spinner"></div>
+  </div>
+</ng-template>

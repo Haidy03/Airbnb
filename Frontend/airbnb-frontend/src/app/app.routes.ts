@@ -8,20 +8,11 @@ import { HomeComponent } from './features/guest/components/home/home';
 import { HostDashboardComponent } from './features/host/components/host-dashboard/host-dashboard';
 // import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
 import { MyProperties } from './features/host/components/my-properties/my-properties';
-import { HostMessages } from './features/host/components/host-messages/host-messages';
-
-import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
-import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 
 import { PropertyIntroComponent } from './features/host/components/property-steps/property-intro/property-intro';
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
 import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
-import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
-import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
-import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
-import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
-import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
 import { PropertyFloorPlanComponent } from './features/host/components/property-steps/floor-plan/floor-plan';
 import { AmenitiesStepComponent } from './features/host/components/property-steps/amenities/amenities';
 import { PropertyPhotosComponent } from './features/host/components/property-steps/photos/photos';
@@ -47,6 +38,7 @@ import { ListingDetails } from './features/guest/components/listing-details/list
 import { Checkout } from './features/guest/components/checkout/checkout';
 import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
 import { PropertyEditorComponent } from './features/host/components/property-editor/property-editor';
+import { BookingDetailsComponent } from './features/host/components/booking-details/booking-details';
 
 export const routes: Routes = [
   // =================================================
@@ -119,6 +111,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: HostDashboardComponent },
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
+      { path: 'bookings/:id', component: BookingDetailsComponent },
       { 
         path: 'properties/editor/:id', // ✅ المسار الجديد
         component: PropertyEditorComponent 
