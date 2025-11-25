@@ -1,5 +1,5 @@
 /* ==========================================
-   LAYOUT RESET & PAGE CONTAINER
+   LAYOUT & CONTAINER
    ========================================== */
 :host {
   display: block;
@@ -8,19 +8,20 @@
 }
 
 .listings-page {
-  padding: 48px 80px;
+  padding: 32px 48px;
   max-width: 1600px;
   margin: 0 auto;
 }
 
 /* ==========================================
-   HEADER SECTION
+   HEADER SECTION (Fixed Layout)
    ========================================== */
 .listings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
+  height: 48px; /* تثبيت الطول لضمان المحاذاة */
 }
 
 .page-title {
@@ -31,18 +32,19 @@
   letter-spacing: -0.5px;
 }
 
+/* إصلاح توزيع العناصر بجانب زر (+) */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 12px; /* مسافة أفقية بين الأزرار */
 }
 
-/* --- Icon Buttons --- */
+/* --- Buttons Styling --- */
 .icon-btn {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: #F7F7F7;
+  background: #F7F7F7; /* رمادي فاتح مثل Airbnb */
   border: 1px solid transparent;
   display: flex;
   align-items: center;
@@ -58,12 +60,9 @@
   transform: scale(1.02);
 }
 
-.icon-btn:active {
-  transform: scale(0.96);
-}
-
+/* زر الإضافة (+) */
 .create-btn {
-  background: #222222;
+  background: #222222; /* أسود */
   color: white;
 }
 
@@ -71,21 +70,21 @@
   background: #000000;
 }
 
-/* --- Animated Search Bar --- */
+/* --- Search Bar (Expandable) --- */
 .search-container {
   display: flex;
   align-items: center;
   background: #F7F7F7;
   border-radius: 30px;
-  padding: 0;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* Airbnb-like easing */
-  width: 48px; /* Initial width matches button size */
+  height: 44px;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 44px; /* دائرة في البداية */
   overflow: hidden;
   border: 1px solid transparent;
 }
 
 .search-container.open {
-  width: 320px; /* Expanded width */
+  width: 300px; /* يتوسع عند الفتح */
   padding-right: 16px;
   background: #FFFFFF;
   border-color: #DDDDDD;
@@ -93,25 +92,21 @@
 }
 
 .search-container .icon-btn {
-  background: transparent; /* Transparent inside search container */
-}
-
-.search-container.open .icon-btn:hover {
   background: transparent;
-  transform: none;
+  width: 44px;
 }
 
 .search-input {
   border: none;
   background: transparent;
   outline: none;
-  padding: 0 12px;
+  padding: 0 8px;
   font-size: 14px;
   font-weight: 500;
   width: 100%;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease 0.1s; /* Delay opacity slightly */
+  transition: opacity 0.2s ease;
   color: #222;
 }
 
@@ -121,325 +116,146 @@
 }
 
 /* ==========================================
-   VIEW: LIST (TABLE LAYOUT)
-   ========================================== */
-.list-view-container {
-  margin-top: 24px;
-}
-
-/* Grid Setup for Table */
-.list-header, 
-.list-row {
-  display: grid;
-  /* Columns: Listing (wide), Type, Location (wide), Status */
-  grid-template-columns: 2.5fr 1fr 2fr 1.2fr; 
-  gap: 16px;
-  align-items: center;
-  padding: 16px 8px;
-}
-
-.list-header {
-  border-bottom: 1px solid #EBEBEB;
-  font-size: 14px;
-  font-weight: 600;
-  color: #222;
-}
-
-.list-row {
-  border-bottom: 1px solid #EBEBEB;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.list-row:hover {
-  background-color: #F7F7F7;
-}
-
-.cell {
-  font-size: 15px;
-  color: #222;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Specific Column Styles */
-.col-listing {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.col-type {
-  color: #717171;
-}
-
-.col-location {
-  color: #717171;
-}
-
-/* Thumbnail in List View */
-.thumb-wrapper {
-  width: 56px;
-  height: 40px; /* Landscape aspect ratio */
-  border-radius: 4px;
-  overflow: hidden;
-  background: #F0F0F0;
-  flex-shrink: 0;
-  border: 1px solid rgba(0,0,0,0.08);
-}
-
-.thumb-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.thumb-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.row-title {
-  font-weight: 600;
-  font-size: 16px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Status Indicators */
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: #717171;
-}
-
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-/* Status Colors */
-.status-dot.red { background-color: #C13515; }    /* Action required (Rejected) */
-.status-dot.orange { background-color: #E65100; } /* Draft / In Progress */
-.status-dot.black { background-color: #222222; }  /* Pending Review */
-.status-dot.green { background-color: #008A05; }  /* Active / Approved */
-
-
-/* ==========================================
-   VIEW: GRID (CARD LAYOUT)
+   GRID VIEW (THE AIRBNB CARD LOOK)
    ========================================== */
 .grid-view-container {
   display: grid;
+  /* توزيع تلقائي حسب حجم الشاشة */
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 40px 24px;
-  margin-top: 24px;
+  gap: 40px 24px; /* مسافة رأسية 40، أفقية 24 */
 }
 
 .listing-card {
   cursor: pointer;
-  group: hover;
+  position: relative;
+  background: transparent;
+  border: none; /* إلغاء أي حدود خارجية */
 }
 
-/* Card Image */
+/* --- Image Styling --- */
 .image-wrapper {
   position: relative;
-  aspect-ratio: 20 / 19;
-  border-radius: 12px;
+  /* نسبة العرض للارتفاع (Airbnb style) */
+  aspect-ratio: 20 / 19; 
+  border-radius: 12px; /* زوايا دائرية للصورة */
   overflow: hidden;
   background-color: #F0F0F0;
   border: 1px solid rgba(0,0,0,0.04);
-  transition: box-shadow 0.3s ease;
-}
-
-.listing-card:hover .image-wrapper {
-  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  margin-bottom: 12px; /* مسافة بين الصورة والنص */
 }
 
 .listing-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  transition: transform 0.3s ease;
 }
 
-.listing-card:hover .listing-image {
-  transform: scale(1.03);
-}
-
+/* Placeholder when no image */
 .image-placeholder {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F7F7F7;
+  background: #DDDDDD;
 }
 
-/* Text Details in Grid */
+/* --- Status Badge (Floating) --- */
+.status-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  background: #FFFFFF;
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+}
+
+/* النقطة الملونة داخل الـ Badge */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.red { background-color: #C13515; }
+.status-dot.orange { background-color: #E65100; }
+.status-dot.green { background-color: #1F883D; }
+.status-dot.black { background-color: #222222; }
+
+/* --- Text Details --- */
 .listing-details {
-  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .listing-title {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 600; /* خط عريض للعنوان */
   color: #222222;
-  margin: 0 0 2px 0;
+  margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Floating Status Badge on Grid Card */
-.status-badge-container {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 2;
-}
-
-.badge-pill {
-  background: #FFFFFF;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #222;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.badge-pill .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.badge-pill .dot.red { background-color: #C13515; }
-.badge-pill .dot.orange { background-color: #E65100; }
-.badge-pill .dot.green { background-color: #008A05; }
-.badge-pill .dot.black { background-color: #222222; }
-
-/* ==========================================
-   LOADING & EMPTY STATES
-   ========================================== */
-.loading-state {
-  display: flex;
-  justify-content: center;
-  padding: 100px;
-}
-
-.spinner {
-  width: 40px; 
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #222;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin { 
-  0% { transform: rotate(0deg); } 
-  100% { transform: rotate(360deg); } 
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 100px 0;
-  text-align: center;
-}
-
-.empty-state p {
-  color: #717171;
-  margin-top: 8px;
+.listing-location {
+  font-size: 15px;
+  color: #717171; /* رمادي للمكان */
+  margin: 0;
 }
 
 /* ==========================================
-   RESPONSIVE MEDIA QUERIES
+   LIST VIEW (Table Fallback)
    ========================================== */
-@media (max-width: 1024px) {
-  .listings-page {
-    padding: 32px 40px;
+.list-view-container {
+  margin-top: 24px;
+}
+.list-header, .list-row {
+  display: grid;
+  grid-template-columns: 3fr 1fr 2fr 1fr; 
+  gap: 16px;
+  align-items: center;
+  padding: 16px 8px;
+}
+.list-header { border-bottom: 1px solid #EBEBEB; font-weight: 600; font-size: 14px; }
+.list-row { border-bottom: 1px solid #EBEBEB; cursor: pointer; }
+.list-row:hover { background-color: #F7F7F7; }
+.thumb-wrapper { width: 56px; height: 40px; border-radius: 4px; overflow: hidden; }
+.thumb-img { width: 100%; height: 100%; object-fit: cover; }
+.col-listing { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 16px; }
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+@media (max-width: 1128px) {
+  .grid-view-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 كروت */
   }
-  
-  /* Adjust table grid for tablet */
-  .list-header, 
-  .list-row {
-    grid-template-columns: 2fr 1fr 1.2fr; /* Hide Type or adjust */
-  }
-  .col-type { display: none; } /* Hide Type column */
 }
 
-@media (max-width: 768px) {
-  .listings-page {
-    padding: 24px 24px;
+@media (max-width: 950px) {
+  .grid-view-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 كروت */
   }
-  
+  .listings-page { padding: 24px; }
+}
+
+@media (max-width: 550px) {
+  .grid-view-container {
+    grid-template-columns: 1fr; /* كرت واحد */
+  }
   .listings-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 24px;
+    flex-direction: row; /* يبقى أفقي لكن المسافات تتقلص */
   }
-  
-  .header-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-  
-  .page-title {
-    font-size: 26px;
-  }
-  
-  /* Mobile Table Layout */
-  .list-header, 
-  .list-row {
-    grid-template-columns: 1fr 100px; /* Only Listing Name and Status */
-  }
-  .col-location, .col-type { display: none; } /* Hide location and type on mobile */
-  
-  .row-title {
-    font-size: 14px;
-  }
-  
-  .status-indicator {
-    font-size: 12px;
-    justify-content: flex-end;
-  }
-
-  /* Grid on mobile */
-  .listings-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-  
-  .image-wrapper {
-    aspect-ratio: 16 / 10; /* Wider cards on mobile */
-  }
-  
-  /* Search Bar Mobile */
-  .search-container.open {
-    width: 100%;
-    position: absolute;
-    left: 24px;
-    right: 24px;
-    width: auto;
-    z-index: 10;
-  }
+  .page-title { font-size: 24px; }
 }

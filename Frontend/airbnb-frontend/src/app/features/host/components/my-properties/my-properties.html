@@ -5,10 +5,12 @@
     <h1 class="page-title">Your listings</h1>
     
     <div class="header-actions">
-      <!-- Search Input -->
+      <!-- 1. Search Input -->
       <div class="search-container" [class.open]="isSearchOpen()">
         <button class="icon-btn" (click)="toggleSearch()" title="Search">
-          <svg viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentColor;stroke-width:3"><path d="M13 24a11 11 0 1 0 0-22 11 11 0 0 0 0 22zm8-3 9 9"></path></svg>
+          <svg viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentColor;stroke-width:3">
+            <path d="M13 24a11 11 0 1 0 0-22 11 11 0 0 0 0 22zm8-3 9 9"></path>
+          </svg>
         </button>
         <input 
           type="text" 
@@ -18,13 +20,13 @@
         >
       </div>
       
-      <!-- View Toggle -->
+      <!-- 2. View Toggle (Grid/List) -->
       <button class="icon-btn" (click)="toggleViewMode()" title="Change view">
-        <!-- Icon changes based on current view -->
         <svg *ngIf="viewMode() === 'grid'" viewBox="0 0 16 16" style="display:block;height:16px;width:16px;fill:currentColor"><path d="M2 3h12a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm0 4h12a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm0 4h12a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2z"/></svg>
         <svg *ngIf="viewMode() === 'list'" viewBox="0 0 16 16" style="display:block;height:16px;width:16px;fill:currentColor"><path d="M2 3h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2zM2 7h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2zM2 11h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2z"/></svg>
       </button>
 
+      <!-- 3. Create Button (+) -->
       <button class="icon-btn create-btn" (click)="addNewProperty()" title="Create listing">
         <svg viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentColor;stroke-width:3"><path d="M2 16h28M16 2v28"></path></svg>
       </button>
@@ -33,98 +35,71 @@
 
   <div *ngIf="!isLoading()">
     
-    <!-- 1. GRID VIEW (DEFAULT) -->
+    <!-- GRID VIEW (The Airbnb Look) -->
     <div *ngIf="viewMode() === 'grid'" class="grid-view-container">
+      
       <div *ngFor="let property of properties()" class="listing-card" (click)="editProperty(property)">
         
+        <!-- Image Wrapper -->
         <div class="image-wrapper">
-          <!-- Image -->
-          <img [src]="getPropertyImage(property)" *ngIf="getPropertyImage(property)" class="listing-image">
           
-          <!-- Placeholder -->
-          <div class="image-placeholder" *ngIf="!getPropertyImage(property)">
+          <!-- Status Badge (Absolute Positioned) -->
+          <div class="status-badge" *ngIf="!isPublished(property)">
+            <span class="status-dot" [ngClass]="getStatusColor(property)"></span>
+            <span>{{ getStatusLabel(property) }}</span>
+          </div>
+
+          <!-- Image -->
+          <img 
+            [src]="getPropertyImage(property)" 
+            *ngIf="getPropertyImage(property) && getPropertyImage(property) !== '/assets/images/placeholder-property.jpg'" 
+            class="listing-image"
+            alt="Property image"
+          >
+          
+          <!-- Placeholder if no image -->
+          <div class="image-placeholder" *ngIf="!getPropertyImage(property) || getPropertyImage(property) === '/assets/images/placeholder-property.jpg'">
              <svg viewBox="0 0 32 32" style="fill:#717171;height:32px;width:32px"><path d="M27 3a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4h22zm-13.5 6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm14.28 16.26L18.5 10.28 6.36 26.86l21.42-1.6z"></path></svg>
           </div>
-
-          <!-- ✅ Floating Status Badge (Grid) -->
-          <!-- Status Badge (Floating) inside Grid View -->
-        <div class="status-badge-container">
-          
-          <!-- Action Required (Red) -->
-          <div *ngIf="isActionRequired(property)" class="badge-pill white">
-            <span class="dot red"></span>
-            Action required
-          </div>
-
-          <!-- In Progress (Orange) -->
-          <div *ngIf="isDraft(property)" class="badge-pill white">
-            <span class="dot orange"></span>
-            In progress
-          </div>
-
-           <!-- Published (Green) -->
-           <div *ngIf="isPublished(property)" class="badge-pill white">
-            <span class="dot green"></span>
-            Published
-          </div>
-
         </div>
 
+        <!-- Text Details -->
         <div class="listing-details">
           <h3 class="listing-title">{{ property.title || 'Untitled listing' }}</h3>
           <p class="listing-location">{{ getLocation(property) }}</p>
         </div>
+
       </div>
     </div>
 
-    <!-- 2. LIST VIEW (TABLE) -->
+    <!-- LIST VIEW (Optional Table) -->
     <div *ngIf="viewMode() === 'list'" class="list-view-container">
-      
       <div class="list-header">
         <div class="col-listing">Listing</div>
-        <div class="col-type">Type</div>
-        <div class="col-location">Location</div>
-        <div class="col-status">Status</div>
+        <div>Type</div>
+        <div>Location</div>
+        <div>Status</div>
       </div>
-
       <div *ngFor="let property of properties()" class="list-row" (click)="editProperty(property)">
-        
-        <!-- Column 1 -->
-        <div class="col-listing cell">
+        <div class="col-listing">
           <div class="thumb-wrapper">
-            <img [src]="getPropertyImage(property)" *ngIf="getPropertyImage(property)" class="thumb-img">
-            <div class="thumb-placeholder" *ngIf="!getPropertyImage(property)">
-              <svg viewBox="0 0 32 32" style="fill:#717171;height:20px;width:20px"><path d="M27 3a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4h22zm-13.5 6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm14.28 16.26L18.5 10.28 6.36 26.86l21.42-1.6z"></path></svg>
-            </div>
+            <img [src]="getPropertyImage(property)" class="thumb-img">
           </div>
-          <span class="row-title">{{ property.title || 'Untitled listing' }}</span>
+          <span>{{ property.title || 'Untitled listing' }}</span>
         </div>
-
-        <!-- Column 2 -->
-        <div class="col-type cell">
-          {{ getPropertyTypeLabel(property) }}
+        <div>{{ getPropertyTypeLabel(property) }}</div>
+        <div>{{ getLocation(property) }}</div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+           <span class="status-dot" [ngClass]="getStatusColor(property)"></span>
+           {{ getStatusLabel(property) }}
         </div>
-
-        <!-- Column 3 -->
-        <div class="col-location cell">
-          {{ getLocation(property) }}
-        </div>
-
-        <!-- Column 4 -->
-        <div class="col-status cell">
-          <!-- ✅ Table Status Indicator -->
-          <div class="status-indicator">
-            <span class="status-dot" [ngClass]="getStatusColor(property)"></span>
-            {{ getStatusLabel(property) }}
-          </div>
-        </div>
-
       </div>
     </div>
 
   </div>
 
-  <div *ngIf="!isLoading() && properties().length === 0" class="empty-state">
-    <p>No properties found.</p>
+  <!-- Empty State -->
+  <div *ngIf="!isLoading() && properties().length === 0" style="text-align: center; padding: 80px; color: #717171;">
+    <p>You don't have any listings yet.</p>
   </div>
 </div>

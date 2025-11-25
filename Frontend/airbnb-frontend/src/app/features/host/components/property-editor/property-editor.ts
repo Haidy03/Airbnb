@@ -5,7 +5,16 @@ import { FormsModule } from '@angular/forms';
 import { PropertyService } from '../../services/property';
 import { Property } from '../../models/property.model';
 
-type EditorSection = 'photos' | 'title' | 'description' | 'amenities' | 'location' | 'propertyType';
+// ✅ تعريف كل الأقسام المتاحة في الـ Editor
+type EditorSection = 
+  | 'photos' 
+  | 'title' 
+  | 'description' 
+  | 'propertyType' 
+  | 'location' 
+  | 'amenities' 
+  | 'pricing' 
+  | 'safety';
 
 @Component({
   selector: 'app-property-editor',
@@ -19,14 +28,36 @@ export class PropertyEditorComponent implements OnInit {
   private router = inject(Router);
   private propertyService = inject(PropertyService);
 
-  // State
   property = signal<Property | null>(null);
   isLoading = signal(true);
-  activeSection = signal<EditorSection>('title');
+  activeSection = signal<EditorSection>('propertyType'); // Default section
   
   // Edit Mode State
   isEditing = signal(false);
-  tempValue = signal<any>(null);
+  
+  // ✅ Temporary values for all sections (Form Models)
+  tempTitle = signal('');
+  tempDescription = signal('');
+  tempPrice = signal(0);
+  tempPropertyType = signal('');
+  tempRoomType = signal('');
+  tempLocation = signal({ address: '', city: '', country: '', zipCode: '' });
+  tempAmenities = signal<number[]>([]);
+  
+  // Mock Data for Dropdowns (يمكنك جلبها من السيرفس لاحقاً)
+  propertyTypesList = ['House', 'Apartment', 'Guesthouse', 'Hotel', 'Cabin'];
+  roomTypesList = ['Entire place', 'Private room', 'Shared room'];
+  
+  // Mock Amenities List (نفس الموجود في ملف Amenities)
+  availableAmenities = [
+    { id: 1, name: 'WiFi', icon: 'wifi' },
+    { id: 2, name: 'TV', icon: 'tv' },
+    { id: 3, name: 'Kitchen', icon: 'utensils' },
+    { id: 4, name: 'Washer', icon: 'washing-machine' },
+    { id: 6, name: 'Air conditioning', icon: 'snowflake' },
+    { id: 15, name: 'Free parking', icon: 'parking' },
+    { id: 9, name: 'Pool', icon: 'waves' }
+  ];
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -40,6 +71,7 @@ export class PropertyEditorComponent implements OnInit {
       next: (data) => {
         this.property.set(data);
         this.isLoading.set(false);
+        this.initTempValues(data); // Initialize forms
       },
       error: (err) => {
         console.error(err);
@@ -48,53 +80,80 @@ export class PropertyEditorComponent implements OnInit {
     });
   }
 
+  // ✅ تعبئة القيم المؤقتة عند فتح الصفحة أو القسم
+  initTempValues(prop: Property) {
+    this.tempTitle.set(prop.title);
+    this.tempDescription.set(prop.description);
+    this.tempPrice.set(prop.pricing?.basePrice || 0);
+    this.tempPropertyType.set(prop.propertyType);
+    this.tempRoomType.set(prop.roomType);
+    this.tempLocation.set({ ...prop.location });
+    this.tempAmenities.set([...prop.amenities]);
+  }
+
   setActiveSection(section: EditorSection) {
-    if (this.isEditing()) {
-      if(!confirm('You have unsaved changes. Discard them?')) return;
-      this.cancelEdit();
-    }
+    // إذا كان هناك تعديلات غير محفوظة، يمكنك إضافة تنبيه هنا
     this.activeSection.set(section);
-  }
-
-  startEdit() {
-    const prop = this.property();
-    if(!prop) return;
-
-    this.isEditing.set(true);
+    this.isEditing.set(true); // Auto-enable edit mode for better UX
     
-    switch(this.activeSection()) {
-      case 'title': this.tempValue.set(prop.title); break;
-      case 'description': this.tempValue.set(prop.description); break;
-    }
+    // Re-sync temp values in case updates happened elsewhere
+    if (this.property()) this.initTempValues(this.property()!);
   }
 
-  cancelEdit() {
-    this.isEditing.set(false);
-    this.tempValue.set(null);
+  toggleAmenity(id: number) {
+    const current = this.tempAmenities();
+    if (current.includes(id)) {
+      this.tempAmenities.set(current.filter(a => a !== id));
+    } else {
+      this.tempAmenities.set([...current, id]);
+    }
   }
 
   saveChanges() {
     const prop = this.property();
-    if(!prop) return;
+    if (!prop) return;
 
-    const updates: any = {};
     const section = this.activeSection();
+    let updates: any = {};
 
-    if (section === 'title') updates.title = this.tempValue();
-    if (section === 'description') updates.description = this.tempValue();
+    // ✅ بناء كائن التحديث بناءً على القسم المفتوح
+    switch (section) {
+      case 'title':
+        updates.title = this.tempTitle();
+        break;
+      case 'description':
+        updates.description = this.tempDescription();
+        break;
+      case 'pricing':
+        updates.pricePerNight = this.tempPrice();
+        break;
+      case 'propertyType':
+        updates.propertyType = this.tempPropertyType();
+        updates.roomType = this.tempRoomType();
+        break;
+      case 'location':
+        updates.address = this.tempLocation().address;
+        updates.city = this.tempLocation().city;
+        updates.country = this.tempLocation().country;
+        updates.postalCode = this.tempLocation().zipCode;
+        break;
+      case 'amenities':
+        updates.amenityIds = this.tempAmenities();
+        break;
+    }
 
-    // ✅ استخدام updateProperty بدلاً من updateDraft
+    // Call Service
     this.propertyService.updateProperty(prop.id, updates).subscribe({
       next: (updatedProp) => {
         this.property.set(updatedProp);
-        this.isEditing.set(false);
+        // Optional: Show success toast
+        alert('Saved successfully!');
       },
       error: (err) => alert('Failed to save changes')
     });
   }
 
   getCoverImage(): string {
-    // ✅ الآن TypeScript يعرف أن coverImage موجودة
     return this.property()?.coverImage || '/assets/images/placeholder-property.jpg';
   }
 }

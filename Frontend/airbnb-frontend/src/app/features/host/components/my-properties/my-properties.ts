@@ -16,7 +16,7 @@ export class MyProperties implements OnInit {
   allProperties = signal<Property[]>([]);
   searchQuery = signal<string>('');
   isLoading = signal(false);
-  viewMode = signal<'grid' | 'list'>('list'); 
+  viewMode = signal<'grid' | 'list'>('grid');
   isSearchOpen = signal(false);
 
   properties = computed(() => {

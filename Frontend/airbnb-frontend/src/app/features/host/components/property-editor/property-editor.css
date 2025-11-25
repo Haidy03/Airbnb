@@ -2,7 +2,7 @@
 .editor-layout {
   min-height: 100vh;
   background: white;
-  padding-top: 80px; /* Header height */
+  padding-top: 80px;
 }
 
 /* Header */
@@ -15,87 +15,36 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 40px;
   z-index: 1000;
 }
 
-.header-start {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.header-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-}
+.header-title { font-size: 18px; font-weight: 700; margin-left: 16px; }
+.btn-back { background: none; border: 1px solid #DDD; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #222; }
+.tabs-pill { background: #EBEBEB; border-radius: 30px; padding: 4px; display: flex; }
+.tab { background: transparent; border: none; padding: 8px 16px; font-size: 14px; font-weight: 600; color: #717171; border-radius: 24px; cursor: pointer; }
+.tab.active { background: white; color: #222; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+.btn-view { border: 1px solid #222; background: white; border-radius: 8px; padding: 8px 16px; font-weight: 600; font-size: 14px; cursor: pointer; }
 
-.btn-back {
-  background: none;
-  border: 1px solid #DDD;
-  border-radius: 50%;
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  color: #222;
-}
-
-/* Central Tabs Pill */
-.header-center { flex: 1; display: flex; justify-content: center; }
-.tabs-pill {
-  background: #EBEBEB;
-  border-radius: 30px;
-  padding: 4px;
-  display: flex;
-}
-.tab {
-  background: transparent;
-  border: none;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #717171;
-  border-radius: 24px;
-  cursor: pointer;
-}
-.tab.active {
-  background: white;
-  color: #222;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-.btn-view {
-  border: 1px solid #222;
-  background: white;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-weight: 600;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-
-/* Sidebar & Main Layout */
+/* Body */
 .editor-body {
   display: grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 360px 1fr;
   max-width: 1400px;
   margin: 0 auto;
   min-height: calc(100vh - 80px);
 }
 
-/* Left Sidebar */
+/* Sidebar */
 .editor-sidebar {
-  padding: 48px 24px;
+  padding: 40px 24px;
   overflow-y: auto;
   height: calc(100vh - 80px);
   position: sticky;
   top: 80px;
+  border-right: 1px solid transparent; /* Clean look */
 }
 
-/* Nav Cards */
 .nav-card {
   border: 1px solid #DDDDDD;
   border-radius: 12px;
@@ -106,154 +55,85 @@
   background: white;
 }
 
-.nav-card:hover {
-  background: #F7F7F7;
-  border-color: #222;
-}
+.nav-card:hover { border-color: #222; background-color: #F7F7F7; }
+.nav-card.active { border: 2px solid #222; background: #F7F7F7; padding: 15px; }
 
-.nav-card.active {
-  border: 2px solid #222;
-  background: #F7F7F7;
-  padding: 15px; /* Adjust for border width */
-}
+.nav-label { font-size: 16px; font-weight: 600; color: #222; display: block; margin-bottom: 4px; }
+.nav-content { font-size: 14px; color: #717171; display: flex; align-items: center; gap: 12px; }
+.text-truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.photo-preview img { width: 48px; height: 48px; object-fit: cover; border-radius: 4px; }
 
-.nav-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.nav-label {
-  font-size: 16px;
-  font-weight: 600;
-  color: #222;
-}
-
-.nav-content {
-  font-size: 14px;
-  color: #717171;
-}
-
-.text-content {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.truncate-multi {
-  white-space: normal;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Photo Preview in Card */
-.photo-preview {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.photo-preview img {
-  width: 64px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-.btn-edit-icon {
-  background: none;
-  border: none;
-  text-decoration: underline;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-/* Right Main Content */
+/* Main Content */
 .editor-main {
-  padding: 48px 64px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 48px 80px;
   position: relative;
+  padding-bottom: 100px; /* Space for save bar */
 }
 
-.editor-section {
-  max-width: 600px;
-  width: 100%;
-}
+.section-title { font-size: 32px; font-weight: 600; margin-bottom: 32px; color: #222; }
 
-.section-info {
-  margin-bottom: 32px;
-}
-.section-info h2 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
-.section-info p { color: #717171; }
+/* Form Styles (Airbnb Look) */
+.form-group { margin-bottom: 24px; }
+.form-group label { display: block; font-size: 12px; color: #717171; margin-bottom: 4px; font-weight: 600; }
+.input-hint { font-size: 14px; color: #717171; margin-top: 8px; }
 
-/* Display Values */
-.title-display { font-size: 32px; line-height: 1.1; color: #222; }
-.desc-display { font-size: 16px; line-height: 1.6; color: #222; white-space: pre-line; }
-
-/* Edit Form */
-.airbnb-textarea {
+/* Custom Select */
+.select-wrapper { position: relative; }
+select {
   width: 100%;
   padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #717171;
   font-size: 16px;
-  font-family: inherit;
-  resize: none;
-}
-.airbnb-textarea:focus {
-  outline: none;
-  border: 2px solid #222;
-}
-.airbnb-textarea.large {
-  font-size: 22px;
-  font-weight: 600;
-}
-
-/* Footer Save Bar */
-.editor-footer {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
+  border: 1px solid #B0B0B0;
+  border-radius: 8px;
+  appearance: none;
   background: white;
-  border-top: 1px solid #EBEBEB;
-  padding: 16px 24px;
-  display: flex;
-  justify-content: flex-end;
-  z-index: 1000;
-}
-.footer-content {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-.btn-link { background: none; border: none; text-decoration: underline; font-weight: 600; cursor: pointer; }
-.btn-black {
-  background: #222; color: white; padding: 14px 24px;
-  border-radius: 8px; font-weight: 600; border: none; cursor: pointer;
-}
-
-/* Floating Edit Button (Optional) */
-.edit-trigger-area {
-  position: fixed;
-  bottom: 32px;
-  right: 32px;
-}
-.btn-edit-floating {
-  background: white;
-  border: 1px solid #DDDDDD;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 12px 24px;
-  border-radius: 24px;
-  font-weight: 600;
-  display: flex;
-  gap: 8px;
-  align-items: center;
   cursor: pointer;
 }
+select:focus { outline: none; border: 2px solid #222; padding: 15px; }
+.chevron { position: absolute; right: 16px; top: 20px; pointer-events: none; font-size: 12px; }
 
-/* Spinner */
+/* Inputs */
+.airbnb-input {
+  width: 100%; padding: 16px; font-size: 16px;
+  border: 1px solid #B0B0B0; border-radius: 8px; font-family: inherit;
+  resize: none;
+}
+.airbnb-input:focus { outline: none; border: 2px solid #222; padding: 15px; }
+.airbnb-input.large { font-size: 22px; font-weight: 600; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* Amenities List */
+.amenity-item { padding: 12px 0; border-bottom: 1px solid #EBEBEB; }
+.checkbox-label { display: flex; align-items: center; gap: 12px; font-size: 16px; cursor: pointer; }
+input[type="checkbox"] { width: 20px; height: 20px; accent-color: #222; }
+
+/* Save Bar */
+.save-bar {
+  position: fixed;
+  bottom: 0; right: 0; 
+  width: calc(100% - 360px); /* Match sidebar width */
+  background: white;
+  border-top: 1px solid #EBEBEB;
+  padding: 16px 40px;
+  display: flex;
+  justify-content: flex-end;
+  z-index: 900;
+}
+
+.btn-black {
+  background: #222; color: white; padding: 14px 32px;
+  border-radius: 8px; font-weight: 600; border: none; cursor: pointer;
+}
+.btn-black:hover { background: #000; }
+
+.char-count { text-align: right; font-size: 12px; color: #717171; margin-top: 4px; }
+
+/* Photos Grid */
+.photos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+.photo-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; }
+
+/* Loading */
 .loading-screen { display: flex; height: 100vh; justify-content: center; align-items: center; }
 .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #222; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
