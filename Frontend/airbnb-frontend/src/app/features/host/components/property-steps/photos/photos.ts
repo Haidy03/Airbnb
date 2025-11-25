@@ -4,7 +4,8 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpEventType, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../../../environments/environment';
-import { PropertyService, PropertyDraft } from '../../../services/property';
+import { PropertyService } from '../../../services/property';
+import { Property } from '../../../models/property.model'; 
 
 interface UploadedImage {
   id: string;
@@ -33,7 +34,7 @@ export class PropertyPhotosComponent implements OnInit {
   isLoading = signal(false);
   
   // Draft data
-  currentDraft: PropertyDraft | null = null;
+  currentDraft: Property | null = null;
   currentDraftId: string | null = null;
 
   // Constants
@@ -183,17 +184,23 @@ export class PropertyPhotosComponent implements OnInit {
     const remaining = this.maxPhotos - current.length;
 
     if (files.length > remaining) {
-      alert(`You can only add ${remaining} more photos (max ${this.maxPhotos} total).`);
+      alert(`You can only add ${remaining} more photos.`);
       files = files.slice(0, remaining);
     }
 
-    const newImages: UploadedImage[] = files.map((file) => ({
-      id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      file,
-      preview: URL.createObjectURL(file),
-      progress: 0,
-      uploaded: false
-    }));
+    const newImages: UploadedImage[] = files.map((file, index) => {
+      // ✅ التصحيح: الصورة تكون Primary فقط إذا كانت القائمة الحالية فارغة، وهي أول صورة في المجموعة الجديدة
+      const isFirstImage = current.length === 0 && index === 0;
+
+      return {
+        id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        file,
+        preview: URL.createObjectURL(file),
+        progress: 0,
+        uploaded: false,
+        isPrimary: isFirstImage // ✅ ضبط القيمة هنا
+      };
+    });
 
     this.uploadedImages.set([...current, ...newImages]);
     

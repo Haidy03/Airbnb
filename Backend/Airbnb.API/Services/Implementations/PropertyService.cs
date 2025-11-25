@@ -50,6 +50,7 @@ namespace Airbnb.API.Services.Implementations
                 HasExteriorCamera = dto.HasExteriorCamera,
                 HasNoiseMonitor = dto.HasNoiseMonitor,
                 HasWeapons = dto.HasWeapons,
+                IsInstantBook = dto.IsInstantBook,
                 IsActive = false,
                 IsApproved = false,
                 Status = PropertyStatus.Draft, // ✅ Set as Draft
@@ -111,7 +112,7 @@ namespace Airbnb.API.Services.Implementations
             if (dto.NumberOfBathrooms.HasValue) property.NumberOfBathrooms = dto.NumberOfBathrooms.Value;
             if (dto.MaxGuests.HasValue) property.MaxGuests = dto.MaxGuests.Value;
             if (dto.PricePerNight.HasValue) property.PricePerNight = dto.PricePerNight.Value;
-            if (dto.CleaningFee.HasValue) property.CleaningFee = dto.CleaningFee;
+            if (dto.CleaningFee.HasValue) property.CleaningFee = dto.CleaningFee.Value;
             if (dto.HouseRules != null) property.HouseRules = dto.HouseRules;
             if (dto.CheckInTime.HasValue) property.CheckInTime = dto.CheckInTime;
             if (dto.CheckOutTime.HasValue) property.CheckOutTime = dto.CheckOutTime;
@@ -120,33 +121,25 @@ namespace Airbnb.API.Services.Implementations
             if (dto.HasExteriorCamera.HasValue) property.HasExteriorCamera = dto.HasExteriorCamera.Value;
             if (dto.HasNoiseMonitor.HasValue) property.HasNoiseMonitor = dto.HasNoiseMonitor.Value;
             if (dto.HasWeapons.HasValue) property.HasWeapons = dto.HasWeapons.Value;
+            if (dto.IsInstantBook.HasValue) property.IsInstantBook = dto.IsInstantBook.Value;
 
             // ✅ Update Amenities if provided
             if (dto.AmenityIds != null)
             {
-                _logger.LogInformation("Updating amenities for property {PropertyId}: {AmenityCount}", id, dto.AmenityIds.Count);
-
-                // Remove existing amenities
-                property.PropertyAmenities.Clear();
-
-                // Add new amenities
-                foreach (var amenityId in dto.AmenityIds)
-                {
-                    property.PropertyAmenities.Add(new PropertyAmenity
-                    {
-                        PropertyId = id,
-                        AmenityId = amenityId
-                    });
-                }
-
-                _logger.LogInformation("✅ Amenities updated successfully");
+                await _propertyRepository.UpdatePropertyAmenitiesAsync(id, dto.AmenityIds);
+            }
+            else if (dto.CurrentStep == "pricing")
+            {
+                property.CleaningFee = null;
             }
 
             property.UpdatedAt = DateTime.UtcNow;
 
             await _propertyRepository.UpdateAsync(property);
 
-            return await MapToResponseDto(property);
+            var updatedProperty = await _propertyRepository.GetByIdWithDetailsAsync(id);
+
+            return await MapToResponseDto(updatedProperty);
         }
 
         public async Task<PropertyResponseDto?> GetPropertyByIdAsync(int id)
@@ -525,9 +518,9 @@ namespace Airbnb.API.Services.Implementations
                 throw new UnauthorizedAccessException("You are not authorized to activate this property");
 
             // ✅ يمكن التفعيل فقط لو Property معتمدة من Admin
-            if (property.Status != PropertyStatus.Approved)
+            if (property.Status != PropertyStatus.Approved && property.Status != PropertyStatus.Inactive)
             {
-                throw new InvalidOperationException("Property must be approved by admin before activation");
+                throw new InvalidOperationException("Property must be approved by admin or previously active before activation");
             }
 
             property.IsActive = true;
@@ -539,6 +532,19 @@ namespace Airbnb.API.Services.Implementations
             _logger.LogInformation("✅ Property {PropertyId} activated by host {HostId}", id, hostId);
 
             return true;
+        }
+
+        public async Task<IEnumerable<AmenityDto>> GetAmenitiesListAsync()
+        {
+            var amenities = await _propertyRepository.GetAllAmenitiesAsync();
+
+            return amenities.Select(a => new AmenityDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Icon = a.Icon,
+                Category = a.Category
+            });
         }
     }
 }

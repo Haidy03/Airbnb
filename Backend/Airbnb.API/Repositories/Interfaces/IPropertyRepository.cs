@@ -19,5 +19,7 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<PropertyImage?> GetImageByIdWithPropertyAsync(int imageId);
         Task DeleteImageAsync(int imageId);
         Task SetPrimaryImageAsync(int imageId, int propertyId);
+        Task UpdatePropertyAmenitiesAsync(int propertyId, List<int> amenityIds);
+        Task<IEnumerable<Amenity>> GetAllAmenitiesAsync();
     }
 }

@@ -37,5 +37,7 @@
         public bool HasExteriorCamera { get; set; } = false;
         public bool HasNoiseMonitor { get; set; } = false;
         public bool HasWeapons { get; set; } = false;
+
+        public bool IsInstantBook { get; set; } = false;
     }
 }

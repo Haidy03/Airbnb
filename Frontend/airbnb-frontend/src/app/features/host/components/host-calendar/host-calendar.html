@@ -499,17 +499,17 @@
             (change)="onAvailabilityToggle()">
           <span class="toggle-slider"></span>
         </label>
-        <span class="toggle-label" *ngIf="dayDetailsForm.value.isAvailable">
-          This date is available for booking
+         <span class="toggle-label" *ngIf="dayDetailsForm.get('isAvailable')?.value">
+          Available
         </span>
-        <span class="toggle-label blocked" *ngIf="!dayDetailsForm.value.isAvailable">
-          This date is blocked
+        <span class="toggle-label blocked" *ngIf="!dayDetailsForm.get('isAvailable')?.value">
+          Blocked
         </span>
       </div>
     </div>
 
     <!-- Price Section -->
-    <div class="sidebar-section price-section">
+    <div class="sidebar-section price-section" *ngIf="dayDetailsForm.get('isAvailable')?.value">
       <div class="section-header">
         <span class="section-title">Last-minute price</span>
       </div>

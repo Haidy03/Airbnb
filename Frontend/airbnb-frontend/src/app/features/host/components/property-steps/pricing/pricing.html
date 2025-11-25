@@ -43,6 +43,30 @@
         <p class="guest-price">Guest price before taxes ${{ getGuestPrice() }} <span class="chevron">▼</span></p>
       </div>
 
+       <!-- Cleaning Fee Section -->
+    <div class="fee-section">
+      <div class="fee-header">
+        <label class="checkbox-container">
+          <input type="checkbox" [checked]="showCleaningFee()" (change)="toggleCleaningFee()">
+          <span class="checkmark"></span>
+          <span class="fee-label">Cleaning fee</span>
+        </label>
+      </div>
+
+      <div class="input-container" *ngIf="showCleaningFee()">
+        <div class="number-input-wrapper">
+          <span class="currency">$</span>
+          <input
+            type="number"
+            formControlName="cleaningFee"
+            min="0"
+            placeholder="0"
+            class="number-input">
+        </div>
+        <p class="fee-hint">This fee applies to every reservation.</p>
+      </div>
+    </div>
+
       <!-- Direct Number Input -->
       <div class="input-container">
         <label>Set price</label>

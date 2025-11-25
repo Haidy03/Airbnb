@@ -36,5 +36,8 @@
         public bool? HasExteriorCamera { get; set; }
         public bool? HasNoiseMonitor { get; set; }
         public bool? HasWeapons { get; set; }
+
+
+        public bool? IsInstantBook { get; set; }
     }
 }

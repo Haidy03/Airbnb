@@ -16,7 +16,7 @@ export const MOCK_PROPERTIES: Property[] = [
     roomType: RoomType.ENTIRE_PLACE,
     location: {
       address: '123 Ocean Drive',
-      street: 'Ocean Drive',
+      // Removed 'street' as it is not in PropertyLocation interface
       city: 'Miami Beach',
       state: 'Florida',
       country: 'United States',
@@ -29,28 +29,39 @@ export const MOCK_PROPERTIES: Property[] = [
       beds: 5,
       bathrooms: 3
     },
-    amenities: ['wifi', 'pool', 'air-conditioning', 'kitchen', 'washer', 'dryer', 'tv', 'parking', 'beach-access'],
+    // Changed string[] to number[] (IDs)
+    amenities: [1, 9, 6, 3, 4, 5, 2, 15, 20], 
     images: [
       {
         id: 'img-001',
         url: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800',
         caption: 'Ocean view from living room',
         order: 1,
-        isMain: true
+        isMain: true,
+        // Compatibility fields for Flat structure
+        imageUrl: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800',
+        isPrimary: true,
+        displayOrder: 1
       },
       {
         id: 'img-002',
         url: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800',
         caption: 'Master bedroom',
         order: 2,
-        isMain: false
+        isMain: false,
+        imageUrl: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800',
+        isPrimary: false,
+        displayOrder: 2
       },
       {
         id: 'img-003',
         url: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
         caption: 'Private pool',
         order: 3,
-        isMain: false
+        isMain: false,
+        imageUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
+        isPrimary: false,
+        displayOrder: 3
       }
     ],
     coverImage: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800',
@@ -83,7 +94,14 @@ export const MOCK_PROPERTIES: Property[] = [
       quietHours: { start: '22:00', end: '08:00' },
       additionalRules: ['No parties or events', 'Pets allowed with prior approval']
     },
+    safetyDetails: {
+        exteriorCamera: true,
+        noiseMonitor: false,
+        weapons: false
+    },
     status: PropertyStatus.ACTIVE,
+    isActive: true,
+    isApproved: true,
     isInstantBook: true,
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-11-10'),
@@ -97,7 +115,13 @@ export const MOCK_PROPERTIES: Property[] = [
       acceptanceRate: 92,
       viewsLastMonth: 456,
       occupancyRate: 78
-    }
+    },
+    // Flat fields for compatibility
+    address: '123 Ocean Drive',
+    city: 'Miami Beach',
+    state: 'Florida',
+    country: 'United States',
+    postalCode: '33139'
   },
   {
     id: 'prop-002',
@@ -108,7 +132,7 @@ export const MOCK_PROPERTIES: Property[] = [
     roomType: RoomType.ENTIRE_PLACE,
     location: {
       address: '456 Main Street, Unit 8B',
-      street: 'Main Street',
+      // Removed 'street'
       city: 'New York',
       state: 'New York',
       country: 'United States',
@@ -121,21 +145,27 @@ export const MOCK_PROPERTIES: Property[] = [
       beds: 2,
       bathrooms: 2
     },
-    amenities: ['wifi', 'air-conditioning', 'heating', 'kitchen', 'washer', 'tv', 'workspace', 'elevator'],
+    amenities: [1, 6, 7, 3, 4, 2, 8, 18], // Converted to numbers
     images: [
       {
         id: 'img-004',
         url: 'https://images.unsplash.com/photo-1502672260066-6bc35f0a1f90?w=800',
         caption: 'Living area',
         order: 1,
-        isMain: true
+        isMain: true,
+        imageUrl: 'https://images.unsplash.com/photo-1502672260066-6bc35f0a1f90?w=800',
+        isPrimary: true,
+        displayOrder: 1
       },
       {
         id: 'img-005',
         url: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
         caption: 'Kitchen',
         order: 2,
-        isMain: false
+        isMain: false,
+        imageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800',
+        isPrimary: false,
+        displayOrder: 2
       }
     ],
     coverImage: 'https://images.unsplash.com/photo-1502672260066-6bc35f0a1f90?w=800',
@@ -166,7 +196,14 @@ export const MOCK_PROPERTIES: Property[] = [
       childrenAllowed: true,
       quietHours: { start: '22:00', end: '08:00' }
     },
+    safetyDetails: {
+        exteriorCamera: false,
+        noiseMonitor: false,
+        weapons: false
+    },
     status: PropertyStatus.ACTIVE,
+    isActive: true,
+    isApproved: true,
     isInstantBook: true,
     createdAt: new Date('2024-03-10'),
     updatedAt: new Date('2024-11-12'),
@@ -180,7 +217,12 @@ export const MOCK_PROPERTIES: Property[] = [
       acceptanceRate: 88,
       viewsLastMonth: 678,
       occupancyRate: 85
-    }
+    },
+    address: '456 Main Street, Unit 8B',
+    city: 'New York',
+    state: 'New York',
+    country: 'United States',
+    postalCode: '10013'
   },
   {
     id: 'prop-003',
@@ -203,14 +245,17 @@ export const MOCK_PROPERTIES: Property[] = [
       beds: 4,
       bathrooms: 2
     },
-    amenities: ['wifi', 'heating', 'fireplace', 'kitchen', 'washer', 'dryer', 'parking', 'mountain-view'],
+    amenities: [1, 7, 14, 3, 4, 5, 15, 21], // Converted to numbers
     images: [
       {
         id: 'img-006',
         url: 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800',
         caption: 'Cabin exterior',
         order: 1,
-        isMain: true
+        isMain: true,
+        imageUrl: 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800',
+        isPrimary: true,
+        displayOrder: 1
       }
     ],
     coverImage: 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=800',
@@ -237,7 +282,14 @@ export const MOCK_PROPERTIES: Property[] = [
       eventsAllowed: false,
       childrenAllowed: true
     },
+    safetyDetails: {
+        exteriorCamera: false,
+        noiseMonitor: false,
+        weapons: false
+    },
     status: PropertyStatus.ACTIVE,
+    isActive: true,
+    isApproved: true,
     isInstantBook: false,
     createdAt: new Date('2024-02-01'),
     updatedAt: new Date('2024-11-01'),
@@ -251,7 +303,12 @@ export const MOCK_PROPERTIES: Property[] = [
       acceptanceRate: 95,
       viewsLastMonth: 234,
       occupancyRate: 65
-    }
+    },
+    address: '789 Pine Ridge Road',
+    city: 'Aspen',
+    state: 'Colorado',
+    country: 'United States',
+    postalCode: '81611'
   }
 ];
 

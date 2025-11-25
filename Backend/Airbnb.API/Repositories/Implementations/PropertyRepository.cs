@@ -147,11 +147,22 @@ namespace Airbnb.API.Repositories.Implementations
             // Availability (Check if there are ANY bookings that overlap with the requested dates)
             if (searchDto.CheckInDate.HasValue && searchDto.CheckOutDate.HasValue)
             {
+                var checkIn = searchDto.CheckInDate.Value.Date;
+                var checkOut = searchDto.CheckOutDate.Value.Date;
+
+                // 1. Check existing Bookings (Conflict if dates overlap)
                 query = query.Where(p => !p.Bookings.Any(b =>
-                    b.Status != BookingStatus.Cancelled && // Ignore cancelled bookings
-                    (
-                        (searchDto.CheckInDate < b.CheckOutDate && searchDto.CheckOutDate > b.CheckInDate)
-                    )
+                    b.Status != BookingStatus.Cancelled &&
+                    b.Status != BookingStatus.Rejected &&
+                    (checkIn < b.CheckOutDate && checkOut > b.CheckInDate)
+                ));
+
+                // ✅ 2. Check Manual Blocks (Calendar Availability)
+                // نستبعد العقار إذا كان الـ Host قد أغلق أي يوم في نطاق البحث
+                query = query.Where(p => !p.Availabilities.Any(pa =>
+                    pa.Date >= checkIn &&
+                    pa.Date < checkOut && // Check-out day doesn't need to be available for sleeping
+                    pa.IsAvailable == false // إذا كان اليوم "غير متاح"
                 ));
             }
 
@@ -296,6 +307,46 @@ namespace Airbnb.API.Repositories.Implementations
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdatePropertyAmenitiesAsync(int propertyId, List<int> amenityIds)
+        {
+            // 1. Remove existing amenities for this property
+            var existingLinks = await _context.PropertyAmenities
+                .Where(pa => pa.PropertyId == propertyId)
+                .ToListAsync();
+
+            if (existingLinks.Any())
+            {
+                _context.PropertyAmenities.RemoveRange(existingLinks);
+            }
+
+            // 2. Validate IDs: Only select IDs that actually exist in the Amenities table
+            // This PREVENTS the 500 Foreign Key Error
+            var validAmenityIds = await _context.Amenities
+                .Where(a => amenityIds.Contains(a.Id))
+                .Select(a => a.Id)
+                .ToListAsync();
+
+            // 3. Add new links
+            foreach (var amenityId in validAmenityIds)
+            {
+                await _context.PropertyAmenities.AddAsync(new PropertyAmenity
+                {
+                    PropertyId = propertyId,
+                    AmenityId = amenityId
+                });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        // دالة إضافية لجلب كل الـ Amenities عشان الـ Frontend يعرضهم
+        public async Task<IEnumerable<Amenity>> GetAllAmenitiesAsync()
+        {
+            return await _context.Amenities
+                .Where(a => a.IsActive)
+                .ToListAsync();
         }
     }
 }

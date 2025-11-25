@@ -18,5 +18,6 @@ namespace Airbnb.API.Services.Interfaces
         Task<bool> PublishPropertyAsync(int id, string hostId);
         Task<bool> UnpublishPropertyAsync(int id, string hostId);
         Task<bool> ActivatePropertyAsync(int id, string hostId);
+        Task<IEnumerable<AmenityDto>> GetAmenitiesListAsync();
     }
 }
