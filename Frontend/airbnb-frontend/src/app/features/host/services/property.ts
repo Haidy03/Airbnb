@@ -266,7 +266,7 @@ export class PropertyService {
       },
 
       status: computedStatus,
-      isInstantBook: false,
+      isInstantBook: apiData.isInstantBook || false,
       isActive: isActive,
       isApproved: isApproved,
       

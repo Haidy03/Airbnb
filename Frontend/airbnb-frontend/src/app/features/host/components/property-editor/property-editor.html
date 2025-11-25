@@ -278,15 +278,19 @@
       <!-- 10. BOOKING SETTINGS -->
       <section *ngIf="activeSection() === 'booking'" class="editor-section">
         <h2 class="section-title">Booking settings</h2>
+        
         <div class="radio-group">
-          <label class="radio-label">
+          <!-- خيار الحجز الفوري -->
+          <label class="radio-label" [class.selected]="tempInstantBook() === true">
             <input type="radio" [value]="true" [(ngModel)]="tempInstantBook">
             <div>
               <strong>Instant Book</strong>
               <p class="radio-desc">Guests who meet your requirements can book instantly.</p>
             </div>
           </label>
-          <label class="radio-label">
+
+          <!-- خيار طلب الحجز -->
+          <label class="radio-label" [class.selected]="tempInstantBook() === false">
             <input type="radio" [value]="false" [(ngModel)]="tempInstantBook">
             <div>
               <strong>Request to Book</strong>

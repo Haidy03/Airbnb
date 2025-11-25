@@ -147,11 +147,22 @@ namespace Airbnb.API.Repositories.Implementations
             // Availability (Check if there are ANY bookings that overlap with the requested dates)
             if (searchDto.CheckInDate.HasValue && searchDto.CheckOutDate.HasValue)
             {
+                var checkIn = searchDto.CheckInDate.Value.Date;
+                var checkOut = searchDto.CheckOutDate.Value.Date;
+
+                // 1. Check existing Bookings (Conflict if dates overlap)
                 query = query.Where(p => !p.Bookings.Any(b =>
-                    b.Status != BookingStatus.Cancelled && // Ignore cancelled bookings
-                    (
-                        (searchDto.CheckInDate < b.CheckOutDate && searchDto.CheckOutDate > b.CheckInDate)
-                    )
+                    b.Status != BookingStatus.Cancelled &&
+                    b.Status != BookingStatus.Rejected &&
+                    (checkIn < b.CheckOutDate && checkOut > b.CheckInDate)
+                ));
+
+                // ✅ 2. Check Manual Blocks (Calendar Availability)
+                // نستبعد العقار إذا كان الـ Host قد أغلق أي يوم في نطاق البحث
+                query = query.Where(p => !p.Availabilities.Any(pa =>
+                    pa.Date >= checkIn &&
+                    pa.Date < checkOut && // Check-out day doesn't need to be available for sleeping
+                    pa.IsAvailable == false // إذا كان اليوم "غير متاح"
                 ));
             }
 

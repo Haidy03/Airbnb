@@ -111,6 +111,8 @@ namespace Airbnb.API.Models
         public bool HasNoiseMonitor { get; set; } = false;
         public bool HasWeapons { get; set; } = false;
 
+        public bool IsInstantBook { get; set; } = false;
+
         // Navigation Properties
         public virtual ICollection<PropertyImage> Images { get; set; } = new List<PropertyImage>();
         public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();

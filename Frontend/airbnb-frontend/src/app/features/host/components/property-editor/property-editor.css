@@ -439,3 +439,10 @@ input:checked + .slider:before {
   background: #FFF8F6;
   border-color: #C13515;
 }
+
+/* Radio Selected State */
+.radio-label.selected {
+  border-color: #222;
+  background-color: #F7F7F7;
+  border-width: 2px; /* خط أسمك قليلاً */
+}

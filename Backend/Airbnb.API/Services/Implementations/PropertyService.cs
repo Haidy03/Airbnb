@@ -50,6 +50,7 @@ namespace Airbnb.API.Services.Implementations
                 HasExteriorCamera = dto.HasExteriorCamera,
                 HasNoiseMonitor = dto.HasNoiseMonitor,
                 HasWeapons = dto.HasWeapons,
+                IsInstantBook = dto.IsInstantBook,
                 IsActive = false,
                 IsApproved = false,
                 Status = PropertyStatus.Draft, // ✅ Set as Draft
@@ -120,6 +121,7 @@ namespace Airbnb.API.Services.Implementations
             if (dto.HasExteriorCamera.HasValue) property.HasExteriorCamera = dto.HasExteriorCamera.Value;
             if (dto.HasNoiseMonitor.HasValue) property.HasNoiseMonitor = dto.HasNoiseMonitor.Value;
             if (dto.HasWeapons.HasValue) property.HasWeapons = dto.HasWeapons.Value;
+            if (dto.IsInstantBook.HasValue) property.IsInstantBook = dto.IsInstantBook.Value;
 
             // ✅ Update Amenities if provided
             if (dto.AmenityIds != null)
