@@ -1,5 +1,5 @@
  import { Routes } from '@angular/router';
-
+import { NotFoundComponent } from './shared/components/not-found/not-found';
 // Layouts & Core Components
 import { HostLayoutComponent } from './layouts/host-layout/host-layout';
 import { HomeComponent } from './features/guest/components/home/home';
@@ -229,9 +229,9 @@ export const routes: Routes = [
   // =================================================
   // Note: Changed catch-all to redirect to Home instead of test-login for better UX
 
-
+  { path: 'not-found', component: NotFoundComponent },
   {
     path: '**',
-    redirectTo: ''
+    redirectTo: 'not-found'
   }
 ];
