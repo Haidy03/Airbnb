@@ -43,6 +43,7 @@ import { HostCalendar } from './features/host/components/host-calendar/host-cale
 import { ResetPasswordComponent } from './features/auth/components/reset-password.component/reset-password.component';
 import { PropertyEditorComponent } from './features/host/components/property-editor/property-editor';
 import { BookingDetailsComponent } from './features/host/components/booking-details/booking-details';
+import { HostEarningsComponent } from './features/host/components/earnings/earnings';
 
 export const routes: Routes = [
   // =================================================
@@ -130,7 +131,8 @@ export const routes: Routes = [
       },{ 
         path: 'messages', 
         loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent) 
-      }
+      },
+      { path: 'earnings', component: HostEarningsComponent },
      
     ]
   },
