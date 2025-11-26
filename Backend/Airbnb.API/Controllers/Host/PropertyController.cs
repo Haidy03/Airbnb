@@ -3,6 +3,7 @@ using Airbnb.API.Models;
 using Airbnb.API.Services.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -16,15 +17,18 @@ namespace Airbnb.API.Controllers.Host
         private readonly IPropertyService _propertyService;
         private readonly ILogger<PropertyController> _logger;
         private readonly IMapper _mapper;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public PropertyController(
             IPropertyService propertyService,
             ILogger<PropertyController> logger,
-            IMapper mapper)
+            IMapper mapper,
+            UserManager<ApplicationUser> userManager)
         {
             _propertyService = propertyService;
             _logger = logger;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         // Helper method for testing only
@@ -107,14 +111,33 @@ namespace Airbnb.API.Controllers.Host
         [HttpPost]
         public async Task<IActionResult> CreateProperty([FromBody] CreatePropertyDto dto)
         {
+            // 1. Get the ID once at the start
+            var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Safety check: ensure ID exists
+            if (string.IsNullOrEmpty(hostId))
+            {
+                return Unauthorized(new { message = "User ID not found in token." });
+            }
+
+            // 2. Perform the Verification Check
+            var user = await _userManager.FindByIdAsync(hostId);
+
+            if (user == null || !user.IsVerified)
+            {
+                return StatusCode(403, new
+                {
+                    message = "Identity verification required.",
+                    details = "You must verify your ID before listing a property."
+                });
+            }
+
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest(new { success = false, errors = ModelState });
 
-                var hostId = GetHostId();
-
-                // Mapping DTO → Entity happens in the service OR here if needed
+                // 3. Use the existing 'hostId' variable here (Do not redeclare it)
                 var property = await _propertyService.CreatePropertyAsync(hostId, dto);
 
                 var resultDto = _mapper.Map<PropertyResponseDto>(property);
