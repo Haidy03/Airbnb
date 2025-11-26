@@ -306,8 +306,8 @@
         <button 
           type="submit" 
           class="btn-continue" 
-          [disabled]="registerForm.invalid || isLoading()" (click)="switchMode('phone')">
-          <span *ngIf="!isLoading()"><a routerLink="/login">Agree and continue</a> </span>
+          [disabled]="registerForm.invalid || isLoading()" >
+          <span *ngIf="!isLoading()">Agree and continue </span>   
           <span *ngIf="isLoading()" class="spinner"></span>
         </button>
       </form>
