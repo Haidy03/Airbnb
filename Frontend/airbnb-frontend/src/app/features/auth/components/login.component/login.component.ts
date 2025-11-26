@@ -1,4 +1,4 @@
-
+//login.component.ts
 import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -184,7 +184,7 @@ export class LoginComponent {
     this.errorMessage.set('');
 
     const request = {
-      email: this.emailLoginForm.value.email!,
+      identifier: this.emailLoginForm.value.email!,
       password: this.emailLoginForm.value.password!
     };
 
@@ -257,7 +257,7 @@ export class LoginComponent {
         
         // After successful registration, automatically log in
         const loginRequest = {
-          email: request.email,
+          identifier: request.email,
           password: request.password
         };
         
@@ -265,6 +265,15 @@ export class LoginComponent {
           next: (response:any) => {
             console.log('✅ Auto-login successful after registration');
             this.authService.setToken(response.token);
+            // Fetch role from token and redirect
+          const token = this.authService.getToken();
+          if (token) {
+            const userRole = this.tokenService.getUserRole(token);
+            this.redirectBasedOnRole(userRole);
+          } else {
+            this.errorMessage.set('Login failed - no token received');
+            this.switchMode('email');
+          }
             this.router.navigate(['/login']); 
             //this.closeModal();
             
