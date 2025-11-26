@@ -50,15 +50,40 @@ export class ListingDetails implements OnInit {
       alert('Please select dates first!');
       return;
     }
-    this.router.navigate(['/checkout', this.listing?.id], {
-      queryParams: {
-        checkIn: this.selectedCheckIn,
-        checkOut: this.selectedCheckOut,
-        guests: 2 // أو المتغير الحقيقي لعدد الضيوف
-      }
-    });
-
+    
+    // ******************************************************
+    // المنطق الجديد للتحقق من isInstantBook
+    // ******************************************************
+    
+    if (!this.listing?.isInstantBook) {
+      // إذا كان الحجز الفوري متاحاً، يتم التوجيه مباشرة لصفحة الدفع
+      this.router.navigate(['/checkout', this.listing?.id], {
+        queryParams: {
+          checkIn: this.selectedCheckIn,
+          checkOut: this.selectedCheckOut,
+          guests: 2 // أو المتغير الحقيقي لعدد الضيوف
+        }
+      });
+    } else {
+      // إذا لم يكن الحجز الفوري متاحاً (Request to Book)
+      // قد تحتاجين إلى توجيههم إلى صفحة "إرسال طلب حجز" أو التعامل معه كخطوة مؤقتة
+      // هنا سنقوم بتوجيههم لصفحة الدفع كـ "طلب حجز"
+       this.router.navigate(['/request-book', this.listing?.id], {
+        queryParams: {
+          checkIn: this.selectedCheckIn,
+          checkOut: this.selectedCheckOut,
+          guests: 2
+        }
+      });
+      // أو يمكنك توجيههم لصفحة خاصة بطلب الحجز
+      // alert('This listing requires a "Request to Book" approval from the host.');
+    }
+    // ******************************************************
   }
+
+  // ... (بقية الدوال)
+
+
   // 1. هذه هي قائمة المزايا التي كانت ناقصة
   amenities = [
     { icon: 'fa-solid fa-wifi', name: 'Fast Wifi' },

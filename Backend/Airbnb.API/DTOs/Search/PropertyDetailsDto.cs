@@ -24,6 +24,7 @@
         public string CheckInTime { get; set; } // Formatted string (e.g., "14:00")
         public string CheckOutTime { get; set; }
         public int MinimumStay { get; set; }
+        public bool IsInstantBook { get; set; } = false;
 
         // Price
         public decimal PricePerNight { get; set; }

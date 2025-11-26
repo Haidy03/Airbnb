@@ -38,6 +38,7 @@ export interface Listing {
   pricePerNight: number;
   cleaningFee: number;
   propertyType: string;
+  isInstantBook:boolean;
 
   // الخصائص المفقودة في الـ JSON الحالي ولكن مطلوبة في الـ HTML
   rating?: number;            // <--- خاصية اختيارية

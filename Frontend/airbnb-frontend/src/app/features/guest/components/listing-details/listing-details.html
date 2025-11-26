@@ -137,6 +137,7 @@
           [rating]="listing.rating"
           [serviceFee]="150"
           [cleaningFee]="100"
+          [isInstantBook]="listing.isInstantBook" 
            (dateChanged)="onDatesUpdated($event)"
            (reserve)="goToCheckout()">
         </app-super-card>
