@@ -1,6 +1,8 @@
 ﻿using Airbnb.API.DTOs.Booking;
+using Airbnb.API.Models;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -12,16 +14,28 @@ namespace Airbnb.API.Controllers.Guest
     public class BookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public BookingController(IBookingService bookingService)
+        public BookingController(IBookingService bookingService, UserManager<ApplicationUser> userManager)
         {
             _bookingService = bookingService;
+            _userManager = userManager;
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto createDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null || !user.IsVerified)
+            {
+                return StatusCode(403, new 
+                { 
+                    message = "Identity verification required.", 
+                    details = "You must verify your ID before making a booking." 
+                });
+            }
             try
             {
                 var result = await _bookingService.CreateBookingAsync(userId, createDto);
