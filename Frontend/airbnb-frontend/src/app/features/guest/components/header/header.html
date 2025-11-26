@@ -9,7 +9,8 @@
       <!-- Logo -->
       <div class="col-auto logo-container" style="z-index: 2000; position: relative;">
         <a (click)="navigateToHome()" class="text-decoration-none d-flex align-items-center cursor-pointer">
-           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" style="fill: #FF385C !important; color: #FF385C !important;" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+               style="fill: #FF385C !important; color: #FF385C !important;" viewBox="0 0 24 24">
             <path d="M12 2c-4.97 0-9 4.03-9 9 0 4.97 4.03 9 9 9s9-4.03 9-9c0-4.97-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7 0-3.87 3.13-7 7-7s7 3.13 7 7c0 3.87-3.13 7-7 7z"/>
             <path d="M12 4l-8 14h16z" fill="white" transform="scale(0.5) translate(12,8)"/>
           </svg>
@@ -31,60 +32,63 @@
           </button>
         </div>
       </div>
-     <!-- 3. Right: User Menu -->
+
+      <!-- 3. Right: User Menu -->
       <div class="col-auto d-flex align-items-center gap-2 position-relative" style="z-index: 2000;">
 
-        <!-- 1. جملة Become a host (زي ما هي) -->
-        <a class="host-btn d-none d-md-block text-dark text-decoration-none fw-semibold px-3 py-2 rounded-pill hover-bg-light" href="#">
-      <!-- Right: User Menu -->
-      <div class="col-auto d-flex align-items-center gap-2 position-relative z-index-10">
-
-        <a class="host-btn d-none d-md-block text-dark text-decoration-none fw-semibold px-3 py-2 rounded-pill hover-bg-light" (click)="onBecomeHostClick()" style="cursor: pointer;">
+        <a class="host-btn d-none d-md-block text-dark text-decoration-none fw-semibold px-3 py-2 rounded-pill hover-bg-light"
+           (click)="onBecomeHostClick()" style="cursor: pointer;">
           Become a host
         </a>
 
-        <!-- 2. التعديل هنا: استبدال الكرة الأرضية بأيقونة البروفايل ورابط لصفحة البروفايل -->
         <a routerLink="/profile" class="btn btn-light rounded-circle p-2 bg-transparent border-0 host-btn px-2 text-dark">
-          <i class="bi bi-person fs-5"></i> <!-- أيقونة الشخص -->
+          <i class="bi bi-person fs-5"></i>
         </a>
 
-        <!-- 3. القائمة المنسدلة (زي ما هي بالظبط بدون أي تغيير) -->
         <div class="position-relative">
           <button class="user-menu-btn border rounded-pill p-1 ps-2 d-flex align-items-center gap-2 bg-white hover-shadow transition"
                   (click)="toggleUserMenu($event)">
             <i class="bi bi-list fs-5"></i>
-            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 30px; height: 30px;">
+            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white"
+                 style="width: 30px; height: 30px;">
               <i class="bi bi-person-fill fs-5"></i>
             </div>
           </button>
 
-          <div *ngIf="isUserMenuOpen" class="custom-dropdown shadow-lg rounded-4 py-2 bg-white position-absolute end-0 mt-2"
+          <div *ngIf="isUserMenuOpen"
+               class="custom-dropdown shadow-lg rounded-4 py-2 bg-white position-absolute end-0 mt-2"
                style="width: 240px; z-index: 2050;"
                (click)="$event.stopPropagation()">
+
             <div class="d-flex flex-column">
-               <a routerLink="/profile" class="dropdown-item px-3 py-2 fw-semibold text-dark text-decoration-none hover-bg-light">Profile</a>
-               <a routerLink="/messages" class="dropdown-item px-3 py-2 fw-semibold text-dark text-decoration-none hover-bg-light">Messages</a>
-               <a routerLink="/trips" class="dropdown-item px-3 py-2 fw-semibold text-dark text-decoration-none hover-bg-light">Trips</a>
-               <a routerLink="/wishlists" class="dropdown-item px-3 py-2 fw-semibold text-dark text-decoration-none hover-bg-light">Wishlists</a>
-               <div class="border-bottom my-2"></div>
-               <a routerLink="/account-settings" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light">Account settings</a>
-               <a (click)="isLoggedIn()? onLogout() : openLoginModal()" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light cursor-pointer">{{ isLoggedIn() ? 'Log out' : 'Log in or sign up' }}</a>
+              <a routerLink="/profile" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Profile</a>
+              <a routerLink="/messages" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Messages</a>
+              <a routerLink="/trips" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Trips</a>
+              <a routerLink="/wishlists" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Wishlists</a>
+              <div class="border-bottom my-2"></div>
+              <a routerLink="/account-settings" class="dropdown-item px-3 py-2 text-dark hover-bg-light">Account settings</a>
+              <a (click)="isLoggedIn()? onLogout() : openLoginModal()"
+                 class="dropdown-item px-3 py-2 text-dark hover-bg-light cursor-pointer">
+                 {{ isLoggedIn() ? 'Log out' : 'Log in or sign up' }}
+              </a>
             </div>
+
           </div>
         </div>
+
       </div>
-    </div>
+
+    </div> <!-- END nav-top -->
 
     <!-- 2. Big Search Bar Row -->
     <div class="row justify-content-center big-search-wrapper pb-3"
          *ngIf="!isScrolled && isSearchEnabled">
       <div class="col-12 d-flex justify-content-center">
         <div class="w-100 d-flex justify-content-center">
-            <!-- التعديل هنا: استخدام الاسم الصحيح [withFilterButton] -->
-            <app-search-bar
-              [withFilterButton]="false"
-              (search)="handleSearch($event)">
-            </app-search-bar>
+          <app-search-bar
+            [withFilterButton]="false"
+            (search)="handleSearch($event)">
+          </app-search-bar>
         </div>
       </div>
     </div>
