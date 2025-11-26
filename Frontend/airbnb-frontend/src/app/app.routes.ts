@@ -1,5 +1,5 @@
  import { Routes } from '@angular/router';
-
+import { NotFoundComponent } from './shared/components/not-found/not-found';
 // Layouts & Core Components
 import { HostLayoutComponent } from './layouts/host-layout/host-layout';
 import { HomeComponent } from './features/guest/components/home/home';
@@ -44,6 +44,11 @@ import { ResetPasswordComponent } from './features/auth/components/reset-passwor
 import { PropertyEditorComponent } from './features/host/components/property-editor/property-editor';
 import { BookingDetailsComponent } from './features/host/components/booking-details/booking-details';
 import { HostEarningsComponent } from './features/host/components/earnings/earnings';
+import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
+import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
+import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
+import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
+import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
 
 export const routes: Routes = [
   // =================================================
@@ -235,9 +240,9 @@ export const routes: Routes = [
   // =================================================
   // Note: Changed catch-all to redirect to Home instead of test-login for better UX
 
-
+  { path: 'not-found', component: NotFoundComponent },
   {
     path: '**',
-    redirectTo: ''
+    redirectTo: 'not-found'
   }
 ];
