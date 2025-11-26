@@ -274,8 +274,8 @@ export class LoginComponent {
             this.errorMessage.set('Login failed - no token received');
             this.switchMode('email');
           }
-            this.router.navigate(['/login']); 
-            //this.closeModal();
+            //this.router.navigate(['/login']); 
+            this.closeModal();
             
           },
           error: (loginError) => {
@@ -405,7 +405,7 @@ export class LoginComponent {
   // ✅ فتح نافذة نسيت كلمة المرور
   openForgotPassword(event: Event) {
     event.preventDefault();
-    this.closeModal();
+    //this.closeModal();
     
     // استيراد المكون ديناميكياً لتجنب circular dependencies
     import('../forogt-password.component/forogt-password.component').then(module => {
