@@ -64,7 +64,7 @@ namespace Airbnb.API.Services.Implementations
                 PricePerNight = property.PricePerNight,
                 CleaningFee = property.CleaningFee ?? 0,
                 TotalPrice = totalPrice,
-                Status = BookingStatus.Pending,
+                Status = property.IsInstantBook ? BookingStatus.Confirmed : BookingStatus.Pending,
                 SpecialRequests = createDto.SpecialRequests,
                 CreatedAt = DateTime.UtcNow
             };

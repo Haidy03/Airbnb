@@ -10,6 +10,7 @@ namespace Airbnb.API.Controllers.Host
 {
     [ApiController]
     [Route("api/host/[controller]")]
+    [Authorize]
     public class PropertyController : ControllerBase
     {
         private readonly IPropertyService _propertyService;
@@ -29,8 +30,20 @@ namespace Airbnb.API.Controllers.Host
         // Helper method for testing only
         private string GetHostId()
         {
-            var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return string.IsNullOrEmpty(hostId) ? "test-host-12345" : hostId;
+            // 1. Try to get ID from standard ClaimTypes
+            var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier) // Usually maps to 'nameid'
+                         ?? User.FindFirstValue("sub")                  // Standard JWT subject
+                         ?? User.FindFirstValue("id")                   // Common custom claim
+                         ?? User.FindFirstValue("uid");                 // Another common custom claim
+
+            // 2. Security Check: If no ID found, throw error (Don't return "test-host" anymore!)
+            if (string.IsNullOrEmpty(hostId))
+            {
+                // This ensures the code fails safely if the user isn't logged in properly
+                throw new UnauthorizedAccessException("User ID not found in token.");
+            }
+
+            return hostId;
         }
 
         // ----------------------------------------------------------------------
@@ -600,6 +613,21 @@ namespace Airbnb.API.Controllers.Host
             {
                 _logger.LogError(ex, "Error deactivating property");
                 return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("amenities")]
+        public async Task<IActionResult> GetAmenities()
+        {
+            try
+            {
+                var amenities = await _propertyService.GetAmenitiesListAsync();
+                return Ok(new { success = true, data = amenities });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching amenities");
+                return StatusCode(500, new { success = false, message = "Error fetching amenities" });
             }
         }
     }

@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { CalendarService } from '../../services/calendar-service';
 import { PropertyService } from '../../services/property';
+import { forkJoin, Observable, of } from 'rxjs';
 
 // Interfaces (same as before)
 interface CalendarProperty {
@@ -190,22 +191,31 @@ export class HostCalendar implements OnInit {
     
     this.propertyService.getAllProperties().subscribe({
       next: (properties) => {
-        const calendarProperties: CalendarProperty[] = properties.map(p => ({
+        
+        // ✅ التعديل هنا: تصفية العقارات لتأخذ فقط المعتمدة (Approved)
+        const approvedProperties = properties.filter(p => p.isApproved === true);
+
+        // تحويل البيانات للشكل المطلوب في التقويم
+        const calendarProperties: CalendarProperty[] = approvedProperties.map(p => ({
           id: p.id,
           title: p.title,
-          coverImage: p.coverImage || p.images[0]?.url || '/assets/images/placeholder-property.jpg',
-          location: { city: p.location.city, country: p.location.country }
+          coverImage: p.coverImage || '/assets/images/placeholder-property.jpg',
+          location: { 
+            city: p.location?.city || '', 
+            country: p.location?.country || '' 
+          }
         }));
         
         this.properties.set(calendarProperties);
         
+        // تحديد أول عقار تلقائياً إذا وجد
         if (calendarProperties.length > 0) {
           this.selectProperty(calendarProperties[0]);
         } else {
           this.loadingSignal.set(false);
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('❌ Error loading properties:', err);
         this.errorSignal.set('Failed to load properties. Please try again.');
         this.loadingSignal.set(false);
@@ -379,18 +389,23 @@ export class HostCalendar implements OnInit {
   }
   
   openDaySidebar(day: CalendarDay): void {
+    // 1. تحديد اليوم المختار
     this.selectedDaySignal.set(day);
     
-    // Populate form with day data
+    // 2. تحديد حالة الإتاحة بناءً على بيانات اليوم
+    // إذا كان isBlocked = true إذن isAvailable = false والعكس
+    const isAvailableState = !day.isBlocked; 
+
+    // 3. تحديث الـ Form بالقيم الصحيحة فوراً
     this.dayDetailsForm.patchValue({
-      isAvailable: day.isAvailable,
-      customPrice: day.originalPrice ? day.price : null,
+      isAvailable: isAvailableState,
+      customPrice: day.originalPrice ? day.price : (isAvailableState ? this.settings().basePrice : null),
       checkInTime: this.settings().checkInTime || null,
       checkOutTime: this.settings().checkOutTime || null,
       notes: day.notes || ''
-    });
-    
-    // Store original values for comparison
+    }, { emitEvent: false }); // emitEvent: false لمنع تفعيل أي events أثناء الفتح
+
+    // حفظ القيم الأصلية للمقارنة
     this.originalDayDetails = this.dayDetailsForm.value;
   }
   
@@ -422,43 +437,85 @@ export class HostCalendar implements OnInit {
   saveDayDetails(): void {
     const day = this.selectedDay();
     const property = this.selectedProperty();
+    
     if (!day || !property) return;
     
     this.savingDaySignal.set(true);
     
     const formValue = this.dayDetailsForm.value;
-    
-    // Update availability if changed
+    const requests: Observable<any>[] = [];
+
+    // 1. التحقق من تغيير الإتاحة (Availability)
+    // إذا تغيرت الحالة عن الحالة الأصلية لليوم
     if (formValue.isAvailable !== day.isAvailable) {
-      this.calendarService.updateAvailability({
+      const availabilityDto = {
         propertyId: parseInt(property.id),
         date: day.date,
         isAvailable: formValue.isAvailable,
         notes: formValue.notes
-      }).subscribe({
-        next: () => console.log('✅ Availability updated'),
-        error: (err) => console.error('❌ Error:', err)
-      });
+      };
+      requests.push(this.calendarService.updateAvailability(availabilityDto));
     }
+
+    // 2. التحقق من تغيير السعر (Pricing)
+    // إذا كان هناك سعر مخصص وتم تغييره، أو إذا تم وضع سعر جديد يختلف عن السعر الأصلي
+    const newPrice = formValue.customPrice;
+    const currentPrice = day.price;
     
-    // Update price if changed
-    if (formValue.customPrice && formValue.customPrice !== day.price) {
-      this.calendarService.updatePricing({
+    // نرسل طلب تحديث السعر فقط إذا كانت القيمة موجودة ومختلفة عن السعر الحالي المعروض
+    if (newPrice && newPrice !== currentPrice) {
+      const pricingDto = {
         propertyId: parseInt(property.id),
         date: day.date,
-        price: formValue.customPrice,
+        price: newPrice,
         notes: formValue.notes
-      }).subscribe({
-        next: () => console.log('✅ Price updated'),
-        error: (err) => console.error('❌ Error:', err)
-      });
+      };
+      requests.push(this.calendarService.updatePricing(pricingDto));
     }
-    
-    setTimeout(() => {
+
+    // إذا لم يكن هناك أي تغييرات، نغلق القائمة فقط
+    if (requests.length === 0) {
       this.savingDaySignal.set(false);
       this.closeDaySidebar();
-      this.loadCalendarData();
-    }, 500);
+      return;
+    }
+
+    // 3. تنفيذ جميع الطلبات معاً (forkJoin)
+    forkJoin(requests).subscribe({
+      next: () => {
+        console.log('✅ Changes saved successfully');
+        
+        // 4. تحديث الواجهة محلياً (Local UI Update) ليعكس السعر الجديد فوراً
+        this.calendarDays.update(days => 
+          days.map(d => {
+            if (d.date.getTime() === day.date.getTime()) {
+              return { 
+                ...d, 
+                // تحديث الإتاحة
+                isAvailable: formValue.isAvailable,
+                isBlocked: !formValue.isAvailable,
+                
+                // تحديث السعر (إذا تم تغييره)
+                price: newPrice || d.price,
+                // إذا وضعنا سعراً مخصصاً، نحتفظ بالسعر الأساسي كـ originalPrice ليظهر مشطوباً
+                originalPrice: newPrice ? (d.originalPrice || this.settings().basePrice) : undefined,
+                
+                notes: formValue.notes 
+              };
+            }
+            return d;
+          })
+        );
+
+        this.savingDaySignal.set(false);
+        this.closeDaySidebar();
+      },
+      error: (err) => {
+        console.error('❌ Error saving details:', err);
+        this.savingDaySignal.set(false);
+        alert('Failed to save changes. Please try again.');
+      }
+    });
   }
   
   formatSelectedDate(): string {

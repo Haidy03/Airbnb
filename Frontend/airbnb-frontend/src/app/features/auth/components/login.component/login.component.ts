@@ -1,8 +1,8 @@
 
-import { Component, inject, signal } from '@angular/core';
+import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router ,  RouterLink} from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SocialButtonsComponent } from '../social-buttons.component/social-buttons.component';
@@ -26,7 +26,11 @@ export class LoginComponent {
   private errorService = inject(ErrorService);
   private modalService = inject(ModalService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  
 
+  @Output() closed = new EventEmitter<boolean>();
+  
   // State Management
   mode = signal<LoginMode>('phone');
   phoneStep = signal<PhoneStep>('input');
@@ -174,7 +178,7 @@ export class LoginComponent {
 
   // ✅ FIXED: Email Login Flow with proper navigation
   onEmailLogin() {
-     if (this.emailLoginForm.invalid || this.isLoading()) return;
+    if (this.emailLoginForm.invalid || this.isLoading()) return;
 
     this.isLoading.set(true);
     this.errorMessage.set('');
@@ -186,9 +190,9 @@ export class LoginComponent {
 
     this.authService.loginWithEmail(request).subscribe({
       next: (response) => {
-        this.isLoading.set(true);
+        // ⚠️ تصحيح: خليها false عشان اللودينج يختفي لما اللوجن ينجح
+        this.isLoading.set(false); 
         console.log('✅ Login successful!');
-        
         
         const token = this.authService.getToken();
         if (token) {
@@ -198,8 +202,24 @@ export class LoginComponent {
           console.log('👤 User Role:', userRole);
           console.log('🆔 User ID:', userId);
           
+          // ============================================================
+          // 🚀 تعديلك يبدأ من هنا (بشكل آمن)
+          // ============================================================
           
-          this.redirectBasedOnRole(userRole);
+          // 1. نتحقق هل المستخدم جاي من رابط معين؟ (مثل زر Become a Host)
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+
+          if (returnUrl) {
+            console.log('🔄 Redirecting to returnUrl:', returnUrl);
+            // لو فيه رابط، روح عليه علطول
+            this.router.navigateByUrl(returnUrl);
+            this.closeModal(); // نقفل المودال
+          } else {
+            // 2. لو مفيش رابط، نفذ اللوجيك القديم بتاع الفريق
+            this.redirectBasedOnRole(userRole);
+          }
+          // ============================================================
+
         } else {
           this.errorMessage.set('Login failed - no token received');
         }
@@ -209,7 +229,7 @@ export class LoginComponent {
 
         console.error('❌ Login failed:', error);
         this.errorMessage.set(this.getErrorMessage(error));
-         this.errorService.handleError(error); 
+        this.errorService.handleError(error); 
       }
     });
   }
@@ -245,8 +265,9 @@ export class LoginComponent {
           next: (response:any) => {
             console.log('✅ Auto-login successful after registration');
             this.authService.setToken(response.token);
-            this.closeModal();
-            this.router.navigate(['/host/dashboard']);
+            this.router.navigate(['/login']); 
+            //this.closeModal();
+            
           },
           error: (loginError) => {
             console.error('❌ Auto-login failed:', loginError);
@@ -382,4 +403,5 @@ export class LoginComponent {
       this.modalService.open(module.ForgotPasswordComponent);
     });
   }
+  
 }

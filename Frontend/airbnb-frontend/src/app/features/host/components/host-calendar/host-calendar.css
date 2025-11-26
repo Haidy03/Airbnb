@@ -309,8 +309,25 @@
 }
 
 .calendar-day.blocked {
-  background: #FFF5F5;
-  border-color: #EF5350;
+  background: #F7F7F7 repeating-linear-gradient(
+    45deg,
+    #F7F7F7,
+    #F7F7F7 10px,
+    #EBEBEB 10px,
+    #EBEBEB 20px
+  ); /* تأثير مخطط */
+  color: #B0B0B0; /* نص باهت */
+  border-color: #EBEBEB;
+}
+
+.calendar-day.blocked .day-number {
+  text-decoration: line-through; /* شطب الرقم */
+  color: #717171;
+}
+
+.calendar-day.blocked:hover {
+  border-color: #222; /* السماح بتحديدها لفتحها مجدداً */
+  cursor: pointer;
 }
 
 .calendar-day.unavailable {
@@ -970,14 +987,16 @@
   background-color: white;
   transition: 0.3s;
   border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 input:checked + .toggle-slider {
-  background-color: #00A699;
+  background-color: #222222;
 }
 
 input:checked + .toggle-slider:before {
   transform: translateX(20px);
+  background-color: #DDDDDD;
 }
 
 .toggle-label {

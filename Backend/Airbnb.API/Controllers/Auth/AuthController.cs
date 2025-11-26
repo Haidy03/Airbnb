@@ -147,5 +147,25 @@ namespace Airbnb.API.Controllers.Auth
 
             return Ok(new { Message = "Password has been reset successfully." });
         }
+
+
+        [HttpPost("become-host")]
+        [Authorize] 
+        public async Task<IActionResult> BecomeHost()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                
+                var authResponse = await _authService.BecomeHostAsync(userId);
+
+                return Ok(authResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

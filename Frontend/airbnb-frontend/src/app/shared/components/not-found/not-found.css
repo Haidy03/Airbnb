@@ -1,0 +1,131 @@
+:host {
+  display: block;
+  font-family: 'Circular', -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+  color: #484848;
+  height: 100vh;
+  background: white;
+}
+
+/* Header */
+.header {
+  padding: 24px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.brand-name {
+  color: #FF385C;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* Main Content Layout */
+.content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  gap: 60px;
+}
+
+/* Left Side: Text */
+.text-content {
+  flex: 1;
+  max-width: 450px;
+}
+
+.oops-title {
+  font-size: 120px; /* حجم كبير جداً */
+  font-weight: 800;
+  color: #484848;
+  margin: 0;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.subtitle {
+  font-size: 32px;
+  font-weight: 400;
+  color: #484848;
+  margin: 24px 0 8px;
+  line-height: 1.2;
+}
+
+.error-code {
+  font-size: 16px;
+  color: #767676;
+  margin-bottom: 32px;
+}
+
+/* Links List */
+.links-list p {
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 16px;
+  color: #484848;
+}
+
+.links-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.links-list li {
+  margin-bottom: 8px;
+}
+
+.links-list a {
+  color: #008489; /* اللون الأخضر/الأزرق الخاص بروابط Airbnb القديمة */
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.links-list a:hover {
+  text-decoration: underline;
+}
+
+/* Right Side: Illustration */
+.illustration {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.illustration img {
+  max-width: 100%;
+  height: auto;
+  width: 350px; /* حجم مناسب للصورة */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .content {
+    flex-direction: column-reverse; /* الصورة تطلع فوق في الموبايل */
+    align-items: center;
+    text-align: center;
+    gap: 32px;
+  }
+
+  .oops-title {
+    font-size: 80px;
+  }
+
+  .subtitle {
+    font-size: 24px;
+  }
+
+  .links-list {
+    text-align: left; /* القائمة تظل يسار */
+    display: inline-block;
+  }
+}

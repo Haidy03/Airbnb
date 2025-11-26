@@ -1,347 +1,105 @@
-<!-- Frontend/airbnb-frontend/src/app/features/host/components/my-properties/my-properties.html -->
-
 <div class="listings-page">
   
-  <!-- Page Header -->
-  <div class="page-header">
+  <!-- Header -->
+  <header class="listings-header">
     <h1 class="page-title">Your listings</h1>
     
     <div class="header-actions">
-      <button class="view-toggle-btn" (click)="toggleViewMode()" title="Toggle view">
-        <svg *ngIf="viewMode() === 'grid'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-        <svg *ngIf="viewMode() === 'list'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"/>
-          <rect x="14" y="3" width="7" height="7"/>
-          <rect x="14" y="14" width="7" height="7"/>
-          <rect x="3" y="14" width="7" height="7"/>
-        </svg>
-      </button>
-
-      <button class="add-property-btn" (click)="addNewProperty()" title="Add new listing">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-
-  <!-- Loading State -->
-  <div *ngIf="isLoading()" class="loading-container">
-    <div class="spinner"></div>
-    <p>Loading your listings...</p>
-  </div>
-
-  <!-- Properties Grid/List -->
-  <div *ngIf="!isLoading() && properties().length > 0" class="properties-grid" [class.list-view]="viewMode() === 'list'">
-    
-    <div *ngFor="let property of properties()" 
-         class="property-card"
-         [class.is-draft]="isDraft(property)"
-         [class.is-pending]="isPendingApproval(property)"
-         [class.is-approved]="isApproved(property)"
-         [class.is-rejected]="isRejected(property)"
-         [class.is-complete]="isDraft(property) && getProgressPercentage(property) === 100">
-      
-      <!-- Property Image -->
-      <div class="property-image" (click)="editProperty(property)">
-        <img [src]="getPropertyImage(property)" 
-             [alt]="getPropertyTitle(property)"
-             *ngIf="getPropertyImage(property)">
-        
-        <div class="image-placeholder" *ngIf="!getPropertyImage(property)">
-          <svg width="80" height="80" viewBox="0 0 80 80" fill="#CCCCCC">
-            <path d="M40 10L10 30v40h60V30L40 10zm0 8l20 15v27H20V33l20-15z"/>
+      <!-- 1. Search Input -->
+      <div class="search-container" [class.open]="isSearchOpen()">
+        <button class="icon-btn" (click)="toggleSearch()" title="Search">
+          <svg viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentColor;stroke-width:3">
+            <path d="M13 24a11 11 0 1 0 0-22 11 11 0 0 0 0 22zm8-3 9 9"></path>
           </svg>
-        </div>
-
-        <!-- Status Badge -->
-        <div class="status-badge" [ngClass]="getStatusBadgeClass(property)">
-          <span class="status-dot"></span>
-          <span class="status-text">{{ getStatusLabel(property) }}</span>
-        </div>
-
-        <!-- Progress Bar for Drafts -->
-        <div class="progress-bar" *ngIf="isDraft(property)">
-          <div class="progress-fill" [style.width.%]="getProgressPercentage(property)"></div>
-        </div>
-
-        <!-- Quick Action Overlay -->
-        <div class="quick-actions-overlay">
-          <!-- Edit Button - Always Available -->
-          <button 
-            class="quick-action-btn edit-btn" 
-            (click)="editProperty(property); $event.stopPropagation()"
-            [title]="isDraft(property) ? 'Continue editing' : 'Edit property'">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
-              <path d="M15.5 2.5L17.5 4.5L6.5 15.5L2.5 17.5L4.5 13.5L15.5 2.5Z"/>
-            </svg>
-          </button>
-
-          <!-- Delete Button - Only for Drafts -->
-          <button 
-            *ngIf="isDraft(property)"
-            class="quick-action-btn delete-btn" 
-            (click)="deleteDraft(property, $event)"
-            title="Delete draft">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
-              <path d="M3 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5m-12-1h12V2H3v2zm2 3v11h2V7H5zm4 0v11h2V7H9zm4 0v11h2V7h-2z"/>
-            </svg>
-          </button>
-
-          <!-- View Details Button - For Published Properties -->
-          <button 
-            *ngIf="isPublished(property)"
-            class="quick-action-btn view-btn" 
-            (click)="viewPropertyDetails(property); $event.stopPropagation()"
-            title="View details">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
-              <path d="M10 4C5 4 1.73 7.11 1 10c.73 2.89 4 6 9 6s8.27-3.11 9-6c-.73-2.89-4-6-9-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6.5c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/>
-            </svg>
-          </button>
-        </div>
+        </button>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search listings..." 
+          [(ngModel)]="searchQuery"
+        >
       </div>
+      
+      <!-- 2. View Toggle (Grid/List) -->
+      <button class="icon-btn" (click)="toggleViewMode()" title="Change view">
+        <svg *ngIf="viewMode() === 'grid'" viewBox="0 0 16 16" style="display:block;height:16px;width:16px;fill:currentColor"><path d="M2 3h12a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm0 4h12a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm0 4h12a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2z"/></svg>
+        <svg *ngIf="viewMode() === 'list'" viewBox="0 0 16 16" style="display:block;height:16px;width:16px;fill:currentColor"><path d="M2 3h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2zM2 7h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2zM2 11h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2z"/></svg>
+      </button>
 
-      <!-- Property Info -->
-      <div class="property-info">
-        <div class="property-header">
-          <div class="property-title-section">
-            <h3 class="property-title" (click)="editProperty(property)">
-              {{ getPropertyTitle(property) }}
-            </h3>
-            
-            <!-- Step badge for incomplete drafts -->
-            <span class="step-badge" *ngIf="isDraft(property) && getProgressPercentage(property) < 100">
-              {{ getCurrentStep(property) }}
-            </span>
+      <!-- 3. Create Button (+) -->
+      <button class="icon-btn create-btn" (click)="addNewProperty()" title="Create listing">
+        <svg viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentColor;stroke-width:3"><path d="M2 16h28M16 2v28"></path></svg>
+      </button>
+    </div>
+  </header>
 
-            <!-- Rejection reason badge -->
-            <span class="rejection-badge" 
-                  *ngIf="isRejected(property)"
-                  title="Click to view rejection reason"
-                  (click)="showRejectionReason(property)">
-              ℹ️ View reason
-            </span>
-          </div>
-          
-          <!-- ✅ Action Buttons Based on Status -->
-          
-          <!-- 1. Submit for Approval Button (for completed drafts) -->
-          <button class="submit-btn" 
-                  *ngIf="isDraft(property) && getProgressPercentage(property) === 100"
-                  (click)="togglePublishStatus(property, $event)"
-                  title="Submit for admin approval">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0L10 5h5l-4 3 1.5 5L8 10l-4.5 3L5 8 1 5h5z"/>
-            </svg>
-            Submit for Approval
-          </button>
-
-          <!-- 2. Pending Approval Badge (waiting for admin) -->
-          <div class="pending-badge" 
-               *ngIf="isPendingApproval(property)"
-               title="Waiting for admin approval">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 14c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6zm-1-9h2v5H7V5zm0 6h2v2H7v-2z"/>
-            </svg>
-            Pending Approval
-          </div>
-
-          <!-- 3. Activate Button (for approved but inactive properties) -->
-          <button class="activate-btn" 
-                  *ngIf="isApproved(property) && !isActive(property)"
-                  (click)="togglePublishStatus(property, $event)"
-                  title="Activate and make visible to guests">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm4 6l-5 5-3-3-1.4 1.4L7 13l6.4-6.4L12 6z"/>
-            </svg>
-            Activate Listing
-          </button>
-
-          <!-- 4. Active/Inactive Toggle (for active properties) -->
-          <label class="publish-toggle" 
-                 *ngIf="isPublished(property)"
-                 (click)="$event.stopPropagation()"
-                 [title]="isActive(property) ? 'Deactivate listing' : 'Activate listing'">
-            <input 
-              type="checkbox" 
-              [checked]="isActive(property)"
-              (change)="togglePublishStatus(property, $event)">
-            <span class="toggle-slider"></span>
-          </label>
-
-          <!-- 5. Rejected Badge (for rejected properties) -->
-          <div class="rejected-badge" 
-               *ngIf="isRejected(property)"
-               title="This listing was rejected"
-               (click)="showRejectionReason(property)">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm1 12H7v-2h2v2zm0-4H7V4h2v4z"/>
-            </svg>
-            Rejected
-          </div>
-
-          <!-- 6. Continue Editing Button (for incomplete drafts) -->
-          <button class="continue-btn" 
-                  *ngIf="isDraft(property) && getProgressPercentage(property) < 100"
-                  (click)="editProperty(property)"
-                  title="Continue editing">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M12 0L14 2L4 12H2v-2L12 0z"/>
-            </svg>
-            Continue
-          </button>
-        </div>
+  <div *ngIf="!isLoading()">
+    
+    <!-- GRID VIEW (The Airbnb Look) -->
+    <div *ngIf="viewMode() === 'grid'" class="grid-view-container">
+      
+      <div *ngFor="let property of properties()" class="listing-card" (click)="editProperty(property)">
         
-        <!-- Location -->
-        <p class="property-location">{{ getLocationString(property) }}</p>
-
-        <!-- Progress Indicator for Drafts -->
-        <div class="draft-progress" *ngIf="isDraft(property)">
-          <div class="progress-info">
-            <span class="progress-label">Completion</span>
-            <span class="progress-percentage">{{ getProgressPercentage(property) }}%</span>
+        <!-- Image Wrapper -->
+        <div class="image-wrapper">
+          
+          <!-- Status Badge (Absolute Positioned) -->
+          <div class="status-badge" *ngIf="!isPublished(property)">
+            <span class="status-dot" [ngClass]="getStatusColor(property)"></span>
+            <span>{{ getStatusLabel(property) }}</span>
           </div>
-          <div class="progress-bar-full">
-            <div class="progress-bar-fill" [style.width.%]="getProgressPercentage(property)"></div>
-          </div>
-        </div>
 
-        <!-- Pending Approval Info -->
-        <div class="approval-info" *ngIf="isPendingApproval(property)">
-          <div class="info-message">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="#FF9800">
-              <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm1 12H7v-2h2v2zm0-4H7V4h2v4z"/>
-            </svg>
-            <span>Your listing is being reviewed. This usually takes 24-48 hours.</span>
-          </div>
-        </div>
-
-        <!-- Approved Info -->
-        <div class="approval-info success" *ngIf="isApproved(property) && !isActive(property)">
-          <div class="info-message">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="#4CAF50">
-              <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm4 6l-5 5-3-3-1.4 1.4L7 13l6.4-6.4L12 6z"/>
-            </svg>
-            <span>Great! Your listing is approved. Click "Activate" to make it live.</span>
+          <!-- Image -->
+          <img 
+            [src]="getPropertyImage(property)" 
+            *ngIf="getPropertyImage(property) && getPropertyImage(property) !== '/assets/images/placeholder-property.jpg'" 
+            class="listing-image"
+            alt="Property image"
+          >
+          
+          <!-- Placeholder if no image -->
+          <div class="image-placeholder" *ngIf="!getPropertyImage(property) || getPropertyImage(property) === '/assets/images/placeholder-property.jpg'">
+             <svg viewBox="0 0 32 32" style="fill:#717171;height:32px;width:32px"><path d="M27 3a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4h22zm-13.5 6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm14.28 16.26L18.5 10.28 6.36 26.86l21.42-1.6z"></path></svg>
           </div>
         </div>
 
-        <!-- Rejection Info -->
-        <div class="approval-info error" *ngIf="isRejected(property)">
-          <div class="info-message">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="#F44336">
-              <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm1 12H7v-2h2v2zm0-4H7V4h2v4z"/>
-            </svg>
-            <span>Your listing needs attention. <button class="inline-link" (click)="showRejectionReason(property)">View details</button></span>
+        <!-- Text Details -->
+        <div class="listing-details">
+          <h3 class="listing-title">{{ property.title || 'Untitled listing' }}</h3>
+          <p class="listing-location">{{ getLocation(property) }}</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- LIST VIEW (Optional Table) -->
+    <div *ngIf="viewMode() === 'list'" class="list-view-container">
+      <div class="list-header">
+        <div class="col-listing">Listing</div>
+        <div>Type</div>
+        <div>Location</div>
+        <div>Status</div>
+      </div>
+      <div *ngFor="let property of properties()" class="list-row" (click)="editProperty(property)">
+        <div class="col-listing">
+          <div class="thumb-wrapper">
+            <img [src]="getPropertyImage(property)" class="thumb-img">
           </div>
+          <span>{{ property.title || 'Untitled listing' }}</span>
         </div>
-        
-        <!-- Property Stats (for published properties) -->
-        <div class="property-stats" *ngIf="isPublished(property)">
-          <span class="stat-item" [title]="'Average rating: ' + getAverageRating(property)">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0L10 5h5l-4 3 1.5 5L8 10l-4.5 3L5 8 1 5h5z"/>
-            </svg>
-            {{ getAverageRating(property) }}
-          </span>
-          <span class="stat-item" [title]="getTotalReviews(property) + ' reviews'">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M14 2H2C.9 2 0 2.9 0 4v8c0 1.1.9 2 2 2h10l4 4V4c0-1.1-.9-2-2-2zm-1 9H3V9h10v2zm0-3H3V6h10v2zm0-3H3V3h10v2z"/>
-            </svg>
-            {{ getTotalReviews(property) }} reviews
-          </span>
-          <span class="stat-item" [title]="'Price per night'">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm1 11H7V7h2v4zm0-5H7V4h2v2z"/>
-            </svg>
-            {{ getPricePerNight(property) }}/night
-          </span>
-        </div>
-
-        <!-- Draft Stats (for drafts) -->
-        <div class="draft-stats" *ngIf="isDraft(property) || isPendingApproval(property) || isApproved(property)">
-          <span class="stat-item" [title]="getImageCount(property) + ' photos uploaded'">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M14 2H2C.9 2 0 2.9 0 4v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 11L4 9l-1 1v2h10V8l-3-3-4 6z"/>
-            </svg>
-            {{ getImageCount(property) }} photos
-          </span>
-          <span class="stat-item" [title]="getAmenitiesCount(property) + ' amenities added'">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M14 2H2C.9 2 .04 2.9.04 4L0 15c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 13H2V4h12v11z"/>
-            </svg>
-            {{ getAmenitiesCount(property) }} amenities
-          </span>
-          <span class="stat-item" [title]="'Price per night'">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm.5 12H7V8h1.5v4zm0-6H7V4h1.5v2z"/>
-            </svg>
-            {{ getPricePerNight(property) }}/night
-          </span>
-        </div>
-
-        <!-- Timestamps -->
-        <div class="property-timestamps">
-          <span class="timestamp-item" *ngIf="isDraft(property)">
-            Created {{ getRelativeTime(property.createdAt) }}
-          </span>
-          <span class="timestamp-item" *ngIf="property.updatedAt && property.updatedAt !== property.createdAt">
-            Updated {{ getRelativeTime(property.updatedAt) }}
-          </span>
-          <span class="timestamp-item" *ngIf="isPendingApproval(property)">
-            Submitted {{ getRelativeTime(property.updatedAt || property.createdAt) }}
-          </span>
+        <div>{{ getPropertyTypeLabel(property) }}</div>
+        <div>{{ getLocation(property) }}</div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+           <span class="status-dot" [ngClass]="getStatusColor(property)"></span>
+           {{ getStatusLabel(property) }}
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!isLoading() && properties().length === 0" class="empty-state">
-    <div class="empty-illustration">
-      <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-        <rect x="30" y="40" width="60" height="50" rx="4" stroke="#DDDDDD" stroke-width="2"/>
-        <path d="M30 60L60 40L90 60" stroke="#DDDDDD" stroke-width="2" fill="none"/>
-        <rect x="50" y="65" width="20" height="25" fill="#EBEBEB"/>
-        <rect x="40" y="50" width="10" height="10" fill="#EBEBEB"/>
-        <rect x="70" y="50" width="10" height="10" fill="#EBEBEB"/>
-      </svg>
-    </div>
-    
-    <h2 class="empty-title">No listings yet</h2>
-    <p class="empty-description">
-      Create your first listing to start hosting and earning money.
-    </p>
-    
-    <button class="create-listing-btn" (click)="addNewProperty()">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M10 0C4.5 0 0 4.5 0 10s4.5 10 10 10 10-4.5 10-10S15.5 0 10 0zm5 11h-4v4H9v-4H5V9h4V5h2v4h4v2z"/>
-      </svg>
-      Create your first listing
-    </button>
+  <div *ngIf="!isLoading() && properties().length === 0" style="text-align: center; padding: 80px; color: #717171;">
+    <p>You don't have any listings yet.</p>
   </div>
-
-  <!-- Filter/Sort Bar (Optional - can be added later) -->
-  <!-- <div class="filter-bar" *ngIf="!isLoading() && properties().length > 0">
-    <div class="filter-group">
-      <button class="filter-btn" [class.active]="currentFilter() === 'all'" (click)="filterProperties('all')">
-        All ({{ properties().length }})
-      </button>
-      <button class="filter-btn" [class.active]="currentFilter() === 'draft'" (click)="filterProperties('draft')">
-        Drafts ({{ getDraftsCount() }})
-      </button>
-      <button class="filter-btn" [class.active]="currentFilter() === 'pending'" (click)="filterProperties('pending')">
-        Pending ({{ getPendingCount() }})
-      </button>
-      <button class="filter-btn" [class.active]="currentFilter() === 'active'" (click)="filterProperties('active')">
-        Active ({{ getActiveCount() }})
-      </button>
-    </div>
-  </div> -->
-
 </div>

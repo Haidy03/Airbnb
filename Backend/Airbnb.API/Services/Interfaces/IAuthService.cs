@@ -13,5 +13,9 @@ namespace Airbnb.API.Services.Interfaces
         Task<string> GeneratePasswordResetTokenAsync(string email);
         Task<IdentityResult> ResetPasswordAsync(ResetPasswordDto resetDto);
 
+
+
+        Task<AuthResponseDto> BecomeHostAsync(string userId);
+
     }
 }

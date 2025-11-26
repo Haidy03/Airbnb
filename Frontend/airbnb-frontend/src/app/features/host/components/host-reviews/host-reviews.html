@@ -1,0 +1,92 @@
+<div class="reviews-page" *ngIf="!isLoading(); else loadingTpl">
+  
+  <h1 class="page-title">Reviews</h1>
+
+  <!-- Header Stats -->
+  <div class="reviews-header">
+    <span class="big-rating">{{ stats()?.overallRating | number:'1.2-2' }}</span>
+    <div class="stars-container">
+      <span class="star-icon">★</span>
+      <span class="review-count">{{ stats()?.totalReviews }} reviews</span>
+    </div>
+  </div>
+
+  <div class="reviews-layout">
+    
+    <!-- LEFT COLUMN: Rating Breakdown -->
+    <aside class="rating-breakdown">
+      <h3 class="breakdown-title">Rating breakdown</h3>
+      
+      <div class="breakdown-list">
+        <!-- Cleanliness -->
+        <div class="breakdown-item">
+          <span class="label">Cleanliness</span>
+          <div class="bar-wrapper">
+            <div class="bar-fill" [style.width.%]="(stats()?.cleanlinessAvg || 0) * 20"></div>
+          </div>
+          <span class="value">{{ stats()?.cleanlinessAvg | number:'1.1-1' }}</span>
+        </div>
+
+        <!-- Communication -->
+        <div class="breakdown-item">
+          <span class="label">Communication</span>
+          <div class="bar-wrapper">
+            <div class="bar-fill" [style.width.%]="(stats()?.communicationAvg || 0) * 20"></div>
+          </div>
+          <span class="value">{{ stats()?.communicationAvg | number:'1.1-1' }}</span>
+        </div>
+
+        <!-- Location -->
+        <div class="breakdown-item">
+          <span class="label">Location</span>
+          <div class="bar-wrapper">
+            <div class="bar-fill" [style.width.%]="(stats()?.locationAvg || 0) * 20"></div>
+          </div>
+          <span class="value">{{ stats()?.locationAvg | number:'1.1-1' }}</span>
+        </div>
+
+        <!-- Value -->
+        <div class="breakdown-item">
+          <span class="label">Value</span>
+          <div class="bar-wrapper">
+            <div class="bar-fill" [style.width.%]="(stats()?.valueAvg || 0) * 20"></div>
+          </div>
+          <span class="value">{{ stats()?.valueAvg | number:'1.1-1' }}</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT COLUMN: Reviews Feed -->
+    <div class="reviews-feed">
+      
+      <div class="review-card" *ngFor="let review of stats()?.reviews">
+        <div class="review-header">
+          <img [src]="review.reviewerProfileImage || 'assets/images/user-placeholder.png'" class="avatar" alt="Guest">
+          <div class="reviewer-info">
+            <h3 class="guest-name">{{ review.reviewerName }}</h3>
+            <p class="review-date">Reviewed on {{ review.createdAt | date:'MMMM yyyy' }}</p>
+          </div>
+        </div>
+
+        <div class="review-body">
+          <h4 class="review-title">Great place to stay</h4> <!-- عنوان افتراضي أو من البيانات -->
+          <p class="review-text">{{ review.comment }}</p>
+        </div>
+
+        <div class="review-footer" *ngIf="false"> <!-- زر الرد (مستقبلاً) -->
+           <button class="btn-reply">Reply</button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="stats()?.reviews?.length === 0" class="empty-state">
+        <p>No reviews yet.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading-screen">Loading reviews...</div>
+</ng-template>
