@@ -3,6 +3,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 
+
 @Component({
   selector: 'app-image-gallery',
   standalone: true,
@@ -13,7 +14,7 @@ import { CommonModule } from '@angular/common';
 export class ImageGallery {
    // نستقبل الصور من الـ API عبر المكون الأب
   // تأكدي أن الـ API يرسل 5 صور على الأقل لهذا التصميم
-  @Input() images: string[] = [];
+  @Input() images:any[] = [];
 
   showAllPhotos() {
     console.log('Open full screen modal');

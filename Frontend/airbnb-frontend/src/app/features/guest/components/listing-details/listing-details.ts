@@ -7,6 +7,8 @@ import { ImageGallery } from "../image-gallery/image-gallery";
 import { BookingCard } from '../booking-card/booking-card';
 import { CalendarSection } from '../calendar-section/calendar-section';
 import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { HeaderComponent } from '../header/header';
 
 
@@ -22,7 +24,9 @@ import { HeaderComponent } from '../header/header';
 
 export class ListingDetails implements OnInit {
   listing: Listing | null = null;
-
+  propertyId!: string;
+   isLoading: boolean = true;
+  error: string | null = null;
   // متغيرات التحكم في الشكل (UI Flags)
   isLiked: boolean = false;           // هل القلب أحمر؟
   isTranslated: boolean = true;       // هل النص مترجم؟
@@ -32,6 +36,7 @@ export class ListingDetails implements OnInit {
   selectedCheckOut: string = '';
     constructor(
     private listingService: ListingService,
+    private route: ActivatedRoute,
     private router :Router // استيراد الـ Router
   ) {}
   // دالة بتستقبل التغيير من كارت الحجز (هنحتاج نعدل كارت الحجز عشان يبعتها)
@@ -68,11 +73,45 @@ export class ListingDetails implements OnInit {
 
 
   ngOnInit(): void {
-    // جلب البيانات (استخدمنا ID 1 للتجربة)
-    this.listingService.getListingById('1').subscribe(data => {
-      this.listing = data;
+      // 1. الاشتراك في paramMap لجلب الـ ID من المسار
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.propertyId = id;
+        this.fetchListingDetails(this.propertyId);
+      } else {
+        this.error = "Property ID is missing from the URL.";
+        this.isLoading = false;
+      }
     });
   }
+    fetchListingDetails(id: string): void {
+    this.isLoading = true;
+    this.error = null;
+
+    this.listingService.getListingById(id)
+      .pipe(
+        // استخدام finalize لإيقاف مؤشر التحميل بغض النظر عن النجاح/الفشل
+        finalize(() => this.isLoading = false)
+      )
+       .subscribe({
+    next: (data) => {
+      // **الإصلاح الرئيسي هنا:**
+      // إذا كان ratingBreakdown مفقوداً، قم بتعيينه كـ undefined بدلاً من null.
+      // وإلا، سيفشل كود الـ HTML.
+      this.listing = {
+        ...data,
+        ratingBreakdown: data.ratingBreakdown ?? undefined, // تعيين قيمة افتراضية
+        reviewsCount: data.reviews?.length || 0, // حساب عدد المراجعات من المصفوفة
+        rating: data.rating || 0 // تعيين تقييم افتراضي
+      };
+    },
+        error: (err) => {
+          this.error = "Failed to load listing details. Please try again later.";
+          console.error('API Error:', err);
+        }
+      });
+    }
 
   // 2. دوال الأزرار التي كانت فارغة
 
