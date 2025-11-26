@@ -15,7 +15,7 @@ type PhoneStep = 'input' | 'verify';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SocialButtonsComponent, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, SocialButtonsComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
