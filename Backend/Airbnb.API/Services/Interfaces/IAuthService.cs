@@ -16,6 +16,7 @@ namespace Airbnb.API.Services.Interfaces
 
 
         Task<AuthResponseDto> BecomeHostAsync(string userId);
+        Task<bool> SubmitVerificationRequestAsync(string userId, string filePath);
 
     }
 }
