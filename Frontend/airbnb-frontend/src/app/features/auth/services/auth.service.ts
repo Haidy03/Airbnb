@@ -44,6 +44,11 @@ export interface UserProfile {
   isEmailVerified?: boolean;
 }
 
+export interface ChangePasswordResponse {
+  message?: string;
+  token?: string; // optional: if backend returns a new token
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -64,6 +69,8 @@ export class AuthService {
 
   private userSubject = new BehaviorSubject<AuthUser | null>(this.getUserFromStorage());
   public user$ = this.userSubject.asObservable();
+
+  
 
   // ================= helper getters =================
   get currentUser(): AuthUser | null {
@@ -164,7 +171,11 @@ export class AuthService {
       }
     });
   }
-
+ changePassword(currentPassword: string, newPassword: string): Observable<ChangePasswordResponse> {
+    const body = { currentPassword, newPassword };
+    // Adjust path to match your backend
+    return this.http.post<ChangePasswordResponse>(`http://localhost:5202/api/Auth/reset-password`, body);
+  }
   // ================= Login / Register flows =================
   loginWithEmail(request: EmailLoginRequest): Observable<{ success: boolean }> {
     return this.http.post<LoginResponse>(`${this.API_URL}/login`, request)
