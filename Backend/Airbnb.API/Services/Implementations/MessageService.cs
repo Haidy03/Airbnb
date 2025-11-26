@@ -267,10 +267,25 @@ namespace Airbnb.API.Services.Implementations
             _logger = logger;
         }
 
-        public async Task<IEnumerable<ConversationDto>> GetUserConversationsAsync(string userId)
+        public async Task<IEnumerable<ConversationDto>> GetUserConversationsAsync(string userId, string mode)
         {
-            var conversations = await _messageRepository.GetUserConversationsAsync(userId);
-            return conversations.Select(c => MapToConversationDto(c, userId));
+            // 1. جلب كل المحادثات من الـ Repo (بعد إصلاحه)
+            var allConversations = await _messageRepository.GetUserConversationsAsync(userId);
+
+            // 2. الفلترة في الذاكرة بناءً على الـ Mode
+            if (!string.IsNullOrEmpty(mode) && mode.ToLower() == "host")
+            {
+                // الـ Host يشوف المحادثات اللي هو فيها صاحب العقار
+                allConversations = allConversations.Where(c => c.HostId == userId);
+            }
+            else
+            {
+                // الـ Guest يشوف المحادثات اللي هو فيها الضيف
+                allConversations = allConversations.Where(c => c.GuestId == userId);
+            }
+
+            // 3. التحويل لـ DTO
+            return allConversations.Select(c => MapToConversationDto(c, userId));
         }
 
         public async Task<ConversationDto?> GetConversationByIdAsync(int conversationId, string userId)
@@ -429,16 +444,19 @@ namespace Airbnb.API.Services.Implementations
         {
             var isHost = conversation.HostId == currentUserId;
             var otherUser = isHost ? conversation.Guest : conversation.Host;
+            var propertyImage = "https://via.placeholder.com/150";
+
+
 
             // ✅ Calculate UnreadCount based on CURRENT USER
-            var unreadCount = conversation.Messages
-                .Count(m => m.ReceiverId == currentUserId && !m.IsRead && m.DeletedAt == null);
+            var unreadCount = conversation.Messages?
+                .Count(m => m.ReceiverId == currentUserId && !m.IsRead && m.DeletedAt == null) ?? 0;
 
             return new ConversationDto
             {
                 Id = conversation.Id,
                 PropertyId = conversation.PropertyId,
-                PropertyTitle = conversation.Property?.Title,
+                PropertyTitle = conversation.Property?.Title ?? "Unknown Property",
                 PropertyImage = conversation.Property?.Images?
                     .Where(i => i.IsPrimary)
                     .Select(i => i.ImageUrl)

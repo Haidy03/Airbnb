@@ -20,9 +20,10 @@ namespace Airbnb.API.Repositories.Implementations
                     .ThenInclude(p => p.Images)
                 .Include(c => c.Host)
                 .Include(c => c.Guest)
+
                 .Include(c => c.Messages.OrderByDescending(m => m.SentAt).Take(1))
                 .Where(c => c.HostId == userId || c.GuestId == userId)
-                .OrderByDescending(c => c.Messages.Max(m => m.SentAt))
+                .OrderByDescending(c => c.UpdatedAt)
                 .ToListAsync();
         }
 
@@ -130,8 +131,14 @@ namespace Airbnb.API.Repositories.Implementations
 
         public async Task<int> GetUnreadCountAsync(string userId)
         {
+            // التعديل: نتأكد أن الرسالة تابعة لمحادثة موجودة فعلياً في الجدول
             return await _context.Messages
-                .CountAsync(m => m.ReceiverId == userId && !m.IsRead && m.DeletedAt == null);
+                .Where(m => m.ReceiverId == userId
+                            && !m.IsRead
+                            && m.DeletedAt == null
+                            // ✅ الشرط الجديد: التأكد أن المحادثة موجودة ولم تحذف
+                            && _context.Conversations.Any(c => c.Id == m.ConversationId))
+                .CountAsync();
         }
 
         public async Task<Message?> GetMessageByIdAsync(int messageId)

@@ -35,7 +35,7 @@
            class="nav-link">
           Messages
           <span *ngIf="unreadNotifications() > 0" class="message-badge">
-            {{ unreadNotifications() }}
+            {{ messageService.unreadCount()  }}
           </span>
         </a>
       </nav>
