@@ -12,6 +12,11 @@ namespace Airbnb.API.Services.Interfaces
         Task<IdentityResult> DeleteUserAsync(string userId);
         Task<string> GeneratePasswordResetTokenAsync(string email);
         Task<IdentityResult> ResetPasswordAsync(ResetPasswordDto resetDto);
+        Task<string> UploadProfilePhotoAsync(string userId, IFormFile file);
+        Task<bool> SubmitVerificationRequestAsync(string userId, IFormFile file);
+        Task<AuthResponseDto> BecomeHostAsync(string userId);
+        Task<bool> SubmitVerificationRequestAsync(string userId, string filePath);
+
 
     }
 }

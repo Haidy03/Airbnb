@@ -1,4 +1,5 @@
-export interface Profile {
+import { AuthUser } from '../../auth/models/auth-user.model';
+export interface Profile extends AuthUser {
   id: string;
   name: string;
   initial: string;

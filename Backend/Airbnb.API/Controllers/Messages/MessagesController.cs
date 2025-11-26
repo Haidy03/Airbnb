@@ -32,13 +32,16 @@ namespace Airbnb.API.Controllers
         // ==========================================
         // GET ALL CONVERSATIONS
         // ==========================================
+        // GET: api/Messages/conversations?mode=host
         [HttpGet("conversations")]
-        public async Task<IActionResult> GetConversations()
+        public async Task<IActionResult> GetConversations([FromQuery] string mode = "guest")
         {
             try
             {
                 var userId = GetCurrentUserId();
-                var conversations = await _messageService.GetUserConversationsAsync(userId);
+
+                // ✅ تمرير الـ mode للسيرفس
+                var conversations = await _messageService.GetUserConversationsAsync(userId, mode);
 
                 return Ok(new
                 {

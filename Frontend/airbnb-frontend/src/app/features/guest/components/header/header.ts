@@ -1,10 +1,14 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit ,inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { SearchBarComponent } from '../search/components/search-bar/search-bar';
 import { SearchFilters } from '../search/models/property.model';
+import { AuthService } from '../../../auth/services/auth.service';
+import { ModalService } from '../../../auth/services/modal.service';
+import { LoginComponent } from '../../../auth/components/login.component/login.component';
+import { Subscription } from 'rxjs';
 
 export interface SearchData {
   where: string;
@@ -26,11 +30,14 @@ export interface SearchData {
   styleUrls: ['./header.css']
 })
 export class HeaderComponent implements OnInit {
-
+  authService = inject(AuthService);
+  
+private AuthService = inject(AuthService);
+private ModalService = inject(ModalService);
   isUserMenuOpen = false;
   isScrolled = false;
   showExpandedSearch = false;
-
+   private modalSub?: Subscription;
   // متغير جديد للتحكم في ظهور البحث بالكامل
   isSearchEnabled = true;
 
@@ -133,5 +140,95 @@ export class HeaderComponent implements OnInit {
         guests: filters.guests
       }
     });
+  }
+
+
+
+
+
+  //                         Host 
+  
+  onBecomeHostClick() {
+    // 1. لو مش عامل لوجن -> وديه يسجل دخول الأول
+    if (!this.authService.isAuthenticated) {
+      // بنبعت returnUrl عشان لما يخلص لوجن يرجع يكمل خطوات الهوست
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/host/properties/intro' } });
+      return;
+    }
+
+    // 2. لو عامل لوجن، نشوف هل هو أصلاً Host؟
+    if (this.authService.isHost()) {
+      // لو هو هوست، وديه على الداشبورد علطول
+      this.router.navigate(['/host/dashboard']);
+    } else {
+      // 3. لو هو Guest بس -> نكلم الباك إند نرقيه
+      this.upgradeToHost();
+    }
+  }
+
+  upgradeToHost() {
+    this.authService.becomeHost().subscribe({
+      next: () => {
+        // بعد ما التوكن اتحدث وبقى هوست، نوديه يبدأ يعمل أول عقار
+        this.router.navigate(['/host/properties/intro']);
+      },
+      error: (err) => {
+        alert('Something went wrong while setting up your host account.');
+      }
+    });
+  }
+   isLoggedIn(): boolean {
+    return this.AuthService.isAuthenticated; 
+  }
+   openLoginModal(): void {
+    // لو في مودال مفتوح خلاص
+    if (this.ModalService.isOpen()) { 
+      return;
+    }
+
+    // افتح الـ LoginComponent كمودال
+    const compRef = this.ModalService.open(LoginComponent);
+
+    // حاول الوصول إلى الـ EventEmitter closed داخل الـ component
+    const instanceAny = compRef.instance as any;
+
+    // إذا الـ LoginComponent عنده event closed (EventEmitter<boolean>)
+    if (instanceAny && instanceAny.closed && typeof instanceAny.closed.subscribe === 'function') {
+      // نشترك وننتظر نتيجة التسجيل (true => نجاح)
+      this.modalSub = instanceAny.closed.subscribe((success: boolean) => {
+        // افصل الاشتراك بعد أول رد
+        this.modalSub?.unsubscribe();
+        this.modalSub = undefined;
+
+        // اغلق المودال (غالبًا الـ LoginComponent سيغلق بنفسه، لكن تأكد)
+        this.ModalService.close();
+
+        if (success) {
+          // حاول تحدث حالة الـ Auth: إذا عندك method setLoggedIn استخدمها
+          if (typeof (this.AuthService as any).setLoggedIn === 'function') {
+            (this.AuthService as any).setLoggedIn(true);
+          } else {
+            // fallback: إذا الـ LoginComponent خزّن التوكن في localStorage،
+            // نعمل reload حتى يقرأ التطبيق الحالة الجديدة تلقائياً.
+            // هذا سلوك مؤقت حتى تضيف طريقة رسمية لتعيين التوكن في AuthService.
+            window.location.reload();
+          }
+        } else {
+        }
+      });
+    } else {
+      console.warn('LoginComponent does not expose a closed EventEmitter.');
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.modalSub?.unsubscribe();
+    
+    if (this.ModalService.isOpen()) {
+      this.ModalService.close();
+    }
+  }
+  onLogout() {
+    this.AuthService.logout();   
   }
 }

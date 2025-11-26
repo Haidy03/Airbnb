@@ -4,7 +4,8 @@ namespace Airbnb.API.Services.Interfaces
 {
     public interface IMessageService
     {
-        Task<IEnumerable<ConversationDto>> GetUserConversationsAsync(string userId);
+        //Task<IEnumerable<ConversationDto>> GetUserConversationsAsync(string userId);
+        Task<IEnumerable<ConversationDto>> GetUserConversationsAsync(string userId, string mode);
         Task<ConversationDto?> GetConversationByIdAsync(int conversationId, string userId);
         Task<ConversationDto> CreateConversationAsync(string hostId, CreateConversationDto dto);
         Task<IEnumerable<MessageDto>> GetConversationMessagesAsync(int conversationId, string userId, int pageNumber = 1, int pageSize = 50);

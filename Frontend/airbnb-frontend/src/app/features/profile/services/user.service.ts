@@ -22,7 +22,7 @@ export class UserService {
     });
   }
 
-  getCurrentUser(): Observable<Profile> {
+  getCurrentUser(): Observable<{success: boolean; data: any[]; initial: string}> {
     // Get authenticated user from AuthService
     const currentAuthUser = this.authService.currentUser;
     
@@ -40,30 +40,21 @@ export class UserService {
                     ? currentAuthUser.firstName.charAt(0).toUpperCase()
                     : fullName.charAt(0).toUpperCase();
 
-    return of({
-      id: currentAuthUser.id,
-      name: fullName,
-      initial: initial,
-      email: currentAuthUser.email,
-      role: 'Guest', // You can add role to AuthUser model if needed
-      profileImage: currentAuthUser.profilePicture
-    }).pipe(delay(300));
-
-    // OPTION 2: Fetch from real API (uncomment to use)
-    /*
-    return this.http.get<User>(`${this.apiUrl}/user/profile`, {
+    
+    return this.http.get<{success:boolean ; data: any[]}>(
+      `${this.apiUrl}/Auth/profile`, {
       headers: this.getAuthHeaders()
     }).pipe(
       map(user => ({
         ...user,
-        initial: user.name.charAt(0).toUpperCase()
+        initial: initial
       })),
       catchError(error => {
         console.error('Error fetching user profile:', error);
         return throwError(() => error);
       })
     );
-    */
+    
   }
 
   getProfileDetails(): Observable<ProfileDetails> {
@@ -93,7 +84,7 @@ export class UserService {
   updateProfileDetails(details: ProfileDetails): Observable<ProfileDetails> {
     // Real API call with authentication
     return this.http.put<ProfileDetails>(
-      `${this.apiUrl}/user/profile-details`, 
+      `${this.apiUrl}/Auth/profile`, 
       details,
       { headers: this.getAuthHeaders() }
     ).pipe(
@@ -137,9 +128,9 @@ export class UserService {
 
   getPastTrips(): Observable<Trip[]> {
     // Real API call with authentication
-    // return this.http.get<Trip[]>(`${this.apiUrl}/user/trips`, {
-    //   headers: this.getAuthHeaders()
-    // });
+    return this.http.get<Trip[]>(`${this.apiUrl}/Booking/my-trips`, {
+      headers: this.getAuthHeaders()
+    });
 
     return of([]).pipe(delay(500));
   }
