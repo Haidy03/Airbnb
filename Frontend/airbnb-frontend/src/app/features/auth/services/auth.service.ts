@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+// import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
@@ -18,6 +18,7 @@ import {
   ForgotPasswordRequest,
   VerifyResetTokenRequest
 } from '../models/auth-user.model';
+import { inject, Injectable, signal } from '@angular/core';
 
 interface LoginResponse {
   token: string;
@@ -53,7 +54,7 @@ export interface ChangePasswordResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  user = signal<AuthUser | null>(null);
+  user = signal<AuthUser | null>(this.getUserFromStorage());
   private http = inject(HttpClient);
   private router = inject(Router);
   private tokenService = inject(TokenService);
@@ -70,7 +71,10 @@ export class AuthService {
   private userSubject = new BehaviorSubject<AuthUser | null>(this.getUserFromStorage());
   public user$ = this.userSubject.asObservable();
 
-  
+  constructor() {
+  // أي تحديث للـ BehaviorSubject يحدث في الـ Signal
+  this.userSubject.subscribe(u => this.user.set(u));
+}
 
   // ================= helper getters =================
   get currentUser(): AuthUser | null {
@@ -181,11 +185,14 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.API_URL}/login`, request)
       .pipe(
         tap(response => {
+          console.log('Login response:', response);
+          if (response.token) {
           this.setToken(response.token);
           // set basic info from token (id/role) if available
           this.setUserFromToken(response.token);
           // then fetch full profile and merge
           this.fetchAndSetFullProfile();
+          }
         }),
         map(() => ({ success: true })),
         catchError(error => {
