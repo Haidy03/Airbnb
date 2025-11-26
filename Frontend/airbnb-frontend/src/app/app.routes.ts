@@ -76,12 +76,18 @@ export const routes: Routes = [
   //   loadComponent: () => import('./features/guest/components/messages/messages')
   //     .then(m => m.MessagesComponent)
   // },
-  // {
-  //   path: 'profile',
-  //   loadComponent: () => import('./features/guest/profile/profile.component')
-  //     .then(m => m.ProfileComponent),
-  //   canActivate: [authGuard] // ✅ Added authGuard as profile should be protected
-  // },
+  {
+    path: 'profile',
+    component: ProfileComponent,
+    //canActivate: [authGuard], 
+    children: [
+    {path: '', redirectTo: 'about-me', pathMatch: 'full' },
+    {path: 'about-me', component: AboutMeComponent },
+    {path: 'edit-profile', component: ProfileEditComponent },
+    {path: 'past-trips', component: PastTripsComponent },
+    {path: 'connections', component: ConnectionsComponent },
+    ]
+  },
   {
     path: 'account-settings',
     loadComponent: () => import('./features/guest/components/account-settings/account-settings')

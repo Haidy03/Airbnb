@@ -1,8 +1,12 @@
 
-import { Component, inject, signal } from '@angular/core';
+import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+<<<<<<< Updated upstream
 import { ActivatedRoute, Router } from '@angular/router';
+=======
+import { Router, RouterLink } from '@angular/router';
+>>>>>>> Stashed changes
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SocialButtonsComponent } from '../social-buttons.component/social-buttons.component';
@@ -15,7 +19,7 @@ type PhoneStep = 'input' | 'verify';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SocialButtonsComponent],
+  imports: [CommonModule, ReactiveFormsModule, SocialButtonsComponent, RouterLink],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -29,6 +33,8 @@ export class LoginComponent {
   private route = inject(ActivatedRoute);
   
 
+  @Output() closed = new EventEmitter<boolean>();
+  
   // State Management
   mode = signal<LoginMode>('phone');
   phoneStep = signal<PhoneStep>('input');
@@ -263,8 +269,9 @@ export class LoginComponent {
           next: (response:any) => {
             console.log('✅ Auto-login successful after registration');
             this.authService.setToken(response.token);
-            this.closeModal();
-            this.router.navigate(['/host/dashboard']);
+            this.router.navigate(['/login']); 
+            //this.closeModal();
+            
           },
           error: (loginError) => {
             console.error('❌ Auto-login failed:', loginError);
@@ -400,4 +407,5 @@ export class LoginComponent {
       this.modalService.open(module.ForgotPasswordComponent);
     });
   }
+  
 }
