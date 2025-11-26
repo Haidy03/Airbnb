@@ -30,7 +30,19 @@
            class="nav-link">
           Listings
         </a>
-        <a routerLink="/host/messages" 
+       
+
+         <a routerLink="/host/earnings" 
+           routerLinkActive="active" 
+           class="nav-link">
+          Earnings
+        </a>
+        <a routerLink="/host/reviews" 
+           routerLinkActive="active" 
+           class="nav-link">
+          Reviews
+        </a>
+         <a routerLink="/host/messages" 
            routerLinkActive="active" 
            class="nav-link">
           Messages
@@ -38,12 +50,7 @@
             {{ messageService.unreadCount()  }}
           </span>
         </a>
-
-         <a routerLink="/host/earnings" 
-           routerLinkActive="active" 
-           class="nav-link">
-          Earnings
-        </a>
+        
 
       </nav>
 
@@ -96,7 +103,22 @@
            class="mobile-nav-link">
           Listings
         </a>
-        <a routerLink="/host/messages" 
+       
+
+        <a routerLink="/host/earnings" 
+           (click)="toggleMobileMenu()"
+           routerLinkActive="active"
+           class="mobile-nav-link">
+          Earnings
+        </a>
+        <a routerLink="/host/reviews" 
+           (click)="toggleMobileMenu()"
+           routerLinkActive="active"
+           class="mobile-nav-link">
+          Reviews
+        </a>
+
+         <a routerLink="/host/messages" 
            (click)="toggleMobileMenu()"
            routerLinkActive="active"
            class="mobile-nav-link">
@@ -104,13 +126,6 @@
           <span *ngIf="unreadNotifications() > 0" class="message-badge">
             {{ messageService.unreadCount()}}
           </span>
-        </a>
-
-        <a routerLink="/host/earnings" 
-           (click)="toggleMobileMenu()"
-           routerLinkActive="active"
-           class="mobile-nav-link">
-          Earnings
         </a>
       </nav>
 
