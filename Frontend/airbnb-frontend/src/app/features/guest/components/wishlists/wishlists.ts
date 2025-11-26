@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header';
 import { WishlistService } from '../../services/wishlist.service';
-import { Property } from '../home/home'; // Import interface
+import { Property } from '../search/models/property.model';
 
 @Component({
   selector: 'app-wishlists',
@@ -19,13 +19,14 @@ export class WishlistsComponent implements OnInit {
   constructor(public wishlistService: WishlistService) {}
 
   ngOnInit(): void {
-    // الاشتراك في السيرفس عشان أي تغيير يحصل يظهر فوراً
     this.wishlistService.wishlist$.subscribe(items => {
       this.wishlistItems = items;
     });
   }
 
-  removeFromWishlist(id: number) {
-    this.wishlistService.removeFromWishlist(id);
+  removeFromWishlist(id: string) {
+    // الموديل الجديد الـ id سترينج، لكن السيرفس ممكن تكون مستنية رقم
+    // لو السيرفس عدلناها تاخد رقم:
+    this.wishlistService.removeFromWishlist(Number(id));
   }
 }

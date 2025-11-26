@@ -1,43 +1,50 @@
-<div class="fixed top-4 right-4 z-50 space-y-2">
-  <div
-    *ngFor="let toast of toasts"
-    [class]="getToastClass(toast.type)">
+<div class="toast-container">
+  <div *ngFor="let toast of toasts" class="toast-wrapper animate-slide-in">
 
-    <!-- Icon -->
-    <div class="flex-shrink-0">
-      <!-- Success Icon -->
-      <svg *ngIf="toast.type === 'success'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
+    <!--
+      CASE 1: WISHLIST TOAST (Airbnb Style)
+      يظهر فقط لو التوست مرسل معه صورة
+    -->
+    <div *ngIf="toast.image" class="airbnb-toast">
+      <!-- الصورة على الشمال -->
+      <img [src]="toast.image" alt="Property" class="toast-img">
 
-      <!-- Error Icon -->
-      <svg *ngIf="toast.type === 'error'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
+      <!-- الرسالة -->
+      <div class="toast-content">
+        <span class="toast-msg">{{ toast.message }}</span>
+      </div>
 
-      <!-- Warning Icon -->
-      <svg *ngIf="toast.type === 'warning'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-      </svg>
-
-      <!-- Info Icon -->
-      <svg *ngIf="toast.type === 'info'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
+      <!-- زر الإغلاق -->
+      <button (click)="removeToast(toast.id)" class="toast-close-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+        </svg>
+      </button>
     </div>
 
-    <!-- Message -->
-    <div class="flex-1">
-      <p class="text-sm font-medium text-white">{{ toast.message }}</p>
+
+    <!--
+      CASE 2: STANDARD TOAST (Account Settings Style)
+      يظهر لو مفيش صورة (التوستات القديمة)
+    -->
+    <div *ngIf="!toast.image" class="standard-toast"
+         [ngClass]="{
+           'bg-success': toast.type === 'success',
+           'bg-error': toast.type === 'error',
+           'bg-warning': toast.type === 'warning',
+           'bg-info': toast.type === 'info'
+         }">
+
+      <div class="st-icon">
+        <i class="bi" [ngClass]="{
+          'bi-check-circle-fill': toast.type === 'success',
+          'bi-exclamation-triangle-fill': toast.type === 'error' || toast.type === 'warning',
+          'bi-info-circle-fill': toast.type === 'info'
+        }"></i>
+      </div>
+      <div class="st-msg">{{ toast.message }}</div>
+      <button (click)="removeToast(toast.id)" class="st-close">✕</button>
     </div>
 
-    <!-- Close Button -->
-    <button
-      (click)="removeToast(toast.id)"
-      class="flex-shrink-0 text-white hover:text-gray-200">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-      </svg>
-    </button>
   </div>
 </div>

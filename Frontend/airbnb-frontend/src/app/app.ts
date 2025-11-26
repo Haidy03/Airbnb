@@ -4,6 +4,7 @@ import { SearchBarComponent } from './features/guest/components/search/component
 import { SearchResultsComponent } from './features/guest/components/search/components/search-results/search-results';
 import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
 import { ToastComponent } from './shared/components/toast/toast';
+import { FooterComponent } from './shared/components/footer/footer';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +13,8 @@ import { ToastComponent } from './shared/components/toast/toast';
     RouterOutlet,
     SearchBarComponent,
     SearchResultsComponent,
-    ToastComponent
+    ToastComponent,
+    FooterComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
