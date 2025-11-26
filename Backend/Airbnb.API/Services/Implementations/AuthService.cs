@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Airbnb.API.Services.Implementations
 {
@@ -13,11 +15,13 @@ namespace Airbnb.API.Services.Implementations
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _environment;
 
-        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IWebHostEnvironment environment)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _environment = environment;
         }
 
         public async Task<IdentityResult> RegisterUserAsync(RegisterDto registerDto)
@@ -29,6 +33,7 @@ namespace Airbnb.API.Services.Implementations
                 Email = registerDto.Email,
                 UserName = registerDto.Email,
                 CreatedAt = DateTime.UtcNow,
+                PhoneNumber = registerDto.PhoneNumber,
                 IsActive = true
             };
 
@@ -249,6 +254,76 @@ namespace Airbnb.API.Services.Implementations
             // 3. Save changes to database
             var result = await _userManager.UpdateAsync(user);
 
+            return result.Succeeded;
+        }
+
+        public async Task<string> UploadProfilePhotoAsync(string userId, IFormFile file)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) throw new Exception("User not found");
+
+            // A. Validate File
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var extension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(extension))
+                throw new ArgumentException("Invalid file type. Only JPG/PNG/webp allowed.");
+
+            if (file.Length > 5 * 1024 * 1024) // 5MB limit
+                throw new ArgumentException("File size exceeds 5MB.");
+
+            // B. Create Path: wwwroot/uploads/profiles
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "profiles");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            // C. Generate Unique Filename (UserId_Guid.jpg)
+            var fileName = $"{userId}_{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            // D. Save File
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // E. Update Database
+            // We store the relative path so the frontend can load it: /uploads/profiles/filename.jpg
+            var relativePath = $"/uploads/profiles/{fileName}";
+            user.ProfileImageUrl = relativePath;
+
+            await _userManager.UpdateAsync(user);
+
+            return relativePath;
+        }
+
+        public async Task<bool> SubmitVerificationRequestAsync(string userId, IFormFile file)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
+
+            // Logic is similar, but we save to a different folder
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".pdf" };
+            var extension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(extension))
+                throw new ArgumentException("Invalid file type.");
+
+            // Save to wwwroot/uploads/ids
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "ids");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = $"{userId}_ID_{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Update User Status
+            user.IdentificationImagePath = $"/uploads/ids/{fileName}";
+            user.VerificationStatus = "Pending"; // Triggers Admin Review
+            user.IsVerified = false;
+
+            var result = await _userManager.UpdateAsync(user);
             return result.Succeeded;
         }
     }
