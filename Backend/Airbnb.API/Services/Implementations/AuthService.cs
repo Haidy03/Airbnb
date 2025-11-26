@@ -204,9 +204,23 @@ namespace Airbnb.API.Services.Implementations
                 return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "Invalid password reset request." });
             }
 
-            // The UserManager handles everything: it checks if the token is valid for this user
-            // and if it hasn't expired, then updates the password hash.
-            var result = await _userManager.ResetPasswordAsync(user, resetDto.Token, resetDto.NewPassword);
+            // =========================================================
+            // 1. FIX: Handle URL Encoding
+            // =========================================================
+
+            // This converts "%2F" back to "/" and "%2B" back to "+"
+            string decodedToken = Uri.UnescapeDataString(resetDto.Token);
+
+            // 2. Extra Safety: Sometimes web browsers turn '+' into ' ' (space).
+            // If the token has spaces, put the plus signs back.
+            // (Identity tokens are Base64 and should not have spaces).
+            if (decodedToken.Contains(" "))
+            {
+                decodedToken = decodedToken.Replace(" ", "+");
+            }
+
+            // 3. Use the clean, decoded token
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, resetDto.NewPassword);
 
             return result;
         }
