@@ -177,5 +177,25 @@ namespace Airbnb.API.Controllers.Auth
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPost("upload-photo")]
+        [Authorize] // User must be logged in
+        public async Task<IActionResult> UploadPhoto(IFormFile file)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var photoUrl = await _authService.UploadProfilePhotoAsync(userId, file);
+                return Ok(new { message = "Photo uploaded successfully", url = photoUrl });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+            }
+        }
     }
 }
