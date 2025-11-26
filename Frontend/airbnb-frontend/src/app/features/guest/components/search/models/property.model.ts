@@ -1,4 +1,4 @@
-// src/app/features/guest/components/search/models/property.model.ts
+// الحفاظ على الـ Interfaces القديمة كما هي وإضافة الـ DTOs في النهاية
 
 export interface Property {
   id: string;
@@ -143,4 +143,37 @@ export enum CancellationPolicy {
   MODERATE = 'Moderate',
   STRICT = 'Strict',
   SUPER_STRICT = 'Super Strict'
+}
+
+// ==========================================
+//  BACKEND DTOs (لربط C# مع Angular)
+// ==========================================
+
+export interface PropertySearchResultDto {
+  id: number;
+  title: string;
+  city: string;
+  country: string;
+  pricePerNight: number;
+  rating: number;
+  totalReviews: number;
+  imageUrl: string;
+  isGuestFavorite: boolean;
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageIndex: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface SearchRequestDto {
+  location?: string;
+  checkIn?: string;
+  checkOut?: string;
+  guests?: number;
+  pageIndex: number;
+  pageSize: number;
 }

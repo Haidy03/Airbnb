@@ -1,38 +1,33 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Property } from '../components/home/home'; // تأكد أن المسار للـ interface صحيح
+// التصحيح: الاستيراد من ملف الموديل الرئيسي
+import { Property } from '../components/search/models/property.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WishlistService {
 
-  // المخزن الرئيسي للداتا (مصفوفة من العقارات)
   private wishlistSubject = new BehaviorSubject<Property[]>([]);
-
-  // ده اللي المكونات بتسمع له (Observable)
   wishlist$ = this.wishlistSubject.asObservable();
 
   constructor() {}
 
-  // إضافة للمفضلة
   addToWishlist(property: Property) {
     const currentList = this.wishlistSubject.value;
-    // التأكد من عدم التكرار
-    if (!currentList.find(p => p.id === property.id)) {
+    // مقارنة بالأرقام بعد تحويل الـ id لـ String أو العكس لضمان التطابق
+    if (!currentList.find(p => p.id.toString() === property.id.toString())) {
       this.wishlistSubject.next([...currentList, property]);
     }
   }
 
-  // حذف من المفضلة
   removeFromWishlist(propertyId: number) {
     const currentList = this.wishlistSubject.value;
-    const updatedList = currentList.filter(p => p.id !== propertyId);
+    const updatedList = currentList.filter(p => Number(p.id) !== propertyId);
     this.wishlistSubject.next(updatedList);
   }
 
-  // التأكد هل العنصر موجود ولا لأ (عشان تلوين القلب)
   isInWishlist(propertyId: number): boolean {
-    return this.wishlistSubject.value.some(p => p.id === propertyId);
+    return this.wishlistSubject.value.some(p => Number(p.id) === propertyId);
   }
 }

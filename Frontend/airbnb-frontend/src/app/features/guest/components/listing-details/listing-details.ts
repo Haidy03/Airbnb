@@ -9,12 +9,14 @@ import { CalendarSection } from '../calendar-section/calendar-section';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs/operators';
+import { HeaderComponent } from '../header/header';
+
 
 
 @Component({
   selector: 'app-listing-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, ImageGallery, BookingCard,CalendarSection],
+  imports: [CommonModule, FormsModule, ImageGallery, BookingCard, CalendarSection, HeaderComponent],
   templateUrl: './listing-details.html',
   styleUrl: './listing-details.scss',
 })
