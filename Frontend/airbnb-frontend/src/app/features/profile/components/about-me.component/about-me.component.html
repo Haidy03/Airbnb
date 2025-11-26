@@ -1,4 +1,6 @@
-<div class="p-4 sm:p-8 bg-gray-50 min-h-screen font-sans">
+<!--<pre>{{ user() }}</pre>
+<pre>{{ user() | json }}</pre>-->
+<!-- <div class="p-4 sm:p-8 bg-gray-50 min-h-screen font-sans">
   @if (user(); as currentUser) {
     <div class="max-w-4xl mx-auto">
       <div class="flex justify-between items-center mb-6">
@@ -6,11 +8,11 @@
         <button (click)="onEdit()" class="text-sm font-semibold text-gray-700 bg-white hover:bg-gray-100 border border-gray-300 py-2 px-4 rounded-lg transition-colors">
           Edit
         </button>
-      </div>
+      </div> -->
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-6"> -->
         <!-- Profile Card -->
-        <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center text-center">
+        <!-- <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center text-center">
           <div class="relative mb-4">
             @if (currentUser.profilePicture) {
               <img [src]="currentUser.profilePicture" [alt]="currentUser.firstName" class="w-28 h-28 rounded-full object-cover ring-4 ring-white shadow-md">
@@ -25,10 +27,10 @@
           @if (currentUser.email) {
             <p class="text-sm text-gray-600 mt-4 break-all">{{ currentUser.email }}</p>
           }
-        </div>
+        </div> -->
 
         <!-- Other Cards -->
-        <div class="md:col-span-2 space-y-6">
+        <!-- <div class="md:col-span-2 space-y-6">
           <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 class="text-xl font-semibold text-gray-800 mb-2">Complete your profile</h3>
             <p class="text-gray-600 mb-4 text-sm">
@@ -58,4 +60,127 @@
         </div>
     </div>
   }
+</div>-- -->
+
+
+
+<!--<div class="p-4 sm:p-8 bg-white min-h-screen font-sans">
+  @if (user(); as currentUser) {
+     <div class="max-w-5xl mx-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-semibold text-gray-900">About me</h1>
+        <button (click)="onEdit()" class="text-sm font-semibold text-gray-900 hover:underline bg-transparent border-0 p-0 cursor-pointer">
+          Edit
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12"> -->
+        <!-- Profile Card -->
+        <!-- <div class="bg-white p-10 rounded-xl border border-gray-200 flex flex-col items-center text-center">
+          <div class="mb-6">
+            @if (currentUser.profilePicture) {
+              <img [src]="currentUser.profilePicture" [alt]="currentUser.firstName" class="w-32 h-32 rounded-full object-cover">
+            } @else {
+              <div class="w-32 h-32 rounded-full bg-gray-900 text-white flex items-center justify-center text-5xl font-semibold">
+                {{ currentUser.firstName?.charAt(0) }}
+              </div>
+            }
+          </div>
+          <h2 class="text-2xl font-semibold text-gray-900 mb-2">{{ currentUser.firstName }} {{ currentUser.lastName }}</h2>
+          <p class="text-sm text-gray-600">{{ currentUser.role }}</p>
+        </div> -->
+
+        <!-- Complete Profile Card -->
+        <!-- <div class="bg-white p-10 rounded-xl border border-gray-200 flex flex-col">
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Complete your profile</h3>
+          <p class="text-gray-600 mb-6 text-sm leading-relaxed flex-1">
+            Your Airbnb profile is an important part of every reservation. Complete yours to help other hosts and guests get to know you.
+          </p>
+          <button (click)="onGetStarted()" class="bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3.5 px-6 rounded-lg transition-colors focus:outline-none self-start">
+            Get started
+          </button>
+        </div>
+      </div> -->
+
+      <!-- Reviews Section -->
+      <!-- <div class="border-t border-gray-200 pt-8">
+        <div class="flex items-center gap-4 cursor-pointer hover:opacity-75 transition-opacity">
+          <span class="text-3xl">💬</span>
+          <span class="text-base font-normal text-gray-900">Reviews I've written</span>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="flex items-center justify-center min-h-[80vh]">
+      <div class="text-center p-16 bg-white rounded-lg shadow-md border border-gray-200">
+        <div class="animate-pulse flex flex-col items-center">
+          <div class="w-24 h-24 bg-gray-200 rounded-full mb-4"></div>
+          <div class="h-6 w-40 bg-gray-200 rounded mb-2"></div>
+          <div class="h-4 w-48 bg-gray-200 rounded"></div>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-600 mt-4">Loading Profile...</h2>
+      </div>
+    </div>
+  }
+</div> -->
+
+<div class="main">
+  <div class="container-fluid">
+   
+
+    <section class="content">
+      @if (user(); as currentUser) {
+        <div class="content-header">
+          <h2>About me</h2>
+          <button (click)="onEdit()" class="edit-btn">
+            Edit
+          </button>
+        </div>
+
+        <div class="profile-card">
+          <!-- Profile Info -->
+          <div class="profile-info">
+            <div class="profile-avatar mb-6">
+              @if (currentUser.profilePicture) {
+                <img [src]="currentUser.profilePicture" [alt]="currentUser.firstName" class="w-32 h-32 rounded-full object-cover">
+              } @else {
+                <div class="w-32 h-32 rounded-full bg-gray-900 text-white flex items-center justify-center text-5xl font-semibold">
+                  {{ currentUser.firstName?.charAt(0) }}
+                </div>
+              }
+            </div>
+            <h3 class="profile-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</h3>
+            <p class="profile-status">{{ currentUser.role }}</p>
+          </div>
+
+          <!-- Complete Profile Card -->
+          <div class="complete-profile">
+            <h4>Complete your profile</h4>
+            <p>Your Airbnb profile is an important part of every reservation. Complete yours to help other hosts and guests get to know you.</p>
+            <button (click)="onGetStarted()" class="get-started-btn">
+              Get started
+            </button>
+          </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="reviews-section">
+          <div class="reviews-icon">💬</div>
+          <span>Reviews I've written</span>
+        </div>
+      } @else {
+        <div class="flex items-center justify-center min-h-[80vh]">
+          <div class="text-center p-16 bg-white rounded-lg shadow-md border border-gray-200">
+            <div class="animate-pulse flex flex-col items-center">
+              <div class="w-24 h-24 bg-gray-200 rounded-full mb-4"></div>
+              <div class="h-6 w-40 bg-gray-200 rounded mb-2"></div>
+              <div class="h-4 w-48 bg-gray-200 rounded"></div>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-600 mt-4">Loading Profile...</h2>
+          </div>
+        </div>
+      }
+    </section>
+  </div>
 </div>
+

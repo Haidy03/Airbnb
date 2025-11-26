@@ -113,6 +113,7 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
+
 builder.Services.AddScoped<IEarningsService, EarningsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
@@ -137,11 +138,14 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(
+                "http://localhost:4200",
+                "http://localhost:53829"
+              )
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials()
-        .WithExposedHeaders("Content-Disposition");
+              .WithExposedHeaders("Content-Disposition");
     });
 });
 
