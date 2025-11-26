@@ -37,7 +37,7 @@ export class ListingDetails implements OnInit {
     constructor(
     private listingService: ListingService,
     private route: ActivatedRoute,
-    private router :Router // استيراد الـ Router
+    private router :Router 
   ) {}
   // دالة بتستقبل التغيير من كارت الحجز (هنحتاج نعدل كارت الحجز عشان يبعتها)
   onDatesUpdated(dates: {checkIn: string, checkOut: string}) {
@@ -51,23 +51,20 @@ export class ListingDetails implements OnInit {
       return;
     }
     
-    // ******************************************************
-    // المنطق الجديد للتحقق من isInstantBook
-    // ******************************************************
+    
+  // isInstantBook
+    
     
     if (!this.listing?.isInstantBook) {
-      // إذا كان الحجز الفوري متاحاً، يتم التوجيه مباشرة لصفحة الدفع
+    
       this.router.navigate(['/checkout', this.listing?.id], {
         queryParams: {
           checkIn: this.selectedCheckIn,
           checkOut: this.selectedCheckOut,
-          guests: 2 // أو المتغير الحقيقي لعدد الضيوف
+          guests: 2  
         }
       });
     } else {
-      // إذا لم يكن الحجز الفوري متاحاً (Request to Book)
-      // قد تحتاجين إلى توجيههم إلى صفحة "إرسال طلب حجز" أو التعامل معه كخطوة مؤقتة
-      // هنا سنقوم بتوجيههم لصفحة الدفع كـ "طلب حجز"
        this.router.navigate(['/request-book', this.listing?.id], {
         queryParams: {
           checkIn: this.selectedCheckIn,
@@ -75,13 +72,12 @@ export class ListingDetails implements OnInit {
           guests: 2
         }
       });
-      // أو يمكنك توجيههم لصفحة خاصة بطلب الحجز
       // alert('This listing requires a "Request to Book" approval from the host.');
     }
     // ******************************************************
   }
 
-  // ... (بقية الدوال)
+  
 
 
   // 1. هذه هي قائمة المزايا التي كانت ناقصة
