@@ -1,302 +1,150 @@
-
-.search-bar-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 20px 0;
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 100;
-  border-bottom: 1px solid #EBEBEB;
-}
-
+/* Basic Styles */
 .search-bar {
   display: flex;
   align-items: center;
-  border: 1px solid #DDDDDD;
-  border-radius: 40px;
-  padding: 8px 8px 8px 24px;
   background: white;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s ease;
-  max-width: 850px;
-  width: 100%;
-}
-
-.search-bar:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dddddd;
+  border-radius: 32px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  height: 66px;
+  position: relative;
+  transition: background-color 0.2s;
 }
 
 .search-input-wrapper {
-  position: relative;
+  flex: 1;
+  height: 100%;
+  padding: 14px 24px;
   display: flex;
   flex-direction: column;
-  flex: 1;
-  padding: 8px 16px;
+  justify-content: center;
   border-radius: 32px;
-  transition: background-color 0.2s ease;
+  position: relative;
   cursor: pointer;
 }
+.search-input-wrapper:hover { background-color: #ebebeb; }
+.search-input-wrapper.active { background-color: white; box-shadow: 0 6px 20px rgba(0,0,0,0.2); z-index: 10; }
 
-.search-input-wrapper:hover {
-  background-color: #F7F7F7;
+.input-label { font-size: 12px; font-weight: 600; color: #000; line-height: 16px; }
+.search-input { border: none; outline: none; background: transparent; font-size: 14px; color: #717171; width: 100%; padding: 0; text-overflow: ellipsis; cursor: pointer; }
+.search-divider { width: 1px; height: 32px; background-color: #dddddd; }
+
+/* زر البحث */
+.search-btn {
+  background-color: #FF385C; color: white; height: 48px; border-radius: 24px; border: none;
+  padding: 0 16px; margin-right: 9px; display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 16px; transition: background-color 0.2s;
 }
+.search-btn:hover { background-color: #E00B41; }
 
-.search-input-wrapper.active {
-  background-color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+/* زر الفلتر */
+.side-filter-btn {
+  height: 48px; min-width: 48px; padding: 0 16px; background-color: white;
+  border: 1px solid #dddddd; border-radius: 24px; color: #222; cursor: pointer; transition: all 0.2s ease;
 }
+.side-filter-btn:hover { border-color: #000; background-color: #f7f7f7; }
 
-.input-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #222;
-  margin: 0 0 2px 0;
-}
-
-.search-input {
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 14px;
-  color: #222;
-  padding: 0;
-  width: 100%;
-}
-
-.search-input::placeholder {
-  color: #717171;
-}
-
-.search-input:focus {
-  outline: none;
-}
-
+/* =============================================
+   CUSTOM CLEAR BUTTON (X)
+   ============================================= */
 .clear-btn {
   position: absolute;
-  right: 12px;
+  right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
   border: none;
-  cursor: pointer;
-  padding: 4px;
+  background: #EBEBEB; /* لون خلفية رمادي فاتح */
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #717171;
-  transition: color 0.2s ease;
-}
-
-.clear-btn:hover {
+  cursor: pointer;
+  font-size: 12px;
   color: #222;
+  z-index: 20;
+}
+.clear-btn:hover { background: #ddd; }
+
+/* =============================================
+   DATE INPUT FIXES (Hide Native Icons)
+   ============================================= */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+  display: none;
+  -webkit-appearance: none;
 }
 
-.clear-btn i {
-  font-size: 16px;
+/* =============================================
+   DROPDOWNS (Guests & Locations)
+   ============================================= */
+.guests-dropdown, .locations-dropdown {
+  position: absolute; top: 100%; left: 0; background: white; padding: 20px;
+  border-radius: 24px; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  width: 100%; min-width: 300px; z-index: 100; margin-top: 12px;
 }
 
-.search-divider {
-  width: 1px;
-  height: 32px;
-  background-color: #DDDDDD;
-  flex-shrink: 0;
+/* تنسيق قائمة المدن */
+.locations-dropdown { padding: 16px 0; }
+.location-item {
+  display: flex; align-items: center; padding: 12px 24px; cursor: pointer; transition: background 0.2s;
 }
-
-.location-input {
-  flex: 1.5;
+.location-item:hover { background-color: #f7f7f7; }
+.loc-icon-wrapper {
+  width: 48px; height: 48px; background: #EBEBEB; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; margin-right: 16px;
 }
+.loc-icon-wrapper i { font-size: 20px; color: #222; }
+.loc-text { font-size: 16px; color: #222; font-weight: 500; }
 
-.date-input {
-  flex: 1;
-}
-
-.guests-input {
-  flex: 1.2;
-  position: relative;
-}
-
-.guests-dropdown {
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-  padding: 24px;
-  min-width: 380px;
-  z-index: 1000;
-}
-
+/* Guest Rows Styling */
 .guest-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid #EBEBEB;
+  margin-bottom: 24px; /* مسافة رأسية بين كل صف */
+  padding-bottom: 24px;
+  border-bottom: 1px solid #ebebeb;
 }
-
-.guest-row:last-child {
-  border-bottom: none;
-}
+.guest-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 
 .guest-info {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
-
-.guest-type {
-  font-size: 16px;
-  font-weight: 500;
-  color: #222;
-  margin-bottom: 4px;
-}
-
-.guest-description {
-  font-size: 14px;
-  color: #717171;
-}
-
-.pets-link {
-  color: #222;
-  text-decoration: underline;
-}
-
-.pets-link:hover {
-  color: #000;
-}
+.guest-type { font-weight: 600; font-size: 16px; color: #222; margin-bottom: 4px; }
+.guest-description { font-size: 14px; color: #717171; }
 
 .guest-controls {
   display: flex;
   align-items: center;
-  gap: 16px;
 }
 
 .guest-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #b0b0b0; /* لون حدود أغمق قليلاً للوضوح */
+  background: white;
+  color: #717171;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #717171;
-  transition: color 0.2s ease;
+  cursor: pointer;
+  transition: all 0.2s;
 }
+.guest-btn:hover:not([disabled]) { border-color: #222; color: #222; }
+.guest-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #ebebeb; }
 
-.guest-btn:hover:not(:disabled) {
-  color: #222;
-}
-
-.guest-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.guest-btn i {
-  font-size: 32px;
-}
-
+/* التعديل الأهم هنا (المسافة) */
 .guest-count {
-  font-size: 16px;
-  font-weight: 400;
-  color: #222;
-  min-width: 24px;
+ display: inline-block; /* بيخلي العنصر يحترم الأبعاد والمارجن */
+  margin: 0 30px;       /* مسافة خارجية يمين وشمال */
+  width: 20px;
   text-align: center;
-}
-
-.search-btn {
-  background: linear-gradient(to right, #E61E4D 0%, #E31C5F 50%, #D70466 100%);
-  color: white;
-  border: none;
-  border-radius: 24px;
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
   font-size: 16px;
   font-weight: 600;
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-}
-
-.search-btn:hover {
-  transform: scale(1.04);
-}
-
-.search-btn i {
-  font-size: 18px;
-}
-
-.filters-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border: 1px solid #DDDDDD;
-  border-radius: 12px;
-  background: white;
   color: #222;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filters-toggle-btn:hover {
-  border-color: #222;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.filters-toggle-btn i {
-  font-size: 16px;
-}
-
-@media (max-width: 992px) {
-  .search-bar {
-    flex-wrap: wrap;
-    padding: 12px;
-    border-radius: 16px;
-  }
-
-  .search-input-wrapper {
-    flex: 1 1 100%;
-    padding: 12px 16px;
-  }
-
-  .search-divider {
-    width: 100%;
-    height: 1px;
-  }
-
-  .search-btn {
-    flex: 1 1 100%;
-    justify-content: center;
-    margin-top: 8px;
-  }
-
-  .guests-dropdown {
-    right: auto;
-    left: 0;
-    min-width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .search-bar-container {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 16px;
-  }
-
-  .filters-toggle-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .search-btn-text {
-    display: none;
-  }
 }

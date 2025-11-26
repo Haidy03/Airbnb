@@ -1,148 +1,127 @@
-<div class="search-bar-container">
-  <div class="search-bar">
-    <!-- Location Input -->
-    <div
-      class="search-input-wrapper location-input"
-      [class.active]="activeInput === 'location'"
-    >
-      <label class="input-label">Where</label>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Search destinations"
-        [(ngModel)]="location"
-        (focus)="onInputFocus('location')"
-        (blur)="onInputBlur()"
-      >
-      <button *ngIf="location" class="clear-btn" (click)="clearLocation()" type="button">
-        <i class="bi bi-x-circle-fill"></i>
-      </button>
-    </div>
+<div class="d-flex align-items-center gap-3">
 
-    <div class="search-divider"></div>
+  <div class="search-bar-container flex-grow-1">
+    <div class="search-bar">
 
-    <!-- Check-in Input -->
-    <div
-      class="search-input-wrapper date-input"
-      [class.active]="activeInput === 'checkIn'"
-    >
-      <label class="input-label">Check in</label>
-      <input
-        type="date"
-        class="search-input"
-        placeholder="Add dates"
-        [(ngModel)]="checkIn"
-        (focus)="onInputFocus('checkIn')"
-        (blur)="onInputBlur()"
-      >
-    </div>
+      <!-- 1. Location Input -->
+      <div class="search-input-wrapper location-input" [class.active]="activeInput === 'location'">
+        <label class="input-label">Where</label>
+        <input type="text" class="search-input" placeholder="Search destinations"
+               [(ngModel)]="location" (focus)="onInputFocus('location')" (blur)="onInputBlur()">
 
-    <div class="search-divider"></div>
+        <!-- زر مسح الموقع -->
+        <button *ngIf="location" class="clear-btn" (click)="clearLocation()" type="button">
+            <i class="bi bi-x-circle-fill"></i>
+        </button>
 
-    <!-- Check-out Input -->
-    <div
-      class="search-input-wrapper date-input"
-      [class.active]="activeInput === 'checkOut'"
-    >
-      <label class="input-label">Check out</label>
-      <input
-        type="date"
-        class="search-input"
-        placeholder="Add dates"
-        [(ngModel)]="checkOut"
-        [min]="checkIn"
-        (focus)="onInputFocus('checkOut')"
-        (blur)="onInputBlur()"
-      >
-      <button *ngIf="checkIn || checkOut" class="clear-btn" (click)="clearDates()" type="button">
-        <i class="bi bi-x-circle-fill"></i>
-      </button>
-    </div>
-
-    <div class="search-divider"></div>
-
-    <!-- Guests Input -->
-    <div
-      class="search-input-wrapper guests-input"
-      [class.active]="activeInput === 'guests'"
-    >
-      <label class="input-label">Who</label>
-      <input
-        type="text"
-        class="search-input"
-        [value]="guestsText"
-        readonly
-        placeholder="Add guests"
-        (focus)="onInputFocus('guests')"
-        (blur)="onInputBlur()"
-      >
-
-      <!-- Guests Dropdown -->
-      <div *ngIf="showGuestsDropdown" class="guests-dropdown" (mousedown)="$event.preventDefault()">
-        <!-- Adults -->
-        <div class="guest-row">
-          <div class="guest-info">
-            <div class="guest-type">Adults</div>
-            <div class="guest-description">Ages 13 or above</div>
-          </div>
-          <div class="guest-controls">
-            <button class="guest-btn" [disabled]="adultsCount <= 0" (click)="decrementGuests('adults')" type="button"><i class="bi bi-dash-circle"></i></button>
-            <span class="guest-count">{{ adultsCount }}</span>
-            <button class="guest-btn" [disabled]="adultsCount >= 16" (click)="incrementGuests('adults')" type="button"><i class="bi bi-plus-circle"></i></button>
-          </div>
-        </div>
-
-        <!-- Children -->
-        <div class="guest-row">
-          <div class="guest-info">
-            <div class="guest-type">Children</div>
-            <div class="guest-description">Ages 2–12</div>
-          </div>
-          <div class="guest-controls">
-            <button class="guest-btn" [disabled]="childrenCount <= 0" (click)="decrementGuests('children')" type="button"><i class="bi bi-dash-circle"></i></button>
-            <span class="guest-count">{{ childrenCount }}</span>
-            <button class="guest-btn" [disabled]="childrenCount >= 15" (click)="incrementGuests('children')" type="button"><i class="bi bi-plus-circle"></i></button>
-          </div>
-        </div>
-
-        <!-- Infants -->
-        <div class="guest-row">
-          <div class="guest-info">
-            <div class="guest-type">Infants</div>
-            <div class="guest-description">Under 2</div>
-          </div>
-          <div class="guest-controls">
-            <button class="guest-btn" [disabled]="infantsCount <= 0" (click)="decrementGuests('infants')" type="button"><i class="bi bi-dash-circle"></i></button>
-            <span class="guest-count">{{ infantsCount }}</span>
-            <button class="guest-btn" [disabled]="infantsCount >= 5" (click)="incrementGuests('infants')" type="button"><i class="bi bi-plus-circle"></i></button>
-          </div>
-        </div>
-
-        <!-- Pets -->
-        <div class="guest-row">
-          <div class="guest-info">
-            <div class="guest-type">Pets</div>
-            <div class="guest-description">Bringing a service animal?</div>
-          </div>
-          <div class="guest-controls">
-            <button class="guest-btn" [disabled]="petsCount <= 0" (click)="decrementGuests('pets')" type="button"><i class="bi bi-dash-circle"></i></button>
-            <span class="guest-count">{{ petsCount }}</span>
-            <button class="guest-btn" [disabled]="petsCount >= 5" (click)="incrementGuests('pets')" type="button"><i class="bi bi-plus-circle"></i></button>
-          </div>
+        <!-- قائمة الأماكن المقترحة (NEW) -->
+        <div *ngIf="showLocationsDropdown && availableLocations.length > 0" class="locations-dropdown" (mousedown)="$event.preventDefault()">
+            <div class="location-item" *ngFor="let city of availableLocations" (click)="selectLocation(city)">
+                <div class="loc-icon-wrapper"><i class="bi bi-geo-alt-fill"></i></div>
+                <div class="loc-text">{{ city }}</div>
+            </div>
         </div>
       </div>
-    </div>
 
-    <!-- Search Button -->
-    <button class="search-btn" (click)="onSearch()" type="button">
-      <i class="bi bi-search"></i>
-      <span class="search-btn-text">Search</span>
-    </button>
+      <div class="search-divider"></div>
+
+      <!-- 2. Check in (Native Picker Trigger on Click) -->
+      <div class="search-input-wrapper date-input" [class.active]="activeInput === 'checkIn'"
+           (click)="startDate.showPicker()"> <!-- فتح التقويم عند الضغط على الـ Div -->
+        <label class="input-label">Check in</label>
+        <input #startDate
+          type="date"
+          class="search-input"
+          [(ngModel)]="checkIn"
+          [min]="minDate"
+          (focus)="onInputFocus('checkIn')"
+          (blur)="onInputBlur()">
+
+        <!-- زر مسح مخصص (Custom X) -->
+        <button *ngIf="checkIn" class="clear-btn" (click)="clearDate('checkIn', $event)" type="button">
+            <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+
+      <div class="search-divider"></div>
+
+      <!-- 3. Check out -->
+      <div class="search-input-wrapper date-input" [class.active]="activeInput === 'checkOut'"
+           (click)="endDate.showPicker()">
+        <label class="input-label">Check out</label>
+        <input #endDate
+          type="date"
+          class="search-input"
+          [(ngModel)]="checkOut"
+          [min]="checkIn ? checkIn : minDate"
+          (focus)="onInputFocus('checkOut')"
+          (blur)="onInputBlur()">
+
+        <!-- زر مسح مخصص -->
+        <button *ngIf="checkOut" class="clear-btn" (click)="clearDate('checkOut', $event)" type="button">
+            <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+
+      <div class="search-divider"></div>
+
+      <!-- 4. Who -->
+      <div class="search-input-wrapper guests-input" [class.active]="activeInput === 'guests'">
+        <label class="input-label">Who</label>
+        <input type="text" class="search-input" [value]="guestsText" readonly placeholder="Add guests"
+               (focus)="onInputFocus('guests')" (blur)="onInputBlur()">
+
+        <!-- Guests Dropdown (As Before) -->
+<div *ngIf="showGuestsDropdown" class="guests-dropdown" (mousedown)="$event.preventDefault()">
+           <div class="guest-row">
+              <div class="guest-info"><div>Adults</div><div class="guest-description" class="fw-light">Ages 13+</div></div>
+              <div class="guest-controls">
+                <button class="guest-btn" [disabled]="adultsCount<=0" (click)="decrementGuests('adults')">-</button>
+                <span class="mx-3">{{adultsCount}}</span>
+                <button class="guest-btn" (click)="incrementGuests('adults')">+</button>
+              </div>
+           </div>
+           <div class="guest-row">
+              <div class="guest-info"><div>Children</div><div class="guest-description" class="fw-light">Ages 2–12</div></div>
+              <div class="guest-controls">
+                <button class="guest-btn" [disabled]="childrenCount<=0" (click)="decrementGuests('children')">-</button>
+                <span class="mx-3">{{childrenCount}}</span>
+                <button class="guest-btn" (click)="incrementGuests('children')">+</button>
+              </div>
+           </div>
+           <div class="guest-row">
+              <div class="guest-info"><div>Infants</div><div class="guest-description" class="fw-light">Under 2</div></div>
+              <div class="guest-controls">
+                <button class="guest-btn" [disabled]="infantsCount<=0" (click)="decrementGuests('infants')">-</button>
+                <span class="mx-3">{{infantsCount}}</span>
+                <button class="guest-btn" (click)="incrementGuests('infants')">+</button>
+              </div>
+           </div>
+           <div class="guest-row">
+              <div class="guest-info"><div>Pets</div></div>
+              <div class="guest-controls">
+                <button class="guest-btn" [disabled]="petsCount<=0" (click)="decrementGuests('pets')">-</button>
+                <span class="mx-3">{{petsCount}}</span>
+                <button class="guest-btn" (click)="incrementGuests('pets')">+</button>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      <!-- Search Button -->
+      <button class="search-btn" (click)="onSearch()" type="button">
+        <i class="bi bi-search"></i>
+        <span class="search-btn-text">Search</span>
+      </button>
+    </div>
   </div>
 
-  <!-- Filters Button (Controlled by Input) -->
-  <button *ngIf="showFilters" class="filters-toggle-btn" (click)="onFiltersClick()" type="button">
-    <i class="bi bi-sliders"></i>
-    <span>Filters</span>
+  <button *ngIf="withFilterButton"
+          class="side-filter-btn d-flex align-items-center justify-content-center"
+          (click)="onFiltersClick()"
+          title="Filters">
+    <i class="bi bi-sliders2 fs-5"></i>
+    <span class="ms-2 fw-semibold d-none d-xl-inline">Filters</span>
   </button>
+
 </div>

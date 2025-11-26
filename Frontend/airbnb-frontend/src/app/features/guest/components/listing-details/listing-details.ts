@@ -7,12 +7,14 @@ import { ImageGallery } from "../image-gallery/image-gallery";
 import { BookingCard } from '../booking-card/booking-card';
 import { CalendarSection } from '../calendar-section/calendar-section';
 import { Router } from '@angular/router';
+import { HeaderComponent } from '../header/header';
+
 
 
 @Component({
   selector: 'app-listing-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, ImageGallery, BookingCard,CalendarSection],
+  imports: [CommonModule, FormsModule, ImageGallery, BookingCard, CalendarSection, HeaderComponent],
   templateUrl: './listing-details.html',
   styleUrl: './listing-details.scss',
 })

@@ -1,25 +1,35 @@
 <div class="search-results-container">
 
-  <!-- منطقة الفلاتر والسيرش بار الخاص بصفحة البحث -->
+  <!--
+    شريط الفلاتر والبحث
+    يحتوي على السيرش بار الكبير + زر الفلتر
+  -->
   <div class="filters-sticky-wrapper">
-    <div class="container-fluid">
-      <!-- رجعنا السيرش بار هنا عشان الفلاتر -->
-      <!-- لاحظ: ممكن تستخدم [showFilters]="true" لو عدلنا الكومبوننت يقبلها، أو تسيبه زي ما هو -->
-      <app-search-bar
-        (search)="onSearchSubmit($event)"
-        (filtersOpen)="onFiltersOpen()"
-      ></app-search-bar>
+    <div class="container"> <!-- كونتينر عشان ييجي في النص -->
+      <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
 
-      <!-- الفلاتر المنبثقة -->
-      <app-filters
-        [isOpen]="showFilters"
-        (close)="onFiltersClose()"
-        (applyFilters)="onFiltersApply($event)"
-      ></app-filters>
+          <!-- هنا بنستخدم السيرش بار الكبير ونفعل زرار الفلتر جنبه -->
+          <app-search-bar
+            [withFilterButton]="true"
+            (search)="onSearchSubmit($event)"
+            (filtersOpen)="onFiltersOpen()"
+          ></app-search-bar>
+
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- الفلاتر المنبثقة -->
+  <app-filters
+    [isOpen]="showFilters"
+    (close)="onFiltersClose()"
+    (applyFilters)="onFiltersApply($event)"
+  ></app-filters>
+
   <div class="results-content">
+
     <!-- القائمة -->
     <div class="results-list-section" [class.with-map]="showMap">
       <div class="container-fluid">
