@@ -12,5 +12,7 @@ namespace Airbnb.API.Services.Interfaces
         Task<GuestReviewsSummaryDto> GetGuestReviewsAsync(string guestId);
         Task<CanReviewResponseDto> CanUserReviewAsync(string userId, int bookingId);
         Task<List<ReviewResponseDto>> GetUserReviewsAsync(string userId);
+
+        Task<HostReviewsResponseDto> GetHostReviewsAsync(string hostId);
     }
 }

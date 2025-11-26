@@ -49,6 +49,7 @@ import { ProfileEditComponent } from './features/profile/components/profile-edit
 import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
 import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
 import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
+import { HostReviewsComponent } from './features/host/components/host-reviews/host-reviews';
 
 export const routes: Routes = [
   // =================================================
@@ -144,6 +145,7 @@ export const routes: Routes = [
         loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent) 
       },
       { path: 'earnings', component: HostEarningsComponent },
+      { path: 'reviews', component: HostReviewsComponent },
      
     ]
   },
