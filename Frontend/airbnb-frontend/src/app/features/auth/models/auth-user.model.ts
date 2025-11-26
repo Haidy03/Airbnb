@@ -43,7 +43,7 @@ export interface PhoneVerifyRequest {
 }
 
 export interface EmailLoginRequest {
-  email: string;
+  identifier: string;
   password: string;
 }
 

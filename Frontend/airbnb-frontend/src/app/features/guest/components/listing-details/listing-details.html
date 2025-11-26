@@ -12,7 +12,7 @@
         <span class="dot">·</span>
         <span class="reviews-link">{{ listing.reviewsCount }} reviews</span>
         <span class="dot">·</span>
-        <span class="location">{{ listing.location }}</span>
+        <span class="location">{{ listing.country }},{{listing.city}},{{listing.address}}</span>
       </div>
 
       <div class="right-actions">
@@ -41,12 +41,12 @@
       <!-- Host & Room Info -->
       <section class="section host-info-section">
         <div class="text-info">
-          <h2>Entire serviced apartment hosted by {{ listing.host.name }}</h2>
-          <p>2 guests · Studio · 2 beds · 1 bath</p>
+          <h2>Entire serviced apartment hosted by {{ listing.host.firstName }} {{listing.host.lastName}}</h2>
+          <p>{{listing.maxGuests}} Guests · {{listing.numberOfBedrooms}} beds · {{listing.numberOfBathrooms}} bath</p>
         </div>
         <div class="host-avatar">
-          <img [src]="listing.host.avatarUrl" alt="Host">
-          <span class="badge" *ngIf="listing.host.isSuperhost">🛡️</span>
+          <img [src]="listing.host.profileImageUrl" alt="Host">
+
         </div>
       </section>
       <hr>
@@ -63,7 +63,7 @@
         <div class="highlight-item">
           <i class="fa-solid fa-medal"></i>
           <div>
-            <h3>{{ listing.host.name }} is a Superhost</h3>
+            <h3>{{ listing.host.firstName }} {{listing.host.lastName}} is a Superhost</h3>
             <p>Superhosts are experienced, highly rated hosts.</p>
           </div>
         </div>
@@ -97,7 +97,7 @@
         <div class="bedroom-card">
           <div class="img-placeholder"><i class="fa-solid fa-bed"></i></div>
           <h3>Bedroom area</h3>
-          <p>2 single beds</p>
+          <p>{{listing.numberOfBedrooms}}single beds</p>
         </div>
       </section>
       <hr>
@@ -112,14 +112,14 @@
               </div>
         </div>
         <button class="outline-btn" (click)="showAllAmenities()">
-          Show all 27 amenities
+          Show all
         </button>
       </section>
       <hr>
 
       <!-- Calendar (Placeholder for now) -->
     <app-calendar-section
-     [location]="listing.location.split(',')[0]"
+     [location]="listing.city"
      [checkIn]="selectedCheckIn"
      [checkOut]="selectedCheckOut">
   </app-calendar-section>
@@ -133,8 +133,8 @@
         <app-super-card
           [listingId]="listing.id"
           [pricePerNight]="listing.pricePerNight"
-          [rating]="listing.rating"
           [reviewsCount]="listing.reviewsCount"
+          [rating]="listing.rating"
           [serviceFee]="150"
           [cleaningFee]="100"
            (dateChanged)="onDatesUpdated($event)"
@@ -149,97 +149,29 @@
 
 
  <!-- ================= REVIEWS SECTION ================= -->
-<section class="reviews-full-section" *ngIf="listing.reviews">
+<!-- --- START OF REVIEWS SECTION CODE (listing-details.html) --- -->
 
-  <!-- العنوان الرئيسي -->
-  <h2>
-    <i class="fa-solid fa-star"></i> {{ listing.rating }} · {{ listing.reviewsCount }} reviews
-  </h2>
+<section class="reviews-full-section" *ngIf="listing?.ratingBreakdown && listing.reviewsCount && listing.reviewsCount > 0">
 
-  <!-- 1. Rating Bars (شبكة الفئات) -->
-  <div class="rating-breakdown-grid">
-
-    <!-- دالة بتعمل Loop عشان نكرر البار 6 مرات -->
-    <!-- (ممكن تكتبيها يدوياً لو مش عايزة تعقيد في الـ TS) -->
-
-    <div class="rating-category">
-      <span>Cleanliness</span>
-      <div class="bar-container">
-        <!-- الـ width بياخد القيمة من البيانات -->
-        <div class="fill" [style.width.%]="(listing.ratingBreakdown.cleanliness / 5) * 100"></div>
-      </div>
-      <span class="score">{{ listing.ratingBreakdown.cleanliness }}</span>
-    </div>
-
-    <div class="rating-category">
-      <span>Accuracy</span>
-      <div class="bar-container">
-        <div class="fill" [style.width.%]="(listing.ratingBreakdown.accuracy / 5) * 100"></div>
-      </div>
-      <span class="score">{{ listing.ratingBreakdown.accuracy }}</span>
-    </div>
-
-    <div class="rating-category">
-      <span>Communication</span>
-      <div class="bar-container">
-        <div class="fill" [style.width.%]="(listing.ratingBreakdown.communication / 5) * 100"></div>
-      </div>
-      <span class="score">{{ listing.ratingBreakdown.communication }}</span>
-    </div>
-
-    <div class="rating-category">
-      <span>Location</span>
-      <div class="bar-container">
-        <div class="fill" [style.width.%]="(listing.ratingBreakdown.location / 5) * 100"></div>
-      </div>
-      <span class="score">{{ listing.ratingBreakdown.location }}</span>
-    </div>
-
-    <div class="rating-category">
-      <span>Check-in</span>
-      <div class="bar-container">
-        <div class="fill" [style.width.%]="(listing.ratingBreakdown.checkIn / 5) * 100"></div>
-      </div>
-      <span class="score">{{ listing.ratingBreakdown.checkIn }}</span>
-    </div>
-
-    <div class="rating-category">
-      <span>Value</span>
-      <div class="bar-container">
-        <div class="fill" [style.width.%]="(listing.ratingBreakdown.value / 5) * 100"></div>
-      </div>
-      <span class="score">{{ listing.ratingBreakdown.value }}</span>
-    </div>
-
+  <!-- -------------------- HEADER -------------------- -->
+  <div class="rating-header">
+    <span class="fa fa-solid fa-star">★</span>
+    <span class="rating">{{ listing.rating | number:'1.2-2' }}</span>
+    <span class="dot">·</span>
+    <span class="reviews-count">{{ listing.reviewsCount }} reviews</span>
   </div>
 
-  <!-- 2. Review Cards (شبكة التعليقات) -->
-  <div class="reviews-grid">
-    <!-- هنا بقى بنعمل Loop حقيقي على البيانات -->
-    <div class="review-card" *ngFor="let review of listing.reviews">
+  <!-- ----------------- RATING BARS ------------------ -->
+  <div class="rating-bars-container">
 
-      <div class="reviewer-header">
-        <!-- صورة الشخص أو حرف لو مفيش صورة -->
-        <img *ngIf="review.authorAvatar" [src]="review.authorAvatar" alt="User" class="avatar">
-        <div *ngIf="!review.authorAvatar" class="avatar placeholder">{{ review.authorName.charAt(0) }}</div>
-
-        <div class="info">
-          <h4>{{ review.authorName }}</h4>
-          <span>{{ review.country }}</span>
-        </div>
-      </div>
-
-      <div class="review-body">
-         <div class="rating-stars">
-            ★★★★★ <span class="date">· {{ review.date }}</span>
-         </div>
-         <p>{{ review.comment }}</p>
-      </div>
-    </div>
-  </div>
-
-  <button class="outline-btn">Show all {{ listing.reviewsCount }} reviews</button>
-</section>
+    <!-- Row 1: Cleanliness and Accuracy -->
+    <div class="rating-row">
+      <!-- 1. Cleanliness -->
+      <div class="rating-item">
+        <div class="rating-title">Cleanliness</div>
+        <div class="rating-category">
+          <div class="bar-container">
+            <!-- الحماية: التأكد من وجود cleanliness،
   <hr>
 
   <!-- ================= HOST & MAP ================= -->
@@ -248,3 +180,8 @@
   </section>
 
 </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

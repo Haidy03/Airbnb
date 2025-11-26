@@ -1,14 +1,101 @@
-@keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* الحاوية الرئيسية - مثبتة أسفل اليسار (مثل Airbnb) */
+.toast-container {
+  position: fixed;
+  bottom: 40px;
+  left: 40px; /* Airbnb بيحطها شمال */
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  pointer-events: none; /* عشان ما نمنعش الضغط في المساحات الفاضية */
 }
 
+.toast-wrapper {
+  pointer-events: auto;
+}
+
+/* =========================================
+   1. AIRBNB STYLE TOAST (Wishlist)
+   ========================================= */
+.airbnb-toast {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15); /* ظل قوي زي الصورة */
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 320px;
+  max-width: 400px;
+  border: 1px solid #f0f0f0;
+}
+
+.toast-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px; /* حواف دائرية خفيفة للصورة */
+  object-fit: cover;
+}
+
+.toast-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.toast-msg {
+  font-size: 14px;
+  font-weight: 600; /* خط عريض */
+  color: #222;
+}
+
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #717171;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.toast-close-btn:hover {
+  background-color: #f7f7f7;
+  color: #000;
+}
+
+/* =========================================
+   2. STANDARD TOAST (Account Settings)
+   ========================================= */
+.standard-toast {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  min-width: 300px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: sans-serif;
+}
+
+.bg-success { background-color: #222222; } /* أسود شيك */
+.bg-error { background-color: #C13515; }   /* أحمر */
+.bg-warning { background-color: #FFC107; color: #222; }
+.bg-info { background-color: #007BFF; }
+
+.st-icon { margin-right: 12px; font-size: 18px; }
+.st-msg { flex: 1; font-size: 14px; font-weight: 500; }
+.st-close { background: none; border: none; color: inherit; cursor: pointer; font-size: 16px; opacity: 0.7; }
+.st-close:hover { opacity: 1; }
+
+/* Animation */
 .animate-slide-in {
-  animation: slide-in 0.3s ease-out;
+  animation: slideIn 0.4s cubic-bezier(0.21, 1.02, 0.73, 1);
+}
+
+@keyframes slideIn {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }

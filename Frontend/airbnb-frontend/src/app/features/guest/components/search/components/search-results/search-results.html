@@ -1,9 +1,27 @@
 <div class="search-results-container">
-  <app-search-bar
-    (search)="onSearchSubmit($event)"
-    (filtersOpen)="onFiltersOpen()"
-  ></app-search-bar>
 
+  <!--
+    شريط الفلاتر والبحث
+    يحتوي على السيرش بار الكبير + زر الفلتر
+  -->
+  <div class="filters-sticky-wrapper">
+    <div class="container"> <!-- كونتينر عشان ييجي في النص -->
+      <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+
+          <!-- هنا بنستخدم السيرش بار الكبير ونفعل زرار الفلتر جنبه -->
+          <app-search-bar
+            [withFilterButton]="true"
+            (search)="onSearchSubmit($event)"
+            (filtersOpen)="onFiltersOpen()"
+          ></app-search-bar>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- الفلاتر المنبثقة -->
   <app-filters
     [isOpen]="showFilters"
     (close)="onFiltersClose()"
@@ -11,8 +29,11 @@
   ></app-filters>
 
   <div class="results-content">
+
+    <!-- القائمة -->
     <div class="results-list-section" [class.with-map]="showMap">
       <div class="container-fluid">
+
         <button class="map-toggle-btn d-lg-none" (click)="toggleMap()" type="button">
           <i class="bi" [ngClass]="showMap ? 'bi-list' : 'bi-map'"></i>
           <span>{{ showMap ? 'Show list' : 'Show map' }}</span>
@@ -26,6 +47,7 @@
       </div>
     </div>
 
+    <!-- الخريطة -->
     <div class="results-map-section" *ngIf="showMap" [class.mobile-fullscreen]="!isDesktop">
       <app-search-map
         [properties]="propertyList?.properties || []"

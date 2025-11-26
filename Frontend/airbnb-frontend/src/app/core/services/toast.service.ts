@@ -5,6 +5,7 @@ export interface Toast {
   id: string;
   type: 'success' | 'error' | 'warning' | 'info';
   message: string;
+  image?: string; // (جديد) خاصية الصورة عشان إشعار الـ Wishlist
   duration?: number;
 }
 
@@ -12,35 +13,51 @@ export interface Toast {
   providedIn: 'root'
 })
 export class ToastService {
+  // Subject بيبعت التوست الجديد للكومبوننت
   private toastSubject = new Subject<Toast>();
   public toast$: Observable<Toast> = this.toastSubject.asObservable();
 
+  // مصفوفة داخلية (اختياري لو حبيت تدير الحالة هنا)
   private toasts: Toast[] = [];
 
+  constructor() {}
+
+  // --- الدوال القديمة (عشان الـ Account Settings تفضل شغالة) ---
+  // قمنا بتعديل الاستدعاء الداخلي فقط ليناسب الترتيب الجديد
+
   showSuccess(message: string, duration: number = 3000): void {
-    this.show('success', message, duration);
+    this.show(message, 'success', undefined, duration);
   }
 
   showError(message: string, duration: number = 5000): void {
-    this.show('error', message, duration);
+    this.show(message, 'error', undefined, duration);
   }
 
   showWarning(message: string, duration: number = 4000): void {
-    this.show('warning', message, duration);
+    this.show(message, 'warning', undefined, duration);
   }
 
   showInfo(message: string, duration: number = 3000): void {
-    this.show('info', message, duration);
+    this.show(message, 'info', undefined, duration);
   }
 
-  private show(type: Toast['type'], message: string, duration: number): void {
+  // --- الدالة الرئيسية (المعدلة) ---
+  // 1. خليناها public عشان الـ Home ينادي عليها
+  // 2. غيرنا الترتيب: message الأول، ثم type، ثم image
+  public show(
+    message: string,
+    type: 'success' | 'error' | 'warning' | 'info' = 'success',
+    image?: string,
+    duration: number = 4000
+  ): void {
+
     const id = this.generateId();
-    const toast: Toast = { id, type, message, duration };
+    const toast: Toast = { id, type, message, image, duration };
 
     this.toasts.push(toast);
-    this.toastSubject.next(toast);
+    this.toastSubject.next(toast); // ابعت التوست للكومبوننت عشان يعرضه
 
-    // Auto remove after duration
+    // إزالة تلقائية من السيرفس (الكومبوننت بيعمل إزالة من الـ UI بردو)
     if (duration > 0) {
       setTimeout(() => this.remove(id), duration);
     }
@@ -48,6 +65,9 @@ export class ToastService {
 
   remove(id: string): void {
     this.toasts = this.toasts.filter(t => t.id !== id);
+    // ملاحظة: الـ Component بيسمع لـ toast$ اللي بتبعت "إضافة" بس.
+    // الحذف بيتم في الكومبوننت محلياً، أو ممكن نعمل Subject تاني للحذف لو محتاج تزامن دقيق.
+    // حالياً الكود ده كافي جداً لغرضك.
   }
 
   clear(): void {

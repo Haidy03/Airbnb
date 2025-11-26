@@ -18,7 +18,11 @@ export class ToastComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscription = this.toastService.toast$.subscribe(toast => {
-      this.toasts.push(toast);
+      if (toast) {
+        this.toasts.push(toast);
+        // إخفاء تلقائي بعد 4 ثواني
+        setTimeout(() => this.removeToast(toast.id), 4000);
+      }
     });
   }
 
@@ -28,19 +32,7 @@ export class ToastComponent implements OnInit, OnDestroy {
     }
   }
 
-  getToastClass(type: Toast['type']): string {
-    const baseClass = 'min-w-[300px] max-w-md p-4 rounded-lg shadow-lg flex items-start space-x-3 animate-slide-in';
-    const typeClasses = {
-      success: 'bg-green-500',
-      error: 'bg-red-500',
-      warning: 'bg-yellow-500',
-      info: 'bg-blue-500'
-    };
-    return `${baseClass} ${typeClasses[type]}`;
-  }
-
   removeToast(id: string): void {
     this.toasts = this.toasts.filter(t => t.id !== id);
-    this.toastService.remove(id);
   }
 }
