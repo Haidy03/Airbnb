@@ -37,9 +37,6 @@ import { LoginComponent } from './features/auth/components/login.component/login
 
 // Guards
 import { authGuard, noAuthGuard, hostGuard, adminGuard } from './features/auth/services/auth.guard';
-import { MessagesInboxComponent } from './features/messages/messages/messages';
-import { ChatComponent } from './features/messages/chat/chat';
-import { MessageTestComponent } from './test/test/test';
 import { ListingDetails } from './features/guest/components/listing-details/listing-details';
 import { Checkout } from './features/guest/components/checkout/checkout';
 import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
@@ -69,6 +66,9 @@ export const routes: Routes = [
     path: 'trips',
     loadComponent: () => import('./features/guest/components/trips/trips')
       .then(m => m.TripsComponent)
+  },{
+  path: 'messages',
+    loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent)
   },
 
   // {
@@ -132,17 +132,20 @@ export const routes: Routes = [
       //   path: 'properties/:id',
       //   component: PropertyDetailsComponent
       // }
-      // { path: 'messages', component: HostMessages },
+      { 
+        path: 'messages', 
+        loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent) 
+      }
       // { path: 'properties/addd', component: AddProperty },
       // { path: 'properties/edit/:id', component: EditProperty },
     ]
   },
 
   //TESTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
-    {
-    path: 'test/messages',
-    component: MessageTestComponent
-  },
+  //   {
+  //   path: 'test/messages',
+  //   component: MessageTestComponent
+  // },
 
   // =================================================
   // 4. Property Creation Flow (Your original work)

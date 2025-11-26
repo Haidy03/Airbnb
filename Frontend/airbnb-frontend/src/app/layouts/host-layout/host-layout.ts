@@ -1,9 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal,inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet,RouterLinkActive  } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { HostStatsService } from '../../features/host/services/host-stats';
-
+import { MessageService } from '../../features/messages/Services/message';
 interface NavItem {
   label: string;
   route: string;
@@ -22,6 +22,7 @@ export class HostLayoutComponent {
   // Sidebar state
   sidebarOpen = signal<boolean>(true);
   mobileMenuOpen = signal<boolean>(false);
+  public messageService = inject(MessageService);
   
   // User notifications
   unreadNotifications = signal<number>(0);
