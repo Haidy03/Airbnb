@@ -37,6 +37,7 @@ export interface Listing {
   numberOfBathrooms: number;
   pricePerNight: number;
   cleaningFee: number;
+  propertyType: string;
 
   // الخصائص المفقودة في الـ JSON الحالي ولكن مطلوبة في الـ HTML
   rating?: number;            // <--- خاصية اختيارية
@@ -44,7 +45,7 @@ export interface Listing {
   ratingBreakdown?: RatingBreakdown; // <--- خاصية اختيارية
 
   host: HostDetails;
-  images: any[]; // تحديد نوع دقيق أفضل
+  images: string[]; // تحديد نوع دقيق أفضل
   amenities: any[]; // تحديد نوع دقيق أفضل
   reviews: ReviewModel[];
 }

@@ -1,29 +1,53 @@
+
+<!-- --- START OF FILE image-gallery.html --- -->
+
+
 <div class="gallery-container" *ngIf="images && images.length >= 5">
 
   <!-- الصورة الكبيرة على اليسار -->
   <div class="gallery-item main-item">
-    <img [src]="images[0]" alt="Main Listing Photo">
+  <img
+      [src]="getFullImageUrl(images[0])"
+      [alt]="title"
+      *ngIf="images.length > 0"
+    >
     <div class="overlay"></div>
   </div>
 
   <!-- الصور الصغيرة على اليمين -->
   <div class="gallery-item sub-item">
-    <img [src]="images[1]" alt="Listing Photo">
+    <img
+      [src]="getFullImageUrl(images[1])"
+      [alt]="title"
+      *ngIf="images.length > 0"
+    >
     <div class="overlay"></div>
   </div>
 
   <div class="gallery-item sub-item top-right">
-    <img [src]="images[2]" alt="Listing Photo">
+   <img
+      [src]="getFullImageUrl(images[2])"
+      [alt]="title"
+      *ngIf="images.length > 0"
+    >
     <div class="overlay"></div>
   </div>
 
   <div class="gallery-item sub-item">
-    <img [src]="images[3]" alt="Listing Photo">
+     <img
+      [src]="getFullImageUrl(images[3])"
+      [alt]="title"
+      *ngIf="images.length > 0"
+    >
     <div class="overlay"></div>
   </div>
 
   <div class="gallery-item sub-item bottom-right">
-    <img [src]="images[4]" alt="Listing Photo">
+   <img
+      [src]="getFullImageUrl(images[4])"
+      [alt]="title"
+      *ngIf="images.length > 0"
+    >
     <div class="overlay"></div>
   </div>
 
@@ -34,3 +58,5 @@
   </button>
 
 </div>
+
+
