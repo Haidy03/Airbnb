@@ -2,7 +2,8 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { PropertyService, PropertyDraft } from '../../../services/property';
+import { PropertyService } from '../../../services/property';
+import { Property } from '../../../models/property.model'; 
 
 @Component({
   selector: 'app-property-title',
@@ -16,7 +17,7 @@ export class PropertyTitleComponent implements OnInit {
   titleForm!: FormGroup;
   isLoading = signal(false);
   currentDraftId: string | null = null;
-  currentDraft: PropertyDraft | null = null;
+  currentDraft: Property | null = null;
 
   // Character counter
   maxChars = 50;

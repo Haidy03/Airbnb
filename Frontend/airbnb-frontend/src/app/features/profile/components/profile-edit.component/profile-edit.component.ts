@@ -57,7 +57,7 @@ export class ProfileEditComponent implements OnInit {
 
   loadData() {
     this.userService.getCurrentUser().subscribe(user => {
-      this.user = user;
+      //this.user = user;
     });
 
     this.userService.getProfileDetails().subscribe(details => {

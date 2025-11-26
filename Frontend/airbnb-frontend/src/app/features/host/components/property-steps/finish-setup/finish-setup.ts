@@ -48,7 +48,7 @@ export class FinishsetupComponent {
 
     setTimeout(() => {
       this.isLoading.set(false);
-      this.router.navigate(['/host/properties/']); // or listing page
+      this.router.navigate(['/host/properties/instant-book']); // or listing page
     }, 600);
   }
 }

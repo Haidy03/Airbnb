@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { 
   CreateReviewDto, 
   UpdateReviewDto, 
   ReviewResponse, 
   PropertyReviewsSummary,
   GuestReviewsSummary,
-  CanReviewResponse 
+  CanReviewResponse ,
+  HostReviewsData
 } from '../models/review.model';
 import { environment } from '../../../../environments/environment';
 
@@ -53,5 +54,12 @@ export class ReviewService {
 
   getMyReviews(): Observable<ReviewResponse[]> {
     return this.http.get<ReviewResponse[]>(`${this.apiUrl}/my-reviews`);
+  }
+
+
+  getHostReviews(): Observable<HostReviewsData> {
+    return this.http.get<{success: boolean, data: HostReviewsData}>(`${this.apiUrl}/host`).pipe(
+      map(res => res.data)
+    );
   }
 }

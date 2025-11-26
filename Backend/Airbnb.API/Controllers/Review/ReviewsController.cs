@@ -102,7 +102,7 @@ namespace Airbnb.API.Controllers.Review
         /// <summary>
         /// Get review by ID
         /// </summary>
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<ReviewResponseDto>> GetReviewById(int id)
         {
             var review = await _reviewService.GetReviewByIdAsync(id);
@@ -181,6 +181,29 @@ namespace Airbnb.API.Controllers.Review
 
             var reviews = await _reviewService.GetUserReviewsAsync(userId);
             return Ok(reviews);
+        }
+
+
+
+        /// <summary>
+        /// Get aggregated reviews for the current host
+        /// </summary>
+        // تأكدي أن [HttpGet("host")] مكتوبة هكذا
+        [Authorize]
+        [HttpGet("host")]
+        public async Task<ActionResult<HostReviewsResponseDto>> GetHostReviews()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                // ... باقي الكود
+                var result = await _reviewService.GetHostReviewsAsync(userId);
+                return Ok(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

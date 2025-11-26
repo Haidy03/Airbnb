@@ -3,6 +3,7 @@ using Airbnb.API.Models;
 using Airbnb.API.Services.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -10,27 +11,43 @@ namespace Airbnb.API.Controllers.Host
 {
     [ApiController]
     [Route("api/host/[controller]")]
+    [Authorize]
     public class PropertyController : ControllerBase
     {
         private readonly IPropertyService _propertyService;
         private readonly ILogger<PropertyController> _logger;
         private readonly IMapper _mapper;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public PropertyController(
             IPropertyService propertyService,
             ILogger<PropertyController> logger,
-            IMapper mapper)
+            IMapper mapper,
+            UserManager<ApplicationUser> userManager)
         {
             _propertyService = propertyService;
             _logger = logger;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         // Helper method for testing only
         private string GetHostId()
         {
-            var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return string.IsNullOrEmpty(hostId) ? "test-host-12345" : hostId;
+            // 1. Try to get ID from standard ClaimTypes
+            var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier) // Usually maps to 'nameid'
+                         ?? User.FindFirstValue("sub")                  // Standard JWT subject
+                         ?? User.FindFirstValue("id")                   // Common custom claim
+                         ?? User.FindFirstValue("uid");                 // Another common custom claim
+
+            // 2. Security Check: If no ID found, throw error (Don't return "test-host" anymore!)
+            if (string.IsNullOrEmpty(hostId))
+            {
+                // This ensures the code fails safely if the user isn't logged in properly
+                throw new UnauthorizedAccessException("User ID not found in token.");
+            }
+
+            return hostId;
         }
 
         // ----------------------------------------------------------------------
@@ -94,14 +111,33 @@ namespace Airbnb.API.Controllers.Host
         [HttpPost]
         public async Task<IActionResult> CreateProperty([FromBody] CreatePropertyDto dto)
         {
+            // 1. Get the ID once at the start
+            var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Safety check: ensure ID exists
+            if (string.IsNullOrEmpty(hostId))
+            {
+                return Unauthorized(new { message = "User ID not found in token." });
+            }
+
+            // 2. Perform the Verification Check
+            var user = await _userManager.FindByIdAsync(hostId);
+
+            if (user == null || !user.IsVerified)
+            {
+                return StatusCode(403, new
+                {
+                    message = "Identity verification required.",
+                    details = "You must verify your ID before listing a property."
+                });
+            }
+
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest(new { success = false, errors = ModelState });
 
-                var hostId = GetHostId();
-
-                // Mapping DTO → Entity happens in the service OR here if needed
+                // 3. Use the existing 'hostId' variable here (Do not redeclare it)
                 var property = await _propertyService.CreatePropertyAsync(hostId, dto);
 
                 var resultDto = _mapper.Map<PropertyResponseDto>(property);
@@ -600,6 +636,21 @@ namespace Airbnb.API.Controllers.Host
             {
                 _logger.LogError(ex, "Error deactivating property");
                 return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("amenities")]
+        public async Task<IActionResult> GetAmenities()
+        {
+            try
+            {
+                var amenities = await _propertyService.GetAmenitiesListAsync();
+                return Ok(new { success = true, data = amenities });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching amenities");
+                return StatusCode(500, new { success = false, message = "Error fetching amenities" });
             }
         }
     }

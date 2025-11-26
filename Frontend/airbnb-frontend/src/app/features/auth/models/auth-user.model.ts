@@ -23,6 +23,9 @@ export enum AuthProvider {
   FACEBOOK = 'facebook'
 }
 
+
+
+
 export interface PhoneLoginRequest {
   countryCode: string;
   phoneNumber: string;
@@ -40,7 +43,7 @@ export interface PhoneVerifyRequest {
 }
 
 export interface EmailLoginRequest {
-  email: string;
+  identifier: string;
   password: string;
 }
 
@@ -75,3 +78,17 @@ export const COUNTRY_CODES: CountryCode[] = [
   { name: 'United States', code: 'US', dialCode: '+1', flag: '🇺🇸' },
   { name: 'United Kingdom', code: 'GB', dialCode: '+44', flag: '🇬🇧' },
 ];
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;  
+  newPassword: string;
+  confirmPassword?: string; 
+}
+
+export interface VerifyResetTokenRequest {
+  token: string;
+}

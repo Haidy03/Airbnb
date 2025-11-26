@@ -1,13 +1,14 @@
-
-import { Component, inject, signal } from '@angular/core';
+//login.component.ts
+import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router ,  RouterLink} from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SocialButtonsComponent } from '../social-buttons.component/social-buttons.component';
 import { COUNTRY_CODES, CountryCode } from '../../models/auth-user.model';
 import { TokenService } from '../../services/token.service';
+import { ErrorService } from '../../services/error.service'; 
 type LoginMode = 'phone' | 'email' | 'register';
 type PhoneStep = 'input' | 'verify';
 
@@ -22,9 +23,14 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private tokenService = inject(TokenService);
+  private errorService = inject(ErrorService);
   private modalService = inject(ModalService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  
 
+  @Output() closed = new EventEmitter<boolean>();
+  
   // State Management
   mode = signal<LoginMode>('phone');
   phoneStep = signal<PhoneStep>('input');
@@ -172,21 +178,21 @@ export class LoginComponent {
 
   // ✅ FIXED: Email Login Flow with proper navigation
   onEmailLogin() {
-     if (this.emailLoginForm.invalid || this.isLoading()) return;
+    if (this.emailLoginForm.invalid || this.isLoading()) return;
 
     this.isLoading.set(true);
     this.errorMessage.set('');
 
     const request = {
-      email: this.emailLoginForm.value.email!,
+      identifier: this.emailLoginForm.value.email!,
       password: this.emailLoginForm.value.password!
     };
 
     this.authService.loginWithEmail(request).subscribe({
       next: (response) => {
-        this.isLoading.set(false);
+        // ⚠️ تصحيح: خليها false عشان اللودينج يختفي لما اللوجن ينجح
+        this.isLoading.set(false); 
         console.log('✅ Login successful!');
-        
         
         const token = this.authService.getToken();
         if (token) {
@@ -196,16 +202,34 @@ export class LoginComponent {
           console.log('👤 User Role:', userRole);
           console.log('🆔 User ID:', userId);
           
-          // ✅ التوجيه بناءً على الـ role
-          this.redirectBasedOnRole(userRole);
+          // ============================================================
+          // 🚀 تعديلك يبدأ من هنا (بشكل آمن)
+          // ============================================================
+          
+          // 1. نتحقق هل المستخدم جاي من رابط معين؟ (مثل زر Become a Host)
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+
+          if (returnUrl) {
+            console.log('🔄 Redirecting to returnUrl:', returnUrl);
+            // لو فيه رابط، روح عليه علطول
+            this.router.navigateByUrl(returnUrl);
+            this.closeModal(); // نقفل المودال
+          } else {
+            // 2. لو مفيش رابط، نفذ اللوجيك القديم بتاع الفريق
+            this.redirectBasedOnRole(userRole);
+          }
+          // ============================================================
+
         } else {
           this.errorMessage.set('Login failed - no token received');
         }
       },
       error: (error) => {
         this.isLoading.set(false);
+
         console.error('❌ Login failed:', error);
         this.errorMessage.set(this.getErrorMessage(error));
+        this.errorService.handleError(error); 
       }
     });
   }
@@ -233,7 +257,7 @@ export class LoginComponent {
         
         // After successful registration, automatically log in
         const loginRequest = {
-          email: request.email,
+          identifier: request.email,
           password: request.password
         };
         
@@ -241,14 +265,25 @@ export class LoginComponent {
           next: (response:any) => {
             console.log('✅ Auto-login successful after registration');
             this.authService.setToken(response.token);
-            this.closeModal();
-            this.router.navigate(['/host/dashboard']);
+            // Fetch role from token and redirect
+          const token = this.authService.getToken();
+          if (token) {
+            const userRole = this.tokenService.getUserRole(token);
+            this.redirectBasedOnRole(userRole);
+          } else {
+            this.errorMessage.set('Login failed - no token received');
+            this.switchMode('email');
+          }
+            this.router.navigate(['/login']); 
+            //this.closeModal();
+            
           },
           error: (loginError) => {
             console.error('❌ Auto-login failed:', loginError);
             // If auto-login fails, switch to login mode
             this.switchMode('email');
             this.errorMessage.set('Registration successful! Please log in.');
+            this.errorService.handleError(loginError); 
           }
         });
       },
@@ -260,6 +295,7 @@ export class LoginComponent {
                         error?.message || 
                         'Registration failed';
         this.errorMessage.set(errorMsg);
+        this.errorService.handleError(error);
       }
     });
   }
@@ -274,6 +310,7 @@ export class LoginComponent {
     }
     
     this.errorMessage.set(`${provider} login will be implemented`);
+    
   }
 
   // Password Visibility
@@ -364,4 +401,16 @@ export class LoginComponent {
       this.switchMode('phone');
     }
   }
+
+  // ✅ فتح نافذة نسيت كلمة المرور
+  openForgotPassword(event: Event) {
+    event.preventDefault();
+    this.closeModal();
+    
+    // استيراد المكون ديناميكياً لتجنب circular dependencies
+    import('../forogt-password.component/forogt-password.component').then(module => {
+      this.modalService.open(module.ForgotPasswordComponent);
+    });
+  }
+  
 }

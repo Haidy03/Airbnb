@@ -12,10 +12,12 @@ namespace Airbnb.API.Controllers.Auth
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IEmailService emailService)
         {
             _authService = authService;
+            _emailService = emailService;
         }
 
         [HttpPost("register")]
@@ -96,18 +98,26 @@ namespace Airbnb.API.Controllers.Auth
 
             if (token == null)
             {
-                // If the token is null (user not found), we still return a 200 OK.
-                // This is a security measure to prevent user enumeration.
+                // Security: Don't reveal if user exists
                 return Ok(new { Message = "If an account with this email exists, a password reset link has been sent." });
             }
 
-            // --- Simulate Sending Email ---
-            // In a real application, you would use a service to send an email here.
-            // For this project, we'll just log it to the console for testing.
-            Console.WriteLine($"Password Reset Token for {forgotPasswordDto.Email}: {token}");
-            // You could also return the token directly in the response for easy testing during development.
-            // For example: return Ok(new { Token = token });
-            // --- End Simulation ---
+            // Construct the Email
+            // This link points to your Angular Frontend (localhost:4200)
+            // The frontend will read the token from the URL and send it back to your API
+            var encodedToken = Uri.EscapeDataString(token);
+            var resetLink = $"http://localhost:4200/reset-password?token={encodedToken}&email={forgotPasswordDto.Email}";
+
+            var emailBody = $@"
+                <h3>Reset Your Password</h3>
+                <p>You requested a password reset for your Airbnb Clone account.</p>
+                <p>Click the link below to reset it:</p>
+                <a href='{resetLink}'>Reset Password</a>
+                <br>
+                <p>If you did not request this, please ignore this email.</p>";
+
+            // Send the Email
+            await _emailService.SendEmailAsync(forgotPasswordDto.Email, "Reset Your Password", emailBody);
 
             return Ok(new { Message = "If an account with this email exists, a password reset link has been sent." });
         }
@@ -146,6 +156,46 @@ namespace Airbnb.API.Controllers.Auth
             }
 
             return Ok(new { Message = "Password has been reset successfully." });
+        }
+
+
+        [HttpPost("become-host")]
+        [Authorize] 
+        public async Task<IActionResult> BecomeHost()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                
+                var authResponse = await _authService.BecomeHostAsync(userId);
+
+                return Ok(authResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("upload-photo")]
+        [Authorize] // User must be logged in
+        public async Task<IActionResult> UploadPhoto(IFormFile file)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var photoUrl = await _authService.UploadProfilePhotoAsync(userId, file);
+                return Ok(new { message = "Photo uploaded successfully", url = photoUrl });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+            }
         }
     }
 }

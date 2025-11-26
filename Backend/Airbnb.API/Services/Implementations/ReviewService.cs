@@ -259,5 +259,53 @@ namespace Airbnb.API.Services.Implementations
                 IsApproved = review.IsApproved
             };
         }
+
+
+
+        public async Task<HostReviewsResponseDto> GetHostReviewsAsync(string hostId)
+        {
+           
+            var reviews = await _context.Reviews
+                .Include(r => r.Booking)
+                .Include(r => r.Property)
+                .Include(r => r.Reviewer)
+                .Where(r => r.Property.HostId == hostId && r.ReviewType == ReviewType.GuestToProperty)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            if (!reviews.Any())
+            {
+                return new HostReviewsResponseDto();
+            }
+
+           
+            var stats = new HostReviewsResponseDto
+            {
+                TotalReviews = reviews.Count,
+                OverallRating = Math.Round(reviews.Average(r => r.Rating), 2),
+
+                CleanlinessAvg = reviews.Any(r => r.CleanlinessRating.HasValue)
+                    ? Math.Round(reviews.Where(r => r.CleanlinessRating.HasValue).Average(r => r.CleanlinessRating.Value), 1) : 0,
+
+                CommunicationAvg = reviews.Any(r => r.CommunicationRating.HasValue)
+                    ? Math.Round(reviews.Where(r => r.CommunicationRating.HasValue).Average(r => r.CommunicationRating.Value), 1) : 0,
+
+                LocationAvg = reviews.Any(r => r.LocationRating.HasValue)
+                    ? Math.Round(reviews.Where(r => r.LocationRating.HasValue).Average(r => r.LocationRating.Value), 1) : 0,
+
+                ValueAvg = reviews.Any(r => r.ValueRating.HasValue)
+                    ? Math.Round(reviews.Where(r => r.ValueRating.HasValue).Average(r => r.ValueRating.Value), 1) : 0,
+
+             
+                Reviews = new List<ReviewResponseDto>()
+            };
+
+            foreach (var review in reviews)
+            {
+                stats.Reviews.Add(await MapToResponseDto(review));
+            }
+
+            return stats;
+        }
     }
 }
