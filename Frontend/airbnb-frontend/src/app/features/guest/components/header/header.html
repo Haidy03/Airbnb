@@ -69,7 +69,7 @@
                <a routerLink="/wishlists" class="dropdown-item px-3 py-2 fw-semibold text-dark text-decoration-none hover-bg-light">Wishlists</a>
                <div class="border-bottom my-2"></div>
                <a routerLink="/account-settings" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light">Account settings</a>
-               <a (click)="isLoggedIn ? onLogout() : openLoginModal()" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light cursor-pointer">{{ isLoggedIn ? 'Log out' : 'Log in or sign up' }}</a>
+               <a (click)="isLoggedIn()? onLogout() : openLoginModal()" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light cursor-pointer">{{ isLoggedIn() ? 'Log out' : 'Log in or sign up' }}</a>
             </div>
           </div>
         </div>
