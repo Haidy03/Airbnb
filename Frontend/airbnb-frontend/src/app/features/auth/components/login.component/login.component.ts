@@ -274,8 +274,8 @@ export class LoginComponent {
             this.errorMessage.set('Login failed - no token received');
             this.switchMode('email');
           }
-            this.router.navigate(['/login']); 
-            //this.closeModal();
+            // this.router.navigate(['/login']); 
+            this.closeModal();
             
           },
           error: (loginError) => {

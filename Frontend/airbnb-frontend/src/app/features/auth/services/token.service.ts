@@ -15,13 +15,32 @@ export class TokenService {
     }
   }
 
+  // getUserRole(token: string): string {
+  //   const payload = this.decodeToken(token);
+  //   if (!payload) return '';
+    
+  //   return (payload.role || 
+  //           payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 
+  //           '').toLowerCase();
+  // }
   getUserRole(token: string): string {
     const payload = this.decodeToken(token);
     if (!payload) return '';
     
-    return (payload.role || 
-            payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 
-            '').toLowerCase();
+   
+    const rawRole = payload.role || 
+                    payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
+    if (!rawRole) return '';
+
+    
+    if (Array.isArray(rawRole)) {
+   
+      return rawRole.join(',').toLowerCase();
+    }
+
+    
+    return String(rawRole).toLowerCase();
   }
 
   isTokenExpired(token: string): boolean {
