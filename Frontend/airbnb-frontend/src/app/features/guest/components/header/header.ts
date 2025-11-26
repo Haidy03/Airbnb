@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
 import { Component, HostListener, OnInit ,inject} from '@angular/core';
-=======
-import { Component, HostListener, inject, OnInit } from '@angular/core';
->>>>>>> Stashed changes
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -10,12 +6,9 @@ import { filter } from 'rxjs/operators';
 import { SearchBarComponent } from '../search/components/search-bar/search-bar';
 import { SearchFilters } from '../search/models/property.model';
 import { AuthService } from '../../../auth/services/auth.service';
-<<<<<<< Updated upstream
-=======
 import { ModalService } from '../../../auth/services/modal.service';
 import { LoginComponent } from '../../../auth/components/login.component/login.component';
 import { Subscription } from 'rxjs';
->>>>>>> Stashed changes
 
 export interface SearchData {
   where: string;
@@ -37,13 +30,10 @@ export interface SearchData {
   styleUrls: ['./header.css']
 })
 export class HeaderComponent implements OnInit {
-<<<<<<< Updated upstream
   authService = inject(AuthService);
   
-=======
 private AuthService = inject(AuthService);
 private ModalService = inject(ModalService);
->>>>>>> Stashed changes
   isUserMenuOpen = false;
   isScrolled = false;
   showExpandedSearch = false;
@@ -152,7 +142,6 @@ private ModalService = inject(ModalService);
     });
   }
 
-<<<<<<< Updated upstream
 
 
 
@@ -187,8 +176,8 @@ private ModalService = inject(ModalService);
         alert('Something went wrong while setting up your host account.');
       }
     });
-=======
-  get isLoggedIn(): boolean {
+  }
+   isLoggedIn(): boolean {
     return this.AuthService.isAuthenticated; 
   }
    openLoginModal(): void {
@@ -225,24 +214,21 @@ private ModalService = inject(ModalService);
             window.location.reload();
           }
         } else {
-          // فشل الدخول أو إغلاق بدون دخول: لا شيء إضافي؛ العرض سيعود لحالته العادية
         }
       });
     } else {
-      // إذا الـ LoginComponent لا يصدر closed، يمكن وضع مراقبة بديلة أو فقط اعرض التحذير
       console.warn('LoginComponent does not expose a closed EventEmitter.');
     }
   }
 
   ngOnDestroy(): void {
     this.modalSub?.unsubscribe();
-    // تأكد من غلق أي مودال مفتوح عند تدمير الكومبوننت (اختياري)
+    
     if (this.ModalService.isOpen()) {
       this.ModalService.close();
     }
   }
   onLogout() {
     this.AuthService.logout();   
->>>>>>> Stashed changes
   }
 }

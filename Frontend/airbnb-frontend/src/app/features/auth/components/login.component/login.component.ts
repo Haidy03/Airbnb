@@ -2,11 +2,7 @@
 import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-<<<<<<< Updated upstream
-import { ActivatedRoute, Router } from '@angular/router';
-=======
-import { Router, RouterLink } from '@angular/router';
->>>>>>> Stashed changes
+import { ActivatedRoute, Router ,  RouterLink} from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SocialButtonsComponent } from '../social-buttons.component/social-buttons.component';
