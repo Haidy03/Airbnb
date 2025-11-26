@@ -392,7 +392,6 @@ export class AuthService {
     // if (error.message) return error.message;
     // return 'An unexpected error occurred. Please try again.';
   }
-<<<<<<< Updated upstream
 
 
   //                Host Methodss         ////////////////////////
@@ -426,24 +425,4 @@ export class AuthService {
     return role.includes('host') || role.includes('admin');
   }
 
-}
-=======
->>>>>>> Stashed changes
-
-
- login() {
-    const mockUser: AuthUser = {
-      id: '12345',
-      email: 'alex.doe@example.com',
-      firstName: 'Alex',
-      lastName: 'Doe',
-      fullName: 'Alex Doe',
-      profilePicture: 'https://i.pravatar.cc/150?u=alexdoe',
-      isEmailVerified: true,
-      isPhoneVerified: false,
-      role: 'Member since 2023'
-    };
-    this.user.set(mockUser);
-
-}
 }
