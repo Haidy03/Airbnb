@@ -45,14 +45,23 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<AuthResponseDto> LoginUserAsync(LoginDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
-            if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
+            ApplicationUser user = null;
+
+            // Check if input is Email or Phone
+            if (loginDto.Identifier.Contains("@"))
             {
-                // Return null or throw an exception to indicate failed login
-                return null;
+                user = await _userManager.FindByEmailAsync(loginDto.Identifier);
+            }
+            else
+            {
+                // We need to search users by Phone Number
+                // Note: UserManager doesn't have FindByPhone, so we use Entity Framework directly or Users list
+                user = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == loginDto.Identifier);
             }
 
+            if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
+                return null;
             var token = await GenerateJwtToken(user);
 
             return new AuthResponseDto
@@ -220,6 +229,27 @@ namespace Airbnb.API.Services.Implementations
                 UserId = user.Id,
                 Email = user.Email
             };
+        }
+
+        public async Task<bool> SubmitVerificationRequestAsync(string userId, string filePath)
+        {
+            // 1. Find the user
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            // 2. Update the user's verification details
+            user.IdentificationImagePath = filePath;
+            user.VerificationStatus = "Pending"; // Set status so Admin sees it
+            user.IsVerified = false; // Ensure they aren't verified yet
+
+            // 3. Save changes to database
+            var result = await _userManager.UpdateAsync(user);
+
+            return result.Succeeded;
         }
     }
 }
