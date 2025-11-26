@@ -36,6 +36,10 @@
 
         <!-- 1. جملة Become a host (زي ما هي) -->
         <a class="host-btn d-none d-md-block text-dark text-decoration-none fw-semibold px-3 py-2 rounded-pill hover-bg-light" href="#">
+      <!-- Right: User Menu -->
+      <div class="col-auto d-flex align-items-center gap-2 position-relative z-index-10">
+
+        <a class="host-btn d-none d-md-block text-dark text-decoration-none fw-semibold px-3 py-2 rounded-pill hover-bg-light" (click)="onBecomeHostClick()" style="cursor: pointer;">
           Become a host
         </a>
 
@@ -64,7 +68,7 @@
                <a routerLink="/wishlists" class="dropdown-item px-3 py-2 fw-semibold text-dark text-decoration-none hover-bg-light">Wishlists</a>
                <div class="border-bottom my-2"></div>
                <a routerLink="/account-settings" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light">Account settings</a>
-               <a (click)="logout()" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light cursor-pointer">Log out</a>
+               <a (click)="isLoggedIn()? onLogout() : openLoginModal()" class="dropdown-item px-3 py-2 text-dark text-decoration-none hover-bg-light cursor-pointer">{{ isLoggedIn() ? 'Log out' : 'Log in or sign up' }}</a>
             </div>
           </div>
         </div>

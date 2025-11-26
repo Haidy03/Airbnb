@@ -63,3 +63,15 @@ export interface CanReviewResponse {
   reason?: string;
   bookingId?: number;
 }
+
+
+
+export interface HostReviewsData {
+  overallRating: number;
+  totalReviews: number;
+  cleanlinessAvg: number;
+  communicationAvg: number;
+  locationAvg: number;
+  valueAvg: number;
+  reviews: ReviewResponse[];
+}

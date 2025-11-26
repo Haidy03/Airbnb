@@ -54,6 +54,8 @@ namespace Airbnb.API.DTOs.Properties
         public bool HasNoiseMonitor { get; set; }
         public bool HasWeapons { get; set; }
 
+        public bool IsInstantBook { get; set; }
+
         // Images
         public List<PropertyImageDto> Images { get; set; } = new();
 

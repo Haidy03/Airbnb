@@ -1,0 +1,161 @@
+.details-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  min-height: 100vh;
+  background: #fff;
+}
+
+/* --- Header --- */
+.details-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.btn-back {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: #F7F7F7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-back:hover { background: #EBEBEB; }
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+}
+
+/* Status Badge */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.status-badge.pending { background: #FFF8F6; color: #C13515; border: 1px solid #C13515; }
+.status-badge.confirmed { background: #F7F7F7; color: #008A05; border: 1px solid #008A05; }
+.status-badge.completed { background: #F7F7F7; color: #717171; }
+.status-badge.cancelled { background: #F7F7F7; color: #717171; text-decoration: line-through; }
+
+/* --- Layout Grid --- */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr; /* Left column wider */
+  gap: 60px;
+}
+
+@media (max-width: 900px) {
+  .content-grid { grid-template-columns: 1fr; }
+}
+
+/* --- Cards --- */
+.info-card {
+  border: 1px solid #DDDDDD;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+/* Guest Info */
+.guest-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.guest-avatar img {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+}
+.guest-info h2 { margin: 0; font-size: 22px; font-weight: 600; }
+.guest-meta { margin: 4px 0 0; color: #717171; font-size: 14px; }
+
+.guest-message {
+  background: #F7F7F7;
+  padding: 16px;
+  border-radius: 8px;
+}
+.guest-message h3 { margin: 0 0 8px; font-size: 14px; color: #222; }
+.message-text { font-style: italic; color: #222; line-height: 1.5; }
+
+/* Trip Info */
+.detail-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.detail-icon { font-size: 24px; }
+.detail-content h4 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+.detail-content p { margin: 0; color: #717171; }
+
+/* --- Payment Info --- */
+.property-preview {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.property-preview img {
+  width: 100px; height: 80px; object-fit: cover; border-radius: 8px;
+}
+.property-text h4 { margin: 0 0 4px; font-size: 16px; line-height: 1.3; }
+.property-text p { margin: 0; font-size: 14px; color: #717171; }
+
+.divider { border: 0; border-top: 1px solid #DDDDDD; margin: 24px 0; }
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #222;
+}
+.price-row.total {
+  font-weight: 700;
+  font-size: 18px;
+  margin-top: 16px;
+}
+
+/* --- Action Bar (Accept/Decline) --- */
+.action-bar {
+  background: #222;
+  color: white;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+}
+.action-text h3 { margin: 0 0 8px; color: white; }
+.action-text p { margin: 0; color: #DDD; font-size: 14px; max-width: 300px; }
+
+.action-buttons { display: flex; gap: 12px; }
+
+.btn-accept, .btn-decline {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+}
+.btn-accept { background: white; color: black; border: none; }
+.btn-accept:hover { background: #EBEBEB; }
+
+.btn-decline { background: transparent; color: white; border: 1px solid white; }
+.btn-decline:hover { background: rgba(255,255,255,0.1); }
+
+/* Loading */
+.loading-screen { display: flex; height: 100vh; justify-content: center; align-items: center; }
+.spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #222; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

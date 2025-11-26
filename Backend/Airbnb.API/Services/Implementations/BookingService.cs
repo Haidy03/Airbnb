@@ -2,6 +2,7 @@
 using Airbnb.API.Models;
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Interfaces;
+using AutoMapper;
 
 namespace Airbnb.API.Services.Implementations
 {
@@ -10,14 +11,20 @@ namespace Airbnb.API.Services.Implementations
         private readonly IBookingRepository _bookingRepository;
         private readonly IPropertyRepository _propertyRepository;
         private readonly ILogger<BookingService> _logger;
+        private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
         public BookingService(
             IBookingRepository bookingRepository,
             IPropertyRepository propertyRepository,
+            IEmailService emailService,
+            IMapper mapper,
             ILogger<BookingService> logger)
         {
             _bookingRepository = bookingRepository;
             _propertyRepository = propertyRepository;
+            _emailService = emailService;
+            _mapper = mapper;
             _logger = logger;
         }
 
@@ -64,7 +71,7 @@ namespace Airbnb.API.Services.Implementations
                 PricePerNight = property.PricePerNight,
                 CleaningFee = property.CleaningFee ?? 0,
                 TotalPrice = totalPrice,
-                Status = BookingStatus.Pending,
+                Status = property.IsInstantBook ? BookingStatus.Confirmed : BookingStatus.Pending,
                 SpecialRequests = createDto.SpecialRequests,
                 CreatedAt = DateTime.UtcNow
             };
@@ -73,6 +80,31 @@ namespace Airbnb.API.Services.Implementations
 
             // Re-fetch to get included data (Guest/Property) for the DTO
             var completeBooking = await _bookingRepository.GetByIdAsync(savedBooking.Id);
+
+            // ============================================================
+            // SEND EMAIL TO HOST
+            // ============================================================
+
+            try
+            {
+                var hostEmail = completeBooking.Property.Host.Email;
+                var subject = $"New Booking Request: {completeBooking.Property.Title}";
+                var body = $@"
+                    <h3>You have a new request!</h3>
+                    <p><strong>Guest:</strong> {completeBooking.Guest.FirstName}</p>
+                    <p><strong>Dates:</strong> {completeBooking.CheckInDate.ToShortDateString()} to {completeBooking.CheckOutDate.ToShortDateString()}</p>
+                    <p><strong>Total:</strong> ${completeBooking.TotalPrice}</p>
+                    <p>Please go to your dashboard to Approve or Decline.</p>";
+
+                await _emailService.SendEmailAsync(hostEmail, subject, body);
+            }
+            catch (Exception ex)
+            {
+                // Don't crash the booking if email fails, just log it
+                _logger.LogWarning($"Failed to send email to host: {ex.Message}");
+            }
+
+
             return MapToResponseDto(completeBooking);
         }
 
@@ -140,6 +172,30 @@ namespace Airbnb.API.Services.Implementations
             booking.CancelledAt = DateTime.UtcNow; // Or CompletedAt depending on logic, but CancelledAt fits rejected
 
             await _bookingRepository.UpdateAsync(booking);
+
+
+            // ============================================================
+            // SEND EMAIL TO GUEST
+            // ============================================================
+            try
+            {
+                var guestEmail = booking.Guest.Email;
+                var subject = "Booking Confirmed! 🏖️";
+                var body = $@"
+                    <h3>Your trip is confirmed!</h3>
+                    <p>You are going to <strong>{booking.Property.Title}</strong>.</p>
+                    <p><strong>Dates:</strong> {booking.CheckInDate.ToShortDateString()} to {booking.CheckOutDate.ToShortDateString()}</p>
+                    <p>Host contact: {booking.Property.Host.Email}</p>
+                    <p>Have a great trip!</p>";
+
+                await _emailService.SendEmailAsync(guestEmail, subject, body);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"Failed to send email to guest: {ex.Message}");
+            }
+
+            _logger.LogInformation("Booking {Id} approved", id);
             return true;
         }
 

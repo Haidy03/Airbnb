@@ -1,6 +1,6 @@
+
 <div class="checkout-page" *ngIf="listing">
 
-  <!-- Header -->
   <header class="checkout-header">
     <button class="icon-btn back-btn" (click)="goBack()">
       <i class="fa-solid fa-chevron-left"></i>
@@ -10,98 +10,54 @@
 
   <div class="main-grid">
 
-    <!-- ::::: LEFT COLUMN (Payment Form) ::::: -->
+    <!-- LEFT COLUMN -->
     <div class="left-section">
 
-      <!-- Step 1 Title -->
-      <div class="step-header">
-        <h2>1. Add a payment method</h2>
-      </div>
+      <!-- نموذج العنوان فقط -->
+      <form [formGroup]="paymentForm">
 
-      <div class="payment-card-container">
-
-        <!-- Card Selection Header -->
-        <div class="payment-method-header">
-          <div class="method-info">
-            <i class="fa-regular fa-credit-card"></i>
-            <span>Credit or debit card</span>
-          </div>
-          <div class="radio-circle"></div> <!-- الدائرة السوداء -->
+        <div class="step-header">
+          <h2>1. Pay with</h2>
         </div>
 
-        <!-- Card Inputs -->
-        <div class="form-inputs">
+        <!-- البوكس اللي كان فيه الفيزا، هنحط فيه باي بال -->
+        <div class="payment-card-box">
 
-          <!-- Card Number -->
-          <div class="input-row top">
-            <input type="text" placeholder="Card number">
-            <i class="fa-solid fa-lock lock-icon"></i>
+          <div class="payment-method-header">
+            <div class="method-info">
+              <!-- أيقونة باي بال -->
+              <i class="fa-brands fa-paypal" style="color: #003087;"></i>
+              <span>PayPal</span>
+            </div>
+            <div class="radio-circle" style="border-color: #003087; background: #003087;"></div>
           </div>
 
-          <!-- Expiry & CVV -->
-          <div class="input-row middle split">
-            <div class="half left">
-              <input type="text" placeholder="Expiration">
-            </div>
-            <div class="half right">
-              <input type="text" placeholder="CVV">
-            </div>
+          <!-- مكان زرار باي بال -->
+          <div class="paypal-wrapper">
+             <ngx-paypal [config]="payPalConfig"></ngx-paypal>
           </div>
+
+          <p class="secure-text">
+            <i class="fa-solid fa-lock"></i> Payments are secure and encrypted.
+          </p>
 
         </div>
-      </div>
 
-      <!-- Billing Address -->
-      <div class="billing-section">
-        <h3>Billing address</h3>
 
-        <div class="billing-inputs">
-          <div class="input-row top">
-            <input type="text" placeholder="Street address">
-          </div>
-          <div class="input-row middle">
-            <input type="text" placeholder="Apt or suite number">
-          </div>
-          <div class="input-row middle">
-            <input type="text" placeholder="City">
-          </div>
-          <div class="input-row middle split">
-            <div class="half left">
-              <input type="text" placeholder="State">
-            </div>
-            <div class="half right">
-              <input type="text" placeholder="ZIP code">
-            </div>
-          </div>
-          <div class="input-row bottom select-wrapper">
-            <select>
-              <option>Egypt</option>
-            </select>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
-        </div>
-      </div>
+        
 
-      <!-- Black Next Button -->
-      <button class="btn-black">Next</button>
+        <!-- زرار الـ Next الأسود القديم هنشيله خلاص، لأن زرار باي بال هو اللي هيدفع -->
 
-      <hr class="divider">
-
-      <!-- Placeholder for Step 2 -->
-      <div class="step-header disabled">
-        <h2>2. Review your reservation</h2>
-      </div>
+      </form>
 
     </div>
 
-
-    <!-- ::::: RIGHT COLUMN (Summary Card) ::::: -->
+    <!-- RIGHT COLUMN (Summary) -->
+   <!-- ================= RIGHT COLUMN (SUMMARY CARD) ================= -->
     <div class="right-section">
       <div class="sticky-wrapper">
 
-        <!-- Main White Card -->
         <div class="summary-card">
-
           <!-- Listing Header -->
           <div class="card-header-row">
             <img [src]="listing.images[0]" alt="Listing">
@@ -121,19 +77,19 @@
           <!-- Cancellation Policy -->
           <div class="policy-section">
             <h4>Free cancellation</h4>
-            <p>Cancel before 3:00 PM on Nov 24 for a full refund. <a href="#">Full policy</a></p>
+            <p>Cancel before check-in for a full refund. <a href="#">Full policy</a></p>
           </div>
 
           <hr class="divider">
 
-          <!-- Dates & Guests (Inside the card now) -->
+          <!-- Dates & Guests -->
           <div class="trip-details">
             <div class="detail-row">
               <div class="label">
                 <h4>Dates</h4>
                 <p>{{ checkIn | date:'MMM d' }} – {{ checkOut | date:'d, y' }}</p>
               </div>
-              <button class="link-btn">Change</button>
+              <button class="link-btn" (click)="openDateModal()">Change</button>
             </div>
 
             <div class="detail-row">
@@ -141,7 +97,7 @@
                 <h4>Guests</h4>
                 <p>{{ guests }} guest{{ guests > 1 ? 's' : '' }}</p>
               </div>
-              <button class="link-btn">Change</button>
+              <button class="link-btn" (click)="openGuestModal()">Change</button>
             </div>
           </div>
 
@@ -150,20 +106,27 @@
           <!-- Price Breakdown -->
           <div class="price-section">
             <h4>Price details</h4>
+
             <div class="line-item">
-              <span>1 night x {{ listing.pricePerNight | number }} EGP</span>
-              <span>{{ listing.pricePerNight | number }} EGP</span>
+              <span>{{ nights }} night{{ nights > 1 ? 's' : '' }} x {{ listing.pricePerNight | number }} EGP</span>
+              <span>{{ listing.pricePerNight * nights | number }} EGP</span>
             </div>
+
+            <div class="line-item">
+              <span>Service fee</span>
+              <span>{{ serviceFee | number }} EGP</span>
+            </div>
+
+            <hr class="divider">
+
             <div class="line-item total">
               <span>Total (EGP)</span>
-              <span>{{ listing.pricePerNight + 150 | number }} EGP</span>
+              <span>{{ totalPrice | number }} EGP</span>
             </div>
-            <a href="#" class="breakdown-link">Price breakdown</a>
           </div>
-
         </div>
 
-        <!-- Rare Find Box (Below the card) -->
+        <!-- Rare Find Box -->
         <div class="rare-find-box">
           <i class="fa-regular fa-gem"></i>
           <div class="text">
@@ -173,6 +136,43 @@
         </div>
 
       </div>
+    </div>
+
+  </div>
+
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Edit Dates Modal -->
+  <div class="modal-overlay" *ngIf="isEditDateOpen">
+    <div class="modal-box">
+      <h3>Change Dates</h3>
+      <div class="modal-inputs">
+        <label>Check-in</label>
+        <input type="date" [(ngModel)]="tempCheckIn">
+        <label>Check-out</label>
+        <input type="date" [(ngModel)]="tempCheckOut">
+      </div>
+      <div class="modal-actions">
+        <button class="cancel-btn" (click)="closeDateModal()">Cancel</button>
+        <button class="save-btn" (click)="saveDates()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Guests Modal -->
+  <div class="modal-overlay" *ngIf="isEditGuestOpen">
+    <div class="modal-box">
+      <h3>Change Guests</h3>
+      <div class="modal-inputs">
+        <label>Adults</label>
+        <input type="number" min="1" max="10" [(ngModel)]="tempGuests">
+      </div>
+      <div class="modal-actions">
+        <button class="cancel-btn" (click)="closeGuestModal()">Cancel</button>
+        <button class="save-btn" (click)="saveGuests()">Save</button>
+      </div>
+
     </div>
 
   </div>

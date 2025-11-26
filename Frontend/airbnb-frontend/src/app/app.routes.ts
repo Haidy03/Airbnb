@@ -1,5 +1,5 @@
-import { Routes } from '@angular/router';
-
+ import { Routes } from '@angular/router';
+import { NotFoundComponent } from './shared/components/not-found/not-found';
 // Layouts & Core Components
 import { HostLayoutComponent } from './layouts/host-layout/host-layout';
 import { HomeComponent } from './features/guest/components/home/home';
@@ -10,6 +10,8 @@ import { HostDashboardComponent } from './features/host/components/host-dashboar
 import { MyProperties } from './features/host/components/my-properties/my-properties';
 import { HostMessages } from './features/host/components/host-messages/host-messages';
 
+
+// Property Steps Components
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
 
@@ -17,11 +19,6 @@ import { PropertyIntroComponent } from './features/host/components/property-step
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
 import { PropertyLocationComponent } from './features/host/components/property-steps/property-location/property-location';
-import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
-import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
-import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
-import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
-import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
 import { PropertyFloorPlanComponent } from './features/host/components/property-steps/floor-plan/floor-plan';
 import { AmenitiesStepComponent } from './features/host/components/property-steps/amenities/amenities';
 import { PropertyPhotosComponent } from './features/host/components/property-steps/photos/photos';
@@ -40,12 +37,19 @@ import { LoginComponent } from './features/auth/components/login.component/login
 
 // Guards
 import { authGuard, noAuthGuard, hostGuard, adminGuard } from './features/auth/services/auth.guard';
-import { MessagesInboxComponent } from './features/messages/messages/messages';
-import { ChatComponent } from './features/messages/chat/chat';
-import { MessageTestComponent } from './test/test/test';
 import { ListingDetails } from './features/guest/components/listing-details/listing-details';
 import { Checkout } from './features/guest/components/checkout/checkout';
 import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
+import { ResetPasswordComponent } from './features/auth/components/reset-password.component/reset-password.component';
+import { PropertyEditorComponent } from './features/host/components/property-editor/property-editor';
+import { BookingDetailsComponent } from './features/host/components/booking-details/booking-details';
+import { HostEarningsComponent } from './features/host/components/earnings/earnings';
+import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
+import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
+import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
+import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
+import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
+import { HostReviewsComponent } from './features/host/components/host-reviews/host-reviews';
 
 export const routes: Routes = [
   // =================================================
@@ -69,6 +73,9 @@ export const routes: Routes = [
     path: 'trips',
     loadComponent: () => import('./features/guest/components/trips/trips')
       .then(m => m.TripsComponent)
+  },{
+  path: 'messages',
+    loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent)
   },
 
   // {
@@ -76,12 +83,18 @@ export const routes: Routes = [
   //   loadComponent: () => import('./features/guest/components/messages/messages')
   //     .then(m => m.MessagesComponent)
   // },
-  // {
-  //   path: 'profile',
-  //   loadComponent: () => import('./features/guest/profile/profile.component')
-  //     .then(m => m.ProfileComponent),
-  //   canActivate: [authGuard] // ✅ Added authGuard as profile should be protected
-  // },
+  {
+    path: 'profile',
+    component: ProfileComponent,
+    //canActivate: [authGuard], 
+    children: [
+    {path: '', redirectTo: 'about-me', pathMatch: 'full' },
+    {path: 'about-me', component: AboutMeComponent },
+    {path: 'edit-profile', component: ProfileEditComponent },
+    {path: 'past-trips', component: PastTripsComponent },
+    {path: 'connections', component: ConnectionsComponent },
+    ]
+  },
   {
     path: 'account-settings',
     loadComponent: () => import('./features/guest/components/account-settings/account-settings')
@@ -103,6 +116,10 @@ export const routes: Routes = [
     component: LoginComponent,
     canActivate: [noAuthGuard]
   },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent
+  },
 
   // ✅ Host routes - protected by hostGuard (ONLY for Hosts)
   // ✅ Host routes - protected by auth guard
@@ -113,34 +130,33 @@ export const routes: Routes = [
   {
     path: 'host',
     component: HostLayoutComponent,
-    //canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
+    canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
-      // {
-      //   path: 'properties/:id',
-      //   component: PropertyDetailsComponent
-      // }
-      // { path: 'messages', component: HostMessages },
-      // { path: 'properties/addd', component: AddProperty },
-      // { path: 'properties/edit/:id', component: EditProperty },
+      { path: 'bookings/:id', component: BookingDetailsComponent },
+      { 
+        path: 'properties/editor/:id', 
+        component: PropertyEditorComponent 
+      },{ 
+        path: 'messages', 
+        loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent) 
+      },
+      { path: 'earnings', component: HostEarningsComponent },
+      { path: 'reviews', component: HostReviewsComponent },
+     
     ]
   },
 
-  //TESTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
-    {
-    path: 'test/messages',
-    component: MessageTestComponent
-  },
 
   // =================================================
   // 4. Property Creation Flow (Your original work)
   // =================================================
   {
     path: 'host/properties',
-    //canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
+    canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       {
         path: 'intro',
@@ -198,40 +214,6 @@ export const routes: Routes = [
         path: 'legal-and-create',
         component: legalandcreateComponent
       },
-
-    ]
-  },
-
-   {
-    path: 'messages',
-    children: [
-      {
-        path: '',
-        component: MessagesInboxComponent,
-        title: 'Messages'
-      },
-      {
-        path: ':id',
-        component: ChatComponent,
-        title: 'Chat'
-      }
-    ]
-  },
-  
- 
-  {
-    path: 'host/messages',
-    children: [
-      {
-        path: '',
-        component: MessagesInboxComponent,
-        title: 'Host Messages'
-      },
-      {
-        path: ':id',
-        component: ChatComponent,
-        title: 'Host Chat'
-      }
     ]
   },
 
@@ -260,9 +242,9 @@ export const routes: Routes = [
   // =================================================
   // Note: Changed catch-all to redirect to Home instead of test-login for better UX
 
-
+  { path: 'not-found', component: NotFoundComponent },
   {
     path: '**',
-    redirectTo: ''
+    redirectTo: 'not-found'
   }
 ];

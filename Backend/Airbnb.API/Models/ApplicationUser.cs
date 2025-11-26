@@ -39,5 +39,8 @@ namespace Airbnb.API.Models
         public virtual ICollection<Review> ReviewsGiven { get; set; } = new List<Review>();
         public virtual ICollection<Review> ReviewsReceived { get; set; } = new List<Review>();
         public UserVerification? Verification { get; set; }
+        // Path to the ID photo (Secure storage)
+        public string? IdentificationImagePath { get; set; }
+        public string VerificationStatus { get; set; } = "None"; // Pending, Approved, Rejected
     }
 }

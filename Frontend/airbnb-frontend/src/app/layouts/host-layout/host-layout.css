@@ -9,7 +9,7 @@
   top: 0;
   background: white;
   border-bottom: 1px solid #EBEBEB;
-  z-index: 100;
+  z-index: 2000;
 }
 
 .header-container {
@@ -174,7 +174,7 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  z-index: 200;
+  z-index: 2100;
   overflow: hidden;
 }
 
@@ -273,7 +273,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.3);
-  z-index: 150;
+  z-index: 2050;
 }
 
 /* Main Content */

@@ -547,3 +547,14 @@
     padding: 24px;
   }
 }
+
+.fee-section {
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid #EBEBEB;
+}
+.checkbox-container {
+  display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 18px; font-weight: 500;
+}
+.checkbox-container input { width: 20px; height: 20px; accent-color: #222; }
+.fee-hint { font-size: 14px; color: #717171; margin-top: 8px; }

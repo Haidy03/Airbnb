@@ -9,7 +9,7 @@ import { AuthService, UserProfile } from '../../../auth/services/auth.service';
 @Component({
   selector: 'app-account-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './account-settings.html',
   styleUrls: ['./account-settings.css']
 })
