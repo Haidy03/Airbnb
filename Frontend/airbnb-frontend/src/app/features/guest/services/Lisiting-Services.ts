@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { Listing } from '../models/listing-model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -11,17 +12,15 @@ import { Listing } from '../models/listing-model';
 export class ListingService {
 
   // هذا الرابط سيتم تفعيله عندما ينتهي زميلك من الباك إند
-  private apiUrl = 'https://api.your-backend-url.com/listings';
+  private apiUrl = `${environment.apiUrl}/Search`;
 
   constructor(private http: HttpClient) { }
 
   getListingById(id: string): Observable<Listing> {
-    // === وضع مؤقت: إرجاع بيانات وهمية حتى يعمل الباك إند ===
-    // بعد الانتهاء من الباك إند، احذفي السطر التالي واستخدمي this.http.get...
-    return of(this.MOCK_LISTING);
+   return this.http.get<Listing>(`${this.apiUrl}/${id}`);
+   // return of(this.MOCK_LISTING);
 
-    // الكود الحقيقي للاتصال بالباك إند (مغلق حالياً):
-    // return this.http.get<Listing>(`${this.apiUrl}/${id}`);
+    
   }
 
   // === بيانات وهمية للتجربة (نفس بيانات Airbnb في الصور) ===
