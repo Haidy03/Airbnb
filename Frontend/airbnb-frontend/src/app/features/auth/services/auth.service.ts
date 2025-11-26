@@ -476,5 +476,38 @@ export class AuthService {
 
     return 'An unexpected error occurred. Please try again.';
   }
+
+
+  //                Host Methodss         ////////////////////////
+
+    becomeHost(): Observable<any> {
+    return this.http.post<LoginResponse>(`${this.API_URL}/become-host`, {})
+      .pipe(
+        tap(response => {
+          console.log('🎉 User is now a Host!', response);
+          
+          
+          if (response.token) {
+            this.setToken(response.token);
+            this.setUserFromToken(response.token);
+          }
+        }),
+        catchError(error => {
+          console.error('❌ Failed to become host:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+  
+  
+  isHost(): boolean {
+    const user = this.currentUser;
+  
+    if (!user || !user.role) return false;
+    
+    const role = user.role.toLowerCase();
+    return role.includes('host') || role.includes('admin');
+  }
+
 }
 

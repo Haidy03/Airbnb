@@ -117,7 +117,7 @@ export const routes: Routes = [
   {
     path: 'host',
     component: HostLayoutComponent,
-    //canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
+    canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
@@ -127,32 +127,21 @@ export const routes: Routes = [
       { 
         path: 'properties/editor/:id', 
         component: PropertyEditorComponent 
-      },
-      // {
-      //   path: 'properties/:id',
-      //   component: PropertyDetailsComponent
-      // }
-      { 
+      },{ 
         path: 'messages', 
         loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent) 
       }
-      // { path: 'properties/addd', component: AddProperty },
-      // { path: 'properties/edit/:id', component: EditProperty },
+     
     ]
   },
 
-  //TESTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
-  //   {
-  //   path: 'test/messages',
-  //   component: MessageTestComponent
-  // },
 
   // =================================================
   // 4. Property Creation Flow (Your original work)
   // =================================================
   {
     path: 'host/properties',
-    //canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
+    canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       {
         path: 'intro',

@@ -196,5 +196,30 @@ namespace Airbnb.API.Services.Implementations
 
             return result;
         }
+
+
+        // Become a Host    
+        public async Task<AuthResponseDto> BecomeHostAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) throw new Exception("User not found");
+
+          
+            if (!await _userManager.IsInRoleAsync(user, "Host"))
+            {
+              
+                var result = await _userManager.AddToRoleAsync(user, "Host");
+                if (!result.Succeeded) throw new Exception("Failed to add host role");
+            }
+
+            var newToken = await GenerateJwtToken(user);
+
+            return new AuthResponseDto
+            {
+                Token = newToken,
+                UserId = user.Id,
+                Email = user.Email
+            };
+        }
     }
 }
