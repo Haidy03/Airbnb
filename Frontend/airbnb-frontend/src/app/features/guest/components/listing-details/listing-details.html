@@ -42,7 +42,7 @@
       <section class="section host-info-section">
         <div class="text-info">
           <h2>Entire serviced apartment hosted by {{ listing.host.firstName }} {{listing.host.lastName}}</h2>
-          <p>2 guests · Studio · 2 beds · 1 bath</p>
+          <p>{{listing.maxGuests}} Guests · {{listing.numberOfBedrooms}} beds · {{listing.numberOfBathrooms}} bath</p>
         </div>
         <div class="host-avatar">
           <img [src]="listing.host.profileImageUrl" alt="Host">
@@ -97,7 +97,7 @@
         <div class="bedroom-card">
           <div class="img-placeholder"><i class="fa-solid fa-bed"></i></div>
           <h3>Bedroom area</h3>
-          <p>2 single beds</p>
+          <p>{{listing.numberOfBedrooms}}single beds</p>
         </div>
       </section>
       <hr>
@@ -112,14 +112,14 @@
               </div>
         </div>
         <button class="outline-btn" (click)="showAllAmenities()">
-          Show all 27 amenities
+          Show all
         </button>
       </section>
       <hr>
 
       <!-- Calendar (Placeholder for now) -->
     <app-calendar-section
-     [location]="listing.address.split(',')[0]"
+     [location]="listing.city"
      [checkIn]="selectedCheckIn"
      [checkOut]="selectedCheckOut">
   </app-calendar-section>
@@ -151,7 +151,7 @@
  <!-- ================= REVIEWS SECTION ================= -->
 <!-- --- START OF REVIEWS SECTION CODE (listing-details.html) --- -->
 
-<div class="reviews-full-section" *ngIf="listing?.ratingBreakdown && listing.reviewsCount && listing.reviewsCount > 0">
+<section class="reviews-full-section" *ngIf="listing?.ratingBreakdown && listing.reviewsCount && listing.reviewsCount > 0">
 
   <!-- -------------------- HEADER -------------------- -->
   <div class="rating-header">
@@ -180,3 +180,8 @@
   </section>
 
 </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
