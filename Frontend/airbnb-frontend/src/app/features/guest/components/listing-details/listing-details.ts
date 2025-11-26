@@ -21,7 +21,7 @@ import { finalize } from 'rxjs/operators';
 
 
 export class ListingDetails implements OnInit {
-  listing: any | null = null;
+  listing: Listing | null = null;
   propertyId!: string;
    isLoading: boolean = true;
   error: string | null = null;
@@ -92,10 +92,18 @@ export class ListingDetails implements OnInit {
         // استخدام finalize لإيقاف مؤشر التحميل بغض النظر عن النجاح/الفشل
         finalize(() => this.isLoading = false)
       )
-      .subscribe({
-        next: (data) => {
-          this.listing = data;
-        },
+       .subscribe({
+    next: (data) => {
+      // **الإصلاح الرئيسي هنا:**
+      // إذا كان ratingBreakdown مفقوداً، قم بتعيينه كـ undefined بدلاً من null.
+      // وإلا، سيفشل كود الـ HTML.
+      this.listing = {
+        ...data,
+        ratingBreakdown: data.ratingBreakdown ?? undefined, // تعيين قيمة افتراضية
+        reviewsCount: data.reviews?.length || 0, // حساب عدد المراجعات من المصفوفة
+        rating: data.rating || 0 // تعيين تقييم افتراضي
+      };
+    },
         error: (err) => {
           this.error = "Failed to load listing details. Please try again later.";
           console.error('API Error:', err);
