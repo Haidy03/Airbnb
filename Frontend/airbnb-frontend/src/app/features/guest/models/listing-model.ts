@@ -1,65 +1,52 @@
 // src/app/models/listing.model.ts
 
-export interface Host {
-  id: string;
-  name: string;
-  avatarUrl: string;
-  isSuperhost: boolean;
-  joinedDate: string;
-}
-
-export interface Amenity {
-  icon: string; // اسم كلاس الأيقونة مثل 'fa-wifi'
-  name: string;
-}
-// 1. تفاصيل تقييم الفئات (البارات اللي بتتملي)
 export interface RatingBreakdown {
-  cleanliness: number;    // 5.0
-  accuracy: number;       // 4.9
-  communication: number;  // 4.8
-  location: number;       // 5.0
-  checkIn: number;        // 5.0
-  value: number;          // 4.7
+  cleanliness: number;
+  accuracy: number;
+  communication: number;
+  checkin: number;
+  location: number;
+  value: number;
 }
 
-// 2. شكل التعليق الواحد
-export interface Review {
+export interface HostDetails {
   id: string;
-  authorName: string;
-  authorAvatar: string; // رابط الصورة
-  country: string;      // "Cairo, Egypt"
-  date: string;         // "December 2024"
-  comment: string;      // "Great place to stay..."
+  firstName: string;
+  lastName: string;
+  profileImageUrl: string;
+  joinedAt: string;
 }
 
+export interface ReviewModel {
+  id: number;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+// الهيكل الرئيسي لتفاصيل العقار
 export interface Listing {
   id: string;
   title: string;
-  location: string;
   description: string;
-
-  // الصور
-  images: string[];
-
-  // الأسعار والتقييم
-  pricePerNight: number;
-  currency: string;
-  rating: number;
-  reviewsCount: number;
-
-  // تفاصيل الغرفة
+  address: string;
+  city: string;
+  country: string;
   maxGuests: number;
-  bedrooms: number;
-  beds: number;
-  baths: number;
+  numberOfBedrooms: number;
+  numberOfBathrooms: number;
+  pricePerNight: number;
+  cleaningFee: number;
 
-  // المضيف
-  host: Host;
+  // الخصائص المفقودة في الـ JSON الحالي ولكن مطلوبة في الـ HTML
+  rating?: number;            // <--- خاصية اختيارية
+  reviewsCount?: number;      // <--- خاصية اختيارية
+  ratingBreakdown?: RatingBreakdown; // <--- خاصية اختيارية
 
-  // المزايا
-  amenities: Amenity[];
-   ratingBreakdown: RatingBreakdown;
-  reviews: Review[];
+  host: HostDetails;
+  images: any[]; // تحديد نوع دقيق أفضل
+  amenities: any[]; // تحديد نوع دقيق أفضل
+  reviews: ReviewModel[];
 }
 
 

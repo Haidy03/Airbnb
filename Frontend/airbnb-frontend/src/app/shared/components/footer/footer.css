@@ -1,0 +1,47 @@
+/* الخلفية الرمادية الفاتحة */
+footer {
+  background-color: #F7F7F7 !important;
+  font-size: 14px;
+  color: #222;
+}
+
+/* روابط القائمة العلوية */
+.footer-link {
+  text-decoration: none;
+  color: #222;
+  transition: text-decoration 0.2s;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
+
+/* روابط البار السفلي (Privacy, Terms...) */
+.footer-bottom-link {
+  text-decoration: none;
+  color: #222;
+  font-size: 14px;
+}
+
+.footer-bottom-link:hover {
+  text-decoration: underline;
+}
+
+/* تأثيرات عند التحويم */
+.hover-underline:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.hover-opacity {
+  transition: opacity 0.2s;
+}
+
+.hover-opacity:hover {
+  opacity: 0.7;
+}
+
+/* أيقونات */
+.bi-globe {
+  font-size: 16px;
+}
