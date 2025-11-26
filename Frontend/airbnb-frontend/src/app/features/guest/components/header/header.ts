@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 import { Component, HostListener, OnInit ,inject} from '@angular/core';
+=======
+import { Component, HostListener, inject, OnInit } from '@angular/core';
+>>>>>>> Stashed changes
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +10,12 @@ import { filter } from 'rxjs/operators';
 import { SearchBarComponent } from '../search/components/search-bar/search-bar';
 import { SearchFilters } from '../search/models/property.model';
 import { AuthService } from '../../../auth/services/auth.service';
+<<<<<<< Updated upstream
+=======
+import { ModalService } from '../../../auth/services/modal.service';
+import { LoginComponent } from '../../../auth/components/login.component/login.component';
+import { Subscription } from 'rxjs';
+>>>>>>> Stashed changes
 
 export interface SearchData {
   where: string;
@@ -27,12 +37,17 @@ export interface SearchData {
   styleUrls: ['./header.css']
 })
 export class HeaderComponent implements OnInit {
+<<<<<<< Updated upstream
   authService = inject(AuthService);
   
+=======
+private AuthService = inject(AuthService);
+private ModalService = inject(ModalService);
+>>>>>>> Stashed changes
   isUserMenuOpen = false;
   isScrolled = false;
   showExpandedSearch = false;
-
+   private modalSub?: Subscription;
   // متغير جديد للتحكم في ظهور البحث بالكامل
   isSearchEnabled = true;
 
@@ -137,6 +152,7 @@ export class HeaderComponent implements OnInit {
     });
   }
 
+<<<<<<< Updated upstream
 
 
 
@@ -171,5 +187,62 @@ export class HeaderComponent implements OnInit {
         alert('Something went wrong while setting up your host account.');
       }
     });
+=======
+  get isLoggedIn(): boolean {
+    return this.AuthService.isAuthenticated; 
+  }
+   openLoginModal(): void {
+    // لو في مودال مفتوح خلاص
+    if (this.ModalService.isOpen()) { 
+      return;
+    }
+
+    // افتح الـ LoginComponent كمودال
+    const compRef = this.ModalService.open(LoginComponent);
+
+    // حاول الوصول إلى الـ EventEmitter closed داخل الـ component
+    const instanceAny = compRef.instance as any;
+
+    // إذا الـ LoginComponent عنده event closed (EventEmitter<boolean>)
+    if (instanceAny && instanceAny.closed && typeof instanceAny.closed.subscribe === 'function') {
+      // نشترك وننتظر نتيجة التسجيل (true => نجاح)
+      this.modalSub = instanceAny.closed.subscribe((success: boolean) => {
+        // افصل الاشتراك بعد أول رد
+        this.modalSub?.unsubscribe();
+        this.modalSub = undefined;
+
+        // اغلق المودال (غالبًا الـ LoginComponent سيغلق بنفسه، لكن تأكد)
+        this.ModalService.close();
+
+        if (success) {
+          // حاول تحدث حالة الـ Auth: إذا عندك method setLoggedIn استخدمها
+          if (typeof (this.AuthService as any).setLoggedIn === 'function') {
+            (this.AuthService as any).setLoggedIn(true);
+          } else {
+            // fallback: إذا الـ LoginComponent خزّن التوكن في localStorage،
+            // نعمل reload حتى يقرأ التطبيق الحالة الجديدة تلقائياً.
+            // هذا سلوك مؤقت حتى تضيف طريقة رسمية لتعيين التوكن في AuthService.
+            window.location.reload();
+          }
+        } else {
+          // فشل الدخول أو إغلاق بدون دخول: لا شيء إضافي؛ العرض سيعود لحالته العادية
+        }
+      });
+    } else {
+      // إذا الـ LoginComponent لا يصدر closed، يمكن وضع مراقبة بديلة أو فقط اعرض التحذير
+      console.warn('LoginComponent does not expose a closed EventEmitter.');
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.modalSub?.unsubscribe();
+    // تأكد من غلق أي مودال مفتوح عند تدمير الكومبوننت (اختياري)
+    if (this.ModalService.isOpen()) {
+      this.ModalService.close();
+    }
+  }
+  onLogout() {
+    this.AuthService.logout();   
+>>>>>>> Stashed changes
   }
 }
