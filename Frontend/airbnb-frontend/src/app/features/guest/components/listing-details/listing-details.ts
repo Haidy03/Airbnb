@@ -7,6 +7,8 @@ import { ImageGallery } from "../image-gallery/image-gallery";
 import { BookingCard } from '../booking-card/booking-card';
 import { CalendarSection } from '../calendar-section/calendar-section';
 import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 
 
 @Component({
@@ -19,8 +21,10 @@ import { Router } from '@angular/router';
 
 
 export class ListingDetails implements OnInit {
-  listing: Listing | null = null;
-
+  listing: any | null = null;
+  propertyId!: string;
+   isLoading: boolean = true;
+  error: string | null = null;
   // متغيرات التحكم في الشكل (UI Flags)
   isLiked: boolean = false;           // هل القلب أحمر؟
   isTranslated: boolean = true;       // هل النص مترجم؟
@@ -30,6 +34,7 @@ export class ListingDetails implements OnInit {
   selectedCheckOut: string = '';
     constructor(
     private listingService: ListingService,
+    private route: ActivatedRoute,
     private router :Router // استيراد الـ Router
   ) {}
   // دالة بتستقبل التغيير من كارت الحجز (هنحتاج نعدل كارت الحجز عشان يبعتها)
@@ -70,7 +75,37 @@ export class ListingDetails implements OnInit {
     this.listingService.getListingById('1').subscribe(data => {
       this.listing = data;
     });
+      // 1. الاشتراك في paramMap لجلب الـ ID من المسار
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.propertyId = id;
+        this.fetchListingDetails(this.propertyId);
+      } else {
+        this.error = "Property ID is missing from the URL.";
+        this.isLoading = false;
+      }
+    });
   }
+    fetchListingDetails(id: string): void {
+    this.isLoading = true;
+    this.error = null;
+
+    this.listingService.getListingById(id)
+      .pipe(
+        // استخدام finalize لإيقاف مؤشر التحميل بغض النظر عن النجاح/الفشل
+        finalize(() => this.isLoading = false)
+      )
+      .subscribe({
+        next: (data) => {
+          this.listing = data;
+        },
+        error: (err) => {
+          this.error = "Failed to load listing details. Please try again later.";
+          console.error('API Error:', err);
+        }
+      });
+    }
 
   // 2. دوال الأزرار التي كانت فارغة
 

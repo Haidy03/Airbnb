@@ -1,8 +1,8 @@
 // src/app/models/listing.model.ts
 
 export interface Host {
-  id: string;
-  name: string;
+  hostId: string;
+  hostName: string;
   avatarUrl: string;
   isSuperhost: boolean;
   joinedDate: string;
@@ -31,27 +31,33 @@ export interface Review {
   date: string;         // "December 2024"
   comment: string;      // "Great place to stay..."
 }
+export interface image {
+  imageUrl: string;
+
+}
 
 export interface Listing {
   id: string;
   title: string;
-  location: string;
+  country: string;
+  city: string;
+  address: string;
   description: string;
 
   // الصور
-  images: string[];
+  images: image[];
 
   // الأسعار والتقييم
   pricePerNight: number;
   currency: string;
   rating: number;
-  reviewsCount: number;
+  totalReviews: number;
 
   // تفاصيل الغرفة
   maxGuests: number;
-  bedrooms: number;
+  numberOfBedrooms: number;
   beds: number;
-  baths: number;
+  numberOfBathrooms: number;
 
   // المضيف
   host: Host;
