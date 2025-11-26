@@ -44,6 +44,11 @@ import { ResetPasswordComponent } from './features/auth/components/reset-passwor
 import { PropertyEditorComponent } from './features/host/components/property-editor/property-editor';
 import { BookingDetailsComponent } from './features/host/components/booking-details/booking-details';
 import { HostEarningsComponent } from './features/host/components/earnings/earnings';
+import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
+import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
+import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
+import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
+import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
 
 export const routes: Routes = [
   // =================================================
