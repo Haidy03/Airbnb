@@ -1,10 +1,11 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit ,inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { SearchBarComponent } from '../search/components/search-bar/search-bar';
 import { SearchFilters } from '../search/models/property.model';
+import { AuthService } from '../../../auth/services/auth.service';
 
 export interface SearchData {
   where: string;
@@ -26,7 +27,8 @@ export interface SearchData {
   styleUrls: ['./header.css']
 })
 export class HeaderComponent implements OnInit {
-
+  authService = inject(AuthService);
+  
   isUserMenuOpen = false;
   isScrolled = false;
   showExpandedSearch = false;
@@ -131,6 +133,42 @@ export class HeaderComponent implements OnInit {
         checkIn: filters.checkIn ? new Date(filters.checkIn).toISOString() : undefined,
         checkOut: filters.checkOut ? new Date(filters.checkOut).toISOString() : undefined,
         guests: filters.guests
+      }
+    });
+  }
+
+
+
+
+
+  //                         Host 
+  
+  onBecomeHostClick() {
+    // 1. لو مش عامل لوجن -> وديه يسجل دخول الأول
+    if (!this.authService.isAuthenticated) {
+      // بنبعت returnUrl عشان لما يخلص لوجن يرجع يكمل خطوات الهوست
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/host/properties/intro' } });
+      return;
+    }
+
+    // 2. لو عامل لوجن، نشوف هل هو أصلاً Host؟
+    if (this.authService.isHost()) {
+      // لو هو هوست، وديه على الداشبورد علطول
+      this.router.navigate(['/host/dashboard']);
+    } else {
+      // 3. لو هو Guest بس -> نكلم الباك إند نرقيه
+      this.upgradeToHost();
+    }
+  }
+
+  upgradeToHost() {
+    this.authService.becomeHost().subscribe({
+      next: () => {
+        // بعد ما التوكن اتحدث وبقى هوست، نوديه يبدأ يعمل أول عقار
+        this.router.navigate(['/host/properties/intro']);
+      },
+      error: (err) => {
+        alert('Something went wrong while setting up your host account.');
       }
     });
   }
