@@ -71,10 +71,6 @@ export class ListingDetails implements OnInit {
 
 
   ngOnInit(): void {
-    // جلب البيانات (استخدمنا ID 1 للتجربة)
-    this.listingService.getListingById('1').subscribe(data => {
-      this.listing = data;
-    });
       // 1. الاشتراك في paramMap لجلب الـ ID من المسار
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');

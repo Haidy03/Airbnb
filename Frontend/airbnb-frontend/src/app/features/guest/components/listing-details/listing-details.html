@@ -12,7 +12,7 @@
         <span class="dot">·</span>
         <span class="reviews-link">{{ listing.reviewsCount }} reviews</span>
         <span class="dot">·</span>
-        <span class="location">{{ listing.location }}</span>
+        <span class="location">{{ listing.country }},{{listing.city}},{{listing.address}}</span>
       </div>
 
       <div class="right-actions">
@@ -29,7 +29,7 @@
 
   <!-- ================= IMAGE GALLERY ================= -->
   <!-- المكون الذي قمنا ببرمجته سابقاً -->
-  <app-image-gallery [images]="listing.images"></app-image-gallery>
+  <app-image-gallery [images]="listing.images.imageUrl"></app-image-gallery>
 
 
   <!-- ================= MAIN GRID CONTENT ================= -->
@@ -41,7 +41,7 @@
       <!-- Host & Room Info -->
       <section class="section host-info-section">
         <div class="text-info">
-          <h2>Entire serviced apartment hosted by {{ listing.host.name }}</h2>
+          <h2>Entire serviced apartment hosted by {{ listing.host.hostName }}</h2>
           <p>2 guests · Studio · 2 beds · 1 bath</p>
         </div>
         <div class="host-avatar">
@@ -63,7 +63,7 @@
         <div class="highlight-item">
           <i class="fa-solid fa-medal"></i>
           <div>
-            <h3>{{ listing.host.name }} is a Superhost</h3>
+            <h3>{{ listing.host.hostName }} is a Superhost</h3>
             <p>Superhosts are experienced, highly rated hosts.</p>
           </div>
         </div>
@@ -134,7 +134,6 @@
           [listingId]="listing.id"
           [pricePerNight]="listing.pricePerNight"
           [rating]="listing.rating"
-          [reviewsCount]="listing.reviewsCount"
           [serviceFee]="150"
           [cleaningFee]="100"
            (dateChanged)="onDatesUpdated($event)"
@@ -153,7 +152,7 @@
 
   <!-- العنوان الرئيسي -->
   <h2>
-    <i class="fa-solid fa-star"></i> {{ listing.rating }} · {{ listing.reviewsCount }} reviews
+    <i class="fa-solid fa-star"></i> {{ listing.rating }} · {{ listing.totalReviews }} reviews
   </h2>
 
   <!-- 1. Rating Bars (شبكة الفئات) -->
@@ -238,7 +237,7 @@
     </div>
   </div>
 
-  <button class="outline-btn">Show all {{ listing.reviewsCount }} reviews</button>
+  <button class="outline-btn">Show all {{ listing.totalReviews }} reviews</button>
 </section>
   <hr>
 
