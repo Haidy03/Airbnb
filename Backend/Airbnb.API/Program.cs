@@ -114,6 +114,7 @@ builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IEarningsService, EarningsService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 // ============================================
