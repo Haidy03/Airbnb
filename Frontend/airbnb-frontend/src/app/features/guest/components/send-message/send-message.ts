@@ -131,6 +131,9 @@ export class SendMessage implements OnInit {
       .pipe(finalize(() => this.isLoading = false))
       .subscribe({
         next: (response) => {
+           this.messageForm.reset({
+             initialMessage: '' // إفراغ حقل النص المحدد
+          });
           this.successMessage = 'Message sent successfully! Redirecting to chat...';
 
           // 4. بعد النجاح: التنقل إلى صفحة المحادثات (افترض أن API يعيد ID المحادثة)
