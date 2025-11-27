@@ -1,8 +1,8 @@
-<div class="profile-container">
+<div class="profile-container" style="padding-top: 60px;">
   <aside class="sidebar">
     <h1 class="sidebar-title">Profile</h1>
     <nav class="menu">
-      <button 
+      <button
         *ngFor="let item of menuItems"
         class="menu-item"
         [class.active]="isActive(item.route)"

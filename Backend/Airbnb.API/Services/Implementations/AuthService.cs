@@ -204,9 +204,23 @@ namespace Airbnb.API.Services.Implementations
                 return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "Invalid password reset request." });
             }
 
-            // The UserManager handles everything: it checks if the token is valid for this user
-            // and if it hasn't expired, then updates the password hash.
-            var result = await _userManager.ResetPasswordAsync(user, resetDto.Token, resetDto.NewPassword);
+            // =========================================================
+            // 1. FIX: Handle URL Encoding
+            // =========================================================
+
+            // This converts "%2F" back to "/" and "%2B" back to "+"
+            string decodedToken = Uri.UnescapeDataString(resetDto.Token);
+
+            // 2. Extra Safety: Sometimes web browsers turn '+' into ' ' (space).
+            // If the token has spaces, put the plus signs back.
+            // (Identity tokens are Base64 and should not have spaces).
+            if (decodedToken.Contains(" "))
+            {
+                decodedToken = decodedToken.Replace(" ", "+");
+            }
+
+            // 3. Use the clean, decoded token
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, resetDto.NewPassword);
 
             return result;
         }
@@ -325,6 +339,22 @@ namespace Airbnb.API.Services.Implementations
 
             var result = await _userManager.UpdateAsync(user);
             return result.Succeeded;
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = "User not found." });
+            }
+
+            // This method automatically verifies the current password matches
+            // and enforces password strength policies on the new password.
+            var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+
+            return result;
         }
     }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, BehaviorSubject, of, tap } from 'rxjs';
+import { Observable, map, BehaviorSubject, of, tap, Subject  } from 'rxjs';
 import { environment } from '../../../../../../environments/environment';
 import {
   Property,
@@ -20,6 +20,10 @@ export class SearchService {
 
   private apiUrl = `${environment.apiUrl}/Search`;
 
+
+  private openFiltersSource = new Subject<void>();
+  openFilters$ = this.openFiltersSource.asObservable();
+
   // مخزن للأماكن المتاحة (عشان الاقتراحات)
   private locationsSubject = new BehaviorSubject<string[]>([]);
   locations$ = this.locationsSubject.asObservable();
@@ -31,6 +35,11 @@ export class SearchService {
     // أول ما السيرفس تقوم، هات الأماكن المتاحة (ممكن تحسنها تجيبها من API مخصوص)
     this.loadInitialLocations();
   }
+
+  triggerOpenFilters() {
+    this.openFiltersSource.next();
+  }
+
 
   private loadInitialLocations() {
     // بنجيب الـ Featured عشان نطلع منها المدن المتاحة حالياً

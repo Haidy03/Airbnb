@@ -1,82 +1,64 @@
 .search-results-container {
   min-height: 100vh;
   background: white;
-  /*
-     التعديل هنا:
-     قللنا المسافة عشان السيرش بار يطلع لفوق ويلزق تحت الهيدر
-     80px ده ارتفاع الهيدر الثابت
-  */
   padding-top: 80px;
   position: relative;
   z-index: 1;
 }
 
-.filters-sticky-wrapper {
-  position: sticky;
-  top: 80px; /* تحت الهيدر مباشرة */
-  z-index: 900;
-  background: white;
-  padding: 20px 0; /* مسافة بسيطة حول الفلاتر */
-  border-bottom: 1px solid #ebebeb;
-  margin-bottom: 20px;
-}
-
 .results-content {
   display: flex;
   position: relative;
+  height: calc(100vh - 80px);
 }
 
+/* القائمة */
 .results-list-section {
   flex: 1;
-  min-width: 0;
-  padding: 0 24px;
+  padding: 24px;
+  overflow-y: auto;
+  height: 100%;
 }
 
+/* لما الخريطة تكون موجودة */
 .results-list-section.with-map {
+  /* التعديل: خليناها 60% عشان تساع 3 كروت مستريحين */
+  flex: 0 0 60%;
   max-width: 60%;
 }
 
+/* الخريطة */
 .results-map-section {
+  flex: 1; /* الباقي 40% */
+  height: 100%;
   position: sticky;
-  /* تعديل مكان الخريطة بناءً على المسافات الجديدة */
-  top: 180px;
-  width: 40%;
-  height: calc(100vh - 180px);
-  background: #F7F7F7;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-right: 24px;
+  top: 80px;
+  right: 20px;;
+  background: #f7f7f7;
 }
 
-/* باقي التنسيقات زي ما هي */
+:host ::ng-deep .leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  background: #aad3df;
+}
+
 .map-toggle-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; padding: 12px 24px; margin: 16px 0; background: #222;
-  color: white; border: 1px solid #222; border-radius: 8px; font-size: 16px;
-  font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+  width: 100%; padding: 12px; margin-bottom: 16px;
+  background: #222; color: white; border-radius: 8px; border: none;
 }
-.map-toggle-btn:hover { background-color: black; transform: scale(1.02); }
 
 .close-map-btn {
-  position: absolute; top: 24px; right: 24px; width: 40px; height: 40px;
-  background: white; border: none; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); z-index: 1000;
-}
-
-@media (min-width: 1024px) {
-  .results-list-section { padding: 0 24px 0 40px; }
+  position: absolute; top: 20px; left: 20px; z-index: 9999;
+  width: 40px; height: 40px; border-radius: 50%; background: white; border: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 @media (max-width: 1023px) {
-  .search-results-container { padding-top: 70px; }
-  .results-list-section.with-map { max-width: 100%; }
+  .results-content { display: block; height: auto; }
+  .results-list-section.with-map { max-width: 100%; flex: none; }
   .results-map-section {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-    z-index: 2000; padding: 0; margin: 0; border-radius: 0;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 2000;
   }
-}
-
-@media (max-width: 768px) {
-  .results-list-section { padding: 0 16px; }
 }
