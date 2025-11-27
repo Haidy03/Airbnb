@@ -44,7 +44,7 @@
         </div>
 
 
-        
+
 
         <!-- زرار الـ Next الأسود القديم هنشيله خلاص، لأن زرار باي بال هو اللي هيدفع -->
 
@@ -62,12 +62,11 @@
           <div class="card-header-row">
             <img [src]="listing.images[0]" alt="Listing">
             <div class="text-info">
-              <span class="superhost-tag" *ngIf="listing.host.isSuperhost">Superhost</span>
               <p class="listing-desc">Entire rental unit</p>
               <h4>{{ listing.title }}</h4>
               <div class="rating">
                 <i class="fa-solid fa-star"></i> {{ listing.rating }}
-                <span class="count">({{ listing.reviewsCount }} reviews)</span>
+                <span class="count">({{ listing.reviewsCount}} reviews)</span>
               </div>
             </div>
           </div>
@@ -131,7 +130,7 @@
           <i class="fa-regular fa-gem"></i>
           <div class="text">
             <h4>This is a rare find.</h4>
-            <p>{{ listing.host.name }}'s place is usually booked.</p>
+            <p>{{ listing.host.firstName }} {{ listing.host.lastName }}'s place is usually booked.</p>
           </div>
         </div>
 

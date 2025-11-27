@@ -1,5 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+// import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
@@ -318,22 +320,36 @@ export class AuthService {
     return 'Request failed. Please try again.';
   }
 
-  // ================= Host Methods =================
-  becomeHost(): Observable<any> {
-    return this.http.post<LoginResponse>(`${this.API_URL}/become-host`, {})
-      .pipe(
-        tap(response => {
-          console.log('🎉 User is now a Host!', response);
-          if (response.token) {
-            this.setToken(response.token);
-            this.setUserFromToken(response.token);
-          }
-        }),
-        catchError(error => {
-          console.error('❌ Failed to become host:', error);
-          return throwError(() => error);
-        })
-      );
+
+  //                Host Methodss         ////////////////////////
+
+    becomeHost(): Observable<any> {
+    // ✅ 1. الحصول على التوكن الحالي
+    const token = this.getToken(); 
+    
+    // ✅ 2. إنشاء الـ Headers
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.post<LoginResponse>(
+      `${this.API_URL}/become-host`, 
+      {}, 
+      { headers } // ✅ 3. تمرير الـ Headers هنا
+    )
+    .pipe(
+      tap(response => {
+        console.log('🎉 User is now a Host!', response);
+        if (response.token) {
+          this.setToken(response.token);
+          this.setUserFromToken(response.token);
+        }
+      }),
+      catchError(error => {
+        console.error('❌ Failed to become host:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   isHost(): boolean {

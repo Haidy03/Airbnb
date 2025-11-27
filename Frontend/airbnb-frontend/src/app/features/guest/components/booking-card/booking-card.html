@@ -6,7 +6,7 @@
       <span class="amount">{{ pricePerNight | number }} {{ currency }}</span>
       <span class="period">night</span>
     </div>
-    <div class="rating" *ngIf="reviewsCount > 0">
+    <div class="rating" *ngIf="(reviewsCount ?? 0) > 0">
       <span class="star">★</span>
       <span class="score">{{ rating }}</span>
       <span class="reviews"> · <u>{{ reviewsCount }} reviews</u></span>
