@@ -27,10 +27,13 @@ export class ListingDetails implements OnInit {
   propertyId!: string;
    isLoading: boolean = true;
   error: string | null = null;
+ 
   // متغيرات التحكم في الشكل (UI Flags)
   isLiked: boolean = false;           // هل القلب أحمر؟
   isTranslated: boolean = true;       // هل النص مترجم؟
   isDescriptionExpanded: boolean = false; // هل الوصف مفتوح بالكامل؟
+  showAmenitiesModal: boolean = false; 
+  showFullGallery: boolean = false;
  // متغيرات التواريخ اللي هتتبعت للاتنين
   selectedCheckIn: string = '';
   selectedCheckOut: string = '';
@@ -77,20 +80,23 @@ export class ListingDetails implements OnInit {
     // ******************************************************
   }
 
+   showAllAmenities(): void {
+    this.showAmenitiesModal = true;
+    // يمكن إضافة منطق لمنع التمرير (Scroll lock) هنا إذا لزم الأمر
+  }
+
+  /**
+   * دالة لإغلاق الـ Modal عند الضغط على زر الغلق
+   */
+  closeAmenitiesModal(): void {
+    this.showAmenitiesModal = false;
+  }
+
+
   
 
 
-  // 1. هذه هي قائمة المزايا التي كانت ناقصة
-  amenities = [
-    { icon: 'fa-solid fa-wifi', name: 'Fast Wifi' },
-    { icon: 'fa-solid fa-tv', name: '55" HDTV with Netflix' },
-    { icon: 'fa-solid fa-snowflake', name: 'Central air conditioning' },
-    { icon: 'fa-solid fa-kitchen-set', name: 'Fully equipped kitchen' },
-    { icon: 'fa-solid fa-elevator', name: 'Elevator' },
-    { icon: 'fa-solid fa-washer', name: 'Washing machine' },
-    { icon: 'fa-solid fa-video', name: 'Security cameras' }
-  ];
-
+  
 
 
   ngOnInit(): void {
@@ -134,7 +140,12 @@ export class ListingDetails implements OnInit {
       });
     }
 
-  // 2. دوال الأزرار التي كانت فارغة
+  // 2. دوال الأزرار show all photos 
+   isModalOpen: boolean = false;
+       onModalStateChange(isOpen: boolean): void {
+        this.isModalOpen = isOpen; // تحديث الحالة عند فتح/إغلاق الـ Modal
+    }
+
 
   // زر المشاركة: ينسخ رابط الصفحة
   shareListing() {
@@ -159,8 +170,6 @@ export class ListingDetails implements OnInit {
   }
 
   // زر عرض كل المزايا (مبدئياً يطبع في الكونسول)
-  showAllAmenities() {
-    console.log('Open Amenities Modal Triggered');
-  }
+ 
 
 }

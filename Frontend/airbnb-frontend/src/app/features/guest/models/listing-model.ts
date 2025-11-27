@@ -23,6 +23,12 @@ export interface ReviewModel {
   comment: string;
   createdAt: string;
 }
+export interface amenities{
+ id: number;
+  name: string;
+  icon: string; // اسم الأيقونة (مثل 'wifi', 'tv')
+  category: string;
+}
 
 // الهيكل الرئيسي لتفاصيل العقار
 export interface Listing {
@@ -47,7 +53,7 @@ export interface Listing {
 
   host: HostDetails;
   images: string[]; // تحديد نوع دقيق أفضل
-  amenities: any[]; // تحديد نوع دقيق أفضل
+  amenities: amenities[]; // تحديد نوع دقيق أفضل
   reviews: ReviewModel[];
 }
 

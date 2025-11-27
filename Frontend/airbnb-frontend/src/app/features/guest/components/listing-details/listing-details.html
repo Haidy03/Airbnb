@@ -1,4 +1,4 @@
-<div class="listing-page-container" *ngIf="listing">
+<div class="listing-page-container" *ngIf="listing" [class.blurred]="isModalOpen">
 
   <!-- ================= HEADER SECTION ================= -->
   <header class="listing-header">
@@ -29,7 +29,7 @@
 
   <!-- ================= IMAGE GALLERY ================= -->
   <!-- المكون الذي قمنا ببرمجته سابقاً -->
-  <app-image-gallery [images]="listing.images"></app-image-gallery>
+  <app-image-gallery [images]="listing.images"  (modalStateChange)="onModalStateChange($event)"></app-image-gallery>
 
 
   <!-- ================= MAIN GRID CONTENT ================= -->
@@ -103,18 +103,60 @@
       <hr>
 
       <!-- Amenities -->
-      <section class="section amenities-section">
-        <h2>What this place offers</h2>
-        <div class="amenities-grid">
-          <div class="amenity-item" *ngFor="let item of amenities">
-                <i [attr.class]="'fa-solid ' + item.icon"></i>
-                <span>{{ item.name }}</span>
-              </div>
-        </div>
-        <button class="outline-btn" (click)="showAllAmenities()">
-          Show all
+    <section class="section amenities-section" *ngIf="listing?.amenities && listing.amenities.length > 0">
+  <h2>What this place offers</h2>
+  
+  <!-- شبكة عرض التسهيلات -->
+  <div class="amenities-grid">
+    
+    <!-- استخدام *ngFor لعرض أول 6 تسهيلات فقط في البداية -->
+    <div 
+        class="amenity-item" 
+        *ngFor="let amenity of listing.amenities | slice:0:6"
+    >
+      
+      <i class="fa-solid fa-{{ amenity.icon }}"></i>
+      <span>{{ amenity.name }}</span>
+    </div>
+  </div>
+  
+  <!-- زر عرض الكل: يظهر فقط إذا كان هناك أكثر من 6 تسهيلات -->
+  <button 
+      class="outline-btn" 
+      (click)="showAllAmenities()"
+      *ngIf="listing.amenities.length > 6">
+    Show all {{ listing.amenities.length }} amenities
+  </button>
+</section>
+<div class="amenities-modal-backdrop" *ngIf="showAmenitiesModal" (click)="closeAmenitiesModal()"></div>
+<div class="amenities-modal-card" *ngIf="showAmenitiesModal">
+    
+    <!-- Header مع زر الغلق -->
+    <div class="modal-header">
+        <button class="close-modal-btn" (click)="closeAmenitiesModal()">
+            <!-- أيقونة الغلق (مثل X) -->
+            <svg viewBox="0 0 32 32" style="display: block; fill: none; height: 16px; width: 16px; stroke: currentcolor; stroke-width: 3; overflow: visible;"><path d="m6 6 20 20M26 6 6 26"></path></svg>
         </button>
-      </section>
+        <h3 class="modal-title">What this place offers</h3>
+    </div>
+
+    <!-- المحتوى (عرض جميع التسهيلات) -->
+    <div class="modal-body-content">
+        <!-- يمكنك هنا استخدام *ngFor وتجميع التسهيلات حسب الفئة (category) -->
+
+        <!-- مثال: قائمة بكل التسهيلات -->
+        <div class="full-amenities-list">
+            <div 
+                class="amenity-item-full" 
+                *ngFor="let amenity of listing.amenities"
+            >
+                <i class="fa-solid fa-{{ amenity.icon }}"></i>
+                <span>{{ amenity.name }}</span>
+            </div>
+        </div>
+        
+    </div>
+</div>
       <hr>
 
       <!-- Calendar (Placeholder for now) -->
@@ -186,3 +228,4 @@
     </div>
   </div>
 </section>
+</div>
