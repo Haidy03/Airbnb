@@ -10,7 +10,11 @@ $border: #DDDDDD;
   padding: 24px 40px;
   color: $text-dark;
   font-family: 'Circular', sans-serif; // خط Airbnb إن وجد
+}.listing-page-container.blurred { 
+   pointer-events: none;// تأثير الضبابية عند فتح الـ Modal
 }
+
+
 
 // 1. Header Styles
 .listing-header {
@@ -119,6 +123,81 @@ $border: #DDDDDD;
         }
       }
     }
+    .amenities-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4); /* خلفية داكنة خفيفة */
+  z-index: 100;
+}
+
+/* الـ Modal/الكارد الرئيسي */
+.amenities-modal-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* للتوسيط التام */
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 101;
+  width: 90%;
+  max-width: 600px; /* حجم مناسب لكارد صغير */
+  max-height: 80vh; /* تحديد أقصى ارتفاع */
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* رأس الـ Modal */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgb(235, 235, 235);
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.close-modal-btn:hover {
+    background-color: rgb(247, 247, 247);
+}
+
+/* تنسيق قائمة التسهيلات الكاملة */
+.full-amenities-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* عمودان لترتيب أفضل */
+  gap: 20px 16px;
+}
+
+.amenity-item-full {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  color: rgb(34, 34, 34);
+}
+
+.amenity-item-full i {
+    width: 20px; /* حجم الأيقونة */
+    flex-shrink: 0;
+    color: rgb(113, 113, 113);
+}
 
     // General Buttons (Outline)
     .outline-btn {
@@ -214,6 +293,7 @@ $border: #DDDDDD;
     .rating-breakdown-grid { display: none; } // Airbnb بيخفي البارات في الموبايل
   }
 }
+
 
 // 4. Mobile Responsive
 @media (max-width: 745px) {

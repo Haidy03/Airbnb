@@ -1,36 +1,84 @@
+
+<!-- --- START OF FILE image-gallery.html --- -->
+
+
 <div class="gallery-container" *ngIf="images && images.length >= 5">
 
   <!-- الصورة الكبيرة على اليسار -->
   <div class="gallery-item main-item">
-    <img [src]="images[0]" alt="Main Listing Photo">
+  <img
+      [src]="getFullImageUrl(images[0])"
+      [alt]="title"
+      *ngIf="images.length > 0"
+    >
     <div class="overlay"></div>
   </div>
 
   <!-- الصور الصغيرة على اليمين -->
   <div class="gallery-item sub-item">
-    <img [src]="images[1]" alt="Listing Photo">
+    <img
+      [src]="getFullImageUrl(images[1])"
+      [alt]="title"
+      *ngIf="images.length > 0"
+    >
     <div class="overlay"></div>
   </div>
 
   <div class="gallery-item sub-item top-right">
-    <img [src]="images[2]" alt="Listing Photo">
+   <img
+      [src]="getFullImageUrl(images[2])"
+      [alt]="title"
+      *ngIf="images.length > 0"
+    >
     <div class="overlay"></div>
   </div>
 
   <div class="gallery-item sub-item">
-    <img [src]="images[3]" alt="Listing Photo">
+     <img
+      [src]="getFullImageUrl(images[3])"
+      [alt]="title"
+      *ngIf="images.length > 0"
+    >
     <div class="overlay"></div>
   </div>
 
   <div class="gallery-item sub-item bottom-right">
-    <img [src]="images[4]" alt="Listing Photo">
+   <img
+      [src]="getFullImageUrl(images[4])"
+      [alt]="title"
+      *ngIf="images.length > 0"
+    >
     <div class="overlay"></div>
   </div>
 
   <!-- زر عرض كل الصور -->
-  <button class="show-all-btn" (click)="showAllPhotos()">
+  <button class="show-all-btn" (click)="showAllPhotos()"   *ngIf="images.length > 1">
     <i class="fa fa-th"></i> <!-- أيقونة النقاط -->
+    
     Show all photos
   </button>
+ 
 
+</div>
+
+<div class="full-gallery-modal" *ngIf="showModal">
+    
+    <div class="modal-content">
+        <!-- زر الإغلاق (للتثبيت في الزاوية) -->
+        <button class="close-modal-btn" (click)="closeFullGallery()">
+          <svg viewBox="0 0 32 32" style="display: block; fill: none; height: 16px; width: 16px; stroke: currentcolor; stroke-width: 3; overflow: visible;"><path d="m6 6 20 20M26 6 6 26"></path></svg>
+        </button>
+        
+        <h3>{{ title }} - All Photos</h3>
+        
+        <div class="full-image-list">
+            <div 
+                class="full-image-item" 
+                *ngFor="let image of images; let i = index"
+            >
+                <!-- الصورة ستأخذ حجم الـ Div الأب بفضل object-fit: cover -->
+                <img [src]="getFullImageUrl(image)" [alt]="title + ' ' + (i + 1)">
+            </div>
+        </div>
+    </div>
 </div>

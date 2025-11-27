@@ -35,6 +35,14 @@ export class instantBookComponent implements OnInit {
       this.propertyService.getDraftById(this.currentDraftId).subscribe({
         next: (draft) => {
           this.currentDraft = draft;
+          
+          // ✅ تصحيح 1: قراءة القيمة من الداتا بيز وضبط حالة الزر
+          if (draft.isInstantBook) {
+            this.bookingMode.set('instant');
+          } else {
+            this.bookingMode.set('approval');
+          }
+          
           console.log('✅ Draft loaded:', draft);
         },
         error: (error) => {
@@ -52,6 +60,14 @@ export class instantBookComponent implements OnInit {
     this.bookingMode.set(mode);
   }
 
+  // ✅ دالة مساعدة لتجهيز البيانات بشكل صحيح للباك إند
+  private getPayload() {
+    return {
+      // نحول النص 'instant' إلى true، وأي شيء آخر إلى false
+      isInstantBook: this.bookingMode() === 'instant'
+    };
+  }
+
   saveAndExit(): void {
     if (!confirm('Save your progress and exit?')) return;
 
@@ -60,9 +76,7 @@ export class instantBookComponent implements OnInit {
     if (this.currentDraftId) {
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
-        {
-          bookingMode: this.bookingMode()
-        },
+        this.getPayload(), // ✅ استخدام الدالة المصححة
         'booking-settings'
       ).subscribe({
         next: () => {
@@ -97,9 +111,7 @@ export class instantBookComponent implements OnInit {
     if (this.currentDraftId) {
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
-        {
-          bookingMode: this.bookingMode()
-        },
+        this.getPayload(), // ✅ استخدام الدالة المصححة
         'booking-settings'
       ).subscribe({
         next: () => {

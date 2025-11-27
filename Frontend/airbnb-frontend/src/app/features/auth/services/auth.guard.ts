@@ -79,7 +79,8 @@ export const hostGuard: CanActivateFn = (): boolean | UrlTree => {
 
   console.log('👤 Host Guard - User role:', userRole);
 
-  if (userRole === 'host') {
+  // if (userRole === 'host')
+   if(userRole.includes('host'))  {
     console.log('✅ Host Guard - User is Host, allowing access');
     return true;
   }

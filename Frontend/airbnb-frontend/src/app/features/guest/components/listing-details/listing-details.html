@@ -1,4 +1,4 @@
-<div class="listing-page-container" *ngIf="listing">
+<div class="listing-page-container" *ngIf="listing" [class.blurred]="isModalOpen">
 
   <!-- ================= HEADER SECTION ================= -->
   <header class="listing-header">
@@ -29,7 +29,7 @@
 
   <!-- ================= IMAGE GALLERY ================= -->
   <!-- المكون الذي قمنا ببرمجته سابقاً -->
-  <app-image-gallery [images]="listing.images"></app-image-gallery>
+  <app-image-gallery [images]="listing.images"  (modalStateChange)="onModalStateChange($event)"></app-image-gallery>
 
 
   <!-- ================= MAIN GRID CONTENT ================= -->
@@ -42,7 +42,7 @@
       <section class="section host-info-section">
         <div class="text-info">
           <h2>Entire serviced apartment hosted by {{ listing.host.firstName }} {{listing.host.lastName}}</h2>
-          <p>2 guests · Studio · 2 beds · 1 bath</p>
+          <p>{{listing.maxGuests}} Guests · {{listing.numberOfBedrooms}} beds · {{listing.numberOfBathrooms}} bath</p>
         </div>
         <div class="host-avatar">
           <img [src]="listing.host.profileImageUrl" alt="Host">
@@ -97,29 +97,71 @@
         <div class="bedroom-card">
           <div class="img-placeholder"><i class="fa-solid fa-bed"></i></div>
           <h3>Bedroom area</h3>
-          <p>2 single beds</p>
+          <p>{{listing.numberOfBedrooms}}single beds</p>
         </div>
       </section>
       <hr>
 
       <!-- Amenities -->
-      <section class="section amenities-section">
-        <h2>What this place offers</h2>
-        <div class="amenities-grid">
-          <div class="amenity-item" *ngFor="let item of amenities">
-                <i [attr.class]="'fa-solid ' + item.icon"></i>
-                <span>{{ item.name }}</span>
-              </div>
-        </div>
-        <button class="outline-btn" (click)="showAllAmenities()">
-          Show all 27 amenities
+    <section class="section amenities-section" *ngIf="listing?.amenities && listing.amenities.length > 0">
+  <h2>What this place offers</h2>
+  
+  <!-- شبكة عرض التسهيلات -->
+  <div class="amenities-grid">
+    
+    <!-- استخدام *ngFor لعرض أول 6 تسهيلات فقط في البداية -->
+    <div 
+        class="amenity-item" 
+        *ngFor="let amenity of listing.amenities | slice:0:6"
+    >
+      
+      <i class="fa-solid fa-{{ amenity.icon }}"></i>
+      <span>{{ amenity.name }}</span>
+    </div>
+  </div>
+  
+  <!-- زر عرض الكل: يظهر فقط إذا كان هناك أكثر من 6 تسهيلات -->
+  <button 
+      class="outline-btn" 
+      (click)="showAllAmenities()"
+      *ngIf="listing.amenities.length > 6">
+    Show all {{ listing.amenities.length }} amenities
+  </button>
+</section>
+<div class="amenities-modal-backdrop" *ngIf="showAmenitiesModal" (click)="closeAmenitiesModal()"></div>
+<div class="amenities-modal-card" *ngIf="showAmenitiesModal">
+    
+    <!-- Header مع زر الغلق -->
+    <div class="modal-header">
+        <button class="close-modal-btn" (click)="closeAmenitiesModal()">
+            <!-- أيقونة الغلق (مثل X) -->
+            <svg viewBox="0 0 32 32" style="display: block; fill: none; height: 16px; width: 16px; stroke: currentcolor; stroke-width: 3; overflow: visible;"><path d="m6 6 20 20M26 6 6 26"></path></svg>
         </button>
-      </section>
+        <h3 class="modal-title">What this place offers</h3>
+    </div>
+
+    <!-- المحتوى (عرض جميع التسهيلات) -->
+    <div class="modal-body-content">
+        <!-- يمكنك هنا استخدام *ngFor وتجميع التسهيلات حسب الفئة (category) -->
+
+        <!-- مثال: قائمة بكل التسهيلات -->
+        <div class="full-amenities-list">
+            <div 
+                class="amenity-item-full" 
+                *ngFor="let amenity of listing.amenities"
+            >
+                <i class="fa-solid fa-{{ amenity.icon }}"></i>
+                <span>{{ amenity.name }}</span>
+            </div>
+        </div>
+        
+    </div>
+</div>
       <hr>
 
       <!-- Calendar (Placeholder for now) -->
     <app-calendar-section
-     [location]="listing.address.split(',')[0]"
+     [location]="listing.city"
      [checkIn]="selectedCheckIn"
      [checkOut]="selectedCheckOut">
   </app-calendar-section>
@@ -137,6 +179,7 @@
           [rating]="listing.rating"
           [serviceFee]="150"
           [cleaningFee]="100"
+          [isInstantBook]="listing.isInstantBook" 
            (dateChanged)="onDatesUpdated($event)"
            (reserve)="goToCheckout()">
         </app-super-card>
@@ -151,7 +194,7 @@
  <!-- ================= REVIEWS SECTION ================= -->
 <!-- --- START OF REVIEWS SECTION CODE (listing-details.html) --- -->
 
-<div class="reviews-full-section" *ngIf="listing?.ratingBreakdown && listing.reviewsCount && listing.reviewsCount > 0">
+<section class="reviews-full-section" *ngIf="listing?.ratingBreakdown && listing.reviewsCount && listing.reviewsCount > 0">
 
   <!-- -------------------- HEADER -------------------- -->
   <div class="rating-header">
@@ -179,4 +222,10 @@
     <!-- تفاصيل المضيف الكاملة والخريطة تضاف هنا بنفس الطريقة -->
   </section>
 
+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 </div>

@@ -113,7 +113,7 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
-
+builder.Services.AddScoped<ITranslationService, TranslationService>();
 builder.Services.AddScoped<IEarningsService, EarningsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
@@ -140,7 +140,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "http://localhost:4200",
-                "http://localhost:53829"
+                "http://localhost:52290"
               )
               .AllowAnyMethod()
               .AllowAnyHeader()

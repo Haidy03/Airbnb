@@ -122,9 +122,9 @@
   </div>
 
   <!-- Reserve Button -->
-  <button class="reserve-btn" (click)="onReserve()">Reserve</button>
-
-  <p class="no-charge-text">You won't be charged yet</p>
+  <button class="reserve-btn" (click)="onReserve()"> {{ isInstantBook ? 'Request to Book' : 'Reserve' }}</button>
+  <p class="small-text">{{ isInstantBook ? 'You won’t be charged yet' : 'You will be asked to confirm your dates' }}</p>
+    <p class="no-charge-text">You won't be charged yet</p>
 
   <!-- Price Breakdown -->
   <!-- التعديل الثاني: الاعتماد على priceBreakdown -->

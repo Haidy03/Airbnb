@@ -1,75 +1,34 @@
-/* الحاوية الأساسية */
 .header-container {
   background-color: white !important;
   transition: all 0.2s ease-in-out;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1020;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1020;
   box-shadow: 0 1px 0 rgba(0,0,0,0.05);
 }
 
-/* الصف العلوي */
-.nav-top {
-  position: relative;
-  z-index: 1050;
-  min-height: 80px;
-  background-color: white;
-}
+.nav-top { position: relative; z-index: 1050; min-height: 80px; background-color: white; }
 
-/* اللوجو */
-.logo-container {
-  position: relative;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  min-width: 100px;
-}
-
-.logo-link {
-  color: #FF385C !important;
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-/* =========================================
-   إصلاح البار الكبير (Big Search Bar)
-   ========================================= */
 .big-search-wrapper {
-  opacity: 1;
-  transform: scaleY(1);
-  transform-origin: top;
-  transition: all 0.2s ease;
-
-  /* 1. شلنا السالب عشان البار مايتاكلش من فوق */
-  margin-top: 10px !important;
-
-  /* 2. مسافة من تحت */
-  padding-bottom: 20px;
-
-  position: relative;
-  z-index: 1040;
+  opacity: 1; transform: scaleY(1); transform-origin: top; transition: all 0.2s ease;
+  margin-top: 10px !important; padding-bottom: 20px; position: relative; z-index: 1040;
 }
 
 .header-container.scrolled .big-search-wrapper {
-  opacity: 0;
-  transform: scaleY(0);
-  height: 0;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden;
-  display: none;
+  opacity: 0; transform: scaleY(0); height: 0; margin: 0 !important; padding: 0 !important; overflow: hidden; display: none;
 }
 
-/* =========================================
-   باقي التنسيقات (بدون تغيير)
-   ========================================= */
+/* تعديل البار الصغير */
 .small-search-container {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  opacity: 0; visibility: hidden; transition: all 0.2s ease; z-index: 1045;
-  width: auto; max-width: 60%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 1045;
+  width: auto; /* ياخد حجمه الطبيعي */
+  /* شلنا max-width عشان ميعملش ellipsis */
+  white-space: nowrap; /* منع نزول الكلام سطر جديد */
 }
 
 .header-container.scrolled .small-search-container {
@@ -77,9 +36,21 @@
   visibility: visible;
 }
 
+/* تنسيق زر الفلتر الجديد */
+.btn-white {
+  background-color: white;
+  border: 1px solid #dddddd;
+  transition: all 0.2s;
+}
+.btn-white:hover {
+  border-color: #222;
+  background-color: #f7f7f7;
+}
+
 .search-pill { cursor: pointer; transition: box-shadow 0.2s; border: 1px solid #dddddd; }
 .search-pill:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.18); }
-.cursor-pointer { cursor: pointer; }
-.host-btn { font-size: 14px; transition: background-color 0.2s; }
+
 .user-menu-btn:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.18); }
 .custom-dropdown { border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+.host-btn { cursor: pointer; }
+.cursor-pointer { cursor: pointer; }

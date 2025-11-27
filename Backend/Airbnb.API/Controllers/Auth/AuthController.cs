@@ -197,5 +197,24 @@ namespace Airbnb.API.Controllers.Auth
                 return StatusCode(500, new { message = "An error occurred", error = ex.Message });
             }
         }
+
+        [HttpPost("change-password")]
+        [Authorize] // <--- Critical: User must be logged in
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            // 1. Get the ID of the currently logged-in user
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // 2. Call the service
+            var result = await _authService.ChangePasswordAsync(userId, changePasswordDto);
+
+            if (!result.Succeeded)
+            {
+                // This will return errors like "Incorrect password" or "Password requires a digit"
+                return BadRequest(result.Errors);
+            }
+
+            return Ok(new { Message = "Password changed successfully." });
+        }
     }
 }
