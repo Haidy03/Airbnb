@@ -58,28 +58,36 @@
         <div class="position-relative">
           <button class="user-menu-btn border rounded-pill p-1 ps-2 d-flex align-items-center gap-2 bg-white hover-shadow transition" (click)="toggleUserMenu($event)">
             <i class="bi bi-list fs-5"></i>
-            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 30px; height: 30px;">
+            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white"
+                 style="width: 30px; height: 30px;">
               <i class="bi bi-person-fill fs-5"></i>
             </div>
           </button>
 
-          <div *ngIf="isUserMenuOpen" class="custom-dropdown shadow-lg rounded-4 py-2 bg-white position-absolute end-0 mt-2" style="width: 240px; z-index: 2050;" (click)="$event.stopPropagation()">
+          <div *ngIf="isUserMenuOpen"
+               class="custom-dropdown shadow-lg rounded-4 py-2 bg-white position-absolute end-0 mt-2"
+               style="width: 240px; z-index: 2050;"
+               (click)="$event.stopPropagation()">
+
             <div class="d-flex flex-column">
-               <a routerLink="/profile" class="dropdown-item px-3 py-2">Profile</a>
-               <a routerLink="/messages" class="dropdown-item px-3 py-2">Messages</a>
-               <a routerLink="/trips" class="dropdown-item px-3 py-2">Trips</a>
-               <a routerLink="/wishlists" class="dropdown-item px-3 py-2">Wishlists</a>
-               <div class="border-bottom my-2"></div>
-               <a routerLink="/account-settings" class="dropdown-item px-3 py-2">Account settings</a>
-               <a (click)="isLoggedIn() ? onLogout() : openLoginModal()" class="dropdown-item px-3 py-2 cursor-pointer">
-                  {{ isLoggedIn() ? 'Log out' : 'Log in' }}
-               </a>
+              <a routerLink="/profile" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Profile</a>
+              <a routerLink="/messages" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Messages</a>
+              <a routerLink="/trips" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Trips</a>
+              <a routerLink="/wishlists" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Wishlists</a>
+              <div class="border-bottom my-2"></div>
+              <a routerLink="/account-settings" class="dropdown-item px-3 py-2 text-dark hover-bg-light">Account settings</a>
+              <a (click)="isLoggedIn()? onLogout() : openLoginModal()"
+                 class="dropdown-item px-3 py-2 text-dark hover-bg-light cursor-pointer">
+                 {{ isLoggedIn() ? 'Log out' : 'Log in or sign up' }}
+              </a>
             </div>
+
           </div>
         </div>
+
       </div>
 
-    </div>
+    </div> <!-- END nav-top -->
 
     <!-- 4. Big Search Bar Row -->
     <!-- يظهر لما isScrolled = false (سواء في الهوم أو لما نضغط في السيرش) -->

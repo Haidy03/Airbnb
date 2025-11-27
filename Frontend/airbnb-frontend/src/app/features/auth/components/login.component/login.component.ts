@@ -264,18 +264,30 @@ export class LoginComponent {
         this.authService.loginWithEmail(loginRequest).subscribe({
           next: (response:any) => {
             console.log('✅ Auto-login successful after registration');
-            this.authService.setToken(response.token);
+             this.isLoading.set(false);
+            //this.authService.setToken(response.token);
             // Fetch role from token and redirect
-          const token = this.authService.getToken();
+           const token = response?.token || response?.data?.token;
+            //const token = this.authService.getToken();
           if (token) {
+            // const userRole = this.tokenService.getUserRole(token);
+            // this.redirectBasedOnRole(userRole);
+            this.authService.setToken(token);
+            console.log('✅ Token stored:', localStorage.getItem('token'));
+
             const userRole = this.tokenService.getUserRole(token);
+            const userId = this.tokenService.getUserId(token);
+
+            console.log('👤 User Role:', userRole, '🆔 User ID:', userId);
             this.redirectBasedOnRole(userRole);
+
+            this.closeModal();
           } else {
             this.errorMessage.set('Login failed - no token received');
             this.switchMode('email');
           }
-            this.router.navigate(['/login']); 
-            //this.closeModal();
+            // this.router.navigate(['/login']); 
+            this.closeModal();
             
           },
           error: (loginError) => {
@@ -405,7 +417,7 @@ export class LoginComponent {
   // ✅ فتح نافذة نسيت كلمة المرور
   openForgotPassword(event: Event) {
     event.preventDefault();
-    this.closeModal();
+    //this.closeModal();
     
     // استيراد المكون ديناميكياً لتجنب circular dependencies
     import('../forogt-password.component/forogt-password.component').then(module => {

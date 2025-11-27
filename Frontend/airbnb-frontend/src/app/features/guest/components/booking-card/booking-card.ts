@@ -32,8 +32,8 @@ export class BookingCard implements OnInit { // <--- تم تغيير الاسم 
 
   @Input() listingId!: string;
   @Input() pricePerNight: number = 0;
-  @Input() rating: number = 0;
-  @Input() reviewsCount: number = 0;
+  @Input() rating?: number = 0;
+  @Input() reviewsCount?: number = 0;
   @Input() currency: string = 'EGP';
   @Input() serviceFee: number = 0;
   @Input() cleaningFee: number = 0;
