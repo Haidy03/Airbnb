@@ -8,7 +8,6 @@ import { ListingService } from '../../services/Lisiting-Services'; // لجلب �
 import { BookingCard } from '../booking-card/booking-card'; // <--- استيراد الـ Booking Card
 import { Listing, HostDetails } from '../../models/listing-model'; // الـ Models
 import { finalize } from 'rxjs/operators';
-import{ListingDetails} from '../listing-details/listing-details';
 
 @Component({
   selector: 'app-send-message',
