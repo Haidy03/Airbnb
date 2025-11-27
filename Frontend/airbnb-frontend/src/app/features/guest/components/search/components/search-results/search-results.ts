@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 // Models
@@ -13,28 +13,28 @@ import { FiltersComponent } from '../filters/filters';
 import { SearchBarComponent } from '../search-bar/search-bar';
 import { PropertyCardComponent } from '../property-card/property-card';
 
-
-
 // Services
 import { SearchService } from '../../services/search-service';
+// إضافة خدمات الـ Wishlist والـ Toast
+import { WishlistService } from '../../../../services/wishlist.service';
+import { ToastService } from '../../../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-search-results',
   standalone: true,
   imports: [
     CommonModule,
-    PropertyListComponent,
+    PropertyListComponent, // لو مستخدم
+    PropertyCardComponent, // عشان بنعرض الكروت مباشرة
     SearchMapComponent,
     FiltersComponent,
-    SearchBarComponent,
-   PropertyCardComponent,
+    SearchBarComponent
   ],
   templateUrl: './search-results.html',
   styleUrls: ['./search-results.css']
 })
 export class SearchResultsComponent implements OnInit, OnDestroy {
 
-  @ViewChild(PropertyListComponent) propertyListComp!: PropertyListComponent;
   @ViewChild(SearchMapComponent) searchMap!: SearchMapComponent;
 
   // UI Flags
@@ -43,19 +43,17 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
   isDesktop = true;
   isLoading = false;
 
-  // Data from Backend
+  // Data
   properties: Property[] = [];
   totalResults = 0;
-
-  // Selection State
   selectedProperty: Property | null = null;
   hoveredPropertyId: string | null = null;
 
-  // Search State (Maintains current filters, page, and sort)
+  // Search State
   currentQuery: SearchQuery = {
     filters: {},
     page: 1,
-    pageSize: 12, // نفس الرقم اللي في PropertyListComponent
+    pageSize: 12,
     sortBy: SortOption.POPULAR
   };
 
@@ -63,48 +61,38 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
 
   constructor(
     private searchService: SearchService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router,
+    // حقن الخدمات الجديدة
+    private wishlistService: WishlistService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
     this.checkScreenSize();
 
-    // 1. Listen to "Filters" button in Header
     this.filtersSub = this.searchService.openFilters$.subscribe(() => {
       this.showFilters = true;
     });
 
-    // 2. Listen to URL changes (Initial load & subsequent searches)
     this.route.queryParams.subscribe(params => {
-      // Update filters from URL parameters
       this.currentQuery.filters.location = params['location'];
       this.currentQuery.filters.guests = params['guests'] ? +params['guests'] : undefined;
 
-      // Parse Dates properly
-      if (params['checkIn']) {
-        this.currentQuery.filters.checkIn = new Date(params['checkIn']);
-      }
-      if (params['checkOut']) {
-        this.currentQuery.filters.checkOut = new Date(params['checkOut']);
-      }
+      if (params['checkIn']) this.currentQuery.filters.checkIn = new Date(params['checkIn']);
+      if (params['checkOut']) this.currentQuery.filters.checkOut = new Date(params['checkOut']);
 
-      // Execute search whenever URL changes
       this.executeSearch();
     });
   }
 
   ngOnDestroy(): void {
-    if (this.filtersSub) {
-      this.filtersSub.unsubscribe();
-    }
+    if (this.filtersSub) this.filtersSub.unsubscribe();
   }
 
   // --- Core Search Logic ---
-
   private executeSearch() {
     this.isLoading = true;
-    // console.log('Executing Search API with:', this.currentQuery);
-
     this.searchService.searchProperties(this.currentQuery).subscribe({
       next: (response) => {
         this.properties = response.properties;
@@ -118,91 +106,60 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // --- Pagination & Sorting (Called by PropertyListComponent) ---
+  // --- Wishlist Logic (المزامنة) ---
 
-  onPageChange(page: number) {
-    this.currentQuery.page = page;
-    this.executeSearch();
-    // Scroll to top when page changes
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // 1. التأكد هل العنصر موجود في المفضلة (عشان القلب يظهر أحمر لو كان مضاف من الهوم)
+  isPropertyInWishlist(propertyId: string): boolean {
+    // تحويل الـ id لرقم لأن السيرفس بتخزنه كرقم (حسب الموديل بتاعك)
+    return this.wishlistService.isInWishlist(Number(propertyId));
   }
 
-  onSortChange(sort: SortOption) {
-    this.currentQuery.sortBy = sort;
-    this.currentQuery.page = 1; // Reset to first page on sort change
-    this.executeSearch();
+  // 2. إضافة/حذف مع الإشعار
+  onToggleWishlist(property: Property): void {
+    const imageUrl = (property.images && property.images.length > 0)
+                     ? property.images[0].url
+                     : 'assets/placeholder.jpg';
+
+    if (this.isPropertyInWishlist(property.id)) {
+      this.wishlistService.removeFromWishlist(Number(property.id));
+      this.toastService.show('Removed from wishlist', 'success', imageUrl);
+    } else {
+      this.wishlistService.addToWishlist(property as any);
+      this.toastService.show('Saved to wishlist', 'success', imageUrl);
+    }
   }
 
-  // --- Filters Modal Handling ---
-
-  onFiltersOpen(): void {
-    this.showFilters = true;
+  // --- Navigation Logic ---
+  onPropertySelect(propertyId: string): void {
+    this.router.navigate(['/listing', propertyId]);
   }
 
-  onFiltersClose(): void {
-    this.showFilters = false;
-  }
-
-  onFiltersApply(newFilters: SearchFilters): void {
-    // Merge new filters (price, amenities) with existing ones (location, dates)
-    this.currentQuery.filters = {
-      ...this.currentQuery.filters,
-      ...newFilters
-    };
-
-    // Reset to page 1 when filters change
+  // --- Filters & Map Logic (كما هي) ---
+  onFiltersOpen() { this.showFilters = true; }
+  onFiltersClose() { this.showFilters = false; }
+  onFiltersApply(newFilters: SearchFilters) {
+    this.currentQuery.filters = { ...this.currentQuery.filters, ...newFilters };
     this.currentQuery.page = 1;
-
     this.executeSearch();
     this.showFilters = false;
   }
-
-  // --- Map & Layout Logic ---
 
   @HostListener('window:resize', ['$event'])
-  onResize(event: Event) {
-    this.checkScreenSize();
-  }
+  onResize(event: Event) { this.checkScreenSize(); }
 
-  checkScreenSize(): void {
+  checkScreenSize() {
     this.isDesktop = window.innerWidth >= 1024;
-    if (this.isDesktop) {
-      this.showMap = true;
-    }
+    if (this.isDesktop) this.showMap = true;
   }
 
-  toggleMap(): void {
-    this.showMap = !this.showMap;
-  }
-
-  onPropertyHover(propertyId: string | null): void {
+  toggleMap() { this.showMap = !this.showMap; }
+  onPropertyHover(propertyId: string | null) {
     this.hoveredPropertyId = propertyId;
-    if (this.searchMap && propertyId) {
-      this.searchMap.highlightMarker(propertyId);
-    }
+    if (this.searchMap && propertyId) this.searchMap.highlightMarker(propertyId);
   }
-
-  onPropertySelect(id: string): void {
-    // البحث عن العقار باستخدام الـ id
-    this.selectedProperty = this.properties.find(p => p.id === id) || null;
-
-    if (this.searchMap && this.selectedProperty) {
-      this.searchMap.centerOnProperty(this.selectedProperty);
-    }
-  }
-
-  onMapPropertySelect(property: Property): void {
+  onMapPropertySelect(property: Property) {
+    // ممكن نعمل سكرول للكارت
     this.selectedProperty = property;
-    // Optional: Scroll list to selected property
   }
-
-  onMapBoundsChange(bounds: any): void {
-    // Future feature: "Search as I move the map"
-    console.log('Map bounds changed:', bounds);
-  }
-
-  // Legacy method just in case
-  onSearchSubmit(filters: SearchFilters): void {
-    this.onFiltersApply(filters);
-  }
+  onMapBoundsChange(bounds: any) {}
 }
