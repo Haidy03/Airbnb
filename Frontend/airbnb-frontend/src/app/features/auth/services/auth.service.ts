@@ -1,5 +1,4 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 // import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
@@ -325,16 +324,16 @@ export class AuthService {
 
     becomeHost(): Observable<any> {
     // ✅ 1. الحصول على التوكن الحالي
-    const token = this.getToken(); 
-    
+    const token = this.getToken();
+
     // ✅ 2. إنشاء الـ Headers
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
 
     return this.http.post<LoginResponse>(
-      `${this.API_URL}/become-host`, 
-      {}, 
+      `${this.API_URL}/become-host`,
+      {},
       { headers } // ✅ 3. تمرير الـ Headers هنا
     )
     .pipe(
