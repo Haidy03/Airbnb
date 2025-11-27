@@ -56,9 +56,16 @@ export interface Listing {
   amenities: amenities[]; // تحديد نوع دقيق أفضل
   reviews: ReviewModel[];
 }
+// translate models
+export interface TranslationRequest {
+  text: string;
+}
 
-
-// 3. نحدث الـ Listing عشان يشيل الحاجات دي
+export interface TranslationResponse {
+  originalText: string;
+  translatedText: string;
+  detectedLanguage: string;
+}
 
 
 
