@@ -1,13 +1,14 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute  } from '@angular/router';
 import { MessageService, SendMessagePayload } from '../../services/message.service'; // تأكد من المسار
 import { AuthService } from '../../../../core/services/auth.service'; // للوصول لـ ID المستخدم
 import { ListingService } from '../../services/Lisiting-Services'; // لجلب بيانات العقار
 import { BookingCard } from '../booking-card/booking-card'; // <--- استيراد الـ Booking Card
 import { Listing, HostDetails } from '../../models/listing-model'; // الـ Models
 import { finalize } from 'rxjs/operators';
+import{ListingDetails} from '../listing-details/listing-details';
 
 @Component({
   selector: 'app-send-message',
@@ -18,8 +19,9 @@ import { finalize } from 'rxjs/operators';
 })
 export class SendMessage implements OnInit {
   // Inputs من صفحة ListingDetailsComponent
-  @Input() propertyId!: number;
-  @Input() hostDetails!: HostDetails;
+   propertyId!: string;
+    error: string | null = null;
+
 
   // Output لإغلاق الـ Modal
   @Output() closeModal = new EventEmitter<void>();
@@ -29,6 +31,8 @@ export class SendMessage implements OnInit {
   isLoading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
+  selectedCheckIn: string = '';
+  selectedCheckOut: string = '';
 
   // بيانات لعرضها في الـ Booking Card (يجب جلبها من API)
    listing: Listing | null = null;
@@ -36,6 +40,7 @@ export class SendMessage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private route: ActivatedRoute,
     private messageService: MessageService,
     private authService: AuthService,
     private listingService: ListingService // لجلب تفاصيل العقار
@@ -43,8 +48,43 @@ export class SendMessage implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
-    this.fetchPropertyForCard(); // جلب البيانات لكارد الحجز
+     this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.propertyId =id;
+        this.fetchListingDetails(this.propertyId);
+      } else {
+        this.error = "Property ID is missing from the URL.";
+        this.isLoading = false;
+      }
+    });
   }
+
+    fetchListingDetails(id: string): void {
+    this.isLoading = true;
+    this.error = null;
+
+    this.listingService.getListingById(id)
+      .pipe(
+        // استخدام finalize لإيقاف مؤشر التحميل بغض النظر عن النجاح/الفشل
+        finalize(() => this.isLoading = false)
+      )
+       .subscribe({
+    next: (data) => {
+      this.listing = {
+        ...data,
+        ratingBreakdown: data.ratingBreakdown ?? undefined, // تعيين قيمة افتراضية
+        reviewsCount: data.reviews?.length || 0, // حساب عدد المراجعات من المصفوفة
+        rating: data.rating || 0 ,// تعيين تقييم افتراضي
+
+      };
+    },
+        error: (err) => {
+          this.error = "Failed to load listing details. Please try again later.";
+          console.error('API Error:', err);
+        }
+      });
+    }
 
   initializeForm(): void {
     this.messageForm = this.fb.group({
@@ -52,50 +92,48 @@ export class SendMessage implements OnInit {
     });
   }
 
-  fetchPropertyForCard(): void {
-      this.listingService.getListingById(String(this.propertyId)).subscribe({
-        next: (data) => {
-            // حفظ البيانات اللازمة للعرض في كارد الحجز
-            this.listing = data;
-        },
-        error: (err) => {
-            console.error('Failed to load property data for card:', err);
-        }
-      });
-  }
+
 
   /**
    * إرسال الرسالة إلى الباك إند
    */
-  sendMessage(): void {
+   sendMessage(): void {
     if (this.messageForm.invalid) {
       this.errorMessage = 'Please write a message before sending.';
       this.messageForm.markAllAsTouched();
       return;
     }
 
-    const guestId = this.authService.getUserId(); // افترض وجود دالة للحصول على ID المستخدم
+   // افترضي أن authService.getUserId() ترجع الـ ID (كـ string)
+    // إذا كنتِ تستخدمين Token، يجب قراءة الـ ID منه.
+    const guestId = this.authService.getUserId();
 
     if (!guestId) {
-        this.router.navigate(['/login']); // أو فتح Modal تسجيل الدخول
+        this.errorMessage = 'Authentication error. Please log in again.';
+        this.router.navigate(['/login']);
         return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
+      // 2. بناء الـ Payload المطلوب (مطابق للـ JSON المطلوب)
+    // *******************************************************
     const payload: SendMessagePayload = {
-      propertyId: this.propertyId,
+      propertyId: this.propertyId, // من الـ @Input
       guestId: guestId,
-      initialMessage: this.messageForm.get('initialMessage')?.value,
+      initialMessage: this.messageForm.get('initialMessage')?.value, // من النموذج
     };
 
+   // 3. استدعاء الـ MessageService
+    // *******************************************************
     this.messageService.createConversation(payload)
       .pipe(finalize(() => this.isLoading = false))
       .subscribe({
         next: (response) => {
-          this.successMessage = 'Message sent successfully! You will be redirected to the chat.';
-          // التنقل إلى صفحة المحادثات الجديدة (افترض وجود صفحة محادثات /messages)
+          this.successMessage = 'Message sent successfully! Redirecting to chat...';
+
+          // 4. بعد النجاح: التنقل إلى صفحة المحادثات (افترض أن API يعيد ID المحادثة)
           this.router.navigate(['/messages', response.conversationId]);
         },
         error: (err) => {
@@ -105,9 +143,41 @@ export class SendMessage implements OnInit {
       });
   }
 
-  // دوال العرض الثابتة
-  getHostNames(): string {
-    if (!this.hostDetails) return 'The hosts';
-    return `${this.hostDetails.firstName} and Heba`; // افتراض وجود مضيف ثاني
+  // booking card handlers
+   onDatesUpdated(dates: {checkIn: string, checkOut: string}) {
+    this.selectedCheckIn = dates.checkIn;
+    this.selectedCheckOut = dates.checkOut;
+      console.log('Dates Updated:', this.selectedCheckIn, this.selectedCheckOut); // للتأكد
+  }
+    goToCheckout() {
+    if (!this.selectedCheckIn || !this.selectedCheckOut) {
+      alert('Please select dates first!');
+      return;
+    }
+
+
+  // isInstantBook
+
+
+    if (!this.listing?.isInstantBook) {
+
+      this.router.navigate(['/checkout', this.listing?.id], {
+        queryParams: {
+          checkIn: this.selectedCheckIn,
+          checkOut: this.selectedCheckOut,
+          guests: 2
+        }
+      });
+    } else {
+       this.router.navigate(['/request-book', this.listing?.id], {
+        queryParams: {
+          checkIn: this.selectedCheckIn,
+          checkOut: this.selectedCheckOut,
+          guests: 2
+        }
+      });
+      // alert('This listing requires a "Request to Book" approval from the host.');
+    }
+    // ******************************************************
   }
 }

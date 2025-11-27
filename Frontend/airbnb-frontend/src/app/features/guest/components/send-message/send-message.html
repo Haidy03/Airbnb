@@ -1,6 +1,6 @@
 <!-- --- START OF FILE send-message.html --- -->
 
-<div class="message-page-layout">
+<div class="message-page-layout" *ngIf="listing">
 
   <!-- العمود الأيسر: محتوى الرسالة والمقدمة -->
   <div class="message-main-content">
@@ -13,7 +13,7 @@
     <!-- رأس الصفحة -->
     <div class="page-header">
       <h1 class="page-title">Message hosts</h1>
-      <p class="host-response-info">{{ getHostNames() }} typically respond within an hour.</p>
+      <p class="host-response-info">{{listing.host.firstName }} {{listing.host.lastName }} typically respond within an hour.</p>
     </div>
 
     <!-- --------------------------------- -->
@@ -43,7 +43,7 @@
         <h4>Price and availability</h4>
         <ul>
           <li>Get a 7% discount on stays longer than a week.</li>
-          <li>Cancel up to 5 days before check-in and get a full refund... (باقي نص السياسة)</li>
+          <li>Cancel up to 5 days before check-in and get a full </li>
         </ul>
       </div>
     </div>
@@ -51,6 +51,7 @@
     <!-- --------------------------------- -->
     <!-- 2. نموذج إرسال الرسالة -->
     <!-- --------------------------------- -->
+     <!-- 2. نموذج إرسال الرسالة (تأكيد أن الزر لديه تنسيق مختلف عن الكارد) -->
     <form [formGroup]="messageForm" (ngSubmit)="sendMessage()" class="message-form-section">
 
       <h3>Still have questions? Message the hosts</h3>
@@ -61,13 +62,11 @@
           placeholder="Type your message here..."
           class="message-textarea"
         ></textarea>
-        <!-- يمكنك إضافة رسالة خطأ هنا -->
       </div>
 
-      <!-- رسائل الحالة -->
-      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
-      <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+      <!-- ... (رسائل الحالة) ... -->
 
+      <!-- زر الإرسال -->
       <button type="submit" [disabled]="isLoading" class="send-message-btn">
         <span *ngIf="!isLoading">Send message</span>
         <span *ngIf="isLoading">Sending...</span>
@@ -76,9 +75,24 @@
 
   </div>
 
+
+
   <!-- العمود الأيمن: Booking Card (Sidebar) -->
  <div class="booking-column">
-  <app-super-card></app-super-card>
+     <div class="sticky-wrapper">
+         <app-super-card
+   [listingId]="listing.id"
+          [pricePerNight]="listing.pricePerNight"
+          [reviewsCount]="listing.reviewsCount"
+          [rating]="listing.rating"
+          [serviceFee]="150"
+          [cleaningFee]="100"
+          [isInstantBook]="listing.isInstantBook"
+            (dateChanged)="onDatesUpdated($event)"
+         (reserve)="goToCheckout()"> >
 
+  </app-super-card>
+</div>
     </div>
+
 </div>

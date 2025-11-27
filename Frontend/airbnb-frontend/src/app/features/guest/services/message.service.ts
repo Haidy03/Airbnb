@@ -7,15 +7,16 @@ import { environment } from '../../../../environments/environment';
 
 // الموديل لحمولة الطلب (Payload)
 export interface SendMessagePayload {
-  propertyId: number;
-  guestId: string; // ID المستخدم الحالي (يجب الحصول عليه من خدمة الـ Auth)
+  propertyId: string;
+  guestId: string;
   initialMessage: string;
 }
 
-// الموديل للاستجابة (عادةً يعيد Conversation ID)
+// الاستجابة المتوقعة من الباك إند
 export interface MessageResponse {
   success: boolean;
-  conversationId: string;
+  conversationId: string; // مُعرِّف المحادثة الجديدة
+  error?: string; // رسالة الخطأ إذا فشل الطلب
 }
 
 @Injectable({
@@ -33,7 +34,8 @@ export class MessageService {
    * @param payload بيانات الرسالة والحجز
    */
   createConversation(payload: SendMessagePayload): Observable<MessageResponse> {
-    // الطلب: POST /api/Messages/conversations
+
+    // ملاحظة: الـ HttpClient يضيف Headers و Content-Type تلقائياً
     return this.http.post<MessageResponse>(this.apiUrl, payload);
   }
 }
