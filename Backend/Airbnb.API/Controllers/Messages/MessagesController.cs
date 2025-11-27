@@ -26,7 +26,7 @@ namespace Airbnb.API.Controllers
         private string GetCurrentUserId()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return string.IsNullOrEmpty(userId) ? "test-user-12345" : userId;
+            return userId;
         }
 
         // ==========================================

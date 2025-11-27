@@ -1,4 +1,4 @@
-import { Component, signal,inject } from '@angular/core';
+import { Component, signal,inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet,RouterLinkActive  } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -18,14 +18,14 @@ interface NavItem {
   templateUrl: './host-layout.html',
   styleUrls: ['./host-layout.css']
 })
-export class HostLayoutComponent {
+export class HostLayoutComponent implements OnInit{
   // Sidebar state
   sidebarOpen = signal<boolean>(true);
   mobileMenuOpen = signal<boolean>(false);
   public messageService = inject(MessageService);
   
   // User notifications
-  unreadNotifications = signal<number>(0);
+  //unreadNotifications = signal<number>(0);
 
   // Navigation items
   navItems: NavItem[] = [
@@ -49,19 +49,23 @@ export class HostLayoutComponent {
 
   constructor(
     private router: Router,
-    private hostStatsService: HostStatsService
+   // private hostStatsService: HostStatsService
   ) {
-    this.loadNotificationCount();
+   // this.loadNotificationCount();
   }
 
+   ngOnInit() {
+    // ✅ تحديث العداد عند تحميل الصفحة لأول مرة
+    this.messageService.refreshUnreadCount();
+  }
   /**
    * Load unread notification count
    */
-  loadNotificationCount(): void {
-    this.hostStatsService.getUnreadCount().subscribe(count => {
-      this.unreadNotifications.set(count);
-    });
-  }
+  // loadNotificationCount(): void {
+  //   this.hostStatsService.getUnreadCount().subscribe(count => {
+  //     this.unreadNotifications.set(count);
+  //   });
+  // }
 
   /**
    * Toggle sidebar
