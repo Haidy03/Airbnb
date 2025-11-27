@@ -5,6 +5,8 @@ import { SearchResultsComponent } from './features/guest/components/search/compo
 import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
 import { ToastComponent } from './shared/components/toast/toast';
 import { FooterComponent } from './shared/components/footer/footer';
+import { HeaderComponent } from './features/guest/components/header/header';
+
 
 @Component({
   selector: 'app-root',
@@ -14,7 +16,8 @@ import { FooterComponent } from './shared/components/footer/footer';
     SearchBarComponent,
     SearchResultsComponent,
     ToastComponent,
-    FooterComponent
+    FooterComponent,
+    HeaderComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'

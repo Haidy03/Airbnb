@@ -461,3 +461,15 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* إصلاح ظهور الفلتر فوق الهيدر */
+app-filters .modal-overlay, /* لو عندك كلاس للأوفيرلاي */
+app-filters .filters-modal, /* لو ده كلاس المودال */
+.filters-container {        /* أو أي اسم كلاس بتستخدمه للفلاتر */
+  z-index: 3000 !important; /* أعلى من الهيدر (2000) */
+}
+
+/* إصلاح مسافة صفحة البحث */
+.search-results-container {
+  padding-top: 100px !important; /* مسافة كافية تحت الهيدر */
+}

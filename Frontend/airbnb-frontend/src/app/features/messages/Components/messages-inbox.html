@@ -1,5 +1,5 @@
-<div class="inbox-container">
-  
+<div class="inbox-container" style="padding-top: 100px;">
+
   <!-- Left Sidebar -->
   <div class="sidebar">
     <div class="sidebar-header">
@@ -12,12 +12,12 @@
 
     <!-- ✅ Filters (Pills) -->
     <div class="filters">
-      <button class="filter-pill" 
+      <button class="filter-pill"
               [class.active]="activeFilter() === 'all'"
               (click)="setFilter('all')">
         All
       </button>
-      <button class="filter-pill" 
+      <button class="filter-pill"
               [class.active]="activeFilter() === 'unread'"
               (click)="setFilter('unread')">
         Unread
@@ -26,23 +26,23 @@
 
     <!-- Conversations List -->
     <div class="conversations-list">
-      
+
       <!-- Empty State -->
       <div *ngIf="filteredConversations().length === 0" class="empty-state">
         <div class="empty-icon">💬</div>
         <p>You don’t have any {{ activeFilter() === 'unread' ? 'unread' : '' }} messages</p>
       </div>
 
-      <div *ngFor="let conv of filteredConversations()" 
-           class="conversation-card" 
+      <div *ngFor="let conv of filteredConversations()"
+           class="conversation-card"
            [class.selected]="selectedConversation()?.id === conv.id"
            [class.unread]="conv.unreadCount > 0"
            (click)="selectConversation(conv)">
-        
+
         <div class="avatar-wrapper">
           <img [src]="getOtherParticipant(conv).avatar || 'assets/images/user-placeholder.png'" alt="User">
         </div>
-        
+
         <div class="card-content">
           <div class="card-top">
             <span class="user-name">{{ getOtherParticipant(conv).name }}</span>
@@ -63,7 +63,7 @@
   <!-- Chat Area -->
   <div class="chat-area">
     <div *ngIf="selectedConversation(); else noSelection" class="chat-wrapper">
-      
+
       <!-- Chat Header -->
       <div class="chat-header">
         <div class="header-user">
@@ -74,14 +74,14 @@
 
       <!-- Messages List -->
       <div class="messages-scroll" #scrollMe>
-        <div *ngFor="let msg of messages()" 
+        <div *ngFor="let msg of messages()"
              class="message-row"
              [class.mine]="isMyMessage(msg)"
              [class.theirs]="!isMyMessage(msg)">
-          
+
           <!-- ✅ الصورة تظهر فقط للطرف الآخر (على اليسار) -->
           <img *ngIf="!isMyMessage(msg)"
-               [src]="getOtherParticipant(selectedConversation()!).avatar || 'assets/images/user-placeholder.png'" 
+               [src]="getOtherParticipant(selectedConversation()!).avatar || 'assets/images/user-placeholder.png'"
                class="chat-avatar">
 
           <div class="bubble-container">
@@ -96,9 +96,9 @@
       <!-- ✅ Input Area -->
       <div class="input-area">
         <div class="input-wrapper">
-          <textarea 
-            [(ngModel)]="newMessageText" 
-            placeholder="Type a message..." 
+          <textarea
+            [(ngModel)]="newMessageText"
+            placeholder="Type a message..."
             rows="1"
             (keydown.enter)="sendMessage()">
           </textarea>
