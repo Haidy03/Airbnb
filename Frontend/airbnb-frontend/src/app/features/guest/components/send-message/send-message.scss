@@ -1,0 +1,203 @@
+/* تنسيقات عامة لتخطيط الصفحة والعمودين */
+.message-page-layout {
+  display: grid;
+  grid-template-columns: 1fr 376px; /* 1fr للمحتوى الرئيسي و 376px للكارد الجانبي */
+  gap: 80px; /* تباعد كبير بين العمودين */
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 80px 80px; /* تباعد في كل الاتجاهات */
+}
+
+/* ------------------------------------------- */
+/* العمود الأيسر: Message Main Content */
+/* ------------------------------------------- */
+.message-main-content {
+  max-width: 550px; /* تحديد أقصى عرض ليتناسب مع تصميم Airbnb */
+}
+
+/* زر العودة (السهم) */
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  margin-bottom: 24px;
+}
+
+.back-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: rgb(34, 34, 34);
+  stroke-width: 3;
+}
+
+/* رأس الصفحة (Message hosts) */
+.page-header {
+  margin-bottom: 40px;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 4px;
+}
+
+.host-response-info {
+  font-size: 16px;
+  color: rgb(113, 113, 113);
+  font-weight: 400;
+  line-height: 20px;
+}
+
+/* ------------------------------------------- */
+/* قسم المعلومات الثابتة (Most travelers ask about) */
+/* ------------------------------------------- */
+.static-info-section {
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgb(221, 221, 221);
+  margin-bottom: 48px;
+}
+
+.static-info-section h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 24px;
+}
+
+.info-group {
+  margin-bottom: 32px;
+}
+
+.info-group h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 16px;
+}
+
+.info-group ul {
+  list-style-type: none; /* إزالة التنقيط الافتراضي */
+  padding-left: 0;
+  margin: 0;
+}
+
+.info-group li {
+  font-size: 16px;
+  color: rgb(34, 34, 34);
+  line-height: 24px;
+  margin-bottom: 8px;
+  /* إضافة التنقيط الخاص بـ Airbnb */
+  position: relative;
+  padding-left: 16px;
+}
+
+.info-group li::before {
+  content: "•"; /* استخدام نقطة صغيرة أو دائرة */
+  color: rgb(34, 34, 34);
+  font-weight: 800;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+/* ------------------------------------------- */
+/* قسم نموذج إرسال الرسالة */
+/* ------------------------------------------- */
+.message-form-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 16px;
+}
+
+.message-textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid rgb(176, 176, 176);
+  border-radius: 8px;
+  font-size: 16px;
+  color: rgb(34, 34, 34);
+  font-family: inherit;
+  resize: vertical; /* السماح بتغيير الارتفاع فقط */
+  transition: border-color 0.2s;
+}
+
+.message-textarea:focus {
+  outline: none;
+  border-color: rgb(34, 34, 34);
+}
+
+.send-message-btn {
+  /* زر مطابق لزر Reserve/Check Availability */
+  background: linear-gradient(to right, rgb(230, 30, 77) 0%, rgb(227, 28, 95) 50%, rgb(215, 4, 102) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  margin-top: 16px;
+}
+
+.send-message-btn:hover:not(:disabled) {
+  background: linear-gradient(to right, rgb(211, 11, 71) 0%, rgb(201, 19, 77) 50%, rgb(189, 4, 81) 100%);
+}
+
+.send-message-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+    color: rgb(227, 28, 95);
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.success-message {
+    color: rgb(0, 132, 137);
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+/* ------------------------------------------- */
+/* العمود الأيمن: Booking Card Sidebar */
+/* ------------------------------------------- */
+.message-sidebar {
+  /* لضمان بقاء الكارد في مكانه (Sticky) */
+  position: sticky;
+  top: 100px; /* تباعد عن شريط التنقل العلوي */
+  height: fit-content;
+}
+
+/* ------------------------------------------- */
+/* تنسيقات الشاشات الأصغر (Responsive) */
+/* ------------------------------------------- */
+@media (max-width: 1127px) {
+  .message-page-layout {
+    grid-template-columns: 1fr; /* عمود واحد */
+    padding: 32px 40px; /* تباعد أقل */
+    gap: 32px;
+  }
+
+  .message-sidebar {
+    position: static; /* إزالة الـ Sticky في وضع الموبايل/التابلت */
+    order: -1; /* وضع الكارد في الأعلى في وضع العمود الواحد */
+  }
+
+  .message-main-content {
+      max-width: 100%;
+  }
+}
+
+@media (max-width: 743px) {
+  .message-page-layout {
+    padding: 24px 24px;
+  }
+}

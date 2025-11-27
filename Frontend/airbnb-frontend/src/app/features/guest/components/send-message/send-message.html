@@ -1,1 +1,84 @@
-<p>send-message works!</p>
+<!-- --- START OF FILE send-message.html --- -->
+
+<div class="message-page-layout">
+
+  <!-- العمود الأيسر: محتوى الرسالة والمقدمة -->
+  <div class="message-main-content">
+
+    <!-- زر العودة -->
+    <button class="back-btn" (click)="closeModal.emit()">
+      <svg viewBox="0 0 32 32"><path d="m20 28-11.29289-11.2929a1 1 0 0 1 0-1.41421L20 4"></path></svg>
+    </button>
+
+    <!-- رأس الصفحة -->
+    <div class="page-header">
+      <h1 class="page-title">Message hosts</h1>
+      <p class="host-response-info">{{ getHostNames() }} typically respond within an hour.</p>
+    </div>
+
+    <!-- --------------------------------- -->
+    <!-- 1. الجزء الثابت (Most travelers ask about) -->
+    <!-- --------------------------------- -->
+    <div class="static-info-section">
+      <h3>Most travelers ask about</h3>
+
+      <!-- Getting there -->
+      <div class="info-group">
+        <h4>Getting there</h4>
+        <ul>
+          <li>Check-in time for this home starts at 2:00 PM and checkout is at 12:00 PM.</li>
+        </ul>
+      </div>
+
+      <!-- House rules -->
+      <div class="info-group">
+        <h4>House details and rules</h4>
+        <ul>
+          <li>No smoking. No parties or events.</li>
+        </ul>
+      </div>
+
+      <!-- Price and availability -->
+      <div class="info-group">
+        <h4>Price and availability</h4>
+        <ul>
+          <li>Get a 7% discount on stays longer than a week.</li>
+          <li>Cancel up to 5 days before check-in and get a full refund... (باقي نص السياسة)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- --------------------------------- -->
+    <!-- 2. نموذج إرسال الرسالة -->
+    <!-- --------------------------------- -->
+    <form [formGroup]="messageForm" (ngSubmit)="sendMessage()" class="message-form-section">
+
+      <h3>Still have questions? Message the hosts</h3>
+
+      <div class="form-group">
+        <textarea
+          formControlName="initialMessage"
+          placeholder="Type your message here..."
+          class="message-textarea"
+        ></textarea>
+        <!-- يمكنك إضافة رسالة خطأ هنا -->
+      </div>
+
+      <!-- رسائل الحالة -->
+      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+      <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+
+      <button type="submit" [disabled]="isLoading" class="send-message-btn">
+        <span *ngIf="!isLoading">Send message</span>
+        <span *ngIf="isLoading">Sending...</span>
+      </button>
+    </form>
+
+  </div>
+
+  <!-- العمود الأيمن: Booking Card (Sidebar) -->
+ <div class="booking-column">
+  <app-super-card></app-super-card>
+
+    </div>
+</div>
