@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HeaderComponent } from '../header/header';
+
+// Services & Models
 import { ToastService } from '../../../../core/services/toast.service';
 import { AuthService, UserProfile } from '../../../auth/services/auth.service';
 
@@ -14,6 +15,7 @@ import { AuthService, UserProfile } from '../../../auth/services/auth.service';
   styleUrls: ['./account-settings.css']
 })
 export class AccountSettingsComponent implements OnInit {
+
   activeSection: 'personal' | 'security' = 'personal';
 
   isEditingPersonal = false;
@@ -26,7 +28,6 @@ export class AccountSettingsComponent implements OnInit {
   personalInfoForm!: FormGroup;
   securityForm!: FormGroup;
 
-  // ✅ دلوقتي مش هيعترض لأننا عملنا import لـ UserProfile فوق
   currentUser: UserProfile | null = null;
 
   constructor(
@@ -64,18 +65,18 @@ export class AccountSettingsComponent implements OnInit {
     this.authService.getCurrentUser().subscribe({
       next: (user) => {
         this.currentUser = user;
+        // تحديث الفورم بالبيانات
         this.personalInfoForm.patchValue({
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
           phoneNumber: user.phoneNumber,
-          dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split('T')[0] : '',
+          dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
           address: user.address,
           city: user.city,
           country: user.country
         });
       },
-      // ✅ 2. التعديل الثاني: ضفت :any عشان يحل مشكلة TS7006
       error: (err: any) => {
         console.error('Error loading profile', err);
         this.toastService.showError('Failed to load user data');
@@ -85,6 +86,7 @@ export class AccountSettingsComponent implements OnInit {
 
   selectSection(section: 'personal' | 'security') {
     this.activeSection = section;
+    // إلغاء أي تعديل مفتوح عند تغيير التاب
     this.cancelEditPersonal();
     this.cancelEditSecurity();
   }
@@ -103,6 +105,8 @@ export class AccountSettingsComponent implements OnInit {
     return this.securityForm.get('newPassword')?.value === this.securityForm.get('confirmPassword')?.value;
   }
 
+  // --- Personal Info Logic ---
+
   enableEditPersonal() {
     if (this.currentUser) {
       this.personalInfoForm.patchValue(this.currentUser);
@@ -112,13 +116,17 @@ export class AccountSettingsComponent implements OnInit {
 
   cancelEditPersonal() {
     this.isEditingPersonal = false;
+    // إعادة البيانات للأصل
     if (this.currentUser) {
-      this.personalInfoForm.patchValue(this.currentUser);
+      this.loadUserData(); // إعادة تحميل البيانات للتأكد
     }
   }
 
   savePersonalInfo() {
-    if (this.personalInfoForm.invalid) return;
+    if (this.personalInfoForm.invalid) {
+      this.personalInfoForm.markAllAsTouched(); // إظهار الأخطاء
+      return;
+    }
 
     const updatedData = this.personalInfoForm.value;
 
@@ -126,15 +134,17 @@ export class AccountSettingsComponent implements OnInit {
       next: (updatedUser) => {
         this.currentUser = updatedUser;
         this.isEditingPersonal = false;
+        // هنا بنستخدم الدالة القديمة المتوافقة
         this.toastService.showSuccess('Personal information updated successfully');
       },
-      // ✅ نفس التعديل هنا
       error: (err: any) => {
         console.error(err);
         this.toastService.showError('Failed to update profile');
       }
     });
   }
+
+  // --- Security Logic ---
 
   enableEditSecurity() {
     this.securityForm.reset();
@@ -147,7 +157,10 @@ export class AccountSettingsComponent implements OnInit {
   }
 
   saveSecurityInfo() {
-    if (this.securityForm.invalid) return;
+    if (this.securityForm.invalid) {
+      this.securityForm.markAllAsTouched(); // إظهار الأخطاء
+      return;
+    }
 
     if (!this.passwordsMatch) {
       this.toastService.showError('Passwords do not match');
@@ -162,7 +175,6 @@ export class AccountSettingsComponent implements OnInit {
         this.securityForm.reset();
         this.toastService.showSuccess('Password updated successfully');
       },
-      // ✅ وهنا كمان
       error: (err: any) => {
         console.error(err);
         const msg = err.error?.message || 'Failed to change password. Check current password.';

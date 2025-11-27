@@ -1,56 +1,76 @@
-<div class="search-results-container">
+<div class="search-results-container" style="padding-top: 120px;">
 
-  <!--
-    شريط الفلاتر والبحث
-    يحتوي على السيرش بار الكبير + زر الفلتر
-  -->
-  <div class="filters-sticky-wrapper">
-    <div class="container"> <!-- كونتينر عشان ييجي في النص -->
-      <div class="row justify-content-center">
-        <div class="col-12 col-xl-10">
-
-          <!-- هنا بنستخدم السيرش بار الكبير ونفعل زرار الفلتر جنبه -->
-          <app-search-bar
-            [withFilterButton]="true"
-            (search)="onSearchSubmit($event)"
-            (filtersOpen)="onFiltersOpen()"
-          ></app-search-bar>
-
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- الفلاتر المنبثقة -->
   <app-filters
     [isOpen]="showFilters"
     (close)="onFiltersClose()"
     (applyFilters)="onFiltersApply($event)"
   ></app-filters>
 
-  <div class="results-content">
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center w-100 py-5" style="min-height: 50vh;">
+    <div class="spinner-border text-danger" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
 
-    <!-- القائمة -->
+  <!-- Content -->
+  <div class="results-content" *ngIf="!isLoading">
+
+    <!-- List Section -->
     <div class="results-list-section" [class.with-map]="showMap">
-      <div class="container-fluid">
+      <div class="container-fluid px-3"> <!-- px-3 مسافة مناسبة -->
 
+        <!-- 1. Info Header (التايتل اللي كان مختفي) -->
+        <div class="d-flex justify-content-between align-items-center mb-4 mt-2" *ngIf="properties.length > 0">
+          <h1 class="h5 fw-bold text-dark mb-0">
+            {{ totalResults }} homes found
+          </h1>
+          <!-- Sort Dropdown (اختياري) -->
+          <!-- <div class="sort-wrapper"> ... </div> -->
+        </div>
+
+        <!-- Mobile Map Toggle -->
         <button class="map-toggle-btn d-lg-none" (click)="toggleMap()" type="button">
           <i class="bi" [ngClass]="showMap ? 'bi-list' : 'bi-map'"></i>
           <span>{{ showMap ? 'Show list' : 'Show map' }}</span>
         </button>
 
-        <app-property-list
-          *ngIf="!showMap || isDesktop"
-          (propertyHover)="onPropertyHover($event)"
-          (propertySelect)="onPropertySelect($event)"
-        ></app-property-list>
+        <!-- 2. Grid (3 cards per row) -->
+        <div *ngIf="properties.length > 0">
+           <div class="row g-4">
+             <!--
+                التعديل هنا:
+                col-md-6 (2 في الصف للتابلت)
+                col-lg-4 (3 في الصف للشاشات الكبيرة) - ده اللي أنت عايزه
+                col-xl-4 (3 في الصف للشاشات الأكبر)
+             -->
+             <div [class]="showMap ? 'col-12 col-sm-6 col-lg-4 col-xl-4' : 'col-12 col-sm-6 col-md-4 col-lg-3'"
+                  *ngFor="let property of properties">
+
+                <app-property-card
+                  [property]="property"
+                  (cardClick)="onPropertySelect(property.id)"
+                  (mouseenter)="onPropertyHover(property.id)"
+                  (mouseleave)="onPropertyHover(null)">
+                </app-property-card>
+
+             </div>
+           </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="properties.length === 0" class="text-center py-5 mt-5">
+          <h3 class="fw-bold text-dark">No properties found</h3>
+          <p class="text-muted">Try adjusting your search or filters.</p>
+        </div>
+
       </div>
     </div>
 
-    <!-- الخريطة -->
+    <!-- Map Section -->
     <div class="results-map-section" *ngIf="showMap" [class.mobile-fullscreen]="!isDesktop">
       <app-search-map
-        [properties]="propertyList?.properties || []"
+        [properties]="properties"
         [selectedPropertyId]="selectedProperty?.id || null"
         (propertySelect)="onMapPropertySelect($event)"
         (mapBoundsChange)="onMapBoundsChange($event)"
@@ -60,5 +80,6 @@
         <i class="bi bi-x-lg"></i>
       </button>
     </div>
+
   </div>
 </div>
