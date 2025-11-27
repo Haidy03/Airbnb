@@ -74,14 +74,20 @@
       <section class="section description-section">
         <div class="translation-bar">
           <span>Some info has been automatically translated.</span>
-          <button class="link-btn" (click)="toggleTranslation()">
-            {{ isTranslated ? 'Show original' : 'Translate' }}
-          </button>
+          <button
+            class="translate"
+            (click)="!showTranslated ? translateDescription() : showOriginal()"
+            [disabled]="isTranslating"
+        >
+          <span *ngIf="!showTranslated && !isTranslating">Translate</span>
+          <span *ngIf="!showTranslated && isTranslating">Translating...</span>
+          <span *ngIf="showTranslated">Show original</span>
+        </button>
         </div>
 
         <div class="description-text">
           <p [class.clamped]="!isDescriptionExpanded">
-            {{ listing.description }}
+             {{ showTranslated ? translatedDescription : originalDescription }}
           </p>
           <button class="show-more-btn" (click)="toggleDescription()">
             {{ isDescriptionExpanded ? 'Show less' : 'Show more' }}
@@ -105,24 +111,24 @@
       <!-- Amenities -->
     <section class="section amenities-section" *ngIf="listing?.amenities && listing.amenities.length > 0">
   <h2>What this place offers</h2>
-  
+
   <!-- شبكة عرض التسهيلات -->
   <div class="amenities-grid">
-    
+
     <!-- استخدام *ngFor لعرض أول 6 تسهيلات فقط في البداية -->
-    <div 
-        class="amenity-item" 
+    <div
+        class="amenity-item"
         *ngFor="let amenity of listing.amenities | slice:0:6"
     >
-      
+
       <i class="fa-solid fa-{{ amenity.icon }}"></i>
       <span>{{ amenity.name }}</span>
     </div>
   </div>
-  
+
   <!-- زر عرض الكل: يظهر فقط إذا كان هناك أكثر من 6 تسهيلات -->
-  <button 
-      class="outline-btn" 
+  <button
+      class="outline-btn"
       (click)="showAllAmenities()"
       *ngIf="listing.amenities.length > 6">
     Show all {{ listing.amenities.length }} amenities
@@ -130,7 +136,7 @@
 </section>
 <div class="amenities-modal-backdrop" *ngIf="showAmenitiesModal" (click)="closeAmenitiesModal()"></div>
 <div class="amenities-modal-card" *ngIf="showAmenitiesModal">
-    
+
     <!-- Header مع زر الغلق -->
     <div class="modal-header">
         <button class="close-modal-btn" (click)="closeAmenitiesModal()">
@@ -146,15 +152,15 @@
 
         <!-- مثال: قائمة بكل التسهيلات -->
         <div class="full-amenities-list">
-            <div 
-                class="amenity-item-full" 
+            <div
+                class="amenity-item-full"
                 *ngFor="let amenity of listing.amenities"
             >
                 <i class="fa-solid fa-{{ amenity.icon }}"></i>
                 <span>{{ amenity.name }}</span>
             </div>
         </div>
-        
+
     </div>
 </div>
       <hr>
@@ -179,7 +185,7 @@
           [rating]="listing.rating"
           [serviceFee]="150"
           [cleaningFee]="100"
-          [isInstantBook]="listing.isInstantBook" 
+          [isInstantBook]="listing.isInstantBook"
            (dateChanged)="onDatesUpdated($event)"
            (reserve)="goToCheckout()">
         </app-super-card>
@@ -203,29 +209,64 @@
     <span class="dot">·</span>
     <span class="reviews-count">{{ listing.reviewsCount }} reviews</span>
   </div>
+   <hr>
+</section>
 
-  <!-- ----------------- RATING BARS ------------------ -->
-  <div class="rating-bars-container">
 
-    <!-- Row 1: Cleanliness and Accuracy -->
-    <div class="rating-row">
-      <!-- 1. Cleanliness -->
-      <div class="rating-item">
-        <div class="rating-title">Cleanliness</div>
-        <div class="rating-category">
-          <div class="bar-container">
-            <!-- الحماية: التأكد من وجود cleanliness،
-  <hr>
 
-  <!-- ================= HOST & MAP ================= -->
-  <section class="host-details-section">
-    <!-- تفاصيل المضيف الكاملة والخريطة تضاف هنا بنفس الطريقة -->
-  </section>
 
-</div>
+
+ <!-- --- START OF HOSTS SECTION CODE (listing-details.html - Final Review) --- -->
+
+<section class="section hosts-section" *ngIf="listing?.host">
+  <h2>Meet your hosts</h2>
+
+  <div class="host-profile-container">
+
+    <!-- 1. كارد معلومات المضيف الأساسية (يحتوي فقط على الصورة والاسم واللقب) -->
+    <div class="host-info-card">
+
+        <div class="profile-summary">
+            <!-- الصورة -->
+            <div class="image-wrapper">
+                <img
+                    [src]="listing.host.profileImageUrl"
+                    alt="{{ listing.host.firstName }} profile"
+                    class="host-profile-img"
+                >
+            </div>
+
+            <!-- الاسم واللقب -->
+            <div class="text-info">
+                <h3 class="host-name">{{ listing.host.firstName }}</h3>
+                <span class="superhost-badge">★ Superhost</span>
+            </div>
         </div>
+
+      <!-- سيتم وضع تنسيقات الإحصائيات التي كانت هنا في ملف SCSS لتجنب مشاكل العرض -->
+    </div>
+
+    <!-- 2. التفاصيل والسيرة الذاتية (اليمين) -->
+    <div class="host-details-bio">
+      <!-- حالة Superhost و الوصف -->
+      <h4 class="superhost-title">{{ listing.host.firstName }} is a Superhost</h4>
+      <p class="superhost-description">Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.</p>
+
+      <!-- زر إرسال الرسالة -->
+      <button class="message-host-btn" (click)="openMessageModal()">
+        Message hosts
+      </button>
+
+      <!-- معدل الاستجابة -->
+      <div class="response-rate-info">
+        <p class="rate-number">Response rate: 100%</p>
+        <p class="rate-desc">They typically respond within an hour</p>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ... (باقي كود الـ Modal) ... -->
+<hr>
+
 </div>

@@ -7,10 +7,10 @@ $border: #DDDDDD;
 .listing-page-container {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 24px 40px;
+  padding:  40px;
   color: $text-dark;
   font-family: 'Circular', sans-serif; // خط Airbnb إن وجد
-}.listing-page-container.blurred { 
+}.listing-page-container.blurred {
    pointer-events: none;// تأثير الضبابية عند فتح الـ Modal
 }
 
@@ -303,4 +303,258 @@ $border: #DDDDDD;
     .booking-column { display: none; } // إخفاء الكارت الجانبي في الموبايل
   }
   .reviews-grid { grid-template-columns: 1fr; }
+}
+/* --- START OF listing-details.scss (Host Section Styles) --- */
+
+.hosts-section {
+  padding: 48px 0;
+  border-bottom: 1px solid rgb(221, 221, 221);
+}
+
+.hosts-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 32px;
+}
+
+.host-profile-card-wrapper {
+  display: flex;
+  gap: 80px; /* تباعد كبير بين العمودين */
+}
+
+/* ------------------- 1. HOST PROFILE CARD (LEFT) ------------------- */
+.host-profile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 250px;
+  max-width: 300px;
+  border: 1px solid rgb(221, 221, 221);
+  border-radius: 12px;
+  padding: 24px;
+  height: fit-content;
+}
+
+.profile-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgb(235, 235, 235);
+}
+
+.image-wrapper {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 1px solid rgb(235, 235, 235); /* بوردر خفيف */
+}
+
+.host-profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.host-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 4px;
+}
+
+.host-badge {
+  font-size: 14px;
+  color: rgb(34, 34, 34);
+  font-weight: 400;
+}
+.host-badge .star {
+    color: rgb(255, 56, 92); /* لون النجمة الأحمر */
+}
+
+.host-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  text-align: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-number, .stat-rating {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+}
+
+.stat-rating .star {
+    font-size: 12px;
+    margin-left: 2px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: rgb(113, 113, 113);
+  margin-top: 2px;
+}
+
+
+/* ------------------- 2. HOST DETAILS BIO (RIGHT) ------------------- */
+/* --- START OF listing-details.scss (Host Profile Card FIX) --- */
+
+.host-profile-card-wrapper {
+  display: flex;
+  gap: 80px;
+}
+
+/* ------------------- 1. HOST PROFILE CARD (LEFT) FIX ------------------- */
+/* --- START OF listing-details.scss (Host Section Final Styles) --- */
+
+.hosts-section {
+  padding: 48px 0;
+  border-bottom: 1px solid rgb(221, 221, 221);
+}
+
+.hosts-section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 32px;
+}
+
+.host-profile-container {
+  display: flex;
+  gap: 80px; /* تباعد كبير بين العمودين */
+  align-items: flex-start; /* تبدأ العناصر من الأعلى */
+}
+
+/* ------------------- 1. HOST INFO CARD (LEFT) ------------------- */
+.host-info-card {
+  min-width: 250px;
+  max-width: 320px;
+  flex-shrink: 0; /* لا يسمح له بالانكماش */
+  /* تمت إزالة البوردر والبادينج ليتناسب مع الهيكل الأبسط الذي أرسلتهِ */
+}
+
+/* التنسيق الذي يجمع الصورة والاسم */
+.profile-summary {
+    display: flex;
+    align-items: center; /* لمحاذاة الصورة والاسم */
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* حاوية الصورة */
+.image-wrapper {
+  width: 96px; /* حجم الصورة الكبير في التصميم */
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.host-profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* الأهم: يضمن أن الصورة لا تتشوه وتملأ الدائرة */
+  display: block;
+}
+
+.text-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.host-name {
+  font-size: 26px; /* حجم كبير للعنوان */
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.superhost-badge {
+  font-size: 14px;
+  color: rgb(34, 34, 34);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ------------------- 2. HOST DETAILS BIO (RIGHT) ------------------- */
+.host-details-bio {
+  flex-grow: 1;
+  max-width: 450px;
+  padding-top: 5px; /* لتعويض تباعد الصورة وضبط المحاذاة الأفقية */
+}
+
+.superhost-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 8px;
+}
+
+.superhost-description {
+  font-size: 16px;
+  color: rgb(34, 34, 34);
+  margin-bottom: 24px;
+  line-height: 24px;
+}
+
+.message-host-btn {
+  background: white;
+  color: rgb(34, 34, 34);
+  border: 1px solid rgb(34, 34, 34);
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
+  margin-bottom: 24px;
+}
+
+.message-host-btn:hover {
+  background: rgb(247, 247, 247);
+  border-color: rgb(0, 0, 0);
+}
+
+.response-rate-info {
+  font-size: 14px;
+  color: rgb(34, 34, 34);
+  padding-bottom: 24px;
+}
+
+.response-rate-info .rate-desc {
+  color: rgb(113, 113, 113);
+  margin-top: 4px;
+}
+
+/* ------------------- RESPONSIVE ------------------- */
+@media (max-width: 743px) {
+  .host-profile-container {
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .host-info-card,
+  .host-details-bio {
+      max-width: 100%;
+      min-width: 100%;
+  }
+
+  .host-info-card {
+      /* في الموبايل، نفضل عرض الصورة الكبيرة واسم المضيف في البداية */
+      order: -1;
+  }
 }
