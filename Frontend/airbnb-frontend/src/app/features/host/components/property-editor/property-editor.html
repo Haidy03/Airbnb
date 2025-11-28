@@ -342,34 +342,24 @@
       <!-- 11. HOUSE RULES -->
       <section *ngIf="activeSection() === 'rules'" class="editor-section">
         <h2 class="section-title">House rules</h2>
+        
         <div class="form-row">
+          <!-- Check-in -->
           <div class="form-group">
             <label>Check-in time</label>
-            <input type="time" class="airbnb-input" [(ngModel)]="tempRules().checkInTime">
+            <input type="time" 
+                   class="airbnb-input" 
+                   [ngModel]="tempRules().checkInTime"
+                   (ngModelChange)="updateRule('checkInTime', $event)">
           </div>
+
+          <!-- Check-out -->
           <div class="form-group">
             <label>Check-out time</label>
-            <input type="time" class="airbnb-input" [(ngModel)]="tempRules().checkOutTime">
-          </div>
-        </div>
-        <div class="amenities-list">
-          <div class="amenity-item">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempRules().petsAllowed">
-              <span class="check-text">Pets allowed</span>
-            </label>
-          </div>
-          <div class="amenity-item">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempRules().smokingAllowed">
-              <span class="check-text">Smoking allowed</span>
-            </label>
-          </div>
-          <div class="amenity-item">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempRules().eventsAllowed">
-              <span class="check-text">Events allowed</span>
-            </label>
+            <input type="time" 
+                   class="airbnb-input" 
+                   [ngModel]="tempRules().checkOutTime"
+                   (ngModelChange)="updateRule('checkOutTime', $event)">
           </div>
         </div>
       </section>

@@ -1,10 +1,11 @@
-import { Component, OnInit, signal, inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PropertyService } from '../../services/property';
 import { Property, HouseRules, SafetyDetails } from '../../models/property.model';
 import * as L from 'leaflet'; // ✅ Import Leaflet
+import { HttpClient } from '@angular/common/http';
 
 type EditorSection = 
   | 'photos' | 'title' | 'propertyType' | 'capacity' | 'description' 
@@ -26,31 +27,25 @@ export class PropertyEditorComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private propertyService = inject(PropertyService);
+  private http = inject(HttpClient);
 
   property = signal<Property | null>(null);
   isLoading = signal(true);
   activeSection = signal<EditorSection>('title');
   loadingImages = signal<Set<string>>(new Set());
-  
-  // Edit Mode
   isEditing = signal(false);
-  
-  // Temp Values
   tempTitle = signal('');
   tempDescription = signal('');
   tempPrice = signal(0);
-  
-  // ✅ تعديل: المتغير أصبح يحمل رقم (ID) بدلاً من نص
   tempPropertyType = signal<number | null>(null); 
-  
   tempRoomType = signal('');
   tempCapacity = signal({ guests: 1, bedrooms: 1, beds: 1, bathrooms: 1 });
   tempLocation = signal({ address: '', city: '', country: '', zipCode: '', lat: 0, lng: 0 });
   tempAmenities = signal<number[]>([]);
   tempInstantBook = signal(false);
-  tempRules = signal<HouseRules>({
-    checkInTime: '', checkOutTime: '', smokingAllowed: false, petsAllowed: false, 
-    eventsAllowed: false, childrenAllowed: true
+  tempRules = signal<{ checkInTime: string; checkOutTime: string }>({
+    checkInTime: '', 
+    checkOutTime: ''
   });
   tempSafety = signal<SafetyDetails>({
     exteriorCamera: false, noiseMonitor: false, weapons: false
@@ -99,6 +94,7 @@ export class PropertyEditorComponent implements OnInit {
 
   // Map Setup
   private map: L.Map | undefined;
+  private marker: L.Marker | undefined;
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -126,8 +122,7 @@ export class PropertyEditorComponent implements OnInit {
     this.tempDescription.set(prop.description);
     this.tempPrice.set(prop.pricing?.basePrice || 0);
     
-    // ✅ تعديل: منطق تحديد النوع (ID)
-    // إذا كان الباك اند يرسل propertyTypeId نستخدمه، وإلا نبحث بالاسم
+    // Property Type Logic
     if ((prop as any).propertyTypeId) {
       this.tempPropertyType.set((prop as any).propertyTypeId);
     } else {
@@ -143,14 +138,24 @@ export class PropertyEditorComponent implements OnInit {
       city: prop.location?.city || '',
       country: prop.location?.country || '',
       zipCode: prop.location?.zipCode || '',
-      //state: prop.location?.state || '',
+      // state: prop.location?.state || '',
       lat: prop.location?.coordinates?.lat || 30.0444,
       lng: prop.location?.coordinates?.lng || 31.2357
     });
 
     this.tempAmenities.set([...prop.amenities]);
     this.tempInstantBook.set(prop.isInstantBook);
-    if(prop.houseRules) this.tempRules.set({ ...prop.houseRules });
+
+    // ✅ House Rules Logic (Fix: Close brackets correctly)
+    const formatTime = (time: any) => time ? String(time).substring(0, 5) : '';
+    if (prop.houseRules) {
+      this.tempRules.set({
+        checkInTime: formatTime(prop.houseRules.checkInTime),
+        checkOutTime: formatTime(prop.houseRules.checkOutTime)
+      });
+    }
+
+    // Safety Details
     if(prop.safetyDetails) this.tempSafety.set({ ...prop.safetyDetails });
   }
 
@@ -168,7 +173,7 @@ export class PropertyEditorComponent implements OnInit {
       }, 100); 
     }
   }
-  private marker: L.Marker | undefined;
+
   initMap() {
     if (this.map) {
       this.map.remove();
@@ -186,7 +191,7 @@ export class PropertyEditorComponent implements OnInit {
       attribution: 'OpenStreetMap'
     }).addTo(this.map);
 
-  
+    // ✅ Custom Red Icon
     const redIcon = L.icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -196,15 +201,15 @@ export class PropertyEditorComponent implements OnInit {
       shadowSize: [41, 41]
     });
 
-    // ✅ 2. استخدام الأيقونة الجديدة هنا
     this.marker = L.marker([lat, lng], { 
       draggable: true,
-      icon: redIcon // 👈 ربط الأيقونة بالماركر
+      icon: redIcon 
     }).addTo(this.map);
 
     this.marker.on('dragend', () => {
       const position = this.marker!.getLatLng();
       this.updateCoordinates(position.lat, position.lng);
+      this.getAddressFromCoordinates(position.lat, position.lng);
     });
 
     this.map.on('click', (e: L.LeafletMouseEvent) => {
@@ -212,13 +217,12 @@ export class PropertyEditorComponent implements OnInit {
       this.marker!.setLatLng([lat, lng]);
       this.updateCoordinates(lat, lng);
     });
-    
+    this.getAddressFromCoordinates(lat, lng);
     setTimeout(() => {
         this.map?.invalidateSize();
     }, 200);
   }
 
-  // دالة مساعدة لتحديث الإحداثيات في الـ Signal
   updateCoordinates(lat: number, lng: number) {
     const current = this.tempLocation();
     this.tempLocation.set({ ...current, lat, lng });
@@ -233,6 +237,12 @@ export class PropertyEditorComponent implements OnInit {
     }
   }
 
+  // ✅ New helper for updating Rules Time
+  updateRule(field: 'checkInTime' | 'checkOutTime', value: string) {
+    const current = this.tempRules();
+    this.tempRules.set({ ...current, [field]: value });
+  }
+
   toggleAmenity(id: number) {
     const current = this.tempAmenities();
     if (current.includes(id)) {
@@ -240,6 +250,33 @@ export class PropertyEditorComponent implements OnInit {
     } else {
       this.tempAmenities.set([...current, id]);
     }
+  }
+
+  getAddressFromCoordinates(lat: number, lng: number) {
+   
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+
+    this.http.get<any>(url).subscribe({
+      next: (data) => {
+        const address = data.address;
+        const currentLocation = this.tempLocation();
+        
+        this.tempLocation.set({
+          ...currentLocation,
+          address: `${address.house_number || ''} ${address.road || ''}`.trim() || currentLocation.address,
+          city: address.city || address.town || address.village || address.county || currentLocation.city,
+          country: address.country || currentLocation.country,
+          zipCode: address.postcode || currentLocation.zipCode,
+          lat: lat,
+          lng: lng
+        });
+        
+        console.log('📍 Address Updated:', address);
+      },
+      error: (err) => {
+        console.error('Error fetching address:', err);
+      }
+    });
   }
 
   toggleSafety(field: 'exteriorCamera' | 'noiseMonitor' | 'weapons') {
@@ -293,7 +330,6 @@ export class PropertyEditorComponent implements OnInit {
       case 'description': updates.description = this.tempDescription(); break;
       case 'pricing': updates.pricePerNight = this.tempPrice(); break;
       case 'propertyType': 
-        
         updates.propertyTypeId = this.tempPropertyType(); 
         updates.roomType = this.tempRoomType(); 
         break;
@@ -306,7 +342,7 @@ export class PropertyEditorComponent implements OnInit {
         updates.address = this.tempLocation().address;
         updates.city = this.tempLocation().city;
         updates.country = this.tempLocation().country;
-        updates.postalCode = this.tempLocation().zipCode; // تأكد من اسم الحقل في الباك اند (zipCode vs postalCode)
+        updates.postalCode = this.tempLocation().zipCode; 
        // updates.state = this.tempLocation().state;
         updates.latitude = this.tempLocation().lat; 
         updates.longitude = this.tempLocation().lng;
@@ -315,9 +351,12 @@ export class PropertyEditorComponent implements OnInit {
         updates.amenityIds = this.tempAmenities(); 
         break;
       case 'booking': updates.isInstantBook = this.tempInstantBook(); break;
-      case 'rules': updates.houseRules = this.tempRules(); break;
+      case 'rules': 
+        // ✅ Fix: Send times separately
+        updates.checkInTime = this.tempRules().checkInTime;
+        updates.checkOutTime = this.tempRules().checkOutTime;
+        break;
       case 'safety': 
-        
         const safety = this.tempSafety();
         updates.hasExteriorCamera = safety.exteriorCamera;
         updates.hasNoiseMonitor = safety.noiseMonitor;
