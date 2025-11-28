@@ -174,7 +174,7 @@
             Please enter a valid email
           </small>
         </div>
-
+       
         <div class="form-group">
           <label for="password">Password</label>
           <div class="password-wrapper">
@@ -273,6 +273,28 @@
             Please enter a valid email
           </small>
         </div>
+         
+       <div class="form-group">
+      <label for="registerPhone">Phone Number</label>
+      <div class="phone-input-group">
+        <select formControlName="countryCode" class="country-code-select">
+          <option *ngFor="let country of countries" [value]="country.dialCode">
+            {{ country.flag }} {{ country.dialCode }}
+          </option>
+        </select>
+        <input
+          id="registerPhone"
+          type="tel"
+          formControlName="phoneNumber"
+          placeholder="Phone number"
+          class="form-input phone-number-input"
+          [class.error]="registerPhone?.invalid && registerPhone?.touched"
+        />
+      </div>
+      <small class="error-text" *ngIf="registerPhone?.invalid && registerPhone?.touched">
+        Please enter a valid phone number
+      </small>
+    </div>
 
         <div class="form-group">
           <label for="registerPassword">Password</label>

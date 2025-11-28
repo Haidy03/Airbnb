@@ -80,6 +80,8 @@ export class LoginComponent {
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
+    countryCode: ['+20', [Validators.required]],
+    phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
@@ -270,19 +272,27 @@ export class LoginComponent {
 
     this.isLoading.set(true);
     this.errorMessage.set('');
+    
+    const formValue = this.registerForm.value;
 
     const request = {
-      firstName: this.registerForm.value.firstName!,
-      lastName: this.registerForm.value.lastName!,
-      email: this.registerForm.value.email!,
-      password: this.registerForm.value.password!
+      firstName: formValue.firstName!,
+      lastName: formValue.lastName!,
+      email: formValue.email!,
+      phoneNumber: `${formValue.countryCode}${formValue.phoneNumber}`, // ✅ Phone مع الكود
+      password: formValue.password!
+      // firstName: this.registerForm.value.firstName!,
+      // lastName: this.registerForm.value.lastName!,
+      // email: this.registerForm.value.email!,
+      // phoneNumber: `${this.registerForm.value.countryCode}${this.registerForm.value.phoneNumber}`,
+      // password: this.registerForm.value.password!
     };
 
     console.log('📝 Attempting registration:', { email: request.email });
 
     this.authService.register(request).subscribe({
       next: (response) => {
-        this.isLoading.set(false);
+       // this.isLoading.set(false);
         console.log('✅ Registration successful!');
         
         // After successful registration, automatically log in
@@ -293,8 +303,9 @@ export class LoginComponent {
         
         this.authService.loginWithEmail(loginRequest).subscribe({
           next: (response:any) => {
+            this.isLoading.set(false);
             console.log('✅ Auto-login successful after registration');
-             this.isLoading.set(false);
+             
             //this.authService.setToken(response.token);
             // Fetch role from token and redirect
            const token = response?.token || response?.data?.token;
@@ -309,18 +320,26 @@ export class LoginComponent {
             const userId = this.tokenService.getUserId(token);
 
             console.log('👤 User Role:', userRole, '🆔 User ID:', userId);
-            this.redirectBasedOnRole(userRole);
+             localStorage.setItem('userId', userId);
+            localStorage.setItem('email', request.email);
+            localStorage.setItem('userRole', userRole);
+            localStorage.setItem('firstName', request.firstName);
+            localStorage.setItem('lastName', request.lastName);
+          //  localStorage.setItem('phoneNumber', request.phoneNumber);
 
+            this.authService.setUserFromToken(token);
+            this.authService.fetchAndSetFullProfile();
             this.closeModal();
+            this.redirectBasedOnRole(userRole);
           } else {
             this.errorMessage.set('Login failed - no token received');
-            this.switchMode('email');
+            //this.switchMode('email');
           }
             // this.router.navigate(['/login']); 
             this.closeModal();
-            
           },
           error: (loginError) => {
+            this.isLoading.set(false);
             console.error('❌ Auto-login failed:', loginError);
             // If auto-login fails, switch to login mode
             this.switchMode('email');
@@ -410,7 +429,17 @@ export class LoginComponent {
   get isRegisterMode(): boolean {
     return this.mode() === 'register';
   }
+get registerPhone() {
+  return this.registerForm.get('phoneNumber');
+}
 
+get registerCountryCode() {
+  return this.registerForm.get('countryCode');
+}
+
+get countryCode() {
+  return this.registerForm.get('countryCode');
+}
   get isPhoneInput(): boolean {
     return this.phoneStep() === 'input';
   }
@@ -455,4 +484,7 @@ export class LoginComponent {
     });
   }
   
+  
+
+
 }
