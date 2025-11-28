@@ -42,5 +42,10 @@ namespace Airbnb.API.Models
         // Path to the ID photo (Secure storage)
         public string? IdentificationImagePath { get; set; }
         public string VerificationStatus { get; set; } = "None"; // Pending, Approved, Rejected
+
+        public DateTime? DateOfBirth { get; set; }
+        public string? Address { get; set; }
+        public string? City { get; set; }
+        public string? Country { get; set; }
     }
 }

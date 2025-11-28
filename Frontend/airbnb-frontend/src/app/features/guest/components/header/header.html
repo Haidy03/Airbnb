@@ -45,8 +45,7 @@
 
         </div>
       </div>
-
-      <!-- 3. Right: User Menu -->
+<!-- 3. Right: User Menu -->
       <div class="col-auto d-flex align-items-center gap-2 position-relative" style="z-index: 2000;">
         <a class="host-btn d-none d-md-block text-dark text-decoration-none fw-semibold px-3 py-2 rounded-pill hover-bg-light" (click)="onBecomeHostClick()" style="cursor: pointer;">
           Become a host
@@ -69,22 +68,22 @@
                style="width: 240px; z-index: 2050;"
                (click)="$event.stopPropagation()">
 
-            <div class="d-flex flex-column">
+
+            <div class="d-flex flex-column" (click)="closeUserMenu()">
               <a routerLink="/profile" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Profile</a>
               <a routerLink="/messages" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Messages</a>
               <a routerLink="/trips" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Trips</a>
               <a routerLink="/wishlists" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Wishlists</a>
               <div class="border-bottom my-2"></div>
               <a routerLink="/account-settings" class="dropdown-item px-3 py-2 text-dark hover-bg-light">Account settings</a>
-              <a (click)="isLoggedIn()? onLogout() : openLoginModal()"
+
+              <a (click)="isLoggedIn() ? onLogout() : openLoginModal()"
                  class="dropdown-item px-3 py-2 text-dark hover-bg-light cursor-pointer">
                  {{ isLoggedIn() ? 'Log out' : 'Log in or sign up' }}
               </a>
             </div>
-
           </div>
         </div>
-
       </div>
 
     </div> <!-- END nav-top -->

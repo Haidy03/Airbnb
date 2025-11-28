@@ -1,10 +1,8 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-// تأكد من مسار الموديل ( AmenityCategory)
 import { SearchFilters, PropertyType } from '../../models/property.model';
 
-// Interface for local amenity state
 interface Amenity {
   id: string;
   name: string;
@@ -19,18 +17,19 @@ interface Amenity {
   templateUrl: './filters.html',
   styleUrls: ['./filters.css']
 })
-export class FiltersComponent {
+export class FiltersComponent implements OnChanges {
   @Input() isOpen = false;
+  @Input() currentFilters: SearchFilters = {};
   @Output() close = new EventEmitter<void>();
   @Output() applyFilters = new EventEmitter<SearchFilters>();
 
-  // Price Range
+  // Price
   minPrice = 0;
   maxPrice = 50000;
-  priceMin: number | null = null; // Changed to nullable to match logic
-  priceMax: number | null = null; // Changed to nullable
+  priceMin: number | null = null;
+  priceMax: number | null = null;
 
-  // Property Types
+  // Types
   propertyTypes = [
     { type: PropertyType.APARTMENT, icon: 'bi-building', label: 'Apartment', selected: false },
     { type: PropertyType.HOUSE, icon: 'bi-house-door', label: 'House', selected: false },
@@ -40,104 +39,106 @@ export class FiltersComponent {
     { type: PropertyType.CHALET, icon: 'bi-tree', label: 'Chalet', selected: false }
   ];
 
-  // Rooms & Beds
+  // Rooms
   bedrooms: number | null = null;
   beds: number | null = null;
   bathrooms: number | null = null;
 
   // Amenities
   amenities: Amenity[] = [
-    { id: 'wifi', name: 'WiFi', icon: 'bi-wifi', selected: false },
-    { id: 'kitchen', name: 'Kitchen', icon: 'bi-house', selected: false },
-    { id: 'washer', name: 'Washer', icon: 'bi-circle', selected: false },
-    { id: 'dryer', name: 'Dryer', icon: 'bi-circle', selected: false },
-    { id: 'ac', name: 'Air conditioning', icon: 'bi-snow', selected: false },
-    { id: 'heating', name: 'Heating', icon: 'bi-thermometer-sun', selected: false },
-    { id: 'tv', name: 'TV', icon: 'bi-tv', selected: false },
-    { id: 'pool', name: 'Pool', icon: 'bi-water', selected: false },
-    { id: 'hot-tub', name: 'Hot tub', icon: 'bi-circle', selected: false },
-    { id: 'parking', name: 'Free parking', icon: 'bi-car-front', selected: false },
-    { id: 'gym', name: 'Gym', icon: 'bi-heart-pulse', selected: false },
-    { id: 'workspace', name: 'Dedicated workspace', icon: 'bi-laptop', selected: false }
+    { id: '1', name: 'WiFi', icon: 'bi-wifi', selected: false },
+    { id: '2', name: 'TV', icon: 'bi-tv', selected: false },
+    { id: '3', name: 'Kitchen', icon: 'bi-house', selected: false },
+    { id: '4', name: 'Washer', icon: 'bi-circle', selected: false },
+    { id: '5', name: 'Dryer', icon: 'bi-wind', selected: false },
+    { id: '6', name: 'Air conditioning', icon: 'bi-snow', selected: false },
+    { id: '7', name: 'Heating', icon: 'bi-thermometer-sun', selected: false },
+    { id: '8', name: 'Dedicated workspace', icon: 'bi-briefcase', selected: false },
+    { id: '9', name: 'Pool', icon: 'bi-water', selected: false },
+    { id: '10', name: 'Hot tub', icon: 'bi-droplet', selected: false },
+    { id: '11', name: 'Free parking', icon: 'bi-car-front', selected: false },
+    { id: '12', name: 'EV charger', icon: 'bi-lightning-charge', selected: false },
+    { id: '13', name: 'Smoke alarm', icon: 'bi-exclamation-triangle', selected: false },
+    { id: '14', name: 'Carbon monoxide alarm', icon: 'bi-exclamation-circle', selected: false }
   ];
 
-  // Booking Options
+  // Booking Options (تم إعادتهم لإصلاح الخطأ)
   instantBook = false;
-  selfCheckIn = false;
-  allowsPets = false;
+  selfCheckIn = false; // Added back
+  allowsPets = false;  // Added back
 
   // Rating
   minRating: number | null = null;
 
-  onClose(): void {
-    this.close.emit();
-  }
-
-  togglePropertyType(type: PropertyType): void {
-    const typeObj = this.propertyTypes.find(t => t.type === type);
-    if (typeObj) {
-      typeObj.selected = !typeObj.selected;
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen'] && this.isOpen) {
+      this.mapFiltersToUI();
     }
   }
 
-  toggleAmenity(amenityId: string): void {
-    const amenity = this.amenities.find(a => a.id === amenityId);
-    if (amenity) {
-      amenity.selected = !amenity.selected;
-    }
-  }
+  private mapFiltersToUI() {
+    if (!this.currentFilters) return;
 
-  incrementRooms(type: 'bedrooms' | 'beds' | 'bathrooms'): void {
-    if (this[type] === null) {
-      this[type] = 1;
-    } else {
-      this[type]!++;
-    }
-  }
+    this.priceMin = this.currentFilters.priceMin || null;
+    this.priceMax = this.currentFilters.priceMax || null;
+    this.bedrooms = this.currentFilters.bedrooms || null;
+    this.beds = this.currentFilters.beds || null;
+    this.bathrooms = this.currentFilters.bathrooms || null;
+    this.instantBook = !!this.currentFilters.instantBook;
+    this.minRating = this.currentFilters.rating || null;
 
-  decrementRooms(type: 'bedrooms' | 'beds' | 'bathrooms'): void {
-    if (this[type] !== null && this[type]! > 0) {
-      this[type]!--;
-      if (this[type] === 0) {
-        this[type] = null;
-      }
-    }
-  }
-
-  setMinRating(rating: number): void {
-    this.minRating = this.minRating === rating ? null : rating;
-  }
-
-  onPriceMinChange(event: Event): void {
-    const value = +(event.target as HTMLInputElement).value;
-    this.priceMin = Math.min(value, this.priceMax ?? this.maxPrice);
-  }
-
-  onPriceMaxChange(event: Event): void {
-    const value = +(event.target as HTMLInputElement).value;
-    this.priceMax = Math.max(value, this.priceMin ?? 0);
-  }
-
-  clearAll(): void {
-    this.priceMin = null;
-    this.priceMax = null;
+    // استرجاع الأنواع
     this.propertyTypes.forEach(t => t.selected = false);
-    this.bedrooms = null;
-    this.beds = null;
-    this.bathrooms = null;
+    if (this.currentFilters.propertyTypes && this.currentFilters.propertyTypes.length > 0) {
+      const selectedType = this.currentFilters.propertyTypes[0];
+      const target = this.propertyTypes.find(t => t.type === selectedType);
+      if (target) target.selected = true;
+    }
+
+    // استرجاع المرافق
     this.amenities.forEach(a => a.selected = false);
+    if (this.currentFilters.amenities) {
+      this.currentFilters.amenities.forEach(id => {
+        const target = this.amenities.find(a => a.id === id.toString());
+        if (target) target.selected = true;
+      });
+    }
+  }
+
+  onClose() { this.close.emit(); }
+
+  togglePropertyType(type: PropertyType) {
+    this.propertyTypes.forEach(t => t.selected = false);
+    const target = this.propertyTypes.find(t => t.type === type);
+    if (target) target.selected = true;
+  }
+
+  toggleAmenity(id: string) {
+    const amenity = this.amenities.find(a => a.id === id);
+    if (amenity) amenity.selected = !amenity.selected;
+  }
+
+  incrementRooms(type: 'bedrooms' | 'beds' | 'bathrooms') { if (this[type] === null) this[type] = 1; else this[type]!++; }
+  decrementRooms(type: 'bedrooms' | 'beds' | 'bathrooms') { if (this[type] !== null && this[type]! > 0) { this[type]!--; if (this[type] === 0) this[type] = null; } }
+  setMinRating(r: number) { this.minRating = this.minRating === r ? null : r; }
+  onPriceMinChange(e: Event) { const v = +(e.target as HTMLInputElement).value; this.priceMin = Math.min(v, this.priceMax ?? 50000); }
+  onPriceMaxChange(e: Event) { const v = +(e.target as HTMLInputElement).value; this.priceMax = Math.max(v, this.priceMin ?? 0); }
+
+  clearAll() {
+    this.priceMin = null; this.priceMax = null;
+    this.propertyTypes.forEach(t => t.selected = false);
+    this.amenities.forEach(a => a.selected = false);
+    this.bedrooms = null; this.beds = null; this.bathrooms = null;
     this.instantBook = false;
-    this.selfCheckIn = false;
-    this.allowsPets = false;
+    this.selfCheckIn = false; // Reset
+    this.allowsPets = false;  // Reset
     this.minRating = null;
   }
 
-  apply(): void {
-    // 1. تجميع البيانات
+  apply() {
     const selectedTypes = this.propertyTypes.filter(t => t.selected).map(t => t.type);
-    const selectedAmenities = this.amenities.filter(a => a.selected).map(a => a.id); // أو a.name حسب الباك إند
+    const selectedAmenities = this.amenities.filter(a => a.selected).map(a => a.id);
 
-    // 2. بناء الأوبجيكت النهائي (نرسل فقط القيم الموجودة)
     const filters: SearchFilters = {
       priceMin: this.priceMin || undefined,
       priceMax: this.priceMax || undefined,
@@ -148,21 +149,21 @@ export class FiltersComponent {
       bathrooms: this.bathrooms || undefined,
       instantBook: this.instantBook || undefined,
       rating: this.minRating || undefined
+      // ملاحظة: selfCheckIn و allowsPets مش بنبعتهم للباك إند لأنهم مش في الـ DTO حالياً، بس خليناهم هنا عشان الـ HTML ميضربش
     };
 
-    // 3. إرسال الفلاتر للأب (Search Results)
     this.applyFilters.emit(filters);
     this.onClose();
   }
 
   get activeFiltersCount(): number {
     let count = 0;
-    if (this.priceMin !== null || (this.priceMax !== null && this.priceMax < 50000)) count++;
+    if (this.priceMin || (this.priceMax && this.priceMax < 50000)) count++;
     if (this.propertyTypes.some(t => t.selected)) count++;
-    if (this.bedrooms !== null || this.beds !== null || this.bathrooms !== null) count++;
     if (this.amenities.some(a => a.selected)) count++;
+    if (this.bedrooms || this.beds || this.bathrooms) count++;
     if (this.instantBook || this.selfCheckIn || this.allowsPets) count++;
-    if (this.minRating !== null) count++;
+    if (this.minRating) count++;
     return count;
   }
 }

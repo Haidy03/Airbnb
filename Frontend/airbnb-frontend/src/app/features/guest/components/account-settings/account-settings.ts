@@ -122,19 +122,25 @@ export class AccountSettingsComponent implements OnInit {
     }
   }
 
-  savePersonalInfo() {
+savePersonalInfo() {
     if (this.personalInfoForm.invalid) {
-      this.personalInfoForm.markAllAsTouched(); // إظهار الأخطاء
+      this.personalInfoForm.markAllAsTouched();
       return;
     }
 
     const updatedData = this.personalInfoForm.value;
 
     this.authService.updateUserProfile(updatedData).subscribe({
-      next: (updatedUser) => {
-        this.currentUser = updatedUser;
+      next: (responseUser) => {
+        this.currentUser = {
+          ...this.currentUser!, // بناخد البيانات القديمة (زي الـ ID)
+          ...updatedData        // وبنحط عليها البيانات الجديدة (الاسم، العنوان..)
+        };
+
+        // بنقفل وضع التعديل
         this.isEditingPersonal = false;
-        // هنا بنستخدم الدالة القديمة المتوافقة
+
+        // رسالة النجاح
         this.toastService.showSuccess('Personal information updated successfully');
       },
       error: (err: any) => {
