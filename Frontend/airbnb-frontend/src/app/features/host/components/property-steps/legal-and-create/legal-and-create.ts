@@ -87,21 +87,29 @@ export class legalandcreateComponent implements OnInit {
     alert('Safety details help guests understand what to expect at your property.');
   }
 
+  private getSafetyPayload() {
+    return{
+      // نرسل الأسماء مطابقة تماماً لـ UpdatePropertyDto في الباك
+      hasExteriorCamera: this.exteriorCamera(),
+      hasNoiseMonitor: this.noiseMonitor(),
+      hasWeapons: this.weapons()
+    };
+  }
+
   exit(): void {
     if (!confirm('Exit? Make sure to publish your listing later.')) return;
 
     this.isLoading.set(true);
 
     if (this.currentDraftId) {
+      // ✅ نستخدم الدالة المساعدة لإرسال البيانات مسطحة
+      const payload = this.getSafetyPayload();
+      
+      console.log('📤 Sending Safety Payload:', payload); // للتأكد في الـ Console
+
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
-        {
-          safetyDetails: {
-            exteriorCamera: this.exteriorCamera(),
-            noiseMonitor: this.noiseMonitor(),
-            weapons: this.weapons()
-          }
-        },
+        payload, 
         'safety-details'
       ).subscribe({
         next: () => {
@@ -122,30 +130,26 @@ export class legalandcreateComponent implements OnInit {
     this.router.navigate(['/host/properties/pricing']);
   }
 
-createListing(): void {
+  createListing(): void {
     this.isLoading.set(true);
 
     if (this.currentDraftId) {
+      // ✅ نستخدم نفس الدالة المساعدة هنا أيضاً
+      const payload = this.getSafetyPayload();
+
+      console.log('📤 Creating Listing with Safety:', payload);
+
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
-        {
-          safetyDetails: {
-            exteriorCamera: this.exteriorCamera(),
-            noiseMonitor: this.noiseMonitor(),
-            weapons: this.weapons()
-          }
-        },
+        payload,
         'safety-details'
       ).subscribe({
         next: () => {
-          // Publish the property
+          // Publish logic...
           this.propertyService.publishProperty(this.currentDraftId!).subscribe({
             next: () => {
               this.isLoading.set(false);
-              
-              // ✅ Clear ALL localStorage after successful publish
               this.clearAllLocalStorage();
-              
               alert('✅ Your listing has been published successfully!');
               this.router.navigate(['/host/properties']);
             },

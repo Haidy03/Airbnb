@@ -10,6 +10,11 @@ type EditorSection =
   | 'photos' | 'title' | 'propertyType' | 'capacity' | 'description' 
   | 'amenities' | 'location' | 'pricing' | 'booking' | 'rules' | 'safety' | 'host';
 
+interface PropTypeOption {
+  id: number;
+  name: string;
+}
+
 @Component({
   selector: 'app-property-editor',
   standalone: true,
@@ -25,6 +30,7 @@ export class PropertyEditorComponent implements OnInit {
   property = signal<Property | null>(null);
   isLoading = signal(true);
   activeSection = signal<EditorSection>('title');
+  loadingImages = signal<Set<string>>(new Set());
   
   // Edit Mode
   isEditing = signal(false);
@@ -33,7 +39,10 @@ export class PropertyEditorComponent implements OnInit {
   tempTitle = signal('');
   tempDescription = signal('');
   tempPrice = signal(0);
-  tempPropertyType = signal('');
+  
+  // ✅ تعديل: المتغير أصبح يحمل رقم (ID) بدلاً من نص
+  tempPropertyType = signal<number | null>(null); 
+  
   tempRoomType = signal('');
   tempCapacity = signal({ guests: 1, bedrooms: 1, beds: 1, bathrooms: 1 });
   tempLocation = signal({ address: '', city: '', country: '', zipCode: '', lat: 0, lng: 0 });
@@ -47,11 +56,25 @@ export class PropertyEditorComponent implements OnInit {
     exteriorCamera: false, noiseMonitor: false, weapons: false
   });
 
-  // Lists
-  propertyTypesList = ['House', 'Apartment', 'Guesthouse', 'Hotel', 'Cabin', 'Villa', 'Loft'];
+  // ✅ القائمة الجديدة المطابقة لقاعدة البيانات
+  propertyTypesList: PropTypeOption[] = [
+    { id: 1, name: 'House' },
+    { id: 2, name: 'Apartment' },
+    { id: 3, name: 'Barn' },
+    { id: 4, name: 'Bed & breakfast' },
+    { id: 5, name: 'Boat' },
+    { id: 6, name: 'Cabin' },
+    { id: 7, name: 'Camper/RV' },
+    { id: 8, name: 'Casa particular' },
+    { id: 9, name: 'Castle' },
+    { id: 10, name: 'Cave' },
+    { id: 11, name: 'Container' },
+    { id: 12, name: 'Cycladic home' }
+  ];
+
   roomTypesList = ['Entire place', 'Private room', 'Shared room'];
   
-  // ✅ 1. Full Amenities List (Matches Backend/Database)
+  // Full Amenities List
   availableAmenities = [
     { id: 1, name: 'WiFi', icon: 'wifi' },
     { id: 2, name: 'TV', icon: 'tv' },
@@ -102,7 +125,16 @@ export class PropertyEditorComponent implements OnInit {
     this.tempTitle.set(prop.title);
     this.tempDescription.set(prop.description);
     this.tempPrice.set(prop.pricing?.basePrice || 0);
-    this.tempPropertyType.set(prop.propertyType);
+    
+    // ✅ تعديل: منطق تحديد النوع (ID)
+    // إذا كان الباك اند يرسل propertyTypeId نستخدمه، وإلا نبحث بالاسم
+    if ((prop as any).propertyTypeId) {
+      this.tempPropertyType.set((prop as any).propertyTypeId);
+    } else {
+      const match = this.propertyTypesList.find(t => t.name === prop.propertyType);
+      if (match) this.tempPropertyType.set(match.id);
+    }
+
     this.tempRoomType.set(prop.roomType);
     this.tempCapacity.set({ ...prop.capacity });
     
@@ -128,18 +160,17 @@ export class PropertyEditorComponent implements OnInit {
     }
     this.activeSection.set(section);
 
-    // ✅ 2. Initialize Map if Location Section is Active
+    // Initialize Map if Location Section is Active
     if (section === 'location') {
       setTimeout(() => {
         this.initMap();
-      }, 100); // Small delay to ensure DOM is ready
+      }, 100); 
     }
   }
 
-  // ✅ Map Initialization Logic
   initMap() {
     if (this.map) {
-      this.map.remove(); // Reset if already exists
+      this.map.remove(); 
     }
 
     const lat = this.tempLocation().lat || 30.0444;
@@ -157,7 +188,6 @@ export class PropertyEditorComponent implements OnInit {
     L.marker([lat, lng]).addTo(this.map);
   }
 
-  // Capacity Helpers
   updateCapacity(field: 'guests' | 'bedrooms' | 'beds' | 'bathrooms', change: number) {
     const current = this.tempCapacity();
     const newValue = current[field] + change;
@@ -166,7 +196,6 @@ export class PropertyEditorComponent implements OnInit {
     }
   }
 
-  // Amenities Helpers
   toggleAmenity(id: number) {
     const current = this.tempAmenities();
     if (current.includes(id)) {
@@ -179,7 +208,6 @@ export class PropertyEditorComponent implements OnInit {
   canToggleStatus(): boolean {
     const p = this.property();
     if (!p) return false;
-    // Assuming status can be checked via isActive boolean for simplicity in UI
     return p.isApproved || p.isActive; 
   }
 
@@ -202,7 +230,7 @@ export class PropertyEditorComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        (event.target as HTMLInputElement).checked = !isChecked; // Revert
+        (event.target as HTMLInputElement).checked = !isChecked;
         alert('Failed to update status: ' + err.message);
       }
     });
@@ -220,14 +248,14 @@ export class PropertyEditorComponent implements OnInit {
       case 'description': updates.description = this.tempDescription(); break;
       case 'pricing': updates.pricePerNight = this.tempPrice(); break;
       case 'propertyType': 
-        updates.propertyType = this.tempPropertyType(); 
+        // ✅ تعديل: إرسال propertyTypeId بدلاً من الاسم
+        updates.propertyTypeId = this.tempPropertyType(); 
         updates.roomType = this.tempRoomType(); 
         break;
       case 'capacity': 
         updates.numberOfBedrooms = this.tempCapacity().bedrooms;
         updates.numberOfBathrooms = this.tempCapacity().bathrooms;
         updates.maxGuests = this.tempCapacity().guests;
-        // Note: Beds might not be in flat DTO, verify backend
         break;
       case 'location': 
         updates.address = this.tempLocation().address;
@@ -235,7 +263,6 @@ export class PropertyEditorComponent implements OnInit {
         updates.country = this.tempLocation().country;
         break;
       case 'amenities': 
-        // ✅ Fix 500 Error: Ensure we send property ID and array of numbers
         updates.amenityIds = this.tempAmenities(); 
         break;
       case 'booking': updates.isInstantBook = this.tempInstantBook(); break;
@@ -255,7 +282,80 @@ export class PropertyEditorComponent implements OnInit {
     });
   }
 
-  // ✅ 3. Delete Property Logic
+  handleImageUpload(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const files = Array.from(input.files);
+    const prop = this.property();
+    
+    if (!prop) return;
+
+    this.isLoading.set(true); 
+
+    this.propertyService.uploadPropertyImages(prop.id, files).subscribe({
+      next: (newImages) => {
+        this.loadProperty(prop.id);
+        input.value = '';
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        alert('Failed to upload images: ' + err.message);
+      }
+    });
+  }
+
+  deleteImage(imageId: string) {
+    const prop = this.property();
+    if (!prop) return;
+
+    if (!confirm('Delete this photo?')) return;
+
+    this.loadingImages.update(set => { set.add(imageId); return new Set(set); });
+
+    this.propertyService.deletePropertyImage(imageId).subscribe({
+      next: () => {
+        const updatedImages = prop.images.filter(img => img.id !== imageId);
+        this.property.update(p => p ? { ...p, images: updatedImages } : null);
+        
+        this.loadingImages.update(set => { set.delete(imageId); return new Set(set); });
+      },
+      error: (err) => {
+        alert('Failed to delete image');
+        this.loadingImages.update(set => { set.delete(imageId); return new Set(set); });
+      }
+    });
+  }
+
+  setAsPrimary(imageId: string) {
+    const prop = this.property();
+    if (!prop) return;
+
+    this.isLoading.set(true);
+
+    this.propertyService.setPrimaryImage(imageId).subscribe({
+      next: () => {
+        const updatedImages = prop.images.map(img => ({
+          ...img,
+          isPrimary: img.id === imageId 
+        })).sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0)); 
+
+        const newCover = updatedImages.find(i => i.isPrimary)?.url || '';
+        
+        this.property.update(p => p ? { ...p, images: updatedImages, coverImage: newCover } : null);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        alert('Failed to update cover photo');
+      }
+    });
+  }
+
+  isImageLoading(id: string) {
+    return this.loadingImages().has(id);
+  }
+
   deleteProperty() {
     const prop = this.property();
     if (!prop) return;
