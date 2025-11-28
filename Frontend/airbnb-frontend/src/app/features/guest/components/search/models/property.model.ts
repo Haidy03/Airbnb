@@ -111,14 +111,14 @@ export interface MapBounds {
 }
 
 export enum PropertyType {
-  APARTMENT = 'Apartment',
-  HOUSE = 'House',
-  ROOM = 'Room',
-  VILLA = 'Villa',
-  STUDIO = 'Studio',
-  CHALET = 'Chalet',
-  CABIN = 'Cabin',
-  HOTEL = 'Hotel'
+  APARTMENT = 'APARTMENT',
+  HOUSE = 'HOUSE',
+  ROOM = 'ROOM',
+  VILLA = 'VILLA',
+  STUDIO = 'STUDIO',
+  CHALET = 'CHALET',
+  CABIN = 'CABIN',
+  HOTEL = 'HOTEL'
 }
 
 export enum AmenityCategory {
@@ -176,4 +176,15 @@ export interface SearchRequestDto {
   guests?: number;
   pageIndex: number;
   pageSize: number;
+
+    // Added Filters
+  minPrice?: number;
+  maxPrice?: number;
+  propertyTypes?: number[];
+  amenities?: string[];
+  bedrooms?: number;
+  beds?: number;
+  bathrooms?: number;
+  isInstantBook?: boolean;
+
 }

@@ -36,10 +36,11 @@
           <!-- Image -->
           <div class="position-relative rounded-3 overflow-hidden" style="padding-top: 95%;">
              <!-- التعديل هنا: استخدام الصورة الأولى من المصفوفة -->
-             <img [src]="item.images && item.images.length > 0 ? item.images[0].url : 'assets/placeholder.jpg'"
-                  class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-                  [alt]="item.title"
-                  onerror="this.src='assets/placeholder.jpg'">
+<img
+    [src]="item.images && item.images.length > 0 ? item.images[0].url : 'src/assets/images/placeholder-property.jpg'"
+    class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
+    [alt]="item.title"
+    onerror="this.onerror=null; this.src='assets/placeholder.jpg'">
 
              <!-- زر الحذف من المفضلة -->
              <!-- تحويل الـ id لرقم للتأكيد -->

@@ -1,23 +1,24 @@
-<div class="min-vh-100 bg-white" style="padding-top: 120px;">
+<div class="min-vh-100 bg-white" style="padding-top: 60px;">
 
-  <app-header></app-header>
 
-  <main class="container py-4">
+  <main class="container py-5">
     <!-- Title -->
     <div class="mb-4">
       <h1 class="fw-bold text-dark display-6">Trips</h1>
       <p class="text-muted fs-5">Your upcoming and past reservations</p>
     </div>
 
-    <!-- Tabs Navigation -->
+    <!-- Tabs Navigation (التعديل هنا: إرجاع الستايل الأصلي) -->
     <div class="border-bottom mb-5">
       <div class="d-flex gap-4">
+
         <button
           (click)="setActiveTab('upcoming')"
           class="btn btn-link text-decoration-none pb-3 px-1 border-0 position-relative tab-btn"
           [class.active]="activeTab === 'upcoming'"
           [class.text-dark]="activeTab === 'upcoming'"
-          [class.text-muted]="activeTab !== 'upcoming'">
+          [class.text-muted]="activeTab !== 'upcoming'"
+          style="font-weight: 600;">
           Upcoming
         </button>
 
@@ -26,7 +27,8 @@
           class="btn btn-link text-decoration-none pb-3 px-1 border-0 position-relative tab-btn"
           [class.active]="activeTab === 'past'"
           [class.text-dark]="activeTab === 'past'"
-          [class.text-muted]="activeTab !== 'past'">
+          [class.text-muted]="activeTab !== 'past'"
+          style="font-weight: 600;">
           Past
         </button>
 
@@ -35,27 +37,72 @@
           class="btn btn-link text-decoration-none pb-3 px-1 border-0 position-relative tab-btn"
           [class.active]="activeTab === 'cancelled'"
           [class.text-dark]="activeTab === 'cancelled'"
-          [class.text-muted]="activeTab !== 'cancelled'">
+          [class.text-muted]="activeTab !== 'cancelled'"
+          style="font-weight: 600;">
           Cancelled
         </button>
+
       </div>
     </div>
 
-    <!-- Content Area (Empty State) -->
-    <div class="text-center py-5 my-4">
-      <div class="mb-4">
-        <svg class="text-secondary opacity-25" width="80" height="80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-        </svg>
-      </div>
-
-      <h3 class="fw-bold text-dark mb-2">No trips yet</h3>
-      <p class="text-muted mb-4">When you're ready to book, we're here to help!</p>
-
-      <a routerLink="/" class="btn btn-airbnb px-4 py-2 fw-bold">
-        Start searching
-      </a>
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-danger" role="status"></div>
     </div>
 
+    <!-- Content Area -->
+    <div *ngIf="!isLoading">
+
+      <!-- الحالة 1: توجد رحلات -->
+      <div *ngIf="currentTrips.length > 0" class="row g-4">
+        <div class="col-12 col-md-6 col-lg-4" *ngFor="let trip of currentTrips">
+          <div class="card border-0 shadow-sm h-100 overflow-hidden">
+            <div class="position-relative" style="height: 200px;">
+              <img [src]="trip.propertyImage" class="w-100 h-100 object-fit-cover" alt="Property"
+                   onerror="this.src='assets/placeholder.jpg'">
+              <div class="position-absolute top-0 end-0 m-2 badge bg-dark opacity-75">
+                {{ trip.status }}
+              </div>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title fw-bold text-truncate">{{ trip.propertyTitle }}</h5>
+              <p class="text-muted small mb-2">Hosted by {{ trip.hostName }}</p>
+              <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                <div>
+                  <div class="small text-muted">Check-in</div>
+                  <div class="fw-semibold">{{ trip.checkInDate | date:'mediumDate' }}</div>
+                </div>
+                <div class="text-end">
+                  <div class="small text-muted">Check-out</div>
+                  <div class="fw-semibold">{{ trip.checkOutDate | date:'mediumDate' }}</div>
+                </div>
+              </div>
+              <button *ngIf="activeTab === 'upcoming'"
+                      (click)="cancelBooking(trip.id)"
+                      class="btn btn-outline-danger w-100 mt-3 btn-sm">
+                Cancel reservation
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- الحالة 2: لا توجد رحلات (Empty State) -->
+      <div *ngIf="currentTrips.length === 0" class="text-center py-5 my-4">
+        <div class="mb-4">
+          <svg class="text-secondary opacity-25" width="80" height="80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+        </div>
+        <h3 class="fw-bold text-dark mb-2">No {{ activeTab }} trips</h3>
+        <p class="text-muted mb-4">
+          {{ activeTab === 'upcoming' ? "When you're ready to book, we're here to help!" : "You have no reservations in this category." }}
+        </p>
+        <a routerLink="/" class="btn btn-danger px-4 py-2 fw-bold" style="background-color: #FF385C; border: none;">
+          Start searching
+        </a>
+      </div>
+
+    </div>
   </main>
 </div>

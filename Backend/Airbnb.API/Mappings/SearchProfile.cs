@@ -8,7 +8,19 @@ namespace Airbnb.API.Mappings
     {
         public SearchProfile()
         {
-            // 1. Map Property -> PropertyDetailsDto (For the Property Details Page)
+            // =================================================================
+            // 1. (جديد) Map Property -> PropertySearchResultDto (For Wishlists & Search)
+            // =================================================================
+            CreateMap<Property, PropertySearchResultDto>()
+                .ForMember(dest => dest.PricePerNight, opt => opt.MapFrom(src => src.PricePerNight))
+                .ForMember(dest => dest.TotalReviews, opt => opt.MapFrom(src => src.Reviews.Count))
+                // بنجيب أول صورة، ولو مفيش بنرجع null عشان التطبيق ميضربش
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault() != null ? src.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault().ImageUrl : null));
+
+
+            // =================================================================
+            // 2. Map Property -> PropertyDetailsDto (زي ما كان عندك بالظبط)
+            // =================================================================
             CreateMap<Property, PropertyDetailsDto>()
                 .ForMember(dest => dest.CheckInTime, opt => opt.MapFrom(src => src.CheckInTime.HasValue ? src.CheckInTime.Value.ToString(@"hh\:mm") : "14:00"))
                 .ForMember(dest => dest.CheckOutTime, opt => opt.MapFrom(src => src.CheckOutTime.HasValue ? src.CheckOutTime.Value.ToString(@"hh\:mm") : "11:00"))
@@ -17,7 +29,7 @@ namespace Airbnb.API.Mappings
                 .ForMember(dest => dest.Host, opt => opt.MapFrom(src => src.Host))
                 .ForMember(dest => dest.Reviews, opt => opt.MapFrom(src => src.Reviews.OrderByDescending(r => r.CreatedAt).Take(5)));
 
-            // 2. Map Helper Objects
+            // 3. Map Helper Objects (زي ما كان عندك)
             CreateMap<ApplicationUser, HostSummaryDto>()
                 .ForMember(dest => dest.JoinedAt, opt => opt.MapFrom(src => src.CreatedAt));
 
