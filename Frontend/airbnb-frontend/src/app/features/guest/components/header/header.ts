@@ -24,7 +24,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private modalService = inject(ModalService);
   private searchService = inject(SearchService);
-
+  public router: Router = inject(Router);
   private modalSub?: Subscription;
 
   isUserMenuOpen = false;
@@ -35,7 +35,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   showFiltersButton = false;
   isSearchEnabled = true;
 
-  constructor(public router: Router) {}
+  constructor() {}//public router: Router
 
   ngOnInit() {
     this.checkCurrentRoute();
