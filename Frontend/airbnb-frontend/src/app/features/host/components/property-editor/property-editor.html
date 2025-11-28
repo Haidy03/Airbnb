@@ -9,7 +9,7 @@
       <h1 class="header-title">Listing editor</h1>
     </div>
     <div class="header-center">
-       <!-- 1. Toggle Switch (Visible for Approved/Active/Inactive) -->
+       <!-- Toggle Switch -->
        <div class="status-toggle-wrapper" *ngIf="canToggleStatus(); else statusBadge">
          <span class="status-label" [class.active]="property()?.isActive">
             {{ getStatusText() }}
@@ -22,7 +22,7 @@
          </label>
        </div>
 
-       <!-- 2. Fallback Badge (For Drafts/Pending/Rejected) -->
+       <!-- Fallback Badge -->
        <ng-template #statusBadge>
          <span class="status-pill" 
                [class.pending]="property()?.status == 1"
@@ -32,7 +32,6 @@
        </ng-template>
     </div>
     <div class="header-end">
-      <!-- تم إضافة (click) -->
       <button class="btn-view" (click)="viewListing()" [disabled]="!property()?.id">
         View listing
       </button>
@@ -43,8 +42,7 @@
     
     <!-- ================= LEFT SIDEBAR ================= -->
     <aside class="editor-sidebar">
-      
-      <!-- 1. Photos -->
+      <!-- Sidebar Items ... (No changes needed here) -->
       <div class="nav-card" [class.active]="activeSection() === 'photos'" (click)="setActiveSection('photos')">
         <div class="nav-header"> <span class="nav-label">Photos</span> </div>
         <div class="nav-content photo-preview">
@@ -53,49 +51,41 @@
         </div>
       </div>
 
-      <!-- 2. Title -->
       <div class="nav-card" [class.active]="activeSection() === 'title'" (click)="setActiveSection('title')">
         <div class="nav-header"> <span class="nav-label">Title</span> </div>
         <div class="nav-content text-truncate">{{ property()?.title }}</div>
       </div>
 
-      <!-- 3. Property Type -->
       <div class="nav-card" [class.active]="activeSection() === 'propertyType'" (click)="setActiveSection('propertyType')">
         <div class="nav-header"> <span class="nav-label">Property type</span> </div>
         <div class="nav-content">{{ property()?.propertyType }}</div>
       </div>
 
-      <!-- 4. Pricing -->
       <div class="nav-card" [class.active]="activeSection() === 'pricing'" (click)="setActiveSection('pricing')">
         <div class="nav-header"> <span class="nav-label">Pricing</span> </div>
         <div class="nav-content">${{ property()?.pricing?.basePrice }}</div>
       </div>
 
-      <!-- 5. Number of Guests (Capacity) -->
       <div class="nav-card" [class.active]="activeSection() === 'capacity'" (click)="setActiveSection('capacity')">
         <div class="nav-header"> <span class="nav-label">Number of guests</span> </div>
         <div class="nav-content">{{ property()?.capacity?.guests }} guests</div>
       </div>
 
-      <!-- 6. Description -->
       <div class="nav-card" [class.active]="activeSection() === 'description'" (click)="setActiveSection('description')">
         <div class="nav-header"> <span class="nav-label">Description</span> </div>
         <div class="nav-content text-truncate">{{ property()?.description }}</div>
       </div>
 
-      <!-- 7. Amenities -->
       <div class="nav-card" [class.active]="activeSection() === 'amenities'" (click)="setActiveSection('amenities')">
         <div class="nav-header"> <span class="nav-label">Amenities</span> </div>
         <div class="nav-content">{{ property()?.amenities?.length }} amenities</div>
       </div>
 
-      <!-- 8. Location -->
       <div class="nav-card" [class.active]="activeSection() === 'location'" (click)="setActiveSection('location')">
         <div class="nav-header"> <span class="nav-label">Location</span> </div>
         <div class="nav-content text-truncate">{{ property()?.location?.city }}</div>
       </div>
 
-      <!-- 9. About the Host (Direct Link) -->
       <div class="nav-card link-card" (click)="setActiveSection('host')">
         <div class="nav-header"> <span class="nav-label">About the host</span> </div>
         <div class="nav-content">
@@ -104,48 +94,72 @@
         </div>
       </div>
 
-      <!-- 10. Booking Settings -->
       <div class="nav-card" [class.active]="activeSection() === 'booking'" (click)="setActiveSection('booking')">
         <div class="nav-header"> <span class="nav-label">Booking settings</span> </div>
         <div class="nav-content">{{ property()?.isInstantBook ? 'Instant Book' : 'Request' }}</div>
       </div>
 
-      <!-- 11. House Rules -->
       <div class="nav-card" [class.active]="activeSection() === 'rules'" (click)="setActiveSection('rules')">
         <div class="nav-header"> <span class="nav-label">House rules</span> </div>
         <div class="nav-content">{{ property()?.houseRules?.checkInTime }} check-in</div>
       </div>
 
-      <!-- 12. Guest Safety -->
       <div class="nav-card" [class.active]="activeSection() === 'safety'" (click)="setActiveSection('safety')">
         <div class="nav-header"> <span class="nav-label">Guest safety</span> </div>
         <div class="nav-content">Safety details</div>
       </div>
 
-      <!-- ✅ Delete Button at the bottom of Sidebar -->
-  <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #EBEBEB;">
-    <button class="btn-delete" (click)="deleteProperty()">
-      <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" style="margin-right:8px">
-        <path d="M28 6h-6V2.996c0-.55-.446-1.004-.996-1.004H10.996A.997.997 0 0 0 10 2.996V6H4v2h2v20.996c0 .55.446 1.004.996 1.004h18.008a.997.997 0 0 0 .996-1.004V8h2V6zm-4 22H8V8h16v20zM12 2.996h8V6h-8V2.996z"/>
-      </svg>
-      Delete listing
-    </button>
-  </div>
-
+      <!-- Delete Button -->
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #EBEBEB;">
+        <button class="btn-delete" (click)="deleteProperty()">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" style="margin-right:8px">
+            <path d="M28 6h-6V2.996c0-.55-.446-1.004-.996-1.004H10.996A.997.997 0 0 0 10 2.996V6H4v2h2v20.996c0 .55.446 1.004.996 1.004h18.008a.997.997 0 0 0 .996-1.004V8h2V6zm-4 22H8V8h16v20zM12 2.996h8V6h-8V2.996z"/>
+          </svg>
+          Delete listing
+        </button>
+      </div>
     </aside>
 
     <!-- ================= RIGHT CONTENT ================= -->
     <main class="editor-main">
       
-      <!-- 1. PHOTOS (View Only Placeholder) -->
+      <!-- 1. PHOTOS -->
       <section *ngIf="activeSection() === 'photos'" class="editor-section">
-        <h2 class="section-title">Photos</h2>
-        <div class="photos-grid">
-          <div *ngFor="let img of property()?.images" class="photo-card">
-            <img [src]="img.url" alt="Prop">
+        <div class="section-header">
+          <h2 class="section-title">Photos</h2>
+          <span class="photo-count">{{ property()?.images?.length }} photos</span>
+        </div>
+        
+        <p class="desc">Drag and drop to reorder. The main image will be your cover photo.</p>
+
+        <div class="photos-grid-manager">
+          <div class="photo-upload-card" (click)="fileInput.click()">
+            <input #fileInput type="file" multiple (change)="handleImageUpload($event)" hidden accept="image/*">
+            <div class="upload-icon">
+              <svg viewBox="0 0 32 32" width="32" height="32" fill="currentColor"><path d="M28 2h-6v2h6v6h2V4h6V2h-6zm-4 22H8V8h16v2h2V8a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-8h-2v8zM12 4.004h8V6h-8V4.004z"/></svg>
+            </div>
+            <span>Add photos</span>
+          </div>
+
+          <div *ngFor="let img of property()?.images" class="photo-card-manager" [class.is-primary]="img.isPrimary">
+            <img [src]="img.url" alt="Property Image">
+            <div class="primary-badge" *ngIf="img.isPrimary">Cover Photo</div>
+            <div class="photo-actions-overlay">
+              <button *ngIf="!img.isPrimary" 
+                      class="action-btn set-cover" 
+                      (click)="setAsPrimary(img.id)" 
+                      title="Set as cover photo">
+                Make Cover
+              </button>
+              <button class="action-btn delete" 
+                      (click)="deleteImage(img.id)"
+                      title="Delete photo">
+                <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M28 6h-6V2.996c0-.55-.446-1.004-.996-1.004H10.996A.997.997 0 0 0 10 2.996V6H4v2h2v20.996c0 .55.446 1.004.996 1.004h18.008a.997.997 0 0 0 .996-1.004V8h2V6zm-4 22H8V8h16v20zM12 2.996h8V6h-8V2.996z"/></svg>
+              </button>
+            </div>
+            <div class="img-loader" *ngIf="isImageLoading(img.id)"></div>
           </div>
         </div>
-        <button class="btn-secondary" style="margin-top: 20px;">Manage photos</button>
       </section>
 
       <!-- 2. TITLE -->
@@ -157,14 +171,18 @@
         </div>
       </section>
 
-      <!-- 3. PROPERTY TYPE -->
+      <!-- 3. PROPERTY TYPE (✅ تم التصحيح هنا) -->
       <section *ngIf="activeSection() === 'propertyType'" class="editor-section">
         <h2 class="section-title">Property type</h2>
         <div class="form-group">
           <label>Which is most like your place?</label>
           <div class="select-wrapper">
-            <select [(ngModel)]="tempPropertyType">
-              <option *ngFor="let type of propertyTypesList" [value]="type">{{ type }}</option>
+            <!-- التصحيح: ربط ngModel بالـ Signal والتعامل مع value كـ ID وعرض الاسم -->
+            <select [ngModel]="tempPropertyType()" (ngModelChange)="tempPropertyType.set(+$event)">
+              <option [ngValue]="null" disabled>Select property type</option>
+              <option *ngFor="let type of propertyTypesList" [value]="type.id">
+                {{ type.name }}
+              </option>
             </select>
             <span class="chevron">▼</span>
           </div>
@@ -192,7 +210,7 @@
         </div>
       </section>
 
-      <!-- 5. NUMBER OF GUESTS (Capacity) -->
+      <!-- 5. CAPACITY -->
       <section *ngIf="activeSection() === 'capacity'" class="editor-section">
         <h2 class="section-title">Basics</h2>
         <div class="counter-row">
@@ -251,7 +269,7 @@
         </div>
       </section>
 
-      <!-- 8. LOCATION (Map Update) -->
+      <!-- 8. LOCATION -->
       <section *ngIf="activeSection() === 'location'" class="editor-section">
         <h2 class="section-title">Location</h2>
         <div class="form-group">
@@ -268,8 +286,6 @@
             <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().country">
           </div>
         </div>
-        
-        <!-- ✅ Real Map Container -->
         <div class="map-container-wrapper">
           <div id="editor-map" class="map-view"></div>
         </div>
@@ -278,9 +294,7 @@
       <!-- 10. BOOKING SETTINGS -->
       <section *ngIf="activeSection() === 'booking'" class="editor-section">
         <h2 class="section-title">Booking settings</h2>
-        
         <div class="radio-group">
-          <!-- خيار الحجز الفوري -->
           <label class="radio-label" [class.selected]="tempInstantBook() === true">
             <input type="radio" [value]="true" [(ngModel)]="tempInstantBook">
             <div>
@@ -288,8 +302,6 @@
               <p class="radio-desc">Guests who meet your requirements can book instantly.</p>
             </div>
           </label>
-
-          <!-- خيار طلب الحجز -->
           <label class="radio-label" [class.selected]="tempInstantBook() === false">
             <input type="radio" [value]="false" [(ngModel)]="tempInstantBook">
             <div>
@@ -303,7 +315,6 @@
       <!-- 11. HOUSE RULES -->
       <section *ngIf="activeSection() === 'rules'" class="editor-section">
         <h2 class="section-title">House rules</h2>
-        
         <div class="form-row">
           <div class="form-group">
             <label>Check-in time</label>
@@ -314,7 +325,6 @@
             <input type="time" class="airbnb-input" [(ngModel)]="tempRules().checkOutTime">
           </div>
         </div>
-
         <div class="amenities-list">
           <div class="amenity-item">
             <label class="checkbox-label">
@@ -341,7 +351,6 @@
       <section *ngIf="activeSection() === 'safety'" class="editor-section">
         <h2 class="section-title">Guest safety</h2>
         <p class="desc">Does your place have any of these?</p>
-        
         <div class="amenities-list">
           <div class="amenity-item">
             <label class="checkbox-label">

@@ -164,6 +164,12 @@ namespace Airbnb.API.Controllers.Host
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateProperty(int id, [FromBody] UpdatePropertyDto dto)
         {
+            Console.WriteLine("---------------- DEBUG START ----------------");
+            Console.WriteLine($"Received Update for ID: {id}");
+            Console.WriteLine($"HasExteriorCamera (Raw DTO): {dto.HasExteriorCamera}");
+            Console.WriteLine($"HasNoiseMonitor (Raw DTO): {dto.HasNoiseMonitor}");
+            Console.WriteLine($"HasWeapons (Raw DTO): {dto.HasWeapons}");
+            Console.WriteLine("---------------- DEBUG END ----------------");
             try
             {
                 if (!ModelState.IsValid)
@@ -481,6 +487,7 @@ namespace Airbnb.API.Controllers.Host
 
                     // Capacity Defaults
                     NumberOfBedrooms = 1,
+                    NumberOfBeds = 1,
                     NumberOfBathrooms = 1,
                     MaxGuests = 1,
 
@@ -613,17 +620,11 @@ namespace Airbnb.API.Controllers.Host
             {
                 var hostId = GetHostId();
 
-                var property = await _propertyService.GetPropertyByIdAsync(id);
-
-                if (property == null)
-                    return NotFound(new { success = false, message = "Property not found" });
-
-                if (property.HostId != hostId)
-                    return Forbid();
+                
 
                 await _propertyService.UnpublishPropertyAsync(id, hostId);
-
-                var dto = _mapper.Map<PropertyResponseDto>(await _propertyService.GetPropertyByIdAsync(id));
+                var property = await _propertyService.GetPropertyByIdAsync(id);
+                var dto = _mapper.Map<PropertyResponseDto>(property);
 
                 return Ok(new
                 {
@@ -631,6 +632,11 @@ namespace Airbnb.API.Controllers.Host
                     message = "Property deactivated successfully",
                     data = dto
                 });
+            }
+            catch (InvalidOperationException ex) 
+            {
+                
+                return BadRequest(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {

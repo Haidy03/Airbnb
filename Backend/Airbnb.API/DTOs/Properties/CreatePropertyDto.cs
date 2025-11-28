@@ -18,6 +18,7 @@
 
         // Capacity
         public int NumberOfBedrooms { get; set; }
+        public int NumberOfBeds { get; set; }
         public int NumberOfBathrooms { get; set; }
         public int MaxGuests { get; set; }
 
@@ -34,9 +35,9 @@
         // Amenities
         public List<int> AmenityIds { get; set; } = new();
 
-        public bool HasExteriorCamera { get; set; } = false;
-        public bool HasNoiseMonitor { get; set; } = false;
-        public bool HasWeapons { get; set; } = false;
+        public bool HasExteriorCamera { get; set; } 
+        public bool HasNoiseMonitor { get; set; } 
+        public bool HasWeapons { get; set; }
 
         public bool IsInstantBook { get; set; } = false;
     }

@@ -57,6 +57,8 @@ namespace Airbnb.API.Models
         public string? CurrentStep { get; set; }                                    // for the stepss in the front
 
         public int NumberOfBedrooms { get; set; }
+
+        public int NumberOfBeds { get; set; }
         public int NumberOfBathrooms { get; set; }
         public int MaxGuests { get; set; }
 

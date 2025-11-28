@@ -446,3 +446,95 @@ input:checked + .slider:before {
   background-color: #F7F7F7;
   border-width: 2px; /* خط أسمك قليلاً */
 }
+
+
+
+/* ==========================================
+   PHOTO MANAGER STYLES
+   ========================================== */
+.section-header {
+  display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;
+}
+.photo-count { color: #717171; font-size: 14px; }
+.desc { color: #717171; font-size: 16px; margin-bottom: 24px; }
+
+.photos-grid-manager {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* Upload Card */
+.photo-upload-card {
+  aspect-ratio: 4/3;
+  border: 1px dashed #B0B0B0;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #FAFAFA;
+}
+.photo-upload-card:hover { border-color: #222; background: #F0F0F0; }
+.upload-icon { margin-bottom: 8px; color: #222; }
+
+/* Photo Card */
+.photo-card-manager {
+  position: relative;
+  aspect-ratio: 4/3;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #DDDDDD;
+}
+
+.photo-card-manager img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.3s;
+}
+
+/* Primary Badge */
+.primary-badge {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(34, 34, 34, 0.8); color: white;
+  padding: 4px 8px; border-radius: 4px;
+  font-size: 12px; font-weight: 600;
+  pointer-events: none;
+}
+
+/* Actions Overlay */
+.photo-actions-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.05);
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  align-items: flex-start;
+}
+
+.photo-card-manager:hover .photo-actions-overlay { opacity: 1; }
+
+/* Buttons inside Overlay */
+.action-btn {
+  background: white; border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 50%; width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.action-btn:hover { transform: scale(1.1); }
+.action-btn.delete { color: #C13515; margin-left: auto; /* Push to right */ }
+
+.action-btn.set-cover {
+  width: auto; border-radius: 4px; padding: 0 8px;
+  font-size: 12px; font-weight: 600; color: #222;
+}
+
+/* Highlight Primary Card */
+.photo-card-manager.is-primary {
+  border: 2px solid #222;
+}
