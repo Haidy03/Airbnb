@@ -126,7 +126,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1000;
+  z-index: 9999;
   overflow-y: auto;
   background-color: rgba(0, 0, 0, 0.75); /* خلفية شبه شفافة لتأثير الـ Blur */
 }
@@ -148,16 +148,16 @@
 /* زر الإغلاق */
 .close-modal-btn {
   position: sticky;
-  top: 0;
+  top: 50;
   left: 100%;
   margin-left: -40px;
   background: white;
   border: 1px solid rgb(221, 221, 221);
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 35px;
+  height: 35px;
   cursor: pointer;
-  z-index: 1010;
+  z-index: 1070;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -189,7 +189,7 @@
   object-fit: cover; /* لضمان أن الصور كلها بنفس الحجم ومتساوية */
   display: block;
   transition: transform 0.3s ease;
-  
+
 }
 
 .full-image-item img:hover {
