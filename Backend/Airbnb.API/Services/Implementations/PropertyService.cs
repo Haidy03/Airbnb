@@ -96,51 +96,66 @@ namespace Airbnb.API.Services.Implementations
             if (!string.IsNullOrEmpty(dto.CurrentStep))
             {
                 property.CurrentStep = dto.CurrentStep;
-                _logger.LogInformation("Updated CurrentStep to: {Step}", dto.CurrentStep);
             }
 
-            // Update only provided fields
+            // --- Basic Info ---
             if (dto.Title != null) property.Title = dto.Title;
             if (dto.Description != null) property.Description = dto.Description;
             if (dto.PropertyTypeId.HasValue) property.PropertyTypeId = dto.PropertyTypeId.Value;
+
+            // --- Location ---
             if (dto.Address != null) property.Address = dto.Address;
             if (dto.City != null) property.City = dto.City;
             if (dto.Country != null) property.Country = dto.Country;
             if (dto.PostalCode != null) property.PostalCode = dto.PostalCode;
             if (dto.Latitude.HasValue) property.Latitude = dto.Latitude.Value;
             if (dto.Longitude.HasValue) property.Longitude = dto.Longitude.Value;
+
+            // --- Capacity (Updated with NumberOfBeds) ---
             if (dto.NumberOfBedrooms.HasValue) property.NumberOfBedrooms = dto.NumberOfBedrooms.Value;
-            if (dto.NumberOfBeds.HasValue) property.NumberOfBeds = dto.NumberOfBeds.Value;
+            if (dto.NumberOfBeds.HasValue) property.NumberOfBeds = dto.NumberOfBeds.Value; // ✅
             if (dto.NumberOfBathrooms.HasValue) property.NumberOfBathrooms = dto.NumberOfBathrooms.Value;
             if (dto.MaxGuests.HasValue) property.MaxGuests = dto.MaxGuests.Value;
+
+            // --- Pricing & Cleaning Fee (Fixed Logic) ---
             if (dto.PricePerNight.HasValue) property.PricePerNight = dto.PricePerNight.Value;
-            if (dto.CleaningFee.HasValue) property.CleaningFee = dto.CleaningFee.Value;
+
+            // ✅ تصحيح: فصل منطق Cleaning Fee ليعمل بشكل مستقل
+            if (dto.CleaningFee.HasValue)
+            {
+                property.CleaningFee = dto.CleaningFee.Value;
+            }
+            else if (dto.CurrentStep == "pricing") // لو المستخدم مسح القيمة في صفحة التسعير
+            {
+                property.CleaningFee = null;
+            }
+
+            // --- Rules & Booking ---
             if (dto.HouseRules != null) property.HouseRules = dto.HouseRules;
             if (dto.CheckInTime.HasValue) property.CheckInTime = dto.CheckInTime;
             if (dto.CheckOutTime.HasValue) property.CheckOutTime = dto.CheckOutTime;
             if (dto.MinimumStay.HasValue) property.MinimumStay = dto.MinimumStay.Value;
             if (dto.RoomType != null) property.RoomType = dto.RoomType;
+            if (dto.IsInstantBook.HasValue) property.IsInstantBook = dto.IsInstantBook.Value;
+
+            _logger.LogInformation("📥 Recieved Safety Update -> Camera: {Cam}, Noise: {Noise}, Weapon: {Wep}",
+              dto.HasExteriorCamera, dto.HasNoiseMonitor, dto.HasWeapons);
+            // --- Safety Details (Fixed Mapping) ---
+            // ✅ تصحيح: ربط الحقول المسطحة القادمة من الـ DTO
             if (dto.HasExteriorCamera.HasValue) property.HasExteriorCamera = dto.HasExteriorCamera.Value;
             if (dto.HasNoiseMonitor.HasValue) property.HasNoiseMonitor = dto.HasNoiseMonitor.Value;
             if (dto.HasWeapons.HasValue) property.HasWeapons = dto.HasWeapons.Value;
-            if (dto.IsInstantBook.HasValue) property.IsInstantBook = dto.IsInstantBook.Value;
 
-            // ✅ Update Amenities if provided
+            // --- Amenities (Independent Logic) ---
             if (dto.AmenityIds != null)
             {
                 await _propertyRepository.UpdatePropertyAmenitiesAsync(id, dto.AmenityIds);
             }
-            else if (dto.CurrentStep == "pricing")
-            {
-                property.CleaningFee = null;
-            }
 
             property.UpdatedAt = DateTime.UtcNow;
-
             await _propertyRepository.UpdateAsync(property);
 
             var updatedProperty = await _propertyRepository.GetByIdWithDetailsAsync(id);
-
             return await MapToResponseDto(updatedProperty);
         }
 

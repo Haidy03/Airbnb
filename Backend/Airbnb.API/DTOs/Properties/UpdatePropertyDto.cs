@@ -1,4 +1,6 @@
-﻿namespace Airbnb.API.DTOs.Properties
+﻿using System.Text.Json.Serialization;
+
+namespace Airbnb.API.DTOs.Properties
 {
     public class UpdatePropertyDto
     {
@@ -35,7 +37,11 @@
         public string? RoomType { get; set; }
 
         public bool? HasExteriorCamera { get; set; }
+
+       
         public bool? HasNoiseMonitor { get; set; }
+
+      
         public bool? HasWeapons { get; set; }
 
 

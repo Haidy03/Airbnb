@@ -164,6 +164,12 @@ namespace Airbnb.API.Controllers.Host
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateProperty(int id, [FromBody] UpdatePropertyDto dto)
         {
+            Console.WriteLine("---------------- DEBUG START ----------------");
+            Console.WriteLine($"Received Update for ID: {id}");
+            Console.WriteLine($"HasExteriorCamera (Raw DTO): {dto.HasExteriorCamera}");
+            Console.WriteLine($"HasNoiseMonitor (Raw DTO): {dto.HasNoiseMonitor}");
+            Console.WriteLine($"HasWeapons (Raw DTO): {dto.HasWeapons}");
+            Console.WriteLine("---------------- DEBUG END ----------------");
             try
             {
                 if (!ModelState.IsValid)
