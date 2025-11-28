@@ -51,6 +51,8 @@ import { ConnectionsComponent } from './features/profile/components/connections.
 import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
 import { HostReviewsComponent } from './features/host/components/host-reviews/host-reviews';
 import { SendMessage } from './features/guest/components/send-message/send-message';
+import { MainLayoutComponent } from './layouts/main-layout/main-layout/main-layout';
+import { PropertyCreationLayoutComponent } from './layouts/property-creation-layout/property-creation-layout/property-creation-layout';
 
 export const routes: Routes = [
   // =================================================
@@ -58,8 +60,10 @@ export const routes: Routes = [
   // =================================================
   {
     path: '',
-    component: HomeComponent
-  },
+    component: MainLayoutComponent,
+    children: [
+    { path: '', component: HomeComponent },
+  
   {
     path: 'search',
     loadComponent: () => import('./features/guest/components/search/components/search-results/search-results')
@@ -106,7 +110,7 @@ export const routes: Routes = [
     { path: 'checkout/:id', component: Checkout },
      { path: 'send-message/:id', component: SendMessage },
 
-
+    ]},
   // =================================================
   // 2. Auth Routes (Your original work)
   // =================================================
@@ -159,6 +163,7 @@ export const routes: Routes = [
   // =================================================
   {
     path: 'host/properties',
+    component: PropertyCreationLayoutComponent,
     canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
     children: [
       {

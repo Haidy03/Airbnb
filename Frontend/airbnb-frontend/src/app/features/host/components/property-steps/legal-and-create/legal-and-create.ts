@@ -119,7 +119,7 @@ export class legalandcreateComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/host/properties/booking-settings']);
+    this.router.navigate(['/host/properties/pricing']);
   }
 
 createListing(): void {
