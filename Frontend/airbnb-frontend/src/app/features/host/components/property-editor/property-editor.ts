@@ -143,6 +143,7 @@ export class PropertyEditorComponent implements OnInit {
       city: prop.location?.city || '',
       country: prop.location?.country || '',
       zipCode: prop.location?.zipCode || '',
+      //state: prop.location?.state || '',
       lat: prop.location?.coordinates?.lat || 30.0444,
       lng: prop.location?.coordinates?.lng || 31.2357
     });
@@ -167,10 +168,10 @@ export class PropertyEditorComponent implements OnInit {
       }, 100); 
     }
   }
-
+  private marker: L.Marker | undefined;
   initMap() {
     if (this.map) {
-      this.map.remove(); 
+      this.map.remove();
     }
 
     const lat = this.tempLocation().lat || 30.0444;
@@ -185,7 +186,43 @@ export class PropertyEditorComponent implements OnInit {
       attribution: 'OpenStreetMap'
     }).addTo(this.map);
 
-    L.marker([lat, lng]).addTo(this.map);
+  
+    const redIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41],      
+      iconAnchor: [12, 41],   
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    // ✅ 2. استخدام الأيقونة الجديدة هنا
+    this.marker = L.marker([lat, lng], { 
+      draggable: true,
+      icon: redIcon // 👈 ربط الأيقونة بالماركر
+    }).addTo(this.map);
+
+    this.marker.on('dragend', () => {
+      const position = this.marker!.getLatLng();
+      this.updateCoordinates(position.lat, position.lng);
+    });
+
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      this.marker!.setLatLng([lat, lng]);
+      this.updateCoordinates(lat, lng);
+    });
+    
+    setTimeout(() => {
+        this.map?.invalidateSize();
+    }, 200);
+  }
+
+  // دالة مساعدة لتحديث الإحداثيات في الـ Signal
+  updateCoordinates(lat: number, lng: number) {
+    const current = this.tempLocation();
+    this.tempLocation.set({ ...current, lat, lng });
+    console.log('📍 New Location:', lat, lng);
   }
 
   updateCapacity(field: 'guests' | 'bedrooms' | 'beds' | 'bathrooms', change: number) {
@@ -248,7 +285,7 @@ export class PropertyEditorComponent implements OnInit {
       case 'description': updates.description = this.tempDescription(); break;
       case 'pricing': updates.pricePerNight = this.tempPrice(); break;
       case 'propertyType': 
-        // ✅ تعديل: إرسال propertyTypeId بدلاً من الاسم
+        
         updates.propertyTypeId = this.tempPropertyType(); 
         updates.roomType = this.tempRoomType(); 
         break;
@@ -261,6 +298,10 @@ export class PropertyEditorComponent implements OnInit {
         updates.address = this.tempLocation().address;
         updates.city = this.tempLocation().city;
         updates.country = this.tempLocation().country;
+        updates.postalCode = this.tempLocation().zipCode; // تأكد من اسم الحقل في الباك اند (zipCode vs postalCode)
+       // updates.state = this.tempLocation().state;
+        updates.latitude = this.tempLocation().lat; 
+        updates.longitude = this.tempLocation().lng;
         break;
       case 'amenities': 
         updates.amenityIds = this.tempAmenities(); 

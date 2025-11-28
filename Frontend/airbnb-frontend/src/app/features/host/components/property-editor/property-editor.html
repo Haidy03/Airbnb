@@ -269,25 +269,52 @@
         </div>
       </section>
 
-      <!-- 8. LOCATION -->
+      <!-- 8. LOCATION (Interactive Map & Full Fields) -->
       <section *ngIf="activeSection() === 'location'" class="editor-section">
         <h2 class="section-title">Location</h2>
+        
+        <!-- Street Address -->
         <div class="form-group">
           <label>Street Address</label>
-          <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().address">
+          <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().address" placeholder="e.g. 123 Main St">
         </div>
+
+        <!-- City & State -->
         <div class="form-row">
           <div class="form-group">
             <label>City</label>
-            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().city">
+            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().city" placeholder="City">
+          </div>
+          <!-- <div class="form-group">
+            <label>State / Province</label> 
+           
+            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().state" placeholder="State">
+          </div> -->
+        </div>
+
+        <!-- Country & Zip Code -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Country / Region</label>
+            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().country" placeholder="Country">
           </div>
           <div class="form-group">
-            <label>Country</label>
-            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().country">
+            <label>Postal / Zip Code</label> <!-- ✅ حقل جديد -->
+            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().zipCode" placeholder="Postal Code">
           </div>
         </div>
-        <div class="map-container-wrapper">
-          <div id="editor-map" class="map-view"></div>
+        
+        <!-- Interactive Map -->
+        <div class="form-group">
+          <label>Pin your location</label>
+          <p class="input-hint">Drag the pin to adjust the precise location.</p>
+          <div class="map-container-wrapper">
+            <div id="editor-map" class="map-view"></div>
+          </div>
+          <!-- عرض الإحداثيات للتأكد (اختياري) -->
+          <div class="input-hint" style="margin-top: 8px;">
+            Lat: {{ tempLocation().lat | number:'1.4-4' }}, Lng: {{ tempLocation().lng | number:'1.4-4' }}
+          </div>
         </div>
       </section>
 
