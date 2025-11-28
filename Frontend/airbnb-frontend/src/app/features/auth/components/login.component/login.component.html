@@ -22,131 +22,124 @@
 
   <!-- Body -->
   <div class="modal-body">
-    <!-- ============== PHONE LOGIN - INPUT ============== -->
-    <div *ngIf="isPhoneMode && isPhoneInput">
-      <h1 class="welcome-title">Welcome to Airbnb</h1>
-
-      <form [formGroup]="phoneForm" (ngSubmit)="onPhoneContinue()">
-        <!-- Country Code Select -->
-        <div class="country-select-wrapper">
-          <div class="country-select" (click)="toggleCountryDropdown()">
-            <div class="select-content">
-              <label class="select-label">Country code</label>
-              <div class="selected-country">
-                {{ selectedCountry().name }} ({{ selectedCountry().dialCode }})
-              </div>
-            </div>
-            <svg 
-              class="chevron-icon"
-              [class.open]="isCountryDropdownOpen()"
-              viewBox="0 0 32 32" 
-              xmlns="http://www.w3.org/2000/svg">
-              <path d="m4 12 11.3 11.3a1 1 0 0 0 1.4 0L28 12"></path>
-            </svg>
-          </div>
-
-          <!-- Dropdown -->
-          <div class="dropdown" *ngIf="isCountryDropdownOpen()">
-            <div class="dropdown-list">
-              <div 
-                *ngFor="let country of countries"
-                class="dropdown-item"
-                [class.selected]="country.code === selectedCountry().code"
-                (click)="selectCountry(country)">
-                <span class="country-flag">{{ country.flag }}</span>
-                <span class="country-name">{{ country.name }}</span>
-                <span class="country-dial">{{ country.dialCode }}</span>
-              </div>
-            </div>
+    <!-- ============== PHONE LOGIN - INPUT && isPhoneInput ============== -->
+     <div *ngIf="isPhoneMode && isPhoneInput">
+  <h1 class="welcome-title">Welcome to Airbnb</h1>
+  
+  <form [formGroup]="phoneForm" (ngSubmit)="onPhoneContinue()">
+    <!-- Country Code Select -->
+    <div class="country-select-wrapper">
+      <div class="country-select" (click)="toggleCountryDropdown()">
+        <div class="select-content">
+          <label class="select-label">Country code</label>
+          <div class="selected-country">
+            {{ selectedCountry().name }} ({{ selectedCountry().dialCode }})
           </div>
         </div>
-
-        <!-- Phone Number Input -->
-        <div class="input-group">
-          <input
-            type="tel"
-            formControlName="phoneNumber"
-            placeholder="Phone number"
-            class="phone-input"
-            [class.error]="phoneNumber?.invalid && phoneNumber?.touched"
-          />
-        </div>
-
-        <!-- Error Message -->
-        <div class="error-message" *ngIf="errorMessage()">
-          {{ errorMessage() }}
-        </div>
-
-        <!-- Privacy Note -->
-        <p class="privacy-note">
-          We'll call or text you to confirm your number. Standard message and data rates apply.
-          <a href="#" class="privacy-link">Privacy Policy</a>
-        </p>
-
-        <!-- Continue Button -->
-        <button 
-          type="submit" 
-          class="btn-continue" 
-          [disabled]="phoneForm.invalid || isLoading()">
-          <span *ngIf="!isLoading()">Continue</span>
-          <span *ngIf="isLoading()" class="spinner"></span>
-        </button>
-      </form>
-
-      <!-- Divider -->
-      <div class="divider-text">
-        <span>or</span>
+        <svg 
+          class="chevron-icon"
+          [class.open]="isCountryDropdownOpen()"
+          viewBox="0 0 32 32" 
+          xmlns="http://www.w3.org/2000/svg">
+          <path d="m4 12 11.3 11.3a1 1 0 0 0 1.4 0L28 12"></path>
+        </svg>
       </div>
 
-      <!-- Social Buttons -->
-      <app-social-buttons (socialLogin)="onSocialLogin($event)"></app-social-buttons>
-
-      <!-- Register Link -->
-      <div class="bottom-link">
-        Don't have an account? 
-        <button class="link-button" (click)="switchMode('register')">Sign up</button>
+      <!-- Dropdown -->
+      <div class="dropdown" *ngIf="isCountryDropdownOpen()">
+        <div class="dropdown-list">
+          <div 
+            *ngFor="let country of countries"
+            class="dropdown-item"
+            [class.selected]="country.code === selectedCountry().code"
+            (click)="selectCountry(country)">
+            <span class="country-flag">{{ country.flag }}</span>
+            <span class="country-name">{{ country.name }}</span>
+            <span class="country-dial">{{ country.dialCode }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- ============== PHONE LOGIN - VERIFY ============== -->
-    <div *ngIf="isPhoneMode && isPhoneVerify">
-      <p class="verification-description">
-        Enter the code we sent to {{ selectedCountry().dialCode }} {{ phoneForm.value.phoneNumber }}
-      </p>
-
-      <form [formGroup]="verificationForm" (ngSubmit)="onVerifyCode()">
-        <div class="input-group">
-          <input
-            type="text"
-            formControlName="code"
-            placeholder="Verification code"
-            class="code-input"
-            maxlength="6"
-            [class.error]="code?.invalid && code?.touched"
-          />
-        </div>
-
-        <!-- Error Message -->
-        <div class="error-message" *ngIf="errorMessage()">
-          {{ errorMessage() }}
-        </div>
-
-        <!-- Resend Code -->
-        <p class="resend-note">
-          Didn't receive a code? <a href="#" class="resend-link">Send again</a>
-        </p>
-
-        <!-- Verify Button -->
-        <button 
-          type="submit" 
-          class="btn-continue" 
-          [disabled]="verificationForm.invalid || isLoading()">
-          <span *ngIf="!isLoading()">Verify</span>
-          <span *ngIf="isLoading()" class="spinner"></span>
-        </button>
-      </form>
+    <!-- Phone Number Input -->
+    <div class="input-group">
+      <input
+        type="tel"
+        formControlName="phoneNumber"
+        placeholder="Phone number"
+        class="phone-input"
+        [class.error]="phoneNumber?.invalid && phoneNumber?.touched"
+      />
     </div>
 
+    <!-- Specific Error Feedback -->
+    <small class="error-text" *ngIf="phoneNumber?.hasError('pattern') && phoneNumber?.touched">
+      <span *ngIf="selectedCountry().code === 'EG'">
+        Must be 11 digits and start with 010, 011, 012, or 015
+      </span>
+      <span *ngIf="selectedCountry().code !== 'EG'">
+        Invalid phone number format for {{ selectedCountry().name }}
+      </span>
+    </small>
+
+    <!-- Password Input -->
+    <div class="form-group">
+      <div class="password-wrapper">
+        <input
+          id="phonePassword"
+          [type]="showPassword() ? 'text' : 'password'"
+          formControlName="password"
+          placeholder="Password"
+          class="form-input"
+          [class.error]="phonePassword?.invalid && phonePassword?.touched"
+        />
+        <button 
+          type="button" 
+          class="password-toggle"
+          (click)="togglePasswordVisibility()">
+          {{ showPassword() ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      <small class="error-text" *ngIf="phonePassword?.invalid && phonePassword?.touched">
+        Password is required
+      </small>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="errorMessage()">
+      {{ errorMessage() }}
+    </div>
+
+    <!-- Privacy Note -->
+    <p class="privacy-note">
+      We'll call or text you to confirm your number. Standard message and data rates apply.
+      <a href="#" class="privacy-link">Privacy Policy</a>
+    </p>
+
+    <!-- Continue Button -->
+    <button 
+      type="submit" 
+      class="btn-continue" 
+      [disabled]="phoneForm.invalid || isLoading()">
+      <span *ngIf="!isLoading()">Continue</span>
+      <span *ngIf="isLoading()" class="spinner"></span>
+    </button>
+  </form>
+
+  <!-- Divider -->
+  <div class="divider-text">
+    <span>or</span>
+  </div>
+
+  <!-- Social Buttons -->
+  <app-social-buttons (socialLogin)="onSocialLogin($event)"></app-social-buttons>
+
+  <!-- Register Link -->
+  <div class="bottom-link">
+    Don't have an account? 
+    <button class="link-button" (click)="switchMode('register')">Sign up</button>
+  </div>
+</div>
     <!-- ============== EMAIL LOGIN ============== -->
     <div *ngIf="isEmailMode">
       <form [formGroup]="emailLoginForm" (ngSubmit)="onEmailLogin()">
@@ -164,7 +157,7 @@
             Please enter a valid email
           </small>
         </div>
-
+       
         <div class="form-group">
           <label for="password">Password</label>
           <div class="password-wrapper">
@@ -263,6 +256,28 @@
             Please enter a valid email
           </small>
         </div>
+         
+       <div class="form-group">
+      <label for="registerPhone">Phone Number</label>
+      <div class="phone-input-group">
+        <select formControlName="countryCode" class="country-code-select">
+          <option *ngFor="let country of countries" [value]="country.dialCode">
+            {{ country.flag }} {{ country.dialCode }}
+          </option>
+        </select>
+        <input
+          id="registerPhone"
+          type="tel"
+          formControlName="phoneNumber"
+          placeholder="Phone number"
+          class="form-input phone-number-input"
+          [class.error]="registerPhone?.invalid && registerPhone?.touched"
+        />
+      </div>
+      <small class="error-text" *ngIf="registerPhone?.invalid && registerPhone?.touched">
+        Please enter a valid phone number
+      </small>
+    </div>
 
         <div class="form-group">
           <label for="registerPassword">Password</label>

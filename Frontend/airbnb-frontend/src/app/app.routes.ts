@@ -50,6 +50,7 @@ import { PastTripsComponent } from './features/profile/components/past-trips.com
 import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
 import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
 import { HostReviewsComponent } from './features/host/components/host-reviews/host-reviews';
+import { SendMessage } from './features/guest/components/send-message/send-message';
 
 export const routes: Routes = [
   // =================================================
@@ -86,7 +87,7 @@ export const routes: Routes = [
   {
     path: 'profile',
     component: ProfileComponent,
-    //canActivate: [authGuard], 
+    canActivate: [authGuard], 
     children: [
     {path: '', redirectTo: 'about-me', pathMatch: 'full' },
     {path: 'about-me', component: AboutMeComponent },
@@ -103,6 +104,8 @@ export const routes: Routes = [
   },
    { path: 'listing/:id', component: ListingDetails },
     { path: 'checkout/:id', component: Checkout },
+     { path: 'send-message/:id', component: SendMessage },
+
 
   // =================================================
   // 2. Auth Routes (Your original work)
@@ -137,16 +140,16 @@ export const routes: Routes = [
       { path: 'calendar', component: HostCalendar },
       { path: 'properties', component: MyProperties },
       { path: 'bookings/:id', component: BookingDetailsComponent },
-      { 
-        path: 'properties/editor/:id', 
-        component: PropertyEditorComponent 
-      },{ 
-        path: 'messages', 
-        loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent) 
+      {
+        path: 'properties/editor/:id',
+        component: PropertyEditorComponent
+      },{
+        path: 'messages',
+        loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent)
       },
       { path: 'earnings', component: HostEarningsComponent },
       { path: 'reviews', component: HostReviewsComponent },
-     
+
     ]
   },
 

@@ -9,6 +9,8 @@ export interface Profile extends AuthUser {
 }
 
 export interface ProfileDetails {
+  firstName?: string; 
+  lastName?: string;
   whereToGo?: string;
   myWork?: string;
   spendTime?: string;

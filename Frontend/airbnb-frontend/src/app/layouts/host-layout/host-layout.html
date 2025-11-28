@@ -14,6 +14,124 @@
 
       <!-- Main Navigation -->
       <nav class="main-nav">
+        <a routerLink="/host/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">Today</a>
+        <a routerLink="/host/calendar" routerLinkActive="active" class="nav-link">Calendar</a>
+        <a routerLink="/host/properties" routerLinkActive="active" class="nav-link">Listings</a>
+        <a routerLink="/host/earnings" routerLinkActive="active" class="nav-link">Earnings</a>
+        <a routerLink="/host/reviews" routerLinkActive="active" class="nav-link">Reviews</a>
+        <a routerLink="/host/messages" routerLinkActive="active" class="nav-link">
+          Messages
+          <span *ngIf="unreadNotifications() > 0" class="message-badge">
+            {{ messageService.unreadCount() }}
+          </span>
+        </a>
+      </nav>
+
+      <!-- Right Actions -->
+      <div class="header-actions">
+        <a [routerLink]="['/']" class="switch-mode">Switch to traveling</a>
+
+        <!-- Menu Button Container -->
+        <!-- Clicking the white area toggles the menu -->
+        <button class="menu-button" (click)="toggleMobileMenu()">
+          <div class="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <!-- Avatar Section -->
+          <!-- Clicking the IMAGE specifically navigates to profile -->
+          <div class="user-avatar" (click)="viewProfileClick($event)" title="Go to Profile">
+            @if (user(); as currentUser) {
+              @if (currentUser.profilePicture) {
+                <img [src]="currentUser.profilePicture" [alt]="currentUser.firstName">
+              } @else {
+                <!-- Fallback Placeholder if no image -->
+                <!-- <img src="assets/images/placeholder-avatar.png" alt="User"> -->
+                <div class="avatar-placeholder">
+                  {{ currentUser.firstName?.charAt(0) | uppercase }}
+                </div>
+              }
+            }
+          </div>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Dropdown Menu -->
+  <div class="mobile-menu" *ngIf="mobileMenuOpen()" [@slideDown]>
+    <div class="mobile-menu-content">
+      
+      <!-- Mobile Navigation (Same as before) -->
+      <nav class="mobile-nav">
+        <a routerLink="/host/dashboard" (click)="toggleMobileMenu()" class="mobile-nav-link">Today</a>
+        <a routerLink="/host/calendar" (click)="toggleMobileMenu()" class="mobile-nav-link">Calendar</a>
+        <a routerLink="/host/properties" (click)="toggleMobileMenu()" class="mobile-nav-link">Listings</a>
+        <a routerLink="/host/earnings" (click)="toggleMobileMenu()" class="mobile-nav-link">Earnings</a>
+        <a routerLink="/host/reviews" (click)="toggleMobileMenu()" class="mobile-nav-link">Reviews</a>
+        <a routerLink="/host/messages" (click)="toggleMobileMenu()" class="mobile-nav-link">Messages</a>
+      </nav>
+
+      <div class="mobile-divider"></div>
+
+      <!-- User Info in Dropdown -->
+      <div class="mobile-user-section">
+        @if (user(); as currentUser) {
+          <div class="mobile-user-info" (click)="viewProfileClick()">
+            @if (currentUser.profilePicture) {
+              <img [src]="currentUser.profilePicture" class="mobile-avatar">
+            }
+            <div class="mobile-user-details">
+              <div class="mobile-user-name">{{ currentUser.firstName }}</div>
+              <span class="mobile-profile-link">View profile</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="mobile-divider"></div>
+
+      <!-- Additional Links -->
+      <div class="mobile-links">
+        <a [routerLink]="['/host/settings']" (click)="toggleMobileMenu()" class="mobile-link">Account settings</a>
+        <a [routerLink]="['/help']" (click)="toggleMobileMenu()" class="mobile-link">Help Center</a>
+        <a [routerLink]="['/']" (click)="toggleMobileMenu()" class="mobile-link">Switch to traveling</a>
+        <button (click)="logout()" class="mobile-link logout">Log out</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="overlay" *ngIf="mobileMenuOpen()" (click)="toggleMobileMenu()"></div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
+
+
+
+<!-- <div class="host-layout"> -->
+  
+  <!-- Top Header -->
+  <!-- <header class="main-header">
+    <div class="header-container"> -->
+      
+      <!-- Logo -->
+      <!-- <a [routerLink]="['/']" class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="#FF385C">
+          <path d="M16 1C10.5 1 6 5.5 6 11c0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/>
+        </svg>
+        <span class="logo-text">airbnb</span>
+      </a> -->
+
+      <!-- Main Navigation -->
+      <!-- <nav class="main-nav">
         <a routerLink="/host/dashboard" 
            routerLinkActive="active" 
            [routerLinkActiveOptions]="{exact: true}"
@@ -52,39 +170,43 @@
         </a>
         
 
-      </nav>
+      </nav> -->
 
       <!-- Right Actions -->
-      <div class="header-actions">
+      <!-- <div class="header-actions"> -->
         
         <!-- Switch to traveling -->
-        <a [routerLink]="['/']" class="switch-mode">
+        <!-- <a [routerLink]="['/']" class="switch-mode">
           Switch to traveling
-        </a>
+        </a> -->
 
         <!-- Menu Button -->
-        <button class="menu-button" (click)="toggleMobileMenu()">
+        <!-- <button class="menu-button" (click)="toggleMobileMenu()">
           <div class="menu-icon">
             <span></span>
             <span></span>
             <span></span>
           </div>
           <div class="user-avatar">
-            <img [src]="user.avatar" [alt]="user.name">
+            @if (user(); as currentUser) {
+            @if (currentUser.profilePicture) {
+            <img [src]="currentUser.profilePicture" [alt]="currentUser.firstName">
+            }
+          }
           </div>
         </button>
 
       </div>
 
     </div>
-  </header>
+  </header> -->
 
   <!-- Mobile Menu Dropdown -->
-  <div class="mobile-menu" *ngIf="mobileMenuOpen()" [@slideDown]>
-    <div class="mobile-menu-content">
+  <!-- <div class="mobile-menu" *ngIf="mobileMenuOpen()" [@slideDown]>
+    <div class="mobile-menu-content"> -->
       
       <!-- Mobile Navigation -->
-      <nav class="mobile-nav">
+      <!-- <nav class="mobile-nav">
         <a routerLink="/host/dashboard" 
            (click)="toggleMobileMenu()"
            routerLinkActive="active"
@@ -129,31 +251,36 @@
         </a>
       </nav>
 
-      <div class="mobile-divider"></div>
+      <div class="mobile-divider"></div> -->
 
       <!-- User Info -->
-      <div class="mobile-user-section">
+      <!-- <div class="mobile-user-section">
+        @if (user(); as currentUser) {
         <div class="mobile-user-info">
-          <img [src]="user.avatar" [alt]="user.name" class="mobile-avatar">
+          
+          @if (currentUser.profilePicture) {
+          <img [src]="currentUser.profilePicture" [alt]="currentUser.firstName" class="mobile-avatar">
+          }
           <div class="mobile-user-details">
             <div class="mobile-user-name">
-              {{ user.name }}
-              <span *ngIf="user.isSuperhost" class="superhost-badge">⭐</span>
-            </div>
+              {{ currentUser.firstName }}
+              
+            </div> -->
             <!-- /host/profile -->
-            <a [routerLink]="['/profile']" 
+            <!-- <a [routerLink]="['/profile']" 
                (click)="toggleMobileMenu()"
                class="mobile-profile-link">
               View profile
             </a>
           </div>
         </div>
+      }
       </div>
 
-      <div class="mobile-divider"></div>
+      <div class="mobile-divider"></div> -->
 
       <!-- Additional Links -->
-      <div class="mobile-links">
+      <!-- <div class="mobile-links">
         <a [routerLink]="['/host/settings']" 
            (click)="toggleMobileMenu()"
            class="mobile-link">
@@ -175,17 +302,17 @@
       </div>
 
     </div>
-  </div>
+  </div> -->
 
   <!-- Overlay -->
-  <div class="overlay" 
+  <!-- <div class="overlay" 
        *ngIf="mobileMenuOpen()" 
        (click)="toggleMobileMenu()">
-  </div>
+  </div> -->
 
   <!-- Main Content -->
-  <main class="main-content">
+  <!-- <main class="main-content">
     <router-outlet></router-outlet>
   </main>
 
-</div>
+</div> -->
