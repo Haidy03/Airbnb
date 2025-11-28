@@ -145,7 +145,9 @@ export class AuthService {
      if (merged.profilePicture) {
     localStorage.setItem('profilePicture', merged.profilePicture);
   }
- 
+   if (merged.phoneNumber) {
+    localStorage.setItem('phoneNumber', merged.phoneNumber);
+  }
 
     this.userSubject.next(merged);
   }
@@ -158,6 +160,7 @@ export class AuthService {
     const firstName = localStorage.getItem(this.FirstName_KEY);
     const lastName = localStorage.getItem(this.LastName_KEY);
     const profilePicture = localStorage.getItem('profilePicture');
+    const phoneNumber = localStorage.getItem('phoneNumber');
     if (!userId) return null;
 
     const user: AuthUser = {
@@ -168,6 +171,7 @@ export class AuthService {
       lastName: lastName || undefined,
       fullName: firstName && lastName ? `${firstName} ${lastName}` : undefined,
       profilePicture: profilePicture || undefined, 
+      phoneNumber: phoneNumber || undefined, 
       isEmailVerified: true,
       isPhoneVerified: false
     } as AuthUser;
@@ -285,7 +289,7 @@ export class AuthService {
   }
 
   startPhoneLogin(request: PhoneLoginRequest): Observable<PhoneStartResponse> {
-    return this.http.post<PhoneStartResponse>(`${this.API_URL}/login`, request)//phone/start
+    return this.http.post<PhoneStartResponse>(`${this.API_URL}/login`, request)
       .pipe(
         catchError(error => {
           console.error('❌ Phone login error:', error);
@@ -328,6 +332,7 @@ export class AuthService {
     localStorage.removeItem(this.FirstName_KEY);
     localStorage.removeItem(this.LastName_KEY);
     localStorage.removeItem('profilePicture'); 
+    localStorage.removeItem('phoneNumber');
     this.userSubject.next(null);
     this.router.navigate(['/']);
   }
