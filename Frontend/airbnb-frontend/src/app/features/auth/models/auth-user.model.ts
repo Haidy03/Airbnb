@@ -27,8 +27,8 @@ export enum AuthProvider {
 
 
 export interface PhoneLoginRequest {
-  countryCode: string;
-  phoneNumber: string;
+   identifier: string;
+    password: string;
 }
 
 export interface PhoneStartResponse {
