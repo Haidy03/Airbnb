@@ -25,7 +25,7 @@ export class PropertyEditorComponent implements OnInit {
   property = signal<Property | null>(null);
   isLoading = signal(true);
   activeSection = signal<EditorSection>('title');
-  
+  loadingImages = signal<Set<string>>(new Set());
   // Edit Mode
   isEditing = signal(false);
   
@@ -253,6 +253,89 @@ export class PropertyEditorComponent implements OnInit {
         alert('Failed to save changes. Please check your input.');
       }
     });
+  }
+  handleImageUpload(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const files = Array.from(input.files);
+    const prop = this.property();
+    
+    if (!prop) return;
+
+    // Show global loading or toast
+    this.isLoading.set(true); 
+
+    this.propertyService.uploadPropertyImages(prop.id, files).subscribe({
+      next: (newImages) => {
+        // Refresh property data to show new images
+        this.loadProperty(prop.id);
+        // Reset input
+        input.value = '';
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        alert('Failed to upload images: ' + err.message);
+      }
+    });
+  }
+
+  // ✅ 2. Delete Image
+  deleteImage(imageId: string) {
+    const prop = this.property();
+    if (!prop) return;
+
+    if (!confirm('Delete this photo?')) return;
+
+    // Add to loading set
+    this.loadingImages.update(set => { set.add(imageId); return new Set(set); });
+
+    this.propertyService.deletePropertyImage(imageId).subscribe({
+      next: () => {
+        // Remove from UI immediately for better UX
+        const updatedImages = prop.images.filter(img => img.id !== imageId);
+        this.property.update(p => p ? { ...p, images: updatedImages } : null);
+        
+        this.loadingImages.update(set => { set.delete(imageId); return new Set(set); });
+      },
+      error: (err) => {
+        alert('Failed to delete image');
+        this.loadingImages.update(set => { set.delete(imageId); return new Set(set); });
+      }
+    });
+  }
+
+  // ✅ 3. Set Primary (Cover) Image
+  setAsPrimary(imageId: string) {
+    const prop = this.property();
+    if (!prop) return;
+
+    this.isLoading.set(true);
+
+    this.propertyService.setPrimaryImage(imageId).subscribe({
+      next: () => {
+        // Update UI locally to reflect change immediately
+        const updatedImages = prop.images.map(img => ({
+          ...img,
+          isPrimary: img.id === imageId // Set true for selected, false for others
+        })).sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0)); // Move primary to front
+
+        // Update cover image property
+        const newCover = updatedImages.find(i => i.isPrimary)?.url || '';
+        
+        this.property.update(p => p ? { ...p, images: updatedImages, coverImage: newCover } : null);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        alert('Failed to update cover photo');
+      }
+    });
+  }
+
+  // Helper for loader
+  isImageLoading(id: string) {
+    return this.loadingImages().has(id);
   }
 
   // ✅ 3. Delete Property Logic

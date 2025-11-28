@@ -137,15 +137,56 @@
     <!-- ================= RIGHT CONTENT ================= -->
     <main class="editor-main">
       
-      <!-- 1. PHOTOS (View Only Placeholder) -->
+     <!-- 1. PHOTOS (Interactive Management) -->
       <section *ngIf="activeSection() === 'photos'" class="editor-section">
-        <h2 class="section-title">Photos</h2>
-        <div class="photos-grid">
-          <div *ngFor="let img of property()?.images" class="photo-card">
-            <img [src]="img.url" alt="Prop">
-          </div>
+        <div class="section-header">
+          <h2 class="section-title">Photos</h2>
+          <span class="photo-count">{{ property()?.images?.length }} photos</span>
         </div>
-        <button class="btn-secondary" style="margin-top: 20px;">Manage photos</button>
+        
+        <p class="desc">Drag and drop to reorder. The main image will be your cover photo.</p>
+
+        <div class="photos-grid-manager">
+          
+          <!-- 1. Upload Button (First Item) -->
+          <div class="photo-upload-card" (click)="fileInput.click()">
+            <input #fileInput type="file" multiple (change)="handleImageUpload($event)" hidden accept="image/*">
+            <div class="upload-icon">
+              <svg viewBox="0 0 32 32" width="32" height="32" fill="currentColor"><path d="M28 2h-6v2h6v6h2V4h6V2h-6zm-4 22H8V8h16v2h2V8a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-8h-2v8zM12 4.004h8V6h-8V4.004z"/></svg>
+            </div>
+            <span>Add photos</span>
+          </div>
+
+          <!-- 2. Image List -->
+          <div *ngFor="let img of property()?.images" class="photo-card-manager" [class.is-primary]="img.isPrimary">
+            <img [src]="img.url" alt="Property Image">
+            
+            <!-- Primary Badge -->
+            <div class="primary-badge" *ngIf="img.isPrimary">Cover Photo</div>
+
+            <!-- Actions Overlay (Visible on Hover) -->
+            <div class="photo-actions-overlay">
+              <!-- Set Primary Button -->
+              <button *ngIf="!img.isPrimary" 
+                      class="action-btn set-cover" 
+                      (click)="setAsPrimary(img.id)" 
+                      title="Set as cover photo">
+                Make Cover
+              </button>
+
+              <!-- Delete Button -->
+              <button class="action-btn delete" 
+                      (click)="deleteImage(img.id)"
+                      title="Delete photo">
+                <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M28 6h-6V2.996c0-.55-.446-1.004-.996-1.004H10.996A.997.997 0 0 0 10 2.996V6H4v2h2v20.996c0 .55.446 1.004.996 1.004h18.008a.997.997 0 0 0 .996-1.004V8h2V6zm-4 22H8V8h16v20zM12 2.996h8V6h-8V2.996z"/></svg>
+              </button>
+            </div>
+
+            <!-- Loading Spinner for this specific image if needed -->
+            <div class="img-loader" *ngIf="isImageLoading(img.id)"></div>
+          </div>
+
+        </div>
       </section>
 
       <!-- 2. TITLE -->
