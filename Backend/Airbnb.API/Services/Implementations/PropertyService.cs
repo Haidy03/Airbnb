@@ -408,6 +408,7 @@ namespace Airbnb.API.Services.Implementations
                 Title = property.Title,
                 Description = property.Description,
                 PropertyType = property.PropertyType?.Name ?? "Unknown",
+                PropertyTypeId = property.PropertyTypeId,
                 RoomType = property.RoomType,
                 Address = property.Address,
                 City = property.City,

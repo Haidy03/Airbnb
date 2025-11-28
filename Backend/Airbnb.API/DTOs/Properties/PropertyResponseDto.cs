@@ -10,6 +10,7 @@ namespace Airbnb.API.DTOs.Properties
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string PropertyType { get; set; } = string.Empty;
+        public int PropertyTypeId { get; set; }
 
         // Location
         public string Address { get; set; } = string.Empty;
