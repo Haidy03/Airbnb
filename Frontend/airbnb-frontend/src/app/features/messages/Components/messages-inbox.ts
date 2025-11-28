@@ -90,20 +90,46 @@ export class MessagesInboxComponent implements OnInit, AfterViewChecked {
     
   }
 
+  // selectConversation(conv: Conversation) {
+  //   this.selectedConversation.set(conv);
+    
+  //   // ✅ تحديث حالة القراءة محلياً
+  //   if (conv.unreadCount > 0) {
+  //     this.messageService.decrementUnreadCount(conv.unreadCount);
+  //     // تحديث المصفوفة المحلية لتصفير العداد لهذا المحادثة
+  //     this.conversations.update(list => list.map(c => 
+  //       c.id === conv.id ? { ...c, unreadCount: 0 } : c
+  //     ));
+      
+  //     // TODO: Call API to mark as read
+  //   }
+
+  //   this.messageService.getMessages(conv.id).subscribe(res => {
+  //     this.messages.set(res.data);
+  //     this.scrollToBottom();
+  //   });
+  // }
   selectConversation(conv: Conversation) {
     this.selectedConversation.set(conv);
     
-    // ✅ تحديث حالة القراءة محلياً
+    // ✅ تحديث حالة القراءة محلياً وفي قاعدة البيانات
     if (conv.unreadCount > 0) {
+      
+      // 1. تحديث الـ Frontend (لتختفي النقطة الحمراء فوراً)
       this.messageService.decrementUnreadCount(conv.unreadCount);
-      // تحديث المصفوفة المحلية لتصفير العداد لهذا المحادثة
+      
       this.conversations.update(list => list.map(c => 
         c.id === conv.id ? { ...c, unreadCount: 0 } : c
       ));
       
-      // TODO: Call API to mark as read
+      // 2. ✅✅✅ إرسال طلب للـ Backend لتحديث الداتابيز
+      this.messageService.markConversationAsRead(conv.id).subscribe({
+        next: () => console.log('✅ Marked as read in DB'),
+        error: (err) => console.error('❌ Failed to mark as read', err)
+      });
     }
 
+    // تحميل الرسائل
     this.messageService.getMessages(conv.id).subscribe(res => {
       this.messages.set(res.data);
       this.scrollToBottom();
