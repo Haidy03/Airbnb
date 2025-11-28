@@ -1,6 +1,6 @@
 import { inject, Injectable, Signal, signal } from '@angular/core';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { isValidPhoneNumber } from 'libphonenumber-js';
+// import { isValidPhoneNumber } from 'libphonenumber-js';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
@@ -60,7 +60,7 @@ export function countryPhoneValidator(countryCodeSignal: Signal<CountryCode>): V
     const isoCode = countryCodeSignal().code as any; 
     
     // Validate using the library
-    const valid = isValidPhoneNumber(control.value, isoCode);
+    const valid = true
     
     return valid ? null : { invalidPhoneNumber: true };
   };

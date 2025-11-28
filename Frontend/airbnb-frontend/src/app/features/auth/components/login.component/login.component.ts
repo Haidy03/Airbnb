@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms'; 
 import { ActivatedRoute, Router ,  RouterLink} from '@angular/router';
-import { isValidPhoneNumber } from 'libphonenumber-js';
+// import { isValidPhoneNumber } from 'libphonenumber-js';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SocialButtonsComponent } from '../social-buttons.component/social-buttons.component';
