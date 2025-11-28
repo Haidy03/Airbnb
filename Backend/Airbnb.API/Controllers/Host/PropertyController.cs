@@ -481,6 +481,7 @@ namespace Airbnb.API.Controllers.Host
 
                     // Capacity Defaults
                     NumberOfBedrooms = 1,
+                    NumberOfBeds = 1,
                     NumberOfBathrooms = 1,
                     MaxGuests = 1,
 

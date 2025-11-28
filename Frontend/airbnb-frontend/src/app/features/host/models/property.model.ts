@@ -13,6 +13,11 @@ export interface Property {
   title: string;
   description: string;
 
+  maxGuests?: number;
+  numberOfBedrooms?: number;
+  numberOfBeds?: number; 
+  numberOfBathrooms?: number;
+
   // Types
   propertyType: string;
   propertyTypeId?: number;

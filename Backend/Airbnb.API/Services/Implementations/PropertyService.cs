@@ -39,6 +39,7 @@ namespace Airbnb.API.Services.Implementations
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
                 NumberOfBedrooms = dto.NumberOfBedrooms,
+                NumberOfBeds = dto.NumberOfBeds,
                 NumberOfBathrooms = dto.NumberOfBathrooms,
                 MaxGuests = dto.MaxGuests,
                 PricePerNight = dto.PricePerNight,
@@ -109,6 +110,7 @@ namespace Airbnb.API.Services.Implementations
             if (dto.Latitude.HasValue) property.Latitude = dto.Latitude.Value;
             if (dto.Longitude.HasValue) property.Longitude = dto.Longitude.Value;
             if (dto.NumberOfBedrooms.HasValue) property.NumberOfBedrooms = dto.NumberOfBedrooms.Value;
+            if (dto.NumberOfBeds.HasValue) property.NumberOfBeds = dto.NumberOfBeds.Value;
             if (dto.NumberOfBathrooms.HasValue) property.NumberOfBathrooms = dto.NumberOfBathrooms.Value;
             if (dto.MaxGuests.HasValue) property.MaxGuests = dto.MaxGuests.Value;
             if (dto.PricePerNight.HasValue) property.PricePerNight = dto.PricePerNight.Value;
@@ -399,6 +401,7 @@ namespace Airbnb.API.Services.Implementations
                 Latitude = property.Latitude,
                 Longitude = property.Longitude,
                 NumberOfBedrooms = property.NumberOfBedrooms,
+                NumberOfBeds = property.NumberOfBeds,
                 NumberOfBathrooms = property.NumberOfBathrooms,
                 MaxGuests = property.MaxGuests,
                 PricePerNight = property.PricePerNight,
