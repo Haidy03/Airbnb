@@ -48,7 +48,7 @@
 
       <!-- 3. Right: User Menu -->
       <div class="col-auto d-flex align-items-center gap-2 position-relative" style="z-index: 2000;">
-        <a class="host-btn d-none d-md-block text-dark text-decoration-none fw-semibold px-3 py-2 rounded-pill hover-bg-light" (click)="onBecomeHostClick()" style="cursor: pointer;">
+        <a class="host-btn d-none d-md-block text-dark text-decoration-none fw-semibold px-3 py-2 rounded-pill hover-bg-light" (click)="isLoggedIn()? onBecomeHostClick() : openLoginModal()" style="cursor: pointer;">
           Become a host
         </a>
         <a routerLink="/profile" class="btn btn-light rounded-circle p-2 bg-transparent border-0 host-btn px-2 text-dark">
@@ -70,7 +70,7 @@
                (click)="$event.stopPropagation()">
 
             <div class="d-flex flex-column">
-              <a routerLink="/profile" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Profile</a>
+              <a (click)="isLoggedIn() ? router.navigate(['/profile']) : openLoginModal()" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Profile</a>
               <a routerLink="/messages" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Messages</a>
               <a routerLink="/trips" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Trips</a>
               <a routerLink="/wishlists" class="dropdown-item px-3 py-2 fw-semibold text-dark hover-bg-light">Wishlists</a>
