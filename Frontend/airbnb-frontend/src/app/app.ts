@@ -18,7 +18,7 @@ import { HeaderComponent } from './features/guest/components/header/header';
     ToastComponent,
     FooterComponent,
     HeaderComponent
-  ],
+],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

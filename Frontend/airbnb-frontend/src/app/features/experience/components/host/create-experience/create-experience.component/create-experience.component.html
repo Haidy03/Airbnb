@@ -1,0 +1,281 @@
+<div class="create-experience-container">
+  <div class="create-header">
+    <button class="back-btn" (click)="cancel()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <h1 class="page-title">{{ isEditMode ? 'Edit Experience' : 'Create Experience' }}</h1>
+  </div>
+
+  <div class="form-container">
+    
+    <!-- ✅ PHOTOS SECTION (Only in Edit Mode) -->
+    <div class="form-section" *ngIf="isEditMode && existingExperience()">
+      <h2 class="section-title">Photos</h2>
+      <p class="section-subtitle">Add photos to showcase your experience.</p>
+      
+      <div class="photos-grid">
+        <!-- Existing Photos -->
+        <div *ngFor="let img of existingExperience()!.images" class="photo-card">
+          <img [src]="getImageUrl(img.imageUrl)" alt="Experience Image">
+          <div class="photo-actions">
+            <button class="photo-btn delete" (click)="deleteImage(img.id)" title="Delete">×</button>
+            <button *ngIf="!img.isPrimary" class="photo-btn primary" (click)="setPrimaryImage(img.id)" title="Make Primary">★</button>
+            <span *ngIf="img.isPrimary" class="primary-badge">Main</span>
+          </div>
+        </div>
+
+        <!-- Upload Button -->
+        <label class="upload-box" [class.disabled]="isUploading()">
+          <input type="file" (change)="onFileSelected($event)" accept="image/*" [disabled]="isUploading()" hidden>
+          <div *ngIf="!isUploading()">
+            <span class="plus-icon">+</span>
+            <span>Upload</span>
+          </div>
+          <div *ngIf="isUploading()" class="spinner-small"></div>
+        </label>
+      </div>
+    </div>
+
+    <form [formGroup]="experienceForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Basic Info -->
+      <div class="form-section">
+        <h2 class="section-title">Basic Information</h2>
+        
+        <div class="form-group">
+          <label class="form-label">Experience Title *</label>
+          <input
+            type="text"
+            formControlName="title"
+            class="form-input"
+            placeholder="e.g., Traditional Egyptian Cooking Class">
+          <div *ngIf="experienceForm.get('title')?.invalid && experienceForm.get('title')?.touched" class="error-message">
+            Title is required (max 200 characters)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description *</label>
+          <textarea
+            formControlName="description"
+            class="form-textarea"
+            rows="6"
+            placeholder="Describe what makes your experience unique..."></textarea>
+          <div *ngIf="experienceForm.get('description')?.invalid && experienceForm.get('description')?.touched" class="error-message">
+            Description is required (max 3000 characters)
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select formControlName="categoryId" class="form-select">
+              <option [value]="null">Select a category</option>
+              <option *ngFor="let category of categories()" [value]="category.id">
+                {{ category.icon }} {{ category.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Type *</label>
+            <div class="type-buttons">
+              <button
+                *ngFor="let type of experienceTypes"
+                type="button"
+                class="type-btn"
+                [class.active]="experienceForm.get('type')?.value === type.value"
+                (click)="experienceForm.patchValue({ type: type.value })">
+                <span class="type-icon">{{ type.icon }}</span>
+                <span>{{ type.label }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="form-section" *ngIf="experienceForm.get('type')?.value !== 'Online'">
+        <h2 class="section-title">Location</h2>
+        
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <input
+            type="text"
+            formControlName="address"
+            class="form-input"
+            placeholder="Street address">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">City *</label>
+            <input
+              type="text"
+              formControlName="city"
+              class="form-input"
+              placeholder="Cairo">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Country *</label>
+            <input
+              type="text"
+              formControlName="country"
+              class="form-input"
+              placeholder="Egypt">
+          </div>
+        </div>
+      </div>
+
+      <!-- Duration & Group Size -->
+      <div class="form-section">
+        <h2 class="section-title">Duration & Capacity</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Duration *</label>
+            <div class="duration-inputs">
+              <input
+                type="number"
+                formControlName="durationHours"
+                class="form-input"
+                min="0"
+                placeholder="Hours">
+              <span class="duration-separator">:</span>
+              <input
+                type="number"
+                formControlName="durationMinutes"
+                class="form-input"
+                min="0"
+                max="59"
+                placeholder="Minutes">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Group Size *</label>
+            <div class="group-size-inputs">
+              <input
+                type="number"
+                formControlName="minGroupSize"
+                class="form-input"
+                min="1"
+                placeholder="Min">
+              <span class="group-separator">to</span>
+              <input
+                type="number"
+                formControlName="maxGroupSize"
+                class="form-input"
+                min="1"
+                placeholder="Max">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="form-section">
+        <h2 class="section-title">Pricing</h2>
+        
+        <div class="form-group">
+          <label class="form-label">Price per Person (USD) *</label>
+          <div class="price-input-wrapper">
+            <span class="currency-symbol">$</span>
+            <input
+              type="number"
+              formControlName="pricePerPerson"
+              class="form-input price-input"
+              min="1"
+              placeholder="50">
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Details -->
+      <div class="form-section">
+        <h2 class="section-title">Additional Details</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Age Requirement</label>
+            <input
+              type="text"
+              formControlName="ageRequirement"
+              class="form-input"
+              placeholder="e.g., 18+, All ages">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Skill Level</label>
+            <select formControlName="skillLevel" class="form-select">
+              <option>Beginner</option>
+              <option>Intermediate</option>
+              <option>Advanced</option>
+              <option>All levels</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">What to Bring</label>
+          <textarea
+            formControlName="whatToBring"
+            class="form-textarea"
+            rows="3"
+            placeholder="List items guests should bring (one per line)"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">What's Included</label>
+          <textarea
+            formControlName="whatIsIncluded"
+            class="form-textarea"
+            rows="3"
+            placeholder="What's provided in the experience (one per line)"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Cancellation Policy</label>
+          <textarea
+            formControlName="cancellationPolicy"
+            class="form-textarea"
+            rows="2"></textarea>
+        </div>
+      </div>
+
+      <!-- Languages -->
+      <div class="form-section">
+        <h2 class="section-title">Languages Offered</h2>
+        <div class="language-chips">
+          <button
+            *ngFor="let lang of languages"
+            type="button"
+            class="language-chip"
+            [class.active]="selectedLanguages.includes(lang.code)"
+            (click)="toggleLanguage(lang.code)">
+            {{ lang.name }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="error()" class="error-alert">
+        {{ error() }}
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" (click)="cancel()" [disabled]="isSubmitting()">
+          Cancel
+        </button>
+        <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+          <span *ngIf="!isSubmitting()">{{ isEditMode ? 'Save Changes' : 'Create & Continue' }}</span>
+          <span *ngIf="isSubmitting()">Saving...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -26,7 +26,7 @@ import { AuthService } from '../../../auth/services/auth.service';
 export class ListingDetails implements OnInit {
   listing: Listing | null = null;
   propertyId!: string;
-   isLoading: boolean = true;
+  isLoading: boolean = true;
   error: string | null = null;
 
   // متغيرات التحكم في الشكل (UI Flags)
@@ -117,6 +117,9 @@ export class ListingDetails implements OnInit {
       if (id) {
         this.propertyId = id;
         this.fetchListingDetails(this.propertyId);
+        if (this.AuthService.isAuthenticated) {
+          this.checkWishlistStatus(id);
+        }
       } else {
         this.error = "Property ID is missing from the URL.";
         this.isLoading = false;
@@ -149,9 +152,17 @@ export class ListingDetails implements OnInit {
         }
       });
     }
+    checkWishlistStatus(propertyId: string): void {
+    this.listingService.checkIsWishlisted(propertyId).subscribe({
+      next: (isListed: boolean) => {
+        this.isLiked = isListed;
+      },
+      error: () => this.isLiked = false
+    });
+  }
 
     // translation function
-      translateDescription(): void {
+    translateDescription(): void {
     if (this.isTranslating || this.showTranslated) {
         return; // تجنب الترجمة المتكررة
     }
@@ -192,7 +203,7 @@ export class ListingDetails implements OnInit {
 
   // 2. دوال الأزرار show all photos
    isModalOpen: boolean = false;
-       onModalStateChange(isOpen: boolean): void {
+    onModalStateChange(isOpen: boolean): void {
         this.isModalOpen = isOpen; // تحديث الحالة عند فتح/إغلاق الـ Modal
     }
 
@@ -206,7 +217,28 @@ export class ListingDetails implements OnInit {
 
   // زر الحفظ (القلب): يغير اللون
   toggleLike() {
+    if (!this.AuthService.isAuthenticated) { // تأكد أن الاسم يطابق المحقون في الكونستركتور
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // التغيير الفوري (Optimistic UI)
     this.isLiked = !this.isLiked;
+
+    // إرسال الطلب للسيرفر
+    this.listingService.toggleWishlist(this.propertyId).subscribe({
+      next: (res: any) => {
+        // التأكد من الحالة الحقيقية من السيرفر
+        if (res && typeof res.isWishlisted !== 'undefined') {
+          this.isLiked = res.isWishlisted;
+        }
+      },
+      error: (err) => {
+        // في حالة الخطأ، نعيد القلب لحالته السابقة
+        this.isLiked = !this.isLiked;
+        console.error('Wishlist toggle error:', err);
+      }
+    });
   }
 
   // زر الترجمة: يبدل الحالة فقط (للعرض)
@@ -220,7 +252,7 @@ export class ListingDetails implements OnInit {
   }
 
 // send message to host function
-openMessageModal(): void {
+/* openMessageModal(): void {
   // هنا يجب التأكد من أن المستخدم قام بتسجيل الدخول قبل الفتح
  if (!this.AuthService.isAuthenticated) {
       this.router.navigate(['/login']); // أو فتح Modal تسجيل الدخول
@@ -231,6 +263,34 @@ openMessageModal(): void {
   // use a proper array of route segments (no stray $)
   this.router.navigate([`/send-message/${this.listing?.id}`  ]);
 }
+
+  closeMessageModal(): void {
+    this.showMessageModal = false;
+  } */
+
+  contactHost(): void {
+    if (!this.AuthService.isAuthenticated) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (this.listing) {
+      const hostId = (this.listing as any).hostId || (this.listing as any).host?.id;
+      this.router.navigate(['/messages'], {
+        queryParams: { 
+            hostId: hostId,  // تأكدي أن المودل يحتوي على hostId
+            contextId: this.listing.id,   // معرف العقار
+            type: 'property'              // نوع السياق
+        }
+      });
+    }
+  }
+
+  // تم استبدال openMessageModal بـ contactHost لتوحيد النظام
+  // ولكن تركتها هنا لعدم كسر الكود إذا كانت مربوطة بالـ HTML، لكن يفضل استخدام contactHost
+  openMessageModal(): void {
+    this.contactHost();
+  }
 
   closeMessageModal(): void {
     this.showMessageModal = false;

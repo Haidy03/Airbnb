@@ -312,6 +312,483 @@ namespace Airbnb.API.Migrations
                     b.ToTable("Conversations");
                 });
 
+            modelBuilder.Entity("Airbnb.API.Models.Experience", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("AgeRequirement")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CancellationPolicy")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(3000)
+                        .HasColumnType("nvarchar(3000)");
+
+                    b.Property<int>("DurationHours")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("HostId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<int>("MaxGroupSize")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinGroupSize")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PricePerPerson")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PricingType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SkillLevel")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasMaxLength(50)
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("WhatIsIncluded")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("WhatToBring")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("HostId");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("Type");
+
+                    b.HasIndex("City", "Country");
+
+                    b.ToTable("Experiences");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceAvailability", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AvailableSpots")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("CustomPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("ExperienceId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExperienceId", "Date", "StartTime");
+
+                    b.ToTable("ExperienceAvailabilities");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceBooking", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AvailabilityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExperienceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GuestId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("NumberOfGuests")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PricePerPerson")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("SpecialRequests")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AvailabilityId");
+
+                    b.HasIndex("ExperienceId");
+
+                    b.HasIndex("GuestId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("ExperienceBookings");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("ExperienceCategories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DisplayOrder = 10,
+                            Icon = "🍽️",
+                            IsActive = true,
+                            Name = "Food & Drink"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DisplayOrder = 11,
+                            Icon = "🎨",
+                            IsActive = true,
+                            Name = "Art & Culture"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Description = "Professional photography sessions",
+                            DisplayOrder = 1,
+                            Icon = "📸",
+                            IsActive = true,
+                            Name = "Photography"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Description = "Personal chef experiences",
+                            DisplayOrder = 2,
+                            Icon = "👨‍🍳",
+                            IsActive = true,
+                            Name = "Chefs"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Description = "Ready-to-eat meal services",
+                            DisplayOrder = 3,
+                            Icon = "🍱",
+                            IsActive = true,
+                            Name = "Prepared meals"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Description = "Relaxing massage therapy",
+                            DisplayOrder = 4,
+                            Icon = "💆",
+                            IsActive = true,
+                            Name = "Massage"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Description = "Personal training sessions",
+                            DisplayOrder = 5,
+                            Icon = "🏋️",
+                            IsActive = true,
+                            Name = "Training"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Description = "Professional makeup artists",
+                            DisplayOrder = 6,
+                            Icon = "💄",
+                            IsActive = true,
+                            Name = "Makeup"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Description = "Hairstyling services",
+                            DisplayOrder = 7,
+                            Icon = "💇",
+                            IsActive = true,
+                            Name = "Hair"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Description = "Spa and facial treatments",
+                            DisplayOrder = 8,
+                            Icon = "🧖",
+                            IsActive = true,
+                            Name = "Spa treatments"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Description = "Event catering services",
+                            DisplayOrder = 9,
+                            Icon = "🥂",
+                            IsActive = true,
+                            Name = "Catering"
+                        });
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExperienceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExperienceId", "IsPrimary");
+
+                    b.ToTable("ExperienceImages");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceLanguage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ExperienceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("LanguageName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExperienceId", "LanguageCode")
+                        .IsUnique();
+
+                    b.ToTable("ExperienceLanguages");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int?>("CommunicationRating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExperienceBookingId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExperienceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HostRating")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReviewerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ValueRating")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExperienceId");
+
+                    b.HasIndex("ReviewerId");
+
+                    b.HasIndex("ExperienceBookingId", "ReviewerId")
+                        .IsUnique();
+
+                    b.ToTable("ExperienceReviews");
+                });
+
             modelBuilder.Entity("Airbnb.API.Models.Message", b =>
                 {
                     b.Property<int>("Id")
@@ -977,7 +1454,10 @@ namespace Airbnb.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PropertyId")
+                    b.Property<int?>("ExperienceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PropertyId")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
@@ -985,6 +1465,8 @@ namespace Airbnb.API.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExperienceId");
 
                     b.HasIndex("PropertyId");
 
@@ -1178,6 +1660,112 @@ namespace Airbnb.API.Migrations
                     b.Navigation("Property");
                 });
 
+            modelBuilder.Entity("Airbnb.API.Models.Experience", b =>
+                {
+                    b.HasOne("Airbnb.API.Models.ExperienceCategory", "Category")
+                        .WithMany("Experiences")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Airbnb.API.Models.ApplicationUser", "Host")
+                        .WithMany()
+                        .HasForeignKey("HostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Host");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceAvailability", b =>
+                {
+                    b.HasOne("Airbnb.API.Models.Experience", "Experience")
+                        .WithMany("Availabilities")
+                        .HasForeignKey("ExperienceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Experience");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceBooking", b =>
+                {
+                    b.HasOne("Airbnb.API.Models.ExperienceAvailability", "Availability")
+                        .WithMany()
+                        .HasForeignKey("AvailabilityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Airbnb.API.Models.Experience", "Experience")
+                        .WithMany("Bookings")
+                        .HasForeignKey("ExperienceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Airbnb.API.Models.ApplicationUser", "Guest")
+                        .WithMany()
+                        .HasForeignKey("GuestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Availability");
+
+                    b.Navigation("Experience");
+
+                    b.Navigation("Guest");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceImage", b =>
+                {
+                    b.HasOne("Airbnb.API.Models.Experience", "Experience")
+                        .WithMany("Images")
+                        .HasForeignKey("ExperienceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Experience");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceLanguage", b =>
+                {
+                    b.HasOne("Airbnb.API.Models.Experience", "Experience")
+                        .WithMany("Languages")
+                        .HasForeignKey("ExperienceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Experience");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceReview", b =>
+                {
+                    b.HasOne("Airbnb.API.Models.ExperienceBooking", "Booking")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ExperienceBookingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Airbnb.API.Models.Experience", "Experience")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ExperienceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Airbnb.API.Models.ApplicationUser", "Reviewer")
+                        .WithMany()
+                        .HasForeignKey("ReviewerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Experience");
+
+                    b.Navigation("Reviewer");
+                });
+
             modelBuilder.Entity("Airbnb.API.Models.Message", b =>
                 {
                     b.HasOne("Airbnb.API.Models.Conversation", "Conversation")
@@ -1324,17 +1912,21 @@ namespace Airbnb.API.Migrations
 
             modelBuilder.Entity("Airbnb.API.Models.Wishlist", b =>
                 {
+                    b.HasOne("Airbnb.API.Models.Experience", "Experience")
+                        .WithMany()
+                        .HasForeignKey("ExperienceId");
+
                     b.HasOne("Airbnb.API.Models.Property", "Property")
                         .WithMany()
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PropertyId");
 
                     b.HasOne("Airbnb.API.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Experience");
 
                     b.Navigation("Property");
 
@@ -1418,6 +2010,29 @@ namespace Airbnb.API.Migrations
             modelBuilder.Entity("Airbnb.API.Models.Conversation", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.Experience", b =>
+                {
+                    b.Navigation("Availabilities");
+
+                    b.Navigation("Bookings");
+
+                    b.Navigation("Images");
+
+                    b.Navigation("Languages");
+
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceBooking", b =>
+                {
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ExperienceCategory", b =>
+                {
+                    b.Navigation("Experiences");
                 });
 
             modelBuilder.Entity("Airbnb.API.Models.Message", b =>

@@ -15,11 +15,14 @@ namespace Airbnb.API.Controllers
     {
         private readonly IAdminService _adminService;
         private readonly ILogger<AdminController> _logger;
+        private readonly IExperienceService _experienceService;
 
-        public AdminController(IAdminService adminService, ILogger<AdminController> logger)
+        public AdminController(IAdminService adminService, ILogger<AdminController> logger, IExperienceService experienceService)
         {
             _adminService = adminService;
+            _experienceService = experienceService;
             _logger = logger;
+
         }
 
         #region Dashboard & Analytics
@@ -485,6 +488,33 @@ namespace Airbnb.API.Controllers
         }
 
         #endregion
+
+        #region Experiences Management (Admin Approval)
+
+        /// <summary>
+        /// POST: api/admin/experiences/{id}/approve
+        /// </summary>
+        [HttpPost("experiences/{id}/approve")]
+        public async Task<IActionResult> ApproveExperience(int id)
+        {
+            try
+            {
+                var result = await _experienceService.ApproveExperienceAsync(id);
+
+                if (!result)
+                    return NotFound(new { success = false, message = "Experience not found" });
+
+                return Ok(new { success = true, message = "Experience approved successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error approving experience {id}");
+                return StatusCode(500, "Error approving experience");
+            }
+        }
+
+        #endregion
+
         #region Bookings Management
 
         /// <summary>

@@ -3,18 +3,11 @@ import { NotFoundComponent } from './shared/components/not-found/not-found';
 // Layouts & Core Components
 import { HostLayoutComponent } from './layouts/host-layout/host-layout';
 import { HomeComponent } from './features/guest/components/home/home';
-
-// Features Components (Host)
 import { HostDashboardComponent } from './features/host/components/host-dashboard/host-dashboard';
-// import { HostCalendar } from './features/host/components/host-calendar/host-calendar';
 import { MyProperties } from './features/host/components/my-properties/my-properties';
 import { HostMessages } from './features/host/components/host-messages/host-messages';
-
-
-// Property Steps Components
 import { ReviewCardComponent } from './features/reviews/components/review-card/review-card.component';
 import { AddReviewComponent } from './features/reviews/components/add-review/add-review.component';
-
 import { PropertyIntroComponent } from './features/host/components/property-steps/property-intro/property-intro';
 import { PropertyTypeComponent } from './features/host/components/property-steps/property-type/property-type';
 import { PropertyRoomTypeComponent } from './features/host/components/property-steps/room-type/room-type';
@@ -29,13 +22,8 @@ import { legalandcreateComponent } from './features/host/components/property-ste
 import { PricingComponent } from './features/host/components/property-steps/pricing/pricing';
 import { FinishsetupComponent } from './features/host/components/property-steps/finish-setup/finish-setup';
 import { instantBookComponent } from './features/host/components/property-steps/instant-book/instant-book';
-
-
-// Auth Components
 import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
 import { LoginComponent } from './features/auth/components/login.component/login.component';
-
-// Guards
 import { authGuard, noAuthGuard, hostGuard, adminGuard } from './features/auth/services/auth.guard';
 import { ListingDetails } from './features/guest/components/listing-details/listing-details';
 import { Checkout } from './features/guest/components/checkout/checkout';
@@ -43,14 +31,15 @@ import { HostCalendar } from './features/host/components/host-calendar/host-cale
 import { ResetPasswordComponent } from './features/auth/components/reset-password.component/reset-password.component';
 import { PropertyEditorComponent } from './features/host/components/property-editor/property-editor';
 import { BookingDetailsComponent } from './features/host/components/booking-details/booking-details';
-import { HostEarningsComponent } from './features/host/components/earnings/earnings';
-import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
+import { experiencesRoutes } from './features/experience/experiences.routes';
 import { ProfileEditComponent } from './features/profile/components/profile-edit.component/profile-edit.component';
 import { PastTripsComponent } from './features/profile/components/past-trips.component/past-trips.component';
 import { ConnectionsComponent } from './features/profile/components/connections.component/connections.component';
+import { AboutMeComponent } from './features/profile/components/about-me.component/about-me.component';
 import { ProfileComponent } from './features/profile/components/profile.component/profile.component';
 import { HostReviewsComponent } from './features/host/components/host-reviews/host-reviews';
 import { SendMessage } from './features/guest/components/send-message/send-message';
+import { HostEarningsComponent } from './features/host/components/earnings/earnings';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout/main-layout';
 import { PropertyCreationLayoutComponent } from './layouts/property-creation-layout/property-creation-layout/property-creation-layout';
 
@@ -122,9 +111,10 @@ export const routes: Routes = [
     path: 'reset-password',
     component: ResetPasswordComponent
   },
-
-  // ✅ Host routes - protected by hostGuard (ONLY for Hosts)
-  // ✅ Host routes - protected by auth guard
+  {
+  path: 'experiences',
+  children: experiencesRoutes
+},
 
   // =================================================
   // 3. Host Routes (Your original work - Protected)
@@ -146,6 +136,31 @@ export const routes: Routes = [
         path: 'messages',
         loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent)
       },
+      {
+      path: 'experiences',
+      loadComponent: () => import('./features/experience/components/host/host-experiences/host-experiences.component/host-experiences.component')
+        .then(m => m.HostExperiencesComponent),
+      title: 'My Experiences - Host'
+    },
+    {
+      path: 'experiences/create',
+      loadComponent: () => import('./features/experience/components/host/create-experience/create-experience.component/create-experience.component')
+        .then(m => m.CreateExperienceComponent),
+      title: 'Create Experience - Host'
+    },
+    {
+      path: 'experiences/:id/edit',
+      loadComponent: () => import('./features/experience/components/host/create-experience/create-experience.component/create-experience.component')
+        .then(m => m.CreateExperienceComponent),
+      title: 'Edit Experience - Host'
+    },
+      // {
+      //   path: 'properties/:id',
+      //   component: PropertyDetailsComponent
+      // }
+      // { path: 'messages', component: HostMessages },
+      // { path: 'properties/addd', component: AddProperty },
+      // { path: 'properties/edit/:id', component: EditProperty },
       { path: 'earnings', component: HostEarningsComponent },
       { path: 'reviews', component: HostReviewsComponent },
       {

@@ -1,0 +1,54 @@
+<a [routerLink]="['/experiences', experience.id]" class="experience-card">
+  <div class="card-image-wrapper">
+    <!-- Image -->
+    <img 
+      [src]="getImageUrl(experience.primaryImage)" 
+      [alt]="experience.title" 
+      class="card-img"
+      loading="lazy">
+    
+    <!-- Badge (Original/Popular) -->
+    <div *ngIf="showBadge && badgeText" class="badge">
+      <span class="badge-icon">✨</span>
+      <span>{{ badgeText }}</span>
+    </div>
+
+    <!-- Wishlist Button -->
+    <button 
+      class="wishlist-btn" 
+      (click)="toggleWishlist($event)"
+      [class.active]="isWishlisted"
+      aria-label="Add to wishlist">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <path d="m16 28c7-4.733 14-10 14-17 0-1.792-.683-3.583-2.05-4.95-1.367-1.366-3.158-2.05-4.95-2.05-1.791 0-3.583.684-4.949 2.05l-2.051 2.051-2.05-2.051c-1.367-1.366-3.158-2.05-4.95-2.05-1.791 0-3.583.684-4.949 2.05-1.367 1.367-2.051 3.158-2.051 4.95 0 7 7 12.267 14 17z"></path>
+      </svg>
+    </button>
+  </div>
+  
+  <div class="card-details">
+    <!-- Title -->
+    <h3 class="card-title">{{ experience.title }}</h3>
+    
+    <!-- Location or Host -->
+    <p class="card-location">
+      <span *ngIf="experience.city && experience.country">{{ experience.city }}, {{ experience.country }}</span>
+      <span *ngIf="!experience.city || !experience.country">{{ experience.hostName }}</span>
+    </p>
+    
+    <!-- Price and Rating Row -->
+    <div class="card-footer">
+      <div class="price-info">
+        <span class="price-label">From</span>
+        <span class="price-value">{{ experience.pricePerPerson | currency:'EGP':'symbol-narrow':'1.0-0' }}</span>
+        <span class="price-unit">/ person</span>
+      </div>
+      
+      <div class="rating-info" *ngIf="experience.averageRating > 0">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+          <path d="M6 0l1.545 3.13L11 3.635 8.5 6.07l.59 3.43L6 7.885 2.91 9.5l.59-3.43L1 3.635l3.455-.505z"/>
+        </svg>
+        <span class="rating-value">{{ experience.averageRating | number:'1.1-1' }}</span>
+      </div>
+    </div>
+  </div>
+</a>
