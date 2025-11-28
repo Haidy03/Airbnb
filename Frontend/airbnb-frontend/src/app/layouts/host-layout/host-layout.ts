@@ -103,7 +103,7 @@ export class HostLayoutComponent implements OnInit {
       return;
     }
     
-    this.router.navigate(['/profile']); 
+    this.router.navigate(['/host/profile']); 
   }
 
   logout(): void {
