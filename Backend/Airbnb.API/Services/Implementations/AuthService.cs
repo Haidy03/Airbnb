@@ -117,7 +117,6 @@ namespace Airbnb.API.Services.Implementations
 
             if (user == null)
             {
-                // Return null or throw an exception if the user is not found
                 return null;
             }
 
@@ -132,6 +131,7 @@ namespace Airbnb.API.Services.Implementations
                 DateOfBirth = user.DateOfBirth,
                 Address = user.Address,
                 City = user.City,
+                ProfileImageUrl = user.ProfileImageUrl,
                 Country = user.Country
             };
         }
@@ -147,6 +147,7 @@ namespace Airbnb.API.Services.Implementations
                 return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "User not found." });
             }
 
+
             // Update the user's properties with the values from the DTO
             user.FirstName = updateDto.FirstName;
             user.LastName = updateDto.LastName;
@@ -160,6 +161,10 @@ namespace Airbnb.API.Services.Implementations
             user.Address = updateDto.Address;
             user.City = updateDto.City;
             user.Country = updateDto.Country;
+            if (!string.IsNullOrEmpty(updateDto.ProfileImageUrl))
+            {
+                user.ProfileImageUrl = updateDto.ProfileImageUrl;
+            }
 
             user.UpdatedAt = DateTime.UtcNow; // Track update time
 

@@ -1,9 +1,8 @@
-// user.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, map, throwError } from 'rxjs';
-import { delay, catchError } from 'rxjs/operators';
-import { Profile, ProfileDetails, Trip, Connection } from '../models/user.model';
+import { Observable, throwError } from 'rxjs'; // ❌ أزلنا of و delay
+import { map, catchError } from 'rxjs/operators';
+import { ProfileDetails, Trip, Connection } from '../models/user.model';
 import { AuthService } from '../../auth/services/auth.service';
 
 @Injectable({
@@ -12,10 +11,11 @@ import { AuthService } from '../../auth/services/auth.service';
 export class UserService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private apiUrl = 'https://localhost:5202/api';
+  
+  // تأكدي أن هذا الرابط مطابق للباك إند عندك
+  private apiUrl = 'https://localhost:5202/api'; 
   private readonly API_BASE_URL = 'https://localhost:5202/';
 
-  // Helper method to get auth headers
   private getAuthHeaders(): HttpHeaders {
     const token = this.authService.getToken();
     return new HttpHeaders({
@@ -27,18 +27,18 @@ export class UserService {
   private transformUrl(path: string): string {
     if (!path) return '';
     if (path.startsWith('http')) return path;
+    // إزالة السلاش في البداية لتجنب الازدواج //
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    return `${this.API_BASE_URL}${cleanPath}`;
+    const cleanBase = this.API_BASE_URL.endsWith('/') ? this.API_BASE_URL : `${this.API_BASE_URL}/`;
+    return `${cleanBase}${cleanPath}`;
   }
+
   getCurrentUser(): Observable<{success: boolean; data: any[]; initial: string}> {
-    // Get authenticated user from AuthService
     const currentAuthUser = this.authService.currentUser;
-    
     if (!currentAuthUser) {
       return throwError(() => new Error('No authenticated user'));
     }
 
-    // OPTION 1: Use AuthService data directly (current implementation)
     const fullName = currentAuthUser.fullName || 
                      (currentAuthUser.firstName && currentAuthUser.lastName 
                        ? `${currentAuthUser.firstName} ${currentAuthUser.lastName}` 
@@ -53,12 +53,11 @@ export class UserService {
       headers: this.getAuthHeaders()
     }).pipe(
       map(user => {
-        // ✅ FIX: Ensure image is transformed here too
-        const rawPic = user.profileImage || user.profilePicture || user.avatar;
+        // التعامل مع اختلاف المسميات (Backend DTO sends ProfileImageUrl)
+        const rawPic = user.profileImageUrl || user.profileImage || user.profilePicture;
         
         return {
           ...user,
-          // Overwrite with full URL
           profileImage: this.transformUrl(rawPic), 
           profilePicture: this.transformUrl(rawPic),
           initial: initial
@@ -70,54 +69,55 @@ export class UserService {
       })
     );
   }
-  
 
-
-  //   return this.http.get<{success:boolean ; data: any[]}>(
-  //     `${this.apiUrl}/Auth/profile`, {
-  //     headers: this.getAuthHeaders()
-  //   }).pipe(
-  //     map(user => ({
-  //       ...user,
-  //       initial: initial
-  //     })),
-  //     catchError(error => {
-  //       console.error('Error fetching user profile:', error);
-  //       return throwError(() => error);
-  //     })
-  //   );
-    
-  // }
-
+  // ✅ التعديل الأهم هنا: تفعيل الاتصال الحقيقي
   getProfileDetails(): Observable<ProfileDetails> {
-    // Real API call with authentication
-    // return this.http.get<ProfileDetails>(`${this.apiUrl}/user/profile-details`, {
-    //   headers: this.getAuthHeaders()
-    // });
+    return this.http.get<any>(`${this.apiUrl}/Auth/profile`, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      map(data => {
+        // 1. تحويل رابط الصورة ليظهر بشكل صحيح
+        // ملاحظة: الـ DTO في الباك إند يرسل ProfileImageUrl (PascalCase)
+        // أو profileImageUrl (camelCase) حسب إعدادات الـ JSON
+        let imgUrl = data.profileImageUrl || data.profileImage;
+        
+        if (imgUrl) {
+          imgUrl = this.transformUrl(imgUrl);
+        }
 
-    return of({
-      whereToGo: '',
-      myWork: '',
-      spendTime: '',
-      pets: '',
-      bornDecade: '',
-      school: '',
-      uselessSkill: '',
-      funFact: '',
-      favoriteSong: '',
-      obsessedWith: '',
-      biographyTitle: '',
-      languages: '',
-      whereILive: '',
-      aboutMe: ''
-    }).pipe(delay(300));
+        // 2. تجميع البيانات
+        // ندمج الـ FunFacts (لو موجودة) مع البيانات الأساسية لتظهر في الفورم
+        return {
+          ...data,
+          ...(data.funFacts || {}), // فك الأسئلة الإضافية
+          profileImage: imgUrl,     // تعيين الرابط الكامل
+          // تأكيد تعيين الأسماء لضمان ظهورها
+          firstName: data.firstName,
+          lastName: data.lastName,
+          aboutMe: data.bio || data.aboutMe, // Bio من الباك إند = AboutMe في الفرونت
+          whereILive: data.city || data.whereILive // City من الباك إند = WhereILive في الفرونت
+        } as ProfileDetails;
+      }),
+      catchError(error => {
+        console.error('Error fetching profile details:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
+  // ✅ التعديل هنا: تفعيل الحفظ الحقيقي
   updateProfileDetails(details: ProfileDetails): Observable<ProfileDetails> {
-    // Real API call with authentication
+    
+    // تحويل البيانات لتناسب الـ DTO في الباك إند (اختياري، لو الأسماء متطابقة لا مشكلة)
+    const payload = {
+        ...details,
+        bio: details.aboutMe, // Mapping Frontend 'aboutMe' to Backend 'Bio'
+        city: details.whereILive // Mapping Frontend 'whereILive' to Backend 'City'
+    };
+
     return this.http.put<ProfileDetails>(
       `${this.apiUrl}/Auth/profile`, 
-      details,
+      payload,
       { headers: this.getAuthHeaders() }
     ).pipe(
       catchError(error => {
@@ -125,106 +125,44 @@ export class UserService {
         return throwError(() => error);
       })
     );
-
-    // Mock implementation (comment out when using real API)
-    // console.log('Saving profile details:', details);
-    // return of(details).pipe(delay(500));
   }
 
   uploadProfileImage(file: File): Observable<{url: string}> {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Real API call with authentication
     const token = this.authService.getToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
-      // Don't set Content-Type for FormData, browser will set it automatically
     });
 
-    return this.http.post<{url: string}>(
+    return this.http.post<{url: string, message: string}>(
       `${this.apiUrl}/Auth/upload-photo`, 
       formData,
       { headers }
     ).pipe(
-
        map(response => {
+        // نرجع الرابط نظيف (بدون transformUrl هنا) لأننا نحتاجه نظيفاً للحفظ في الداتا بيز
+        // التحويل للعرض يتم في الكومبوننت أو عند القراءة
         return { 
-          url: this.transformUrl(response.url) 
+          url: response.url 
         };
-      }),
+       }),
       catchError(error => {
         console.error('Error uploading image:', error);
         return throwError(() => error);
       })
     );
-
-    // Mock implementation (comment out when using real API)
-    // console.log('Uploading image:', file.name);
-    // return of({ url: URL.createObjectURL(file) }).pipe(delay(1000));
   }
 
   getPastTrips(): Observable<Trip[]> {
-    // Real API call with authentication
     return this.http.get<Trip[]>(`${this.apiUrl}/Booking/my-trips`, {
       headers: this.getAuthHeaders()
     });
-
-    return of([]).pipe(delay(500));
   }
 
   getConnections(): Observable<Connection[]> {
-    // Real API call with authentication
-    // return this.http.get<Connection[]>(`${this.apiUrl}/user/connections`, {
-    //   headers: this.getAuthHeaders()
-    // });
-
-    return of([]).pipe(delay(500));
+    // يمكن تفعيلها لاحقاً
+    return throwError(() => new Error('Not implemented'));
   }
 }
-
-  // getProfileDetails(): Observable<ProfileDetails> {
-  //   // Real API: return this.http.get<ProfileDetails>(`${this.apiUrl}/user/profile-details`);
-  //   return of({
-  //     whereToGo: '',
-  //     myWork: '',
-  //     spendTime: '',
-  //     pets: '',
-  //     bornDecade: '',
-  //     school: '',
-  //     uselessSkill: '',
-  //     funFact: '',
-  //     favoriteSong: '',
-  //     obsessedWith: '',
-  //     biographyTitle: '',
-  //     languages: '',
-  //     whereILive: '',
-  //     aboutMe: ''
-  //   }).pipe(delay(300));
-  // }
-
-  // updateProfileDetails(details: ProfileDetails): Observable<ProfileDetails> {
-  //   // Real API: return this.http.put<ProfileDetails>(`${this.apiUrl}/user/profile-details`, details);
-  //   console.log('Saving profile details:', details);
-  //   return of(details).pipe(delay(500));
-  // }
-
-  // uploadProfileImage(file: File): Observable<{url: string}> {
-  //   // Real API implementation:
-  //   // const formData = new FormData();
-  //   // formData.append('image', file);
-  //   // return this.http.post<{url: string}>(`${this.apiUrl}/user/upload-image`, formData);
-    
-  //   console.log('Uploading image:', file.name);
-  //   return of({ url: URL.createObjectURL(file) }).pipe(delay(1000));
-  // }
-
-  // getPastTrips(): Observable<Trip[]> {
-  //   // Real API: return this.http.get<Trip[]>(`${this.apiUrl}/user/trips`);
-  //   return of([]).pipe(delay(500));
-  // }
-
-  // getConnections(): Observable<Connection[]> {
-  //   // Real API: return this.http.get<Connection[]>(`${this.apiUrl}/user/connections`);
-  //   return of([]).pipe(delay(500));
-  // }
