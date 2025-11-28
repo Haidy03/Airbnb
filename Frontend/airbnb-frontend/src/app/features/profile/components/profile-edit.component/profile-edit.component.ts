@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { ProfileDetails, Profile } from '../../models/user.model';
-
+import{AuthService} from '../../../auth/services/auth.service';
 interface ProfileQuestion {
   id: string;
   icon: string;
@@ -30,6 +30,12 @@ export class ProfileEditComponent implements OnInit {
   activeModal: ProfileQuestion | null = null;
   modalValue = '';
 
+  // Services
+  private userService = inject(UserService);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+
+  
   questions: ProfileQuestion[] = [
     { id: '1', icon: '🎯', label: "Where I've always wanted to go", field: 'whereToGo', placeholder: "Where I've always wanted to go:", maxLength: 40 },
     { id: '2', icon: '💼', label: 'My work', field: 'myWork', placeholder: 'My work:', maxLength: 40 },
@@ -46,16 +52,30 @@ export class ProfileEditComponent implements OnInit {
     { id: '13', icon: '🏠', label: 'Where I live', field: 'whereILive', placeholder: 'Where I live:', maxLength: 40 }
   ];
 
-  constructor(
-    private userService: UserService,
-    private router: Router
-  ) {}
+  // constructor(
+  //   private userService: UserService,
+  //   private router: Router
+  // ) {}
 
   ngOnInit() {
     this.loadData();
   }
 
   loadData() {
+    // 1. Get auth user data (for initial avatar)
+    const currentUser = this.authService.currentUser;
+    if (currentUser) {
+       this.profileImage = currentUser.profilePicture || '';
+    }
+
+    // 2. Get detailed profile data
+    this.userService.getProfileDetails().subscribe(details => {
+      this.profileDetails = details;
+      // Ensure local image matches details if available
+      if (details.profileImage) {
+        this.profileImage = details.profileImage;
+      }
+    });
     this.userService.getCurrentUser().subscribe(user => {
       //this.user = user;
     });
@@ -65,20 +85,73 @@ export class ProfileEditComponent implements OnInit {
     });
   }
 
+
+ private saveImageToBackendProfile(imageUrl: string) {
+    const currentUser = this.authService.currentUser;
+    const payload = {
+        ...this.profileDetails,
+        firstName: currentUser?.firstName,
+        lastName: currentUser?.lastName,
+        profileImage: imageUrl
+    };
+    this.userService.updateProfileDetails(payload).subscribe({
+        next: () => console.log('Profile record updated with new image'),
+        error: (e) => console.error(e)
+    });
+  }
+ // ✅ MODIFIED: Uploads AND Saves immediately
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
       
+      // Step 1: Upload Image to Server Storage
       this.userService.uploadProfileImage(file).subscribe({
         next: (response) => {
-          this.profileImage = response.url;
-          this.profileDetails.profileImage = response.url;
-          console.log('Image uploaded successfully');
+          const newImageUrl = response.url;
+          console.log('1. Image uploaded to storage:', newImageUrl);
+
+          // Step 2: Prepare Payload to Save URL to Database
+          // We MUST include FirstName/LastName to satisfy backend validation
+          const currentUser = this.authService.currentUser;
+          const payload: ProfileDetails = {
+            ...this.profileDetails,
+            firstName: currentUser?.firstName,
+            lastName: currentUser?.lastName,
+            profileImage: newImageUrl // The new URL
+          };
+
+          // Step 3: Immediately Update User Profile in Database
+          // this.userService.updateProfileDetails(payload).subscribe({
+          //   next: (updateResponse) => {
+          //     console.log('2. Profile updated with new image');
+
+          //     // A. Update Local View
+          //     this.profileImage = newImageUrl;
+          //     this.profileDetails.profileImage = newImageUrl;
+
+          //     // B. Update Global Header/Sidebar (Host Layout)
+          //     this.authService.fetchAndSetFullProfile(); 
+          //   },
+          //   error: (err) => {
+          //     console.error('Failed to link image to profile:', err);
+          //     // Handle 400 Bad Request specifically if needed
+          //     if (err.status === 400 && err.error?.errors) {
+          //        alert('Error: ' + JSON.stringify(err.error.errors));
+          //     }
+          //   }
+          // });
+           // 3. ✅ CRITICAL: Force update to AuthService & LocalStorage immediately
+          this.authService.updateUserImage(newImageUrl);
+
+          // 4. (Optional) Auto-save to DB to persist if page reloads
+          // If you want to strictly wait for "Done", skip this step.
+          // But to be safe, we usually trigger the API update here too.
+          this.saveImageToBackendProfile(newImageUrl); 
         },
         error: (error) => {
-          console.error('Error uploading image:', error);
-          alert('Failed to upload image. Please try again.');
+          console.error('Error uploading image file:', error);
+          alert('Failed to upload image file. Please try again.');
         }
       });
     }
@@ -111,7 +184,8 @@ export class ProfileEditComponent implements OnInit {
       languages: 'What languages do you speak?',
       whereILive: 'Where do you live?'
     };
-    return titles[this.activeModal.field] || '';
+    //return titles[this.activeModal.field] || '';
+     return this.activeModal.label;
   }
 
   getModalDescription(): string {
@@ -131,7 +205,8 @@ export class ProfileEditComponent implements OnInit {
       languages: 'What languages can you speak?',
       whereILive: 'Tell us where you currently live.'
     };
-    return descriptions[this.activeModal.field] || '';
+    //return descriptions[this.activeModal.field] || '';
+    return this.activeModal.placeholder;
   }
 
   saveModal() {
@@ -141,19 +216,74 @@ export class ProfileEditComponent implements OnInit {
     }
   }
 
+  // onDone() {
+  //   this.isSaving = true;
+  //   // 1. Get the current user to retrieve FirstName and LastName
+  //   const currentUser = this.authService.currentUser;
+
+  //   if (!currentUser) {
+  //     this.isSaving = false;
+  //     return;
+  //   }
+
+  //   // 2. Merge existing ProfileDetails with the required Name fields
+  //   // We send the EXISTING names back to the server to satisfy validation
+  //   const payload: ProfileDetails = {
+  //     ...this.profileDetails,
+  //     firstName: currentUser.firstName, // Required by Backend
+  //     lastName: currentUser.lastName    // Required by Backend
+  //   };
+
+  //   console.log('Sending Payload:', payload);
+  //   this.userService.updateProfileDetails(this.profileDetails).subscribe({
+  //     next: (response) => {
+  //       console.log('Profile saved successfully:', response);
+  //       // 2. CRITICAL: Refresh the Global Auth State
+  //       // This makes the Host Layout (Header) and About Me page fetch the new image
+  //       this.authService.fetchAndSetFullProfile();
+
+  //       this.isSaving = false;
+        
+  //       // 3. Navigate back to About Me page
+  //       this.router.navigate(['/profile/about-me']);
+  //       // this.isSaving = false;
+  //       // this.router.navigate(['/profile/about']);
+  //     },
+  //     error: (error) => {
+  //       console.error('Error saving profile:', error);
+  //       this.isSaving = false;
+  //       //alert('Failed to save profile. Please try again.');
+  //     // Optional: Show specific error if validation fails
+  //       if(error.status === 400) {
+  //          alert('Please ensure your account has a valid First and Last Name.');
+  //       } else {
+  //          alert('Failed to save profile. Please try again.');
+  //       }
+  //     }
+  //   });
+  // }
   onDone() {
     this.isSaving = true;
     
-    this.userService.updateProfileDetails(this.profileDetails).subscribe({
+    // We also need to send names here just in case the user edited text fields
+    const currentUser = this.authService.currentUser;
+    const payload: ProfileDetails = {
+      ...this.profileDetails,
+      firstName: currentUser?.firstName,
+      lastName: currentUser?.lastName
+    };
+
+    this.userService.updateProfileDetails(payload).subscribe({
       next: (response) => {
-        console.log('Profile saved successfully:', response);
+        console.log('Profile details saved:', response);
+        this.authService.fetchAndSetFullProfile();
         this.isSaving = false;
-        this.router.navigate(['/profile/about']);
+        this.router.navigate(['/profile/about-me']);
       },
       error: (error) => {
         console.error('Error saving profile:', error);
         this.isSaving = false;
-        alert('Failed to save profile. Please try again.');
+        alert('Failed to save profile.');
       }
     });
   }

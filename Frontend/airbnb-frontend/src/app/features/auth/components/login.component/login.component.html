@@ -77,6 +77,16 @@
           {{ errorMessage() }}
         </div>
 
+        <!-- Specific Error Feedback -->
+        <small class="error-text" *ngIf="phoneNumber?.hasError('pattern') && phoneNumber?.touched">
+          <span *ngIf="selectedCountry().code === 'EG'">
+            Must be 11 digits and start with 010, 011, 012, or 015
+          </span>
+          <span *ngIf="selectedCountry().code !== 'EG'">
+            Invalid phone number format for {{ selectedCountry().name }}
+          </span>
+        </small>
+
         <!-- Privacy Note -->
         <p class="privacy-note">
           We'll call or text you to confirm your number. Standard message and data rates apply.

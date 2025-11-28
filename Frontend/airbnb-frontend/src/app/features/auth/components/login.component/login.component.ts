@@ -2,7 +2,9 @@
 import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms'; 
 import { ActivatedRoute, Router ,  RouterLink} from '@angular/router';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SocialButtonsComponent } from '../social-buttons.component/social-buttons.component';
@@ -11,6 +13,15 @@ import { TokenService } from '../../services/token.service';
 import { ErrorService } from '../../services/error.service'; 
 type LoginMode = 'phone' | 'email' | 'register';
 type PhoneStep = 'input' | 'verify';
+
+// 1. Define your Regex Map (You can put this outside the class or in a constants file)
+const PHONE_PATTERNS: Record<string, RegExp> = {
+  'EG': /^01[0125][0-9]{8}$/, // Egypt: 11 digits, starts with 010, 011, 012, 015
+  'SA': /^05[0-9]{8}$/,       // Saudi Arabia: 10 digits, starts with 05
+  'US': /^[2-9][0-9]{9}$/,    // USA: 10 digits
+  // Add other country codes as needed
+  'DEFAULT': /^[0-9]{8,15}$/  // Fallback
+};
 
 @Component({
   selector: 'app-login',
@@ -46,10 +57,15 @@ export class LoginComponent {
   // Session
   sessionId = signal('');
 
-  // Forms
+
+ // We initialize with the validator for the default selected country (index 0)
   phoneForm = this.fb.nonNullable.group({
-    phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{8,15}$/)]]
+    phoneNumber: ['', [
+      Validators.required, 
+      Validators.pattern(PHONE_PATTERNS[COUNTRY_CODES[0].code] || PHONE_PATTERNS['DEFAULT'])
+    ]]
   });
+
 
   verificationForm = this.fb.nonNullable.group({
     code: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(6)]]
@@ -87,10 +103,27 @@ export class LoginComponent {
     this.isCountryDropdownOpen.update(v => !v);
   }
 
-  selectCountry(country: CountryCode) {
+   selectCountry(country: CountryCode) {
     this.selectedCountry.set(country);
     this.isCountryDropdownOpen.set(false);
+
+    // ✅ NEW MODIFICATION: Update Validator based on country code
+    const pattern = PHONE_PATTERNS[country.code] || PHONE_PATTERNS['DEFAULT'];
+    
+    const phoneControl = this.phoneForm.controls.phoneNumber;
+    
+    // Reset validators
+    phoneControl.setValidators([
+      Validators.required,
+      Validators.pattern(pattern)
+    ]);
+    
+    // Trigger validation update immediately
+    phoneControl.updateValueAndValidity();
+    
+     
   }
+  
 
   // Phone Authentication Flow
   onPhoneContinue() {
@@ -202,11 +235,8 @@ export class LoginComponent {
           console.log('👤 User Role:', userRole);
           console.log('🆔 User ID:', userId);
           
-          // ============================================================
-          // 🚀 تعديلك يبدأ من هنا (بشكل آمن)
-          // ============================================================
           
-          // 1. نتحقق هل المستخدم جاي من رابط معين؟ (مثل زر Become a Host)
+         
           const returnUrl = this.route.snapshot.queryParams['returnUrl'];
 
           if (returnUrl) {
@@ -215,7 +245,7 @@ export class LoginComponent {
             this.router.navigateByUrl(returnUrl);
             this.closeModal(); // نقفل المودال
           } else {
-            // 2. لو مفيش رابط، نفذ اللوجيك القديم بتاع الفريق
+            
             this.redirectBasedOnRole(userRole);
           }
           // ============================================================
@@ -414,12 +444,12 @@ export class LoginComponent {
     }
   }
 
-  // ✅ فتح نافذة نسيت كلمة المرور
+ 
   openForgotPassword(event: Event) {
     event.preventDefault();
     //this.closeModal();
     
-    // استيراد المكون ديناميكياً لتجنب circular dependencies
+    
     import('../forogt-password.component/forogt-password.component').then(module => {
       this.modalService.open(module.ForgotPasswordComponent);
     });
