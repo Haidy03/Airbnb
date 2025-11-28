@@ -216,5 +216,7 @@ namespace Airbnb.API.Controllers.Auth
 
             return Ok(new { Message = "Password changed successfully." });
         }
+
+
     }
 }
