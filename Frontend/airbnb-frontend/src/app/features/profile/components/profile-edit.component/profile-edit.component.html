@@ -4,7 +4,9 @@
     <div class="avatar-section">
       <div class="large-avatar">
         <img *ngIf="profileImage" [src]="profileImage" alt="Profile" class="avatar-img">
-        <span *ngIf="!profileImage" class="avatar-initial">{{ user?.initial }}</span>
+        <span *ngIf="!profileImage" class="avatar-initial">
+         {{ userInitial }}
+        </span>
       </div>
       <button class="add-photo-btn" (click)="fileInput.click()">
         <span class="camera-icon">📷</span>
