@@ -1,14 +1,20 @@
-import { Component, OnInit, signal, inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PropertyService } from '../../services/property';
 import { Property, HouseRules, SafetyDetails } from '../../models/property.model';
 import * as L from 'leaflet'; // ✅ Import Leaflet
+import { HttpClient } from '@angular/common/http';
 
 type EditorSection = 
   | 'photos' | 'title' | 'propertyType' | 'capacity' | 'description' 
   | 'amenities' | 'location' | 'pricing' | 'booking' | 'rules' | 'safety' | 'host';
+
+interface PropTypeOption {
+  id: number;
+  name: string;
+}
 
 @Component({
   selector: 'app-property-editor',
@@ -21,37 +27,49 @@ export class PropertyEditorComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private propertyService = inject(PropertyService);
+  private http = inject(HttpClient);
 
   property = signal<Property | null>(null);
   isLoading = signal(true);
   activeSection = signal<EditorSection>('title');
-  
-  // Edit Mode
+  loadingImages = signal<Set<string>>(new Set());
   isEditing = signal(false);
-  
-  // Temp Values
   tempTitle = signal('');
   tempDescription = signal('');
   tempPrice = signal(0);
-  tempPropertyType = signal('');
+  tempPropertyType = signal<number | null>(null); 
   tempRoomType = signal('');
   tempCapacity = signal({ guests: 1, bedrooms: 1, beds: 1, bathrooms: 1 });
   tempLocation = signal({ address: '', city: '', country: '', zipCode: '', lat: 0, lng: 0 });
   tempAmenities = signal<number[]>([]);
   tempInstantBook = signal(false);
-  tempRules = signal<HouseRules>({
-    checkInTime: '', checkOutTime: '', smokingAllowed: false, petsAllowed: false, 
-    eventsAllowed: false, childrenAllowed: true
+  tempRules = signal<{ checkInTime: string; checkOutTime: string }>({
+    checkInTime: '', 
+    checkOutTime: ''
   });
   tempSafety = signal<SafetyDetails>({
     exteriorCamera: false, noiseMonitor: false, weapons: false
   });
 
-  // Lists
-  propertyTypesList = ['House', 'Apartment', 'Guesthouse', 'Hotel', 'Cabin', 'Villa', 'Loft'];
+  // ✅ القائمة الجديدة المطابقة لقاعدة البيانات
+  propertyTypesList: PropTypeOption[] = [
+    { id: 1, name: 'House' },
+    { id: 2, name: 'Apartment' },
+    { id: 3, name: 'Barn' },
+    { id: 4, name: 'Bed & breakfast' },
+    { id: 5, name: 'Boat' },
+    { id: 6, name: 'Cabin' },
+    { id: 7, name: 'Camper/RV' },
+    { id: 8, name: 'Casa particular' },
+    { id: 9, name: 'Castle' },
+    { id: 10, name: 'Cave' },
+    { id: 11, name: 'Container' },
+    { id: 12, name: 'Cycladic home' }
+  ];
+
   roomTypesList = ['Entire place', 'Private room', 'Shared room'];
   
-  // ✅ 1. Full Amenities List (Matches Backend/Database)
+  // Full Amenities List
   availableAmenities = [
     { id: 1, name: 'WiFi', icon: 'wifi' },
     { id: 2, name: 'TV', icon: 'tv' },
@@ -76,6 +94,7 @@ export class PropertyEditorComponent implements OnInit {
 
   // Map Setup
   private map: L.Map | undefined;
+  private marker: L.Marker | undefined;
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -102,7 +121,15 @@ export class PropertyEditorComponent implements OnInit {
     this.tempTitle.set(prop.title);
     this.tempDescription.set(prop.description);
     this.tempPrice.set(prop.pricing?.basePrice || 0);
-    this.tempPropertyType.set(prop.propertyType);
+    
+    // Property Type Logic
+    if ((prop as any).propertyTypeId) {
+      this.tempPropertyType.set((prop as any).propertyTypeId);
+    } else {
+      const match = this.propertyTypesList.find(t => t.name === prop.propertyType);
+      if (match) this.tempPropertyType.set(match.id);
+    }
+
     this.tempRoomType.set(prop.roomType);
     this.tempCapacity.set({ ...prop.capacity });
     
@@ -111,13 +138,25 @@ export class PropertyEditorComponent implements OnInit {
       city: prop.location?.city || '',
       country: prop.location?.country || '',
       zipCode: prop.location?.zipCode || '',
+      // state: prop.location?.state || '',
       lat: prop.location?.coordinates?.lat || 30.0444,
       lng: prop.location?.coordinates?.lng || 31.2357
     });
 
     this.tempAmenities.set([...prop.amenities]);
-    this.tempInstantBook.set(prop.isInstantBook);
-    if(prop.houseRules) this.tempRules.set({ ...prop.houseRules });
+    console.log('Database Value for InstantBook:', prop.isInstantBook);
+    this.tempInstantBook.set(prop.isInstantBook === true);
+
+    // ✅ House Rules Logic (Fix: Close brackets correctly)
+    const formatTime = (time: any) => time ? String(time).substring(0, 5) : '';
+    if (prop.houseRules) {
+      this.tempRules.set({
+        checkInTime: formatTime(prop.houseRules.checkInTime),
+        checkOutTime: formatTime(prop.houseRules.checkOutTime)
+      });
+    }
+
+    // Safety Details
     if(prop.safetyDetails) this.tempSafety.set({ ...prop.safetyDetails });
   }
 
@@ -128,18 +167,17 @@ export class PropertyEditorComponent implements OnInit {
     }
     this.activeSection.set(section);
 
-    // ✅ 2. Initialize Map if Location Section is Active
+    // Initialize Map if Location Section is Active
     if (section === 'location') {
       setTimeout(() => {
         this.initMap();
-      }, 100); // Small delay to ensure DOM is ready
+      }, 100); 
     }
   }
 
-  // ✅ Map Initialization Logic
   initMap() {
     if (this.map) {
-      this.map.remove(); // Reset if already exists
+      this.map.remove();
     }
 
     const lat = this.tempLocation().lat || 30.0444;
@@ -154,10 +192,44 @@ export class PropertyEditorComponent implements OnInit {
       attribution: 'OpenStreetMap'
     }).addTo(this.map);
 
-    L.marker([lat, lng]).addTo(this.map);
+    // ✅ Custom Red Icon
+    const redIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41],      
+      iconAnchor: [12, 41],   
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    this.marker = L.marker([lat, lng], { 
+      draggable: true,
+      icon: redIcon 
+    }).addTo(this.map);
+
+    this.marker.on('dragend', () => {
+      const position = this.marker!.getLatLng();
+      this.updateCoordinates(position.lat, position.lng);
+      this.getAddressFromCoordinates(position.lat, position.lng);
+    });
+
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      this.marker!.setLatLng([lat, lng]);
+      this.updateCoordinates(lat, lng);
+    });
+    this.getAddressFromCoordinates(lat, lng);
+    setTimeout(() => {
+        this.map?.invalidateSize();
+    }, 200);
   }
 
-  // Capacity Helpers
+  updateCoordinates(lat: number, lng: number) {
+    const current = this.tempLocation();
+    this.tempLocation.set({ ...current, lat, lng });
+    console.log('📍 New Location:', lat, lng);
+  }
+
   updateCapacity(field: 'guests' | 'bedrooms' | 'beds' | 'bathrooms', change: number) {
     const current = this.tempCapacity();
     const newValue = current[field] + change;
@@ -166,7 +238,12 @@ export class PropertyEditorComponent implements OnInit {
     }
   }
 
-  // Amenities Helpers
+  // ✅ New helper for updating Rules Time
+  updateRule(field: 'checkInTime' | 'checkOutTime', value: string) {
+    const current = this.tempRules();
+    this.tempRules.set({ ...current, [field]: value });
+  }
+
   toggleAmenity(id: number) {
     const current = this.tempAmenities();
     if (current.includes(id)) {
@@ -176,10 +253,48 @@ export class PropertyEditorComponent implements OnInit {
     }
   }
 
+  getAddressFromCoordinates(lat: number, lng: number) {
+   
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+
+    this.http.get<any>(url).subscribe({
+      next: (data) => {
+        const address = data.address;
+        const currentLocation = this.tempLocation();
+        
+        this.tempLocation.set({
+          ...currentLocation,
+          address: `${address.house_number || ''} ${address.road || ''}`.trim() || currentLocation.address,
+          city: address.city || address.town || address.village || address.county || currentLocation.city,
+          country: address.country || currentLocation.country,
+          zipCode: address.postcode || currentLocation.zipCode,
+          lat: lat,
+          lng: lng
+        });
+        
+        console.log('📍 Address Updated:', address);
+      },
+      error: (err) => {
+        console.error('Error fetching address:', err);
+      }
+    });
+  }
+
+  setBookingType(isInstant: boolean) {
+    this.tempInstantBook.set(isInstant);
+  }
+
+  toggleSafety(field: 'exteriorCamera' | 'noiseMonitor' | 'weapons') {
+    const current = this.tempSafety();
+    this.tempSafety.set({
+      ...current,
+      [field]: !current[field]
+    });
+  }
+
   canToggleStatus(): boolean {
     const p = this.property();
     if (!p) return false;
-    // Assuming status can be checked via isActive boolean for simplicity in UI
     return p.isApproved || p.isActive; 
   }
 
@@ -202,7 +317,7 @@ export class PropertyEditorComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        (event.target as HTMLInputElement).checked = !isChecked; // Revert
+        (event.target as HTMLInputElement).checked = !isChecked;
         alert('Failed to update status: ' + err.message);
       }
     });
@@ -220,27 +335,38 @@ export class PropertyEditorComponent implements OnInit {
       case 'description': updates.description = this.tempDescription(); break;
       case 'pricing': updates.pricePerNight = this.tempPrice(); break;
       case 'propertyType': 
-        updates.propertyType = this.tempPropertyType(); 
+        updates.propertyTypeId = this.tempPropertyType(); 
         updates.roomType = this.tempRoomType(); 
         break;
       case 'capacity': 
         updates.numberOfBedrooms = this.tempCapacity().bedrooms;
         updates.numberOfBathrooms = this.tempCapacity().bathrooms;
         updates.maxGuests = this.tempCapacity().guests;
-        // Note: Beds might not be in flat DTO, verify backend
         break;
       case 'location': 
         updates.address = this.tempLocation().address;
         updates.city = this.tempLocation().city;
         updates.country = this.tempLocation().country;
+        updates.postalCode = this.tempLocation().zipCode; 
+       // updates.state = this.tempLocation().state;
+        updates.latitude = this.tempLocation().lat; 
+        updates.longitude = this.tempLocation().lng;
         break;
       case 'amenities': 
-        // ✅ Fix 500 Error: Ensure we send property ID and array of numbers
         updates.amenityIds = this.tempAmenities(); 
         break;
       case 'booking': updates.isInstantBook = this.tempInstantBook(); break;
-      case 'rules': updates.houseRules = this.tempRules(); break;
-      case 'safety': updates.safetyDetails = this.tempSafety(); break;
+      case 'rules': 
+        // ✅ Fix: Send times separately
+        updates.checkInTime = this.tempRules().checkInTime;
+        updates.checkOutTime = this.tempRules().checkOutTime;
+        break;
+      case 'safety': 
+        const safety = this.tempSafety();
+        updates.hasExteriorCamera = safety.exteriorCamera;
+        updates.hasNoiseMonitor = safety.noiseMonitor;
+        updates.hasWeapons = safety.weapons;
+        break;
     }
 
     this.propertyService.updateProperty(prop.id, updates).subscribe({
@@ -255,7 +381,80 @@ export class PropertyEditorComponent implements OnInit {
     });
   }
 
-  // ✅ 3. Delete Property Logic
+  handleImageUpload(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const files = Array.from(input.files);
+    const prop = this.property();
+    
+    if (!prop) return;
+
+    this.isLoading.set(true); 
+
+    this.propertyService.uploadPropertyImages(prop.id, files).subscribe({
+      next: (newImages) => {
+        this.loadProperty(prop.id);
+        input.value = '';
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        alert('Failed to upload images: ' + err.message);
+      }
+    });
+  }
+
+  deleteImage(imageId: string) {
+    const prop = this.property();
+    if (!prop) return;
+
+    if (!confirm('Delete this photo?')) return;
+
+    this.loadingImages.update(set => { set.add(imageId); return new Set(set); });
+
+    this.propertyService.deletePropertyImage(imageId).subscribe({
+      next: () => {
+        const updatedImages = prop.images.filter(img => img.id !== imageId);
+        this.property.update(p => p ? { ...p, images: updatedImages } : null);
+        
+        this.loadingImages.update(set => { set.delete(imageId); return new Set(set); });
+      },
+      error: (err) => {
+        alert('Failed to delete image');
+        this.loadingImages.update(set => { set.delete(imageId); return new Set(set); });
+      }
+    });
+  }
+
+  setAsPrimary(imageId: string) {
+    const prop = this.property();
+    if (!prop) return;
+
+    this.isLoading.set(true);
+
+    this.propertyService.setPrimaryImage(imageId).subscribe({
+      next: () => {
+        const updatedImages = prop.images.map(img => ({
+          ...img,
+          isPrimary: img.id === imageId 
+        })).sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0)); 
+
+        const newCover = updatedImages.find(i => i.isPrimary)?.url || '';
+        
+        this.property.update(p => p ? { ...p, images: updatedImages, coverImage: newCover } : null);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        alert('Failed to update cover photo');
+      }
+    });
+  }
+
+  isImageLoading(id: string) {
+    return this.loadingImages().has(id);
+  }
+
   deleteProperty() {
     const prop = this.property();
     if (!prop) return;

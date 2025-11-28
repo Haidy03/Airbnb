@@ -4,6 +4,7 @@ using Airbnb.API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Airbnb.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251128202135_AddExtendedProfileDetails")]
+    partial class AddExtendedProfileDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,6 +69,10 @@ namespace Airbnb.API.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("AboutMe")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
@@ -76,11 +83,17 @@ namespace Airbnb.API.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("BiographyTitle")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("BlockReason")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("BlockedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("BornDecade")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("City")
                         .HasColumnType("nvarchar(max)");
@@ -105,10 +118,16 @@ namespace Airbnb.API.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FavoriteSong")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FunFact")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdentificationImagePath")
                         .HasColumnType("nvarchar(max)");
@@ -122,6 +141,9 @@ namespace Airbnb.API.Migrations
                     b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Languages")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -133,6 +155,9 @@ namespace Airbnb.API.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("MyWork")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -141,7 +166,13 @@ namespace Airbnb.API.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("ObsessedWith")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Pets")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
@@ -153,7 +184,13 @@ namespace Airbnb.API.Migrations
                     b.Property<string>("ProfileImageUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("School")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SpendTime")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -161,6 +198,9 @@ namespace Airbnb.API.Migrations
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("UselessSkill")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
@@ -172,6 +212,12 @@ namespace Airbnb.API.Migrations
 
                     b.Property<DateTime?>("VerifiedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("WhereILive")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WhereToGo")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -518,9 +564,6 @@ namespace Airbnb.API.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("NumberOfBedrooms")
-                        .HasColumnType("int");
-
-                    b.Property<int>("NumberOfBeds")
                         .HasColumnType("int");
 
                     b.Property<string>("PostalCode")

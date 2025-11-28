@@ -19,13 +19,14 @@
 .large-avatar {
   width: 160px;
   height: 160px;
-  background-color: #222;
+  background-color: #222; 
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   margin-bottom: 16px;
+  color: white; 
 }
 
 .avatar-img {
@@ -38,6 +39,7 @@
   color: #fff;
   font-size: 64px;
   font-weight: 600;
+  text-transform: uppercase;
 }
 
 .add-photo-btn {

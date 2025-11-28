@@ -83,11 +83,6 @@ export const routes: Routes = [
     loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent)
   },
 
-  // {
-  //   path: 'messages',
-  //   loadComponent: () => import('./features/guest/components/messages/messages')
-  //     .then(m => m.MessagesComponent)
-  // },
   {
     path: 'profile',
     component: ProfileComponent,
@@ -153,10 +148,24 @@ export const routes: Routes = [
       },
       { path: 'earnings', component: HostEarningsComponent },
       { path: 'reviews', component: HostReviewsComponent },
-
+      {
+        path: 'profile', 
+        loadComponent: () => import('./features/profile/components/profile.component/profile.component').then(m => m.ProfileComponent),
+        children: [
+            { path: '', redirectTo: 'about-me', pathMatch: 'full' },
+            { path: 'about-me', loadComponent: () => import('./features/profile/components/about-me.component/about-me.component').then(m => m.AboutMeComponent) },
+            { 
+              path: 'edit-profile', 
+              loadComponent: () => import('./features/profile/components/profile-edit.component/profile-edit.component').then(m => m.ProfileEditComponent) 
+            },
+            { 
+              path: 'past-trips', 
+              loadComponent: () => import('./features/profile/components/past-trips.component/past-trips.component').then(m => m.PastTripsComponent) 
+            },
+          ]
+      }
     ]
   },
-
 
   // =================================================
   // 4. Property Creation Flow (Your original work)

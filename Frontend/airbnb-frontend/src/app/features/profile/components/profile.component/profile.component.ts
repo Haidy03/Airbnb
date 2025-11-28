@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute, RouterOutlet } from '@angular/router';
-import { NgFor } from '@angular/common'; 
+import { Component, OnInit, inject } from '@angular/core';
+import { Router, ActivatedRoute, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { CommonModule } from '@angular/common';
+
 interface MenuItem {
   icon: string;
   label: string;
@@ -9,37 +10,27 @@ interface MenuItem {
 
 @Component({
   selector: 'app-profile',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive], // ✅ أضفنا RouterLink و RouterLinkActive
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css'],
-  imports: [RouterOutlet , NgFor]
+  styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  // ✅ القائمة بمسارات نسبية (بدون / في البداية)
   menuItems: MenuItem[] = [
-    { icon: 'A', label: 'About me', route: 'about-me' },
-    { icon: '🧳', label: 'My trips', route: '/trips' },
-    //{ icon: '👥', label: 'Connections', route: 'connections' }
+    { icon: '🅰️', label: 'About me', route: 'about-me' },
+    { icon: '✏️', label: 'Edit Profile', route: 'edit-profile' },
+    { icon: '🧳', label: 'My trips', route: 'past-trips' }, 
+    
   ];
 
-  currentRoute: string = 'about';
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
-
   ngOnInit() {
-    // Navigate to about by default
-    if (this.router.url === '/profile' || this.router.url === '/profile/') {
-      this.router.navigate(['about'], { relativeTo: this.route });
+    const url = this.router.url;
+    if (url.endsWith('/profile') || url.endsWith('/profile/')) {
+      this.router.navigate(['about-me'], { relativeTo: this.route });
     }
-  }
-
-  navigateTo(route: string) {
-    this.currentRoute = route;
-    this.router.navigate([route], { relativeTo: this.route });
-  }
-
-  isActive(route: string): boolean {
-    return this.router.url.includes(route);
   }
 }

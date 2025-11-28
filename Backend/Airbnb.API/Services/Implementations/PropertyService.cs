@@ -39,6 +39,7 @@ namespace Airbnb.API.Services.Implementations
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
                 NumberOfBedrooms = dto.NumberOfBedrooms,
+                NumberOfBeds = dto.NumberOfBeds,
                 NumberOfBathrooms = dto.NumberOfBathrooms,
                 MaxGuests = dto.MaxGuests,
                 PricePerNight = dto.PricePerNight,
@@ -95,50 +96,66 @@ namespace Airbnb.API.Services.Implementations
             if (!string.IsNullOrEmpty(dto.CurrentStep))
             {
                 property.CurrentStep = dto.CurrentStep;
-                _logger.LogInformation("Updated CurrentStep to: {Step}", dto.CurrentStep);
             }
 
-            // Update only provided fields
+            // --- Basic Info ---
             if (dto.Title != null) property.Title = dto.Title;
             if (dto.Description != null) property.Description = dto.Description;
             if (dto.PropertyTypeId.HasValue) property.PropertyTypeId = dto.PropertyTypeId.Value;
+
+            // --- Location ---
             if (dto.Address != null) property.Address = dto.Address;
             if (dto.City != null) property.City = dto.City;
             if (dto.Country != null) property.Country = dto.Country;
             if (dto.PostalCode != null) property.PostalCode = dto.PostalCode;
             if (dto.Latitude.HasValue) property.Latitude = dto.Latitude.Value;
             if (dto.Longitude.HasValue) property.Longitude = dto.Longitude.Value;
+
+            // --- Capacity (Updated with NumberOfBeds) ---
             if (dto.NumberOfBedrooms.HasValue) property.NumberOfBedrooms = dto.NumberOfBedrooms.Value;
+            if (dto.NumberOfBeds.HasValue) property.NumberOfBeds = dto.NumberOfBeds.Value; // ✅
             if (dto.NumberOfBathrooms.HasValue) property.NumberOfBathrooms = dto.NumberOfBathrooms.Value;
             if (dto.MaxGuests.HasValue) property.MaxGuests = dto.MaxGuests.Value;
+
+            // --- Pricing & Cleaning Fee (Fixed Logic) ---
             if (dto.PricePerNight.HasValue) property.PricePerNight = dto.PricePerNight.Value;
-            if (dto.CleaningFee.HasValue) property.CleaningFee = dto.CleaningFee.Value;
+
+            // ✅ تصحيح: فصل منطق Cleaning Fee ليعمل بشكل مستقل
+            if (dto.CleaningFee.HasValue)
+            {
+                property.CleaningFee = dto.CleaningFee.Value;
+            }
+            else if (dto.CurrentStep == "pricing") // لو المستخدم مسح القيمة في صفحة التسعير
+            {
+                property.CleaningFee = null;
+            }
+
+            // --- Rules & Booking ---
             if (dto.HouseRules != null) property.HouseRules = dto.HouseRules;
             if (dto.CheckInTime.HasValue) property.CheckInTime = dto.CheckInTime;
             if (dto.CheckOutTime.HasValue) property.CheckOutTime = dto.CheckOutTime;
             if (dto.MinimumStay.HasValue) property.MinimumStay = dto.MinimumStay.Value;
             if (dto.RoomType != null) property.RoomType = dto.RoomType;
+            if (dto.IsInstantBook.HasValue) property.IsInstantBook = dto.IsInstantBook.Value;
+
+            _logger.LogInformation("📥 Recieved Safety Update -> Camera: {Cam}, Noise: {Noise}, Weapon: {Wep}",
+              dto.HasExteriorCamera, dto.HasNoiseMonitor, dto.HasWeapons);
+            // --- Safety Details (Fixed Mapping) ---
+            // ✅ تصحيح: ربط الحقول المسطحة القادمة من الـ DTO
             if (dto.HasExteriorCamera.HasValue) property.HasExteriorCamera = dto.HasExteriorCamera.Value;
             if (dto.HasNoiseMonitor.HasValue) property.HasNoiseMonitor = dto.HasNoiseMonitor.Value;
             if (dto.HasWeapons.HasValue) property.HasWeapons = dto.HasWeapons.Value;
-            if (dto.IsInstantBook.HasValue) property.IsInstantBook = dto.IsInstantBook.Value;
 
-            // ✅ Update Amenities if provided
+            // --- Amenities (Independent Logic) ---
             if (dto.AmenityIds != null)
             {
                 await _propertyRepository.UpdatePropertyAmenitiesAsync(id, dto.AmenityIds);
             }
-            else if (dto.CurrentStep == "pricing")
-            {
-                property.CleaningFee = null;
-            }
 
             property.UpdatedAt = DateTime.UtcNow;
-
             await _propertyRepository.UpdateAsync(property);
 
             var updatedProperty = await _propertyRepository.GetByIdWithDetailsAsync(id);
-
             return await MapToResponseDto(updatedProperty);
         }
 
@@ -391,6 +408,7 @@ namespace Airbnb.API.Services.Implementations
                 Title = property.Title,
                 Description = property.Description,
                 PropertyType = property.PropertyType?.Name ?? "Unknown",
+                PropertyTypeId = property.PropertyTypeId,
                 RoomType = property.RoomType,
                 Address = property.Address,
                 City = property.City,
@@ -399,6 +417,7 @@ namespace Airbnb.API.Services.Implementations
                 Latitude = property.Latitude,
                 Longitude = property.Longitude,
                 NumberOfBedrooms = property.NumberOfBedrooms,
+                NumberOfBeds = property.NumberOfBeds,
                 NumberOfBathrooms = property.NumberOfBathrooms,
                 MaxGuests = property.MaxGuests,
                 PricePerNight = property.PricePerNight,
@@ -415,6 +434,7 @@ namespace Airbnb.API.Services.Implementations
                 AverageRating = property.AverageRating,
                 TotalReviews = property.TotalReviews,
                 TotalBookings = totalBookings,
+                IsInstantBook = property.IsInstantBook,
                 CurrentStep = property.CurrentStep, // ✅ Include CurrentStep
                 Status = property.Status, // ✅ Include Status
                 Images = property.Images.Select(img => new PropertyImageDto
@@ -480,6 +500,8 @@ namespace Airbnb.API.Services.Implementations
             return true;
         }
 
+        // في ملف PropertyService.cs
+
         public async Task<bool> UnpublishPropertyAsync(int id, string hostId)
         {
             var property = await _propertyRepository.GetByIdAsync(id);
@@ -490,13 +512,15 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to unpublish this property");
 
-            if (property.Status != PropertyStatus.Active)
+            // ✅ التصحيح: التحقق من IsActive بدلاً من Status فقط
+            // إذا كان العقار غير مفعل أصلاً، لا داعي لإلغاء تفعيله
+            if (!property.IsActive)
             {
-                throw new InvalidOperationException("Only active properties can be deactivated");
+                throw new InvalidOperationException("Property is already inactive");
             }
 
             property.IsActive = false;
-            property.Status = PropertyStatus.Inactive; // ✅ Change status
+            property.Status = PropertyStatus.Inactive;
             property.UpdatedAt = DateTime.UtcNow;
 
             await _propertyRepository.UpdateAsync(property);
@@ -517,7 +541,7 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to activate this property");
 
-            // ✅ يمكن التفعيل فقط لو Property معتمدة من Admin
+            
             if (property.Status != PropertyStatus.Approved && property.Status != PropertyStatus.Inactive)
             {
                 throw new InvalidOperationException("Property must be approved by admin or previously active before activation");

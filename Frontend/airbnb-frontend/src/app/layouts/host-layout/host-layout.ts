@@ -1,4 +1,4 @@
-import { Component, Signal, inject, signal, OnInit } from '@angular/core';
+import { Component, Signal, inject, signal, OnInit, ChangeDetectorRef } from '@angular/core'; // 1. Add ChangeDetectorRef
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -38,6 +38,7 @@ export class HostLayoutComponent implements OnInit {
   public messageService = inject(MessageService);
   private router = inject(Router);
   private hostStatsService = inject(HostStatsService);
+  private cdr = inject(ChangeDetectorRef); // 2. Inject ChangeDetectorRef
 
   // User Data (Reactive Signal from Auth Service)
   user: Signal<AuthUser | null> = this.authService.user;
@@ -80,6 +81,11 @@ export class HostLayoutComponent implements OnInit {
 
   toggleMobileMenu(): void {
     this.mobileMenuOpen.set(!this.mobileMenuOpen());
+    
+    // 3. Force change detection to ensure User info renders immediately
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 0);
   }
 
   /**
@@ -97,7 +103,7 @@ export class HostLayoutComponent implements OnInit {
       return;
     }
     
-    this.router.navigate(['/profile']); 
+    this.router.navigate(['/host/profile']); 
   }
 
   logout(): void {
