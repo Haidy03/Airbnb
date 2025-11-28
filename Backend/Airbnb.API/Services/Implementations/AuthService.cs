@@ -127,7 +127,12 @@ namespace Airbnb.API.Services.Implementations
                 Id = user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Email = user.Email
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                DateOfBirth = user.DateOfBirth,
+                Address = user.Address,
+                City = user.City,
+                Country = user.Country
             };
         }
 
@@ -139,7 +144,6 @@ namespace Airbnb.API.Services.Implementations
             if (user == null)
             {
                 // This is a special case. If the user from a valid token doesn't exist, something is wrong.
-                // We return an IdentityResult with a custom error.
                 return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "User not found." });
             }
 
@@ -147,7 +151,17 @@ namespace Airbnb.API.Services.Implementations
             user.FirstName = updateDto.FirstName;
             user.LastName = updateDto.LastName;
             user.Bio = updateDto.Bio;
-            user.UpdatedAt = DateTime.UtcNow; // It's good practice to track when a record was last updated
+
+            // ==========================================
+            // الإضافات الجديدة (Mapping)
+            // ==========================================
+            user.PhoneNumber = updateDto.PhoneNumber;
+            user.DateOfBirth = updateDto.DateOfBirth;
+            user.Address = updateDto.Address;
+            user.City = updateDto.City;
+            user.Country = updateDto.Country;
+
+            user.UpdatedAt = DateTime.UtcNow; // Track update time
 
             // Persist the changes to the database
             var result = await _userManager.UpdateAsync(user);

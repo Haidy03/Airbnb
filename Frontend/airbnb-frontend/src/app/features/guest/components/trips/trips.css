@@ -15,13 +15,12 @@
 
 /* Custom Tab Styling (The underline effect) */
 .tab-btn {
-  font-weight: 600;
-  font-size: 16px;
-  transition: color 0.2s;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0;
 }
 
 .tab-btn:hover {
-  color: #000 !important; /* Darker text on hover */
+  color: #000 !important;
   background-color: #f7f7f7;
 }
 
@@ -36,6 +35,9 @@
   background-color: #222; /* Black underline like Airbnb */
 }
 
+
+
 .tab-btn.active {
-  font-weight: 700; /* Bolder text for active */
+  border-bottom: 2px solid #222 !important;
+  color: #222 !important;
 }

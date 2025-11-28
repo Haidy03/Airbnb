@@ -168,7 +168,7 @@
            routerLinkActive="active" 
            class="nav-link">
           Messages
-          <span *ngIf="unreadNotifications() > 0" class="message-badge">
+          <span *ngIf="messageService.unreadCount() > 0" class="message-badge">
             {{ messageService.unreadCount()  }}
           </span>
         </a>
@@ -247,7 +247,7 @@
            routerLinkActive="active"
            class="mobile-nav-link">
           Messages
-          <span *ngIf="unreadNotifications() > 0" class="message-badge">
+          <span *ngIf="messageService.unreadCount() > 0" class="message-badge">
             {{ messageService.unreadCount()}}
           </span>
         </a>

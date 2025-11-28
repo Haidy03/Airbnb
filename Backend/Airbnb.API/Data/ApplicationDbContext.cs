@@ -21,6 +21,7 @@ namespace Airbnb.API.Models
         public DbSet<Review> Reviews { get; set; }
         public DbSet<PropertyAvailability> PropertyAvailabilities { get; set; }
         public DbSet<UserVerification> UserVerifications { get; set; }
+        public DbSet<Wishlist> Wishlists { get; set; }
 
         // ✅ NEW: Messages DbSets
         public DbSet<Conversation> Conversations { get; set; }

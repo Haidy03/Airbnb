@@ -1,36 +1,66 @@
-.home-page {
-  padding: 2rem 0;
+/* إخفاء السكرول بار تماماً */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.scroll-smooth { scroll-behavior: smooth; }
+
+/* =================================================
+   CSS MAGIC FOR 6 ITEMS PER ROW
+   ================================================= */
+.carousel-item-wrapper {
+  /* ده بيخلي العنصر مينكمشش ولا يكبر عن الحسابات دي */
+  flex: 0 0 auto;
+
+
+  width: calc((100% - (1.5rem * 5)) / 6);
 }
 
-.property-section {
-  margin-bottom: 3rem;
+/* Responsive: تظبيط العدد للشاشات الأصغر عشان الشكل مايبوظش */
+
+@media (max-width: 1400px) {
+  .carousel-item-wrapper {
+    /* شاشات متوسطة: 4 كروت */
+    width: calc((100% - (1.5rem * 3)) / 4);
+  }
 }
 
-.section-title {
-  color: #222;
-  font-size: 22px;
-}
-
-.btn-link {
-  font-size: 14px;
-  font-weight: 600;
-  padding: 0;
-}
-
-.btn-link:hover {
-  text-decoration: underline !important;
-}
-
-.row {
-  margin: 0 -0.5rem;
+@media (max-width: 992px) {
+  .carousel-item-wrapper {
+    /* تابلت: 3 كروت */
+    width: calc((100% - (1.5rem * 2)) / 3);
+  }
 }
 
 @media (max-width: 768px) {
-  .home-page {
-    padding: 1rem 0;
+  .carousel-item-wrapper {
+    /* موبايل: كارت وشوية (عشان يبان إن فيه سكرول) */
+    width: 80%;
   }
+}
 
-  .section-title {
-    font-size: 18px;
-  }
+/* =================================================
+   أسهم التنقل (Arrows)
+   ================================================= */
+.nav-arrow {
+  width: 32px;
+  height: 32px;
+  border-color: #ddd !important;
+  opacity: 0; /* مخفي افتراضياً */
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* يظهر لما الماوس يجي على السكشن كله */
+.hover-arrows:hover .nav-arrow {
+  opacity: 1;
+}
+
+.nav-arrow:hover {
+  background-color: #f7f7f7;
+  transform: scale(1.05);
+  color: #000;
+}
+
+.hover-scale:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s;
 }

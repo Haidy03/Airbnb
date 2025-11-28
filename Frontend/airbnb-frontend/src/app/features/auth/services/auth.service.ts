@@ -218,11 +218,13 @@ export class AuthService {
     });
   }
 
-
- changePassword(currentPassword: string, newPassword: string): Observable<ChangePasswordResponse> {
+  // ================= Change Password (LOGGED IN) =================
+  changePassword(currentPassword: string, newPassword: string): Observable<ChangePasswordResponse> {
     const body = { currentPassword, newPassword };
-    // افترضنا أن الباك إند لديه هذا المسار لتغيير كلمة المرور للمستخدم المسجل
-    return this.http.post<ChangePasswordResponse>(`${this.API_URL}/change-password`, body);
+    const token = this.getToken();
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+
+    return this.http.post<ChangePasswordResponse>(`${this.API_URL}/change-password`, body, { headers });
   }
 
   // ================= Login / Register flows =================
