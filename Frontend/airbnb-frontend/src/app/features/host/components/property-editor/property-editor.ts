@@ -144,7 +144,8 @@ export class PropertyEditorComponent implements OnInit {
     });
 
     this.tempAmenities.set([...prop.amenities]);
-    this.tempInstantBook.set(prop.isInstantBook);
+    console.log('Database Value for InstantBook:', prop.isInstantBook);
+    this.tempInstantBook.set(prop.isInstantBook === true);
 
     // ✅ House Rules Logic (Fix: Close brackets correctly)
     const formatTime = (time: any) => time ? String(time).substring(0, 5) : '';
@@ -277,6 +278,10 @@ export class PropertyEditorComponent implements OnInit {
         console.error('Error fetching address:', err);
       }
     });
+  }
+
+  setBookingType(isInstant: boolean) {
+    this.tempInstantBook.set(isInstant);
   }
 
   toggleSafety(field: 'exteriorCamera' | 'noiseMonitor' | 'weapons') {

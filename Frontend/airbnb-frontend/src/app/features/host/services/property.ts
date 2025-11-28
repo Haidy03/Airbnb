@@ -159,6 +159,9 @@ export class PropertyService {
   // ==========================================
   private mapApiToProperty(apiData: any): Property {
     // Status Logic
+
+    console.log('Raw API Data:', apiData); 
+    
     let computedStatus = apiData.status;
     const hasCurrentStep = !!apiData.currentStep;
     const isActive = apiData.isActive === true;
@@ -266,7 +269,7 @@ export class PropertyService {
       },
 
       status: computedStatus,
-      isInstantBook: apiData.isInstantBook || false,
+      isInstantBook: apiData.isInstantBook ?? apiData.IsInstantBook ?? false,
       isActive: isActive,
       isApproved: isApproved,
       

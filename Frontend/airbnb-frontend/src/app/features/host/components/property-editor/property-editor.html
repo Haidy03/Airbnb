@@ -318,27 +318,51 @@
         </div>
       </section>
 
-      <!-- 10. BOOKING SETTINGS -->
+      <!-- 10. BOOKING SETTINGS (Improved UI) -->
       <section *ngIf="activeSection() === 'booking'" class="editor-section">
-        <h2 class="section-title">Booking settings</h2>
-        <div class="radio-group">
-          <label class="radio-label" [class.selected]="tempInstantBook() === true">
-            <input type="radio" [value]="true" [(ngModel)]="tempInstantBook">
-            <div>
-              <strong>Instant Book</strong>
-              <p class="radio-desc">Guests who meet your requirements can book instantly.</p>
+        <h2 class="section-title">Decide how you’ll confirm bookings</h2>
+        
+        <div class="booking-options-container">
+          
+          <!-- Option 1: Instant Book -->
+          <div class="booking-card" 
+               [class.selected]="tempInstantBook() === true"
+               (click)="setBookingType(true)">
+            
+            <div class="booking-text">
+              <h3>Use Instant Book</h3>
+              <p>Guests who meet your requirements can book instantly. You don't need to approve them manually.</p>
             </div>
-          </label>
-          <label class="radio-label" [class.selected]="tempInstantBook() === false">
-            <input type="radio" [value]="false" [(ngModel)]="tempInstantBook">
-            <div>
-              <strong>Request to Book</strong>
-              <p class="radio-desc">You approve or decline all booking requests.</p>
+            
+            <div class="custom-radio">
+              <div class="radio-inner" *ngIf="tempInstantBook() === true"></div>
             </div>
-          </label>
-        </div>
-      </section>
+          </div>
 
+          <!-- Option 2: Request to Book -->
+          <div class="booking-card" 
+               [class.selected]="tempInstantBook() === false"
+               (click)="setBookingType(false)">
+            
+            <div class="booking-text">
+              <h3>Approve or decline requests</h3>
+              <p>Guests must send a reservation request. You have 24 hours to approve or decline.</p>
+            </div>
+            
+            <div class="custom-radio">
+              <div class="radio-inner" *ngIf="tempInstantBook() === false"></div>
+            </div>
+          </div>
+
+        </div>
+        
+        
+        <div class="info-box" *ngIf="tempInstantBook() === true">
+          <span class="lightning-icon">⚡</span>
+          <span>Instant Book listings get more bookings on average.</span>
+        </div>
+
+      </section>
       <!-- 11. HOUSE RULES -->
       <section *ngIf="activeSection() === 'rules'" class="editor-section">
         <h2 class="section-title">House rules</h2>
