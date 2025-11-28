@@ -434,6 +434,7 @@ namespace Airbnb.API.Services.Implementations
                 AverageRating = property.AverageRating,
                 TotalReviews = property.TotalReviews,
                 TotalBookings = totalBookings,
+                IsInstantBook = property.IsInstantBook,
                 CurrentStep = property.CurrentStep, // ✅ Include CurrentStep
                 Status = property.Status, // ✅ Include Status
                 Images = property.Images.Select(img => new PropertyImageDto

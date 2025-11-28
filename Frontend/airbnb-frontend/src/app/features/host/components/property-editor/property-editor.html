@@ -269,80 +269,121 @@
         </div>
       </section>
 
-      <!-- 8. LOCATION -->
+      <!-- 8. LOCATION (Interactive Map & Full Fields) -->
       <section *ngIf="activeSection() === 'location'" class="editor-section">
         <h2 class="section-title">Location</h2>
+        
+        <!-- Street Address -->
         <div class="form-group">
           <label>Street Address</label>
-          <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().address">
+          <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().address" placeholder="e.g. 123 Main St">
         </div>
+
+        <!-- City & State -->
         <div class="form-row">
           <div class="form-group">
             <label>City</label>
-            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().city">
+            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().city" placeholder="City">
+          </div>
+          <!-- <div class="form-group">
+            <label>State / Province</label> 
+           
+            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().state" placeholder="State">
+          </div> -->
+        </div>
+
+        <!-- Country & Zip Code -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Country / Region</label>
+            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().country" placeholder="Country">
           </div>
           <div class="form-group">
-            <label>Country</label>
-            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().country">
+            <label>Postal / Zip Code</label> <!-- ✅ حقل جديد -->
+            <input type="text" class="airbnb-input" [(ngModel)]="tempLocation().zipCode" placeholder="Postal Code">
           </div>
         </div>
-        <div class="map-container-wrapper">
-          <div id="editor-map" class="map-view"></div>
+        
+        <!-- Interactive Map -->
+        <div class="form-group">
+          <label>Pin your location</label>
+          <p class="input-hint">Drag the pin to adjust the precise location.</p>
+          <div class="map-container-wrapper">
+            <div id="editor-map" class="map-view"></div>
+          </div>
+          <!-- عرض الإحداثيات للتأكد (اختياري) -->
+          <div class="input-hint" style="margin-top: 8px;">
+            Lat: {{ tempLocation().lat | number:'1.4-4' }}, Lng: {{ tempLocation().lng | number:'1.4-4' }}
+          </div>
         </div>
       </section>
 
-      <!-- 10. BOOKING SETTINGS -->
+      <!-- 10. BOOKING SETTINGS (Improved UI) -->
       <section *ngIf="activeSection() === 'booking'" class="editor-section">
-        <h2 class="section-title">Booking settings</h2>
-        <div class="radio-group">
-          <label class="radio-label" [class.selected]="tempInstantBook() === true">
-            <input type="radio" [value]="true" [(ngModel)]="tempInstantBook">
-            <div>
-              <strong>Instant Book</strong>
-              <p class="radio-desc">Guests who meet your requirements can book instantly.</p>
+        <h2 class="section-title">Decide how you’ll confirm bookings</h2>
+        
+        <div class="booking-options-container">
+          
+          <!-- Option 1: Instant Book -->
+          <div class="booking-card" 
+               [class.selected]="tempInstantBook() === true"
+               (click)="setBookingType(true)">
+            
+            <div class="booking-text">
+              <h3>Use Instant Book</h3>
+              <p>Guests who meet your requirements can book instantly. You don't need to approve them manually.</p>
             </div>
-          </label>
-          <label class="radio-label" [class.selected]="tempInstantBook() === false">
-            <input type="radio" [value]="false" [(ngModel)]="tempInstantBook">
-            <div>
-              <strong>Request to Book</strong>
-              <p class="radio-desc">You approve or decline all booking requests.</p>
+            
+            <div class="custom-radio">
+              <div class="radio-inner" *ngIf="tempInstantBook() === true"></div>
             </div>
-          </label>
-        </div>
-      </section>
+          </div>
 
+          <!-- Option 2: Request to Book -->
+          <div class="booking-card" 
+               [class.selected]="tempInstantBook() === false"
+               (click)="setBookingType(false)">
+            
+            <div class="booking-text">
+              <h3>Approve or decline requests</h3>
+              <p>Guests must send a reservation request. You have 24 hours to approve or decline.</p>
+            </div>
+            
+            <div class="custom-radio">
+              <div class="radio-inner" *ngIf="tempInstantBook() === false"></div>
+            </div>
+          </div>
+
+        </div>
+        
+        
+        <div class="info-box" *ngIf="tempInstantBook() === true">
+          <span class="lightning-icon">⚡</span>
+          <span>Instant Book listings get more bookings on average.</span>
+        </div>
+
+      </section>
       <!-- 11. HOUSE RULES -->
       <section *ngIf="activeSection() === 'rules'" class="editor-section">
         <h2 class="section-title">House rules</h2>
+        
         <div class="form-row">
+          <!-- Check-in -->
           <div class="form-group">
             <label>Check-in time</label>
-            <input type="time" class="airbnb-input" [(ngModel)]="tempRules().checkInTime">
+            <input type="time" 
+                   class="airbnb-input" 
+                   [ngModel]="tempRules().checkInTime"
+                   (ngModelChange)="updateRule('checkInTime', $event)">
           </div>
+
+          <!-- Check-out -->
           <div class="form-group">
             <label>Check-out time</label>
-            <input type="time" class="airbnb-input" [(ngModel)]="tempRules().checkOutTime">
-          </div>
-        </div>
-        <div class="amenities-list">
-          <div class="amenity-item">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempRules().petsAllowed">
-              <span class="check-text">Pets allowed</span>
-            </label>
-          </div>
-          <div class="amenity-item">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempRules().smokingAllowed">
-              <span class="check-text">Smoking allowed</span>
-            </label>
-          </div>
-          <div class="amenity-item">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempRules().eventsAllowed">
-              <span class="check-text">Events allowed</span>
-            </label>
+            <input type="time" 
+                   class="airbnb-input" 
+                   [ngModel]="tempRules().checkOutTime"
+                   (ngModelChange)="updateRule('checkOutTime', $event)">
           </div>
         </div>
       </section>
@@ -351,25 +392,39 @@
       <section *ngIf="activeSection() === 'safety'" class="editor-section">
         <h2 class="section-title">Guest safety</h2>
         <p class="desc">Does your place have any of these?</p>
+        
         <div class="amenities-list">
+          
+          <!-- Exterior Camera -->
           <div class="amenity-item">
             <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempSafety().exteriorCamera">
+              <input type="checkbox" 
+                     [checked]="tempSafety().exteriorCamera"
+                     (change)="toggleSafety('exteriorCamera')"> <!-- ✅ استخدام الدالة الجديدة -->
               <span class="check-text">Exterior security camera</span>
             </label>
           </div>
+
+          <!-- Noise Monitor -->
           <div class="amenity-item">
             <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempSafety().noiseMonitor">
+              <input type="checkbox" 
+                     [checked]="tempSafety().noiseMonitor"
+                     (change)="toggleSafety('noiseMonitor')"> <!-- ✅ استخدام الدالة الجديدة -->
               <span class="check-text">Noise decibel monitor</span>
             </label>
           </div>
+
+          <!-- Weapons -->
           <div class="amenity-item">
             <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempSafety().weapons">
+              <input type="checkbox" 
+                     [checked]="tempSafety().weapons"
+                     (change)="toggleSafety('weapons')"> <!-- ✅ استخدام الدالة الجديدة -->
               <span class="check-text">Weapons on property</span>
             </label>
           </div>
+
         </div>
       </section>
 
