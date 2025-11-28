@@ -35,7 +35,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   showFiltersButton = false;
   isSearchEnabled = true;
 
-  constructor(private router: Router) {}
+  constructor(public router: Router) {}
 
   ngOnInit() {
     this.checkCurrentRoute();

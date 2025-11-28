@@ -16,8 +16,8 @@ interface MenuItem {
 export class ProfileComponent implements OnInit {
   menuItems: MenuItem[] = [
     { icon: 'A', label: 'About me', route: 'about-me' },
-    { icon: '🧳', label: 'Past trips', route: 'past-trips' },
-    { icon: '👥', label: 'Connections', route: 'connections' }
+    { icon: '🧳', label: 'My trips', route: '/trips' },
+    //{ icon: '👥', label: 'Connections', route: 'connections' }
   ];
 
   currentRoute: string = 'about';
