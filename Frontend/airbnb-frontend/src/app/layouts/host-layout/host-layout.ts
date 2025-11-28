@@ -1,9 +1,12 @@
-import { Component, signal,inject, OnInit } from '@angular/core';
+import { Component, Signal, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterOutlet,RouterLinkActive  } from '@angular/router';
+import { Router, RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { HostStatsService } from '../../features/host/services/host-stats';
 import { MessageService } from '../../features/messages/Services/message';
+import { AuthService } from '../../features/auth/services/auth.service';
+import { AuthUser } from '../../features/auth/models/auth-user.model';
+
 interface NavItem {
   label: string;
   route: string;
@@ -14,20 +17,37 @@ interface NavItem {
 @Component({
   selector: 'app-host-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterOutlet,RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterOutlet, RouterLinkActive],
   templateUrl: './host-layout.html',
-  styleUrls: ['./host-layout.css']
+  styleUrls: ['./host-layout.css'],
+  animations: [
+    trigger('slideDown', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(-10px)' }),
+        animate('200ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('150ms ease-in', style({ opacity: 0, transform: 'translateY(-10px)' }))
+      ])
+    ])
+  ]
 })
-export class HostLayoutComponent implements OnInit{
-  // Sidebar state
+export class HostLayoutComponent implements OnInit {
+  // Services
+  private authService = inject(AuthService);
+  public messageService = inject(MessageService);
+  private router = inject(Router);
+  private hostStatsService = inject(HostStatsService);
+
+  // User Data (Reactive Signal from Auth Service)
+  user: Signal<AuthUser | null> = this.authService.user;
+
+  // State Signals
   sidebarOpen = signal<boolean>(true);
   mobileMenuOpen = signal<boolean>(false);
-  public messageService = inject(MessageService);
-  
-  // User notifications
-  //unreadNotifications = signal<number>(0);
+  unreadNotifications = signal<number>(0);
 
-  // Navigation items
+  // Navigation Items
   navItems: NavItem[] = [
     { label: 'Dashboard', route: '/host/dashboard', icon: '📊' },
     { label: 'Calendar', route: '/host/calendar', icon: '📅' },
@@ -39,69 +59,49 @@ export class HostLayoutComponent implements OnInit{
     { label: 'Performance', route: '/host/performance', icon: '📈' },
   ];
 
-  // Mock user data (replace with actual auth service)
-  user = {
-    name: 'Host Name',
-    email: 'host@example.com',
-    avatar: 'https://i.pravatar.cc/150?img=33',
-    isSuperhost: true
-  };
-
-  constructor(
-    private router: Router,
-   // private hostStatsService: HostStatsService
-  ) {
-   // this.loadNotificationCount();
+  constructor() {
+    this.loadNotificationCount();
   }
 
-   ngOnInit() {
-    // ✅ تحديث العداد عند تحميل الصفحة لأول مرة
+  ngOnInit() {
+    // تحديث العداد عند تحميل الصفحة لأول مرة
     this.messageService.refreshUnreadCount();
   }
-  /**
-   * Load unread notification count
-   */
-  // loadNotificationCount(): void {
-  //   this.hostStatsService.getUnreadCount().subscribe(count => {
-  //     this.unreadNotifications.set(count);
-  //   });
-  // }
 
-  /**
-   * Toggle sidebar
-   */
+  loadNotificationCount(): void {
+    this.hostStatsService.getUnreadCount().subscribe(count => {
+      this.unreadNotifications.set(count);
+    });
+  }
+
   toggleSidebar(): void {
     this.sidebarOpen.set(!this.sidebarOpen());
   }
 
-  /**
-   * Toggle mobile menu
-   */
   toggleMobileMenu(): void {
     this.mobileMenuOpen.set(!this.mobileMenuOpen());
   }
 
   /**
-   * Check if route is active
+   * DIRECT NAVIGATION TO PROFILE
    */
-  isActiveRoute(route: string): boolean {
-    return this.router.url.includes(route);
-  }
+  viewProfileClick(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
 
-  /**
-   * Navigate to route and close mobile menu
-   */
-  navigateAndClose(route: string): void {
-    this.router.navigate([route]);
     this.mobileMenuOpen.set(false);
+
+    if (!this.authService.isAuthenticated) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    
+    this.router.navigate(['/profile']); 
   }
 
-  /**
-   * Logout (implement with your auth service)
-   */
   logout(): void {
-    // Implement logout logic
-    console.log('Logging out...');
+    this.authService.logout();
     this.router.navigate(['/']);
   }
 }

@@ -60,10 +60,10 @@ export class instantBookComponent implements OnInit {
     this.bookingMode.set(mode);
   }
 
-  // ✅ دالة مساعدة لتجهيز البيانات بشكل صحيح للباك إند
+  
   private getPayload() {
     return {
-      // نحول النص 'instant' إلى true، وأي شيء آخر إلى false
+      
       isInstantBook: this.bookingMode() === 'instant'
     };
   }
@@ -76,7 +76,7 @@ export class instantBookComponent implements OnInit {
     if (this.currentDraftId) {
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
-        this.getPayload(), // ✅ استخدام الدالة المصححة
+        this.getPayload(), 
         'booking-settings'
       ).subscribe({
         next: () => {
@@ -111,7 +111,7 @@ export class instantBookComponent implements OnInit {
     if (this.currentDraftId) {
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
-        this.getPayload(), // ✅ استخدام الدالة المصححة
+        this.getPayload(), 
         'booking-settings'
       ).subscribe({
         next: () => {
