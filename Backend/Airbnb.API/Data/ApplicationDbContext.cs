@@ -21,12 +21,19 @@ namespace Airbnb.API.Models
         public DbSet<Review> Reviews { get; set; }
         public DbSet<PropertyAvailability> PropertyAvailabilities { get; set; }
         public DbSet<UserVerification> UserVerifications { get; set; }
-        public DbSet<Wishlist> Wishlists { get; set; }
 
         // ✅ NEW: Messages DbSets
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<MessageAttachment> MessageAttachments { get; set; }
+        public DbSet<Experience> Experiences { get; set; }
+        public DbSet<ExperienceCategory> ExperienceCategories { get; set; }
+        public DbSet<ExperienceImage> ExperienceImages { get; set; }
+        public DbSet<ExperienceLanguage> ExperienceLanguages { get; set; }
+        public DbSet<ExperienceAvailability> ExperienceAvailabilities { get; set; }
+        public DbSet<ExperienceBooking> ExperienceBookings { get; set; }
+        public DbSet<ExperienceReview> ExperienceReviews { get; set; }
+        public DbSet<Wishlist> Wishlists { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -302,11 +309,168 @@ namespace Airbnb.API.Models
                     .HasDefaultValueSql("GETUTCDATE()");
             });
 
+            // Experience Configuration
+            // ============================================
+            modelBuilder.Entity<Experience>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => e.CategoryId);
+                entity.HasIndex(e => e.HostId);
+                entity.HasIndex(e => new { e.City, e.Country });
+                entity.HasIndex(e => e.Type);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.IsActive);
+
+                entity.HasOne(e => e.Host)
+                    .WithMany()
+                    .HasForeignKey(e => e.HostId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Category)
+                    .WithMany(c => c.Experiences)
+                    .HasForeignKey(e => e.CategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Property(e => e.PricePerPerson).HasPrecision(18, 2);
+            });
+
+            // ============================================
+            // ExperienceCategory Configuration
+            // ============================================
+            modelBuilder.Entity<ExperienceCategory>(entity =>
+            {
+                entity.HasKey(c => c.Id);
+                entity.HasIndex(c => c.Name).IsUnique();
+            });
+
+            // ============================================
+            // ExperienceImage Configuration
+            // ============================================
+            modelBuilder.Entity<ExperienceImage>(entity =>
+            {
+                entity.HasKey(i => i.Id);
+                entity.HasIndex(i => new { i.ExperienceId, i.IsPrimary });
+
+                entity.HasOne(i => i.Experience)
+                    .WithMany(e => e.Images)
+                    .HasForeignKey(i => i.ExperienceId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ============================================
+            // ExperienceLanguage Configuration
+            // ============================================
+            modelBuilder.Entity<ExperienceLanguage>(entity =>
+            {
+                entity.HasKey(l => l.Id);
+                entity.HasIndex(l => new { l.ExperienceId, l.LanguageCode }).IsUnique();
+
+                entity.HasOne(l => l.Experience)
+                    .WithMany(e => e.Languages)
+                    .HasForeignKey(l => l.ExperienceId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ============================================
+            // ExperienceAvailability Configuration
+            // ============================================
+            modelBuilder.Entity<ExperienceAvailability>(entity =>
+            {
+                entity.HasKey(a => a.Id);
+                entity.HasIndex(a => new { a.ExperienceId, a.Date, a.StartTime });
+
+                entity.HasOne(a => a.Experience)
+                    .WithMany(e => e.Availabilities)
+                    .HasForeignKey(a => a.ExperienceId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(a => a.CustomPrice).HasPrecision(18, 2);
+            });
+
+            // ============================================
+            // ExperienceBooking Configuration
+            // ============================================
+            modelBuilder.Entity<ExperienceBooking>(entity =>
+            {
+                entity.HasKey(b => b.Id);
+                entity.HasIndex(b => b.ExperienceId);
+                entity.HasIndex(b => b.GuestId);
+                entity.HasIndex(b => b.Status);
+
+                entity.HasOne(b => b.Experience)
+                    .WithMany(e => e.Bookings)
+                    .HasForeignKey(b => b.ExperienceId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(b => b.Availability)
+                    .WithMany()
+                    .HasForeignKey(b => b.AvailabilityId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(b => b.Guest)
+                    .WithMany()
+                    .HasForeignKey(b => b.GuestId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Property(b => b.PricePerPerson).HasPrecision(18, 2);
+                entity.Property(b => b.TotalPrice).HasPrecision(18, 2);
+            });
+
+            // ============================================
+            // ExperienceReview Configuration
+            // ============================================
+            modelBuilder.Entity<ExperienceReview>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+                entity.HasIndex(r => r.ExperienceId);
+                entity.HasIndex(r => r.ReviewerId);
+                entity.HasIndex(r => new { r.ExperienceBookingId, r.ReviewerId }).IsUnique();
+
+                entity.HasOne(r => r.Experience)
+                    .WithMany(e => e.Reviews)
+                    .HasForeignKey(r => r.ExperienceId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Booking)
+                    .WithMany(b => b.Reviews)
+                    .HasForeignKey(r => r.ExperienceBookingId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Reviewer)
+                    .WithMany()
+                    .HasForeignKey(r => r.ReviewerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ============================================
+            // Seed Experience Categories
+            // ============================================
+            SeedExperienceCategories(modelBuilder);
+
             // ============================================
             // Seed PropertyTypes Data
             // ============================================
             SeedPropertyTypes(modelBuilder);
         }
+
+        private void SeedExperienceCategories(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ExperienceCategory>().HasData(
+                new ExperienceCategory { Id = 1, Name = "Food & Drink", Icon = "🍽️", DisplayOrder = 10, IsActive = true },
+                new ExperienceCategory { Id = 2, Name = "Art & Culture", Icon = "🎨", DisplayOrder = 11, IsActive = true },
+                new ExperienceCategory { Id = 11, Name = "Photography", Icon = "📸", DisplayOrder = 1, IsActive = true, Description = "Professional photography sessions" },
+                new ExperienceCategory { Id = 12, Name = "Chefs", Icon = "👨‍🍳", DisplayOrder = 2, IsActive = true, Description = "Personal chef experiences" },
+                new ExperienceCategory { Id = 13, Name = "Prepared meals", Icon = "🍱", DisplayOrder = 3, IsActive = true, Description = "Ready-to-eat meal services" },
+                new ExperienceCategory { Id = 14, Name = "Massage", Icon = "💆", DisplayOrder = 4, IsActive = true, Description = "Relaxing massage therapy" },
+                new ExperienceCategory { Id = 15, Name = "Training", Icon = "🏋️", DisplayOrder = 5, IsActive = true, Description = "Personal training sessions" },
+                new ExperienceCategory { Id = 16, Name = "Makeup", Icon = "💄", DisplayOrder = 6, IsActive = true, Description = "Professional makeup artists" },
+                new ExperienceCategory { Id = 17, Name = "Hair", Icon = "💇", DisplayOrder = 7, IsActive = true, Description = "Hairstyling services" },
+                new ExperienceCategory { Id = 18, Name = "Spa treatments", Icon = "🧖", DisplayOrder = 8, IsActive = true, Description = "Spa and facial treatments" },
+                new ExperienceCategory { Id = 19, Name = "Catering", Icon = "🥂", DisplayOrder = 9, IsActive = true, Description = "Event catering services" }
+            );
+        }
+
 
         private void SeedPropertyTypes(ModelBuilder modelBuilder)
         {

@@ -1,12 +1,14 @@
-import { Component, OnInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { HeaderComponent } from '../header/header';
 import { SearchService } from '../search/services/search-service';
 import { Property } from '../search/models/property.model';
 import { WishlistService } from '../../services/wishlist.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { AuthService } from '../../../auth/services/auth.service';
+import { Router } from '@angular/router';
+import { ListingService } from '../../services/Lisiting-Services'; 
+
+
 
 interface CityGroup {
   city: string;
@@ -18,29 +20,24 @@ interface CityGroup {
   standalone: true,
   imports: [CommonModule, HeaderComponent],
   templateUrl: './home.html',
-  styleUrls: ['./home.css']
 })
 export class HomeComponent implements OnInit {
 
-  // ماسك عناصر السلايدر عشان نحركها
-  @ViewChildren('scrollContainer') scrollContainers!: QueryList<ElementRef>;
-
   cityGroups: CityGroup[] = [];
   isLoading = true;
+  wishlistIds: Set<string> = new Set();
 
   constructor(
     private searchService: SearchService,
     private wishlistService: WishlistService,
+    private listingService: ListingService,
+    // 2. حقن السيرفس
     private toastService: ToastService,
-    private authService: AuthService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadProperties();
-    if (this.authService.isAuthenticated) {
-      this.wishlistService.loadWishlist();
-    }
   }
 
   private loadProperties(): void {
@@ -48,6 +45,11 @@ export class HomeComponent implements OnInit {
     this.searchService.getFeaturedProperties().subscribe({
       next: (data) => {
         this.groupPropertiesByCity(data);
+        data.forEach(p => {
+            this.listingService.checkIsWishlisted(p.id).subscribe(isListed => {
+                if(isListed) this.wishlistIds.add(p.id);
+            });
+            });
         this.isLoading = false;
       },
       error: (err) => {
@@ -70,51 +72,41 @@ export class HomeComponent implements OnInit {
     }));
   }
 
-  // --- Slider Navigation Logic ---
-
-  scrollLeft(index: number) {
-    const container = this.scrollContainers.toArray()[index].nativeElement;
-    // التحريك بمقدار عرض الشاشة تقريباً عشان يجيب المجموعة اللي قبلها
-    container.scrollBy({ left: -container.offsetWidth, behavior: 'smooth' });
-  }
-
-  scrollRight(index: number) {
-    const container = this.scrollContainers.toArray()[index].nativeElement;
-    // التحريك لليمين
-    container.scrollBy({ left: container.offsetWidth, behavior: 'smooth' });
-  }
-
-  // --- Wishlist & Navigation ---
-
   isPropertyInWishlist(propertyId: string): boolean {
-    return this.wishlistService.isInWishlist(Number(propertyId));
+    return this.wishlistIds.has(propertyId);
   }
 
-  onToggleWishlist(property: Property): void {
-    if (!this.authService.isAuthenticated) {
-      this.toastService.show('Please login to save properties', 'info');
-      this.router.navigate(['/login']);
-      return;
+  // ✅ UPDATE: دالة القلب الجديدة (مع الباك اند)
+  onToggleWishlist(property: Property, event: Event): void {
+    event.stopPropagation(); // منع فتح الصفحة عند الضغط على القلب
+    
+    // 1. تحديث فوري للشكل (Optimistic UI)
+    if (this.wishlistIds.has(property.id)) {
+      this.wishlistIds.delete(property.id);
+    } else {
+      this.wishlistIds.add(property.id);
     }
 
-    const imageUrl = (property.images && property.images.length > 0) ? property.images[0].url : '';
-    const isCurrentlyFavorite = this.isPropertyInWishlist(property.id);
-
-    this.wishlistService.toggleWishlist(Number(property.id)).subscribe({
-      next: () => {
-        if (isCurrentlyFavorite) {
-            this.toastService.show('Removed from wishlist', 'success', imageUrl);
-        } else {
-            this.toastService.show('Saved to wishlist', 'success', imageUrl);
-        }
+    // 2. إرسال الطلب للباك اند
+    this.listingService.toggleWishlist(property.id).subscribe({
+      next: (res: any) => {
+        // لو نجح، خلاص (إحنا حدثنا الشكل فوق)
+        console.log(res.message);
       },
-      error: () => {
-        this.toastService.show('Failed to update wishlist', 'error');
+      error: (err) => {
+        // لو فشل، نرجع الشكل زي ما كان
+        console.error(err);
+        if (this.wishlistIds.has(property.id)) {
+            this.wishlistIds.delete(property.id);
+        } else {
+            this.wishlistIds.add(property.id);
+        }
       }
     });
   }
-
+  
   onPropertyClick(property: Property): void {
+    // الانتقال لصفحة /listing/1 مثلاً
     this.router.navigate(['/listing', property.id]);
   }
 }

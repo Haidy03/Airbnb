@@ -1,0 +1,239 @@
+<div *ngIf="isLoading()" class="loading-container">
+  <div class="spinner"></div>
+  <p>Loading experience...</p>
+</div>
+
+<div *ngIf="error()" class="error-container">
+  <p>{{ error() }}</p>
+  <button (click)="loadExperience(experience()?.id || 0)" class="retry-btn">Retry</button>
+</div>
+
+<div *ngIf="!isLoading() && !error() && experience()" class="experience-details">
+  
+  <!-- Header -->
+  <div class="details-header">
+    <div class="header-content">
+      <h1 class="experience-title">{{ experience()!.title }}</h1>
+      <div class="header-meta">
+        <div class="rating">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0l2.06 5.52L16 6.18l-4.6 3.86L12.72 16 8 12.85 3.28 16l1.32-5.96L0 6.18l5.94-.66z"/>
+          </svg>
+          <span class="rating-value">{{ experience()!.averageRating.toFixed(1) }}</span>
+          <span class="reviews-count">({{ experience()!.totalReviews }} reviews)</span>
+        </div>
+        <span class="separator">·</span>
+        <span class="location">{{ experience()!.city }}, {{ experience()!.country }}</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="action-btn" (click)="shareExperience()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M13 8a2 2 0 11-4 0 2 2 0 014 0zM3 8a2 2 0 11-4 0 2 2 0 014 0zM8 13a2 2 0 100-4 2 2 0 000 4z"/>
+        </svg>
+        Share
+      </button>
+      <button class="action-btn" (click)="toggleWishlist()">
+    <svg width="16" height="16" viewBox="0 0 16 16" 
+         style="display: block; margin-right: 8px;"
+         [attr.fill]="isWishlisted() ? '#FF385C' : 'none'" 
+         [attr.stroke]="isWishlisted() ? '#FF385C' : 'currentColor'" 
+         stroke-width="1.5">
+      <path d="M8 14s-6-4.5-6-8.5C2 3 4 1 6 1c1.5 0 2.5 1 2 1s.5-1 2-1c2 0 4 2 4 4.5C14 9.5 8 14 8 14z"/>
+    </svg>
+    <span [style.color]="isWishlisted() ? '#FF385C' : 'inherit'">
+      {{ isWishlisted() ? 'Saved' : 'Save' }}
+    </span>
+  </button>
+    </div>
+  </div>
+
+  <!-- Photo Gallery -->
+  <div class="photo-gallery">
+    <div class="main-photo">
+      <img [src]="getImageUrl(experience()!.images[selectedImageIndex].imageUrl)" [alt]="experience()!.title">
+    </div>
+    <div class="photo-thumbnails">
+      <div
+        *ngFor="let image of experience()!.images; let i = index"
+        class="thumbnail"
+        [class.active]="i === selectedImageIndex"
+        (click)="selectImage(i)">
+        <img [src]="getImageUrl(image.imageUrl)" [alt]="'Photo ' + (i + 1)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Grid -->
+  <div class="content-grid">
+    
+    <!-- Left Column -->
+    <div class="left-column">
+      
+      <!-- Host Info -->
+      <div class="host-section">
+        <div class="host-info">
+          <img [src]="experience()!.hostAvatar || '/assets/default-avatar.png'" [alt]="experience()!.hostName" class="host-avatar">
+          <div>
+            <h3 class="host-name">Hosted by {{ experience()!.hostName }}</h3>
+            <div class="host-badges">
+              <span *ngIf="experience()!.isHostVerified" class="verified-badge">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                  <path d="M10 3L4.5 8.5 2 6"/>
+                </svg>
+                Verified
+              </span>
+              <span class="language-badge">Speaks {{ experience()!.languages[0]?.languageName }}</span>
+            </div>
+          </div>
+        </div>
+        <button class="contact-host-btn" (click)="contactHost()">Contact Host</button>
+      </div>
+
+      <!-- About -->
+      <div class="section">
+        <h2 class="section-title">About this experience</h2>
+        <p class="description">{{ experience()!.description }}</p>
+      </div>
+
+      <!-- What's Included -->
+      <div class="section" *ngIf="experience()!.whatIsIncluded">
+        <h2 class="section-title">What's included</h2>
+        <ul class="included-list">
+          <li *ngFor="let item of experience()!.whatIsIncluded?.split('\n')">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M13 4L6 11 3 8"/>
+            </svg>
+            {{ item }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- What to Bring -->
+      <div class="section" *ngIf="experience()!.whatToBring">
+        <h2 class="section-title">What to bring</h2>
+        <ul class="bring-list">
+          <li *ngFor="let item of experience()!.whatToBring?.split('\n')">{{ item }}</li>
+        </ul>
+      </div>
+
+      <!-- Details -->
+      <div class="section">
+        <h2 class="section-title">Details</h2>
+        <div class="details-grid">
+          <div class="detail-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+            <div>
+              <h4>Duration</h4>
+              <p>{{ experience()!.formattedDuration }}</p>
+            </div>
+          </div>
+          <div class="detail-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            <div>
+              <h4>Group size</h4>
+              <p>{{ experience()!.minGroupSize }} - {{ experience()!.maxGroupSize }} guests</p>
+            </div>
+          </div>
+          <div class="detail-item" *ngIf="experience()!.ageRequirement">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4M12 8h.01"/>
+            </svg>
+            <div>
+              <h4>Age requirement</h4>
+              <p>{{ experience()!.ageRequirement }}</p>
+            </div>
+          </div>
+          <div class="detail-item" *ngIf="experience()!.skillLevel">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20V10M6 20V4m12 16V14"/>
+            </svg>
+            <div>
+              <h4>Skill level</h4>
+              <p>{{ experience()!.skillLevel }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cancellation Policy -->
+      <div class="section">
+        <h2 class="section-title">Cancellation policy</h2>
+        <p class="cancellation-text">{{ experience()!.cancellationPolicy }}</p>
+      </div>
+    </div>
+
+    <!-- Right Column - Booking Card -->
+    <div class="right-column">
+      <div class="booking-card">
+        <div class="price-section">
+          <span class="price">EGP{{ experience()!.pricePerPerson }}</span>
+          <span class="price-unit">/ person</span>
+        </div>
+
+        <div class="booking-info">
+          <div class="info-row">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10 0l2.575 6.9L20 7.725l-5.75 4.825L15.65 20 10 16.063 4.35 20l1.4-7.45L0 7.725l7.425-.825z"/>
+            </svg>
+            <span>{{ experience()!.averageRating.toFixed(1) }} ({{ experience()!.totalReviews }} reviews)</span>
+          </div>
+          <div class="info-row">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <circle cx="10" cy="10" r="8"/>
+              <path d="M10 5v5l3 3"/>
+            </svg>
+            <span>{{ experience()!.formattedDuration }}</span>
+          </div>
+          <div class="info-row">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M15 8a3 3 0 11-6 0 3 3 0 016 0zM2 8a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>Up to {{ experience()!.maxGroupSize }} guests</span>
+          </div>
+        </div>
+
+        <button class="book-btn" (click)="bookExperience()">
+          Check availability
+        </button>
+
+        <p class="booking-note">You won't be charged yet</p>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+<div class="section reviews-section">
+  <h2 class="section-title">
+    ★ {{ experience()?.averageRating | number:'1.1-1' }} · {{ experience()?.totalReviews }} reviews
+  </h2>
+
+  <div class="reviews-grid">
+    <div *ngFor="let review of reviews()" class="review-card">
+      <div class="reviewer-header">
+        <img [src]="review.reviewerAvatar || 'assets/images/user-placeholder.png'" class="reviewer-img">
+        <div class="reviewer-info">
+          <span class="reviewer-name">{{ review.reviewerName }}</span>
+          <span class="review-date">{{ review.createdAt | date:'mediumDate' }}</span>
+        </div>
+      </div>
+      
+      <div class="review-rating">
+        <span *ngFor="let star of [1,2,3,4,5]" class="star">
+          {{ star <= review.rating ? '★' : '☆' }}
+        </span>
+      </div>
+      
+      <p class="review-text">{{ review.comment }}</p>
+    </div>
+  </div>
+</div>
+  </div>
+</div>

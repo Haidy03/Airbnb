@@ -1,0 +1,136 @@
+<div class="experiences-page">
+  <app-header></app-header>
+  
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading experiences...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="error-container">
+    <p>{{ error() }}</p>
+    <button (click)="loadData()" class="retry-btn">Retry</button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading() && !error()" class="main-container">
+    
+    <!-- 1. Airbnb Originals Section -->
+    <section class="section" *ngIf="featuredExperiences().length > 0">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">
+            Airbnb Originals 
+            <span class="arrow">›</span>
+          </h2>
+          <p class="section-subtitle">Hosted by the world's most interesting people</p>
+        </div>
+        <div class="nav-arrows">
+          <button class="nav-arrow" (click)="scrollLeft('featured')" aria-label="Previous">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M8 2L4 6l4 4"/>
+            </svg>
+          </button>
+          <button class="nav-arrow" (click)="scrollRight('featured')" aria-label="Next">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M4 2l4 4-4 4"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="cards-scroll" id="featured">
+        <app-experience-card 
+          *ngFor="let exp of featuredExperiences()" 
+          [experience]="exp"
+          [badgeText]="'Original'"
+          [showBadge]="true">
+        </app-experience-card>
+      </div>
+    </section>
+
+    <!-- 2. Popular with travelers Section -->
+    <section class="section" *ngIf="popularExperiences().length > 0">
+      <div class="section-header">
+        <h2 class="section-title">Popular with travelers from your area</h2>
+      </div>
+      
+      <div class="cards-scroll">
+        <app-experience-card 
+          *ngFor="let exp of popularExperiences()" 
+          [experience]="exp"
+          [badgeText]="'Popular'"
+          [showBadge]="true">
+        </app-experience-card>
+      </div>
+    </section>
+
+    <!-- 3. Experiences in Paris Section -->
+    <section class="section" *ngIf="parisExperiences().length > 0">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">
+            Experiences in Paris 
+            <span class="arrow">›</span>
+          </h2>
+        </div>
+        <div class="nav-arrows">
+          <button class="nav-arrow" (click)="scrollLeft('paris')" aria-label="Previous">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M8 2L4 6l4 4"/>
+            </svg>
+          </button>
+          <button class="nav-arrow" (click)="scrollRight('paris')" aria-label="Next">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M4 2l4 4-4 4"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="cards-scroll" id="paris">
+        <app-experience-card 
+          *ngFor="let exp of parisExperiences()" 
+          [experience]="exp"
+          [badgeText]="'Popular'"
+          [showBadge]="true">
+        </app-experience-card>
+      </div>
+    </section>
+
+    <!-- 4. Experiences in London Section -->
+    <section class="section" *ngIf="londonExperiences().length > 0">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">
+            Experiences in London 
+            <span class="arrow">›</span>
+          </h2>
+        </div>
+        <div class="nav-arrows">
+          <button class="nav-arrow" (click)="scrollLeft('london')" aria-label="Previous">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M8 2L4 6l4 4"/>
+            </svg>
+          </button>
+          <button class="nav-arrow" (click)="scrollRight('london')" aria-label="Next">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M4 2l4 4-4 4"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="cards-scroll" id="london">
+        <app-experience-card 
+          *ngFor="let exp of londonExperiences()" 
+          [experience]="exp"
+          [badgeText]="'Popular'"
+          [showBadge]="true">
+        </app-experience-card>
+      </div>
+    </section>
+
+  </div>
+</div>

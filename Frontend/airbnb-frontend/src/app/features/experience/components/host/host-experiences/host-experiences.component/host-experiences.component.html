@@ -1,0 +1,128 @@
+<div class="host-experiences-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Your Experiences</h1>
+      <p class="page-subtitle">Manage and create amazing experiences</p>
+    </div>
+    <button class="create-btn" (click)="createExperience()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10 5v10M5 10h10"/>
+      </svg>
+      Create Experience
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading your experiences...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error()" class="error-state">
+    <p>{{ error() }}</p>
+    <button (click)="loadExperiences()" class="retry-btn">Retry</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading() && !error() && experiences().length === 0" class="empty-state">
+    <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+      <circle cx="50" cy="50" r="48" stroke="#EBEBEB" stroke-width="2"/>
+      <path d="M50 30v40M30 50h40" stroke="#DDDDDD" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h2>No experiences yet</h2>
+    <p>Start sharing your passion with the world</p>
+    <button class="create-btn-large" (click)="createExperience()">
+      Create Your First Experience
+    </button>
+  </div>
+
+  <!-- Experiences Grid -->
+  <div *ngIf="!isLoading() && !error() && experiences().length > 0" class="experiences-grid">
+    <div *ngFor="let experience of experiences()" class="experience-card">
+      
+      <!-- Image -->
+      <div class="card-image">
+        <img 
+          [src]="getImageUrl(experience.images[0]?.imageUrl)" 
+          [alt]="experience.title">
+        <span class="status-badge" [ngClass]="getStatusBadgeClass(experience.status)">
+          {{ experience.status }}
+        </span>
+      </div>
+
+      <!-- Content -->
+      <div class="card-content">
+        <div class="card-header">
+          <h3 class="card-title">{{ experience.title }}</h3>
+          <div class="card-meta">
+            <span class="card-type">{{ experience.type }}</span>
+            <span class="separator">•</span>
+            <span class="card-category">{{ experience.categoryName }}</span>
+          </div>
+        </div>
+
+        <div class="card-stats">
+          <div class="stat-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0l2.06 5.52L16 6.18l-4.6 3.86L12.72 16 8 12.85 3.28 16l1.32-5.96L0 6.18l5.94-.66z"/>
+            </svg>
+            <span>{{ experience.averageRating.toFixed(1) }} ({{ experience.totalReviews }})</span>
+          </div>
+          <div class="stat-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2a4 4 0 100 8 4 4 0 000-8zM0 8a4 4 0 118 0 4 4 0 01-8 0z"/>
+            </svg>
+            <span>{{ experience.totalBookings }} bookings</span>
+          </div>
+          <div class="stat-item">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+            </svg>
+            <span>${{ experience.pricePerPerson }} / person</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card-actions">
+          <button class="action-btn view-btn" [routerLink]="['/experiences', experience.id]">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 3.5a7.77 7.77 0 00-7.5 5.5A7.77 7.77 0 008 14.5a7.77 7.77 0 007.5-5.5A7.77 7.77 0 008 3.5zm0 9a3.5 3.5 0 110-7 3.5 3.5 0 010 7z"/>
+            </svg>
+            View
+          </button>
+          <button class="action-btn edit-btn" (click)="editExperience(experience.id)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M12.146.146a.5.5 0 01.708 0l3 3a.5.5 0 010 .708l-10 10a.5.5 0 01-.168.11l-5 2a.5.5 0 01-.65-.65l2-5a.5.5 0 01.11-.168l10-10z"/>
+            </svg>
+            Edit
+          </button>
+
+          <!-- Status Actions -->
+          <button 
+            *ngIf="experience.status === 'Draft'" 
+            class="action-btn submit-btn"
+            (click)="submitForApproval(experience.id)">
+            Submit for Approval
+          </button>
+
+          <button 
+            *ngIf="experience.status === 'Approved'" 
+            class="action-btn activate-btn"
+            (click)="activateExperience(experience.id)">
+            Activate
+          </button>
+
+          <button class="action-btn delete-btn" (click)="deleteExperience(experience.id)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M5.5 5.5A.5.5 0 016 6v6a.5.5 0 01-1 0V6a.5.5 0 01.5-.5zm2.5 0a.5.5 0 01.5.5v6a.5.5 0 01-1 0V6a.5.5 0 01.5-.5zm3 .5a.5.5 0 00-1 0v6a.5.5 0 001 0V6z"/>
+              <path d="M14.5 3a1 1 0 01-1 1H13v9a2 2 0 01-2 2H5a2 2 0 01-2-2V4h-.5a1 1 0 01-1-1V2a1 1 0 011-1H6a1 1 0 011-1h2a1 1 0 011 1h3.5a1 1 0 011 1v1z"/>
+            </svg>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

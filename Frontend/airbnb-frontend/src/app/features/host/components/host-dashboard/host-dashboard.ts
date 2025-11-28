@@ -12,8 +12,7 @@ import { BookingService, Booking } from '../../services/booking';
 })
 export class HostDashboardComponent implements OnInit {
   // Active tab: 'today' or 'upcoming'
-  activeTab = signal<'today' | 'upcoming'>('today');
-  
+  activeTab = signal<'today' | 'upcoming' >('today');  
   // Bookings data
   todayBookings = signal<Booking[]>([]);
   upcomingBookings = signal<Booking[]>([]);
@@ -35,7 +34,7 @@ export class HostDashboardComponent implements OnInit {
     this.activeTab.set(tab);
     if (tab === 'upcoming') {
       this.loadUpcomingBookings();
-    } else {
+    } else if (tab === 'today') {
       this.loadTodayBookings();
     }
   }
