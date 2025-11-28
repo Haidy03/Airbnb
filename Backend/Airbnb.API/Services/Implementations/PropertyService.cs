@@ -498,6 +498,8 @@ namespace Airbnb.API.Services.Implementations
             return true;
         }
 
+        // في ملف PropertyService.cs
+
         public async Task<bool> UnpublishPropertyAsync(int id, string hostId)
         {
             var property = await _propertyRepository.GetByIdAsync(id);
@@ -508,13 +510,15 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to unpublish this property");
 
-            if (property.Status != PropertyStatus.Active)
+            // ✅ التصحيح: التحقق من IsActive بدلاً من Status فقط
+            // إذا كان العقار غير مفعل أصلاً، لا داعي لإلغاء تفعيله
+            if (!property.IsActive)
             {
-                throw new InvalidOperationException("Only active properties can be deactivated");
+                throw new InvalidOperationException("Property is already inactive");
             }
 
             property.IsActive = false;
-            property.Status = PropertyStatus.Inactive; // ✅ Change status
+            property.Status = PropertyStatus.Inactive;
             property.UpdatedAt = DateTime.UtcNow;
 
             await _propertyRepository.UpdateAsync(property);
@@ -535,7 +539,7 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to activate this property");
 
-            // ✅ يمكن التفعيل فقط لو Property معتمدة من Admin
+            
             if (property.Status != PropertyStatus.Approved && property.Status != PropertyStatus.Inactive)
             {
                 throw new InvalidOperationException("Property must be approved by admin or previously active before activation");

@@ -620,17 +620,11 @@ namespace Airbnb.API.Controllers.Host
             {
                 var hostId = GetHostId();
 
-                var property = await _propertyService.GetPropertyByIdAsync(id);
-
-                if (property == null)
-                    return NotFound(new { success = false, message = "Property not found" });
-
-                if (property.HostId != hostId)
-                    return Forbid();
+                
 
                 await _propertyService.UnpublishPropertyAsync(id, hostId);
-
-                var dto = _mapper.Map<PropertyResponseDto>(await _propertyService.GetPropertyByIdAsync(id));
+                var property = await _propertyService.GetPropertyByIdAsync(id);
+                var dto = _mapper.Map<PropertyResponseDto>(property);
 
                 return Ok(new
                 {
@@ -638,6 +632,11 @@ namespace Airbnb.API.Controllers.Host
                     message = "Property deactivated successfully",
                     data = dto
                 });
+            }
+            catch (InvalidOperationException ex) 
+            {
+                
+                return BadRequest(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
