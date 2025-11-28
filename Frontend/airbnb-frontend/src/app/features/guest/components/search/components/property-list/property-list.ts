@@ -1,118 +1,75 @@
-import { Component, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
-import { Property, SearchQuery, SearchFilters, SortOption } from '../../models/property.model';
-import { SearchService } from '../../services/search-service';
 import { FormsModule } from '@angular/forms';
+import { Property, SortOption } from '../../models/property.model';
 import { PropertyCardComponent } from '../property-card/property-card';
 
 @Component({
   selector: 'app-property-list',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    PropertyCardComponent
-  ],
+  imports: [CommonModule, FormsModule, PropertyCardComponent],
   templateUrl: './property-list.html',
-  styleUrls: ['./property-list.css'],
-  providers: [SearchService]
+  styleUrls: ['./property-list.css']
 })
-export class PropertyListComponent implements OnInit, OnDestroy {
+export class PropertyListComponent {
+
+  // المدخلات من الأب (Search Results)
+  @Input() properties: Property[] = [];
+  @Input() totalProperties = 0;
+  @Input() currentPage = 1;
+  @Input() pageSize = 12;
+  @Input() isLoading = false;
+
+  // المخرجات للأب (عشان يكلم السيرفس)
   @Output() propertyHover = new EventEmitter<string | null>();
-  @Output() propertySelect = new EventEmitter<Property>();
+  @Output() propertySelect = new EventEmitter<string>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() sortChange = new EventEmitter<SortOption>();
+  @Output() favoriteToggle = new EventEmitter<string>();
 
-  public Math = Math;
-  properties: Property[] = [];
-  isLoading = false;
-  currentPage = 1;
-  pageSize = 12;
-  totalProperties = 0;
-  totalPages = 0;
   sortOption: SortOption = SortOption.POPULAR;
-  favorites = new Set<string>();
+  public Math = Math;
 
-  private destroy$ = new Subject<void>();
-  private currentFilters: SearchFilters = {};
-
-  constructor(private searchService: SearchService) {}
-
-  ngOnInit(): void {
-    this.loadProperties();
-
-    this.searchService.favorites$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(favorites => {
-        this.favorites = favorites;
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  loadProperties(): void {
-    this.isLoading = true;
-
-    const query: SearchQuery = {
-      filters: this.currentFilters,
-      page: this.currentPage,
-      pageSize: this.pageSize,
-      sortBy: this.sortOption
-    };
-
-    this.searchService.searchProperties(query)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.properties = response.properties;
-          this.totalProperties = response.total;
-          this.totalPages = response.totalPages;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Error loading properties:', error);
-          this.isLoading = false;
-        }
-      });
-  }
-
-  applyFilters(filters: SearchFilters): void {
-    this.currentFilters = filters;
-    this.currentPage = 1;
-    this.loadProperties();
+  // حساب عدد الصفحات
+  get totalPages(): number {
+    return Math.ceil(this.totalProperties / this.pageSize);
   }
 
   onSortChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.sortOption = target.value as SortOption;
-    this.loadProperties();
+    this.sortChange.emit(this.sortOption);
   }
 
   onPageChange(page: number): void {
-    this.currentPage = page;
-    this.loadProperties();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  onFavoriteToggle(propertyId: string): void {
-    this.searchService.toggleFavorite(propertyId);
+    if (page >= 1 && page <= this.totalPages) {
+      this.pageChange.emit(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   onPropertyClick(property: Property): void {
-    console.log('Property clicked:', property);
+    this.propertySelect.emit(property.id);
   }
 
-  isFavorite(propertyId: string): boolean {
-    return this.favorites.has(propertyId);
+  onHover(id: string | null) {
+    this.propertyHover.emit(id);
   }
 
+  onFavorite(id: string) {
+    this.favoriteToggle.emit(id);
+  }
+
+  // دالة مساعدة لحساب نطاق الصفحات (Pagination Range)
   get paginationRange(): number[] {
     const range: number[] = [];
     const maxPages = 5;
+    const total = this.totalPages;
+
+    if (total <= 0) return [];
+
     let start = Math.max(1, this.currentPage - Math.floor(maxPages / 2));
-    let end = Math.min(this.totalPages, start + maxPages - 1);
+    let end = Math.min(total, start + maxPages - 1);
 
     if (end - start < maxPages - 1) {
       start = Math.max(1, end - maxPages + 1);
@@ -121,7 +78,6 @@ export class PropertyListComponent implements OnInit, OnDestroy {
     for (let i = start; i <= end; i++) {
       range.push(i);
     }
-
     return range;
   }
 }

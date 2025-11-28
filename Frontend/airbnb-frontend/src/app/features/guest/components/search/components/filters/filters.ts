@@ -1,8 +1,8 @@
-
-import { Component, Output, EventEmitter, Input } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Standalone: Add CommonModule
-import { FormsModule } from '@angular/forms'; // Standalone: Add Forms module for ngModel
-import { SearchFilters, Property, AmenityCategory, PropertyType  } from '../../models/property.model'; // Import models
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+// تأكد من مسار الموديل ( AmenityCategory)
+import { SearchFilters, PropertyType } from '../../models/property.model';
 
 // Interface for local amenity state
 interface Amenity {
@@ -14,11 +14,8 @@ interface Amenity {
 
 @Component({
   selector: 'app-filters',
-  standalone: true, // IMPORTANT: Converted to Standalone
-  imports: [
-    CommonModule, // For Angular structural directives (*ngIf, *ngFor)
-    FormsModule   // For two-way data binding ([(ngModel)]) used in forms
-  ],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './filters.html',
   styleUrls: ['./filters.css']
 })
@@ -27,28 +24,28 @@ export class FiltersComponent {
   @Output() close = new EventEmitter<void>();
   @Output() applyFilters = new EventEmitter<SearchFilters>();
 
-  // Price Range (filter state)
+  // Price Range
   minPrice = 0;
   maxPrice = 50000;
-  priceMin = 0;
-  priceMax = 50000;
+  priceMin: number | null = null; // Changed to nullable to match logic
+  priceMax: number | null = null; // Changed to nullable
 
-  // Property Types (filter state)
-propertyTypes = [
-  { type: PropertyType.APARTMENT, icon: 'bi-building', label: 'Apartment', selected: false },
-  { type: PropertyType.HOUSE, icon: 'bi-house-door', label: 'House', selected: false },
-  { type: PropertyType.ROOM, icon: 'bi-door-open', label: 'Room', selected: false },
-  { type: PropertyType.VILLA, icon: 'bi-house', label: 'Villa', selected: false },
-  { type: PropertyType.STUDIO, icon: 'bi-square', label: 'Studio', selected: false },
-  { type: PropertyType.CHALET, icon: 'bi-tree', label: 'Chalet', selected: false }
-];
+  // Property Types
+  propertyTypes = [
+    { type: PropertyType.APARTMENT, icon: 'bi-building', label: 'Apartment', selected: false },
+    { type: PropertyType.HOUSE, icon: 'bi-house-door', label: 'House', selected: false },
+    { type: PropertyType.ROOM, icon: 'bi-door-open', label: 'Room', selected: false },
+    { type: PropertyType.VILLA, icon: 'bi-house', label: 'Villa', selected: false },
+    { type: PropertyType.STUDIO, icon: 'bi-square', label: 'Studio', selected: false },
+    { type: PropertyType.CHALET, icon: 'bi-tree', label: 'Chalet', selected: false }
+  ];
 
-  // Rooms & Beds (filter state)
+  // Rooms & Beds
   bedrooms: number | null = null;
   beds: number | null = null;
   bathrooms: number | null = null;
 
-  // Amenities (filter state)
+  // Amenities
   amenities: Amenity[] = [
     { id: 'wifi', name: 'WiFi', icon: 'bi-wifi', selected: false },
     { id: 'kitchen', name: 'Kitchen', icon: 'bi-house', selected: false },
@@ -64,34 +61,33 @@ propertyTypes = [
     { id: 'workspace', name: 'Dedicated workspace', icon: 'bi-laptop', selected: false }
   ];
 
-  // Booking Options (filter state)
+  // Booking Options
   instantBook = false;
   selfCheckIn = false;
   allowsPets = false;
 
-  // Rating (filter state)
+  // Rating
   minRating: number | null = null;
 
   onClose(): void {
-    this.close.emit(); // Emit close event
+    this.close.emit();
   }
 
   togglePropertyType(type: PropertyType): void {
     const typeObj = this.propertyTypes.find(t => t.type === type);
     if (typeObj) {
-      typeObj.selected = !typeObj.selected; // Toggle selection
+      typeObj.selected = !typeObj.selected;
     }
   }
 
   toggleAmenity(amenityId: string): void {
     const amenity = this.amenities.find(a => a.id === amenityId);
     if (amenity) {
-      amenity.selected = !amenity.selected; // Toggle amenity selection
+      amenity.selected = !amenity.selected;
     }
   }
 
   incrementRooms(type: 'bedrooms' | 'beds' | 'bathrooms'): void {
-    // Increment room count
     if (this[type] === null) {
       this[type] = 1;
     } else {
@@ -100,7 +96,6 @@ propertyTypes = [
   }
 
   decrementRooms(type: 'bedrooms' | 'beds' | 'bathrooms'): void {
-    // Decrement room count
     if (this[type] !== null && this[type]! > 0) {
       this[type]!--;
       if (this[type] === 0) {
@@ -110,26 +105,22 @@ propertyTypes = [
   }
 
   setMinRating(rating: number): void {
-    // Set or unset minimum rating
     this.minRating = this.minRating === rating ? null : rating;
   }
 
   onPriceMinChange(event: Event): void {
-    // Handle minimum price change
     const value = +(event.target as HTMLInputElement).value;
-    this.priceMin = Math.min(value, this.priceMax);
+    this.priceMin = Math.min(value, this.priceMax ?? this.maxPrice);
   }
 
   onPriceMaxChange(event: Event): void {
-    // Handle maximum price change
     const value = +(event.target as HTMLInputElement).value;
-    this.priceMax = Math.max(value, this.priceMin);
+    this.priceMax = Math.max(value, this.priceMin ?? 0);
   }
 
   clearAll(): void {
-    // Reset all filter fields to default state
-    this.priceMin = 0;
-    this.priceMax = 50000;
+    this.priceMin = null;
+    this.priceMax = null;
     this.propertyTypes.forEach(t => t.selected = false);
     this.bedrooms = null;
     this.beds = null;
@@ -142,46 +133,36 @@ propertyTypes = [
   }
 
   apply(): void {
-    const filters: SearchFilters = {}; // Initialize filter object
-
-    // Build SearchFilters object based on selected fields
-
-    // Price range
-    if (this.priceMin > 0) { filters.priceMin = this.priceMin; }
-    if (this.priceMax < 50000) { filters.priceMax = this.priceMax; }
-
-    // Property types
+    // 1. تجميع البيانات
     const selectedTypes = this.propertyTypes.filter(t => t.selected).map(t => t.type);
-    if (selectedTypes.length > 0) { filters.propertyTypes = selectedTypes; }
+    const selectedAmenities = this.amenities.filter(a => a.selected).map(a => a.id); // أو a.name حسب الباك إند
 
-    // Rooms & beds
-    if (this.bedrooms !== null && this.bedrooms > 0) { filters.bedrooms = this.bedrooms; }
-    if (this.beds !== null && this.beds > 0) { filters.beds = this.beds; }
-    if (this.bathrooms !== null && this.bathrooms > 0) { filters.bathrooms = this.bathrooms; }
+    // 2. بناء الأوبجيكت النهائي (نرسل فقط القيم الموجودة)
+    const filters: SearchFilters = {
+      priceMin: this.priceMin || undefined,
+      priceMax: this.priceMax || undefined,
+      propertyTypes: selectedTypes.length > 0 ? selectedTypes : undefined,
+      amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
+      bedrooms: this.bedrooms || undefined,
+      beds: this.beds || undefined,
+      bathrooms: this.bathrooms || undefined,
+      instantBook: this.instantBook || undefined,
+      rating: this.minRating || undefined
+    };
 
-    // Amenities
-    const selectedAmenities = this.amenities.filter(a => a.selected).map(a => a.id);
-    if (selectedAmenities.length > 0) { filters.amenities = selectedAmenities; }
-
-    // Booking options & Rating
-    if (this.instantBook) { filters.instantBook = true; }
-    if (this.minRating !== null) { filters.rating = this.minRating; }
-
-    this.applyFilters.emit(filters); // Emit final filters
-    this.close.emit();
+    // 3. إرسال الفلاتر للأب (Search Results)
+    this.applyFilters.emit(filters);
+    this.onClose();
   }
 
   get activeFiltersCount(): number {
-    // Calculate the number of active filters for display
     let count = 0;
-
-    if (this.priceMin > 0 || this.priceMax < 50000) count++;
+    if (this.priceMin !== null || (this.priceMax !== null && this.priceMax < 50000)) count++;
     if (this.propertyTypes.some(t => t.selected)) count++;
     if (this.bedrooms !== null || this.beds !== null || this.bathrooms !== null) count++;
     if (this.amenities.some(a => a.selected)) count++;
     if (this.instantBook || this.selfCheckIn || this.allowsPets) count++;
     if (this.minRating !== null) count++;
-
     return count;
   }
 }

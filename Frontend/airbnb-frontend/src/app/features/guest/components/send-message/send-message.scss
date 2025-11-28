@@ -1,0 +1,176 @@
+/* --- START OF FILE send-message.css (Final Styling) --- */
+
+/* ------------------------------------------- */
+/* التخطيط العام وتنسيق العمودين */
+/* ------------------------------------------- */
+.message-page-layout {
+  display: grid;
+  grid-template-columns: 1fr 376px; /* 1fr للمحتوى الرئيسي و 376px لكارد الحجز */
+  gap: 80px;
+  max-width: 1120px; /* تحديد أقصى عرض لـ Airbnb (أقل من 1280px بقليل) */
+  margin: 0 auto;
+  padding: 0 80px 80px; /* إزالة الـ Padding العلوي ليتم تعويضه في الـ Header */
+  padding-top: 24px;
+}
+
+/* ------------------------------------------- */
+/* المحتوى الرئيسي (العمود الأيسر) */
+/* ------------------------------------------- */
+
+/* Container for all left-side elements */
+.message-main-content-wrapper {
+  max-width: 550px; /* أقصى عرض للمحتوى الرئيسي */
+  padding-top: 24px; /* تباعد من الأعلى للتعويض عن إزالة الـ Nav Bar */
+}
+
+/* زر العودة (السهم الصغير) */
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  /* التنسيق لزر عودة مطابق */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 24px;
+}
+
+.back-btn svg {
+  width: 18px; /* حجم أكبر للسهم */
+  height: 18px;
+  stroke: rgb(34, 34, 34);
+  stroke-width: 2.5; /* سُمك الخط */
+}
+
+/* رأس الصفحة */
+.page-header {
+  margin-bottom: 32px; /* تباعد مناسب */
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 8px;
+}
+
+.host-response-info {
+  font-size: 16px;
+  color: rgb(113, 113, 113);
+  font-weight: 400;
+}
+
+/* ------------------------------------------- */
+/* قسم المعلومات الثابتة (Most travelers ask about) */
+/* ------------------------------------------- */
+.static-info-section {
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgb(221, 221, 221);
+  margin-bottom: 48px;
+}
+
+.static-info-section h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 24px;
+}
+
+.info-group {
+  margin-bottom: 32px;
+}
+
+.info-group h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 12px;
+}
+
+.info-group ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.info-group li {
+  font-size: 16px;
+  color: rgb(34, 34, 34);
+  line-height: 24px;
+  margin-bottom: 8px;
+  /* تنسيق النقطة (الـ Airbnb لا يستخدم نقطة، بل يتباعد السطر قليلاً) */
+}
+
+/* ------------------------------------------- */
+/* قسم نموذج إرسال الرسالة */
+/* ------------------------------------------- */
+.message-form-section {
+  padding-bottom: 48px;
+}
+
+.message-form-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(34, 34, 34);
+  margin-bottom: 16px;
+}
+
+.message-textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid rgb(176, 176, 176);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+/* زر الإرسال */
+.send-message-btn {
+  /* الزر يجب أن يكون متناسقاً مع زر Reserve (باللون الوردي) */
+  background: linear-gradient(to right, rgb(230, 30, 77) 0%, rgb(227, 28, 95) 50%, rgb(215, 4, 102) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: auto; /* حجم الزر حسب المحتوى */
+  margin-top: 24px;
+}
+.booking-column {
+  position: sticky;
+  top: 200px;
+  height: fit-content;
+}
+
+/* ------------------------------------------- */
+/* العمود الأيمن: Booking Card (Sidebar) */
+/* ------------------------------------------- */
+
+/* ------------------------------------------- */
+/* تنسيقات الشاشات الأصغر (Responsive) */
+/* ------------------------------------------- */
+@media (max-width: 1120px) {
+  .message-page-layout {
+    grid-template-columns: 1fr;
+    padding: 24px 40px;
+    gap: 32px;
+  }
+
+  .booking-column {
+    position: static;
+    order: 0;
+  }
+}
+
+@media (max-width: 743px) {
+  .message-page-layout {
+    padding: 24px 24px;
+  }
+}

@@ -23,6 +23,12 @@ export interface ReviewModel {
   comment: string;
   createdAt: string;
 }
+export interface amenities{
+ id: number;
+  name: string;
+  icon: string; // اسم الأيقونة (مثل 'wifi', 'tv')
+  category: string;
+}
 
 // الهيكل الرئيسي لتفاصيل العقار
 export interface Listing {
@@ -38,6 +44,7 @@ export interface Listing {
   pricePerNight: number;
   cleaningFee: number;
   propertyType: string;
+  isInstantBook:boolean;
 
   // الخصائص المفقودة في الـ JSON الحالي ولكن مطلوبة في الـ HTML
   rating?: number;            // <--- خاصية اختيارية
@@ -46,12 +53,19 @@ export interface Listing {
 
   host: HostDetails;
   images: string[]; // تحديد نوع دقيق أفضل
-  amenities: any[]; // تحديد نوع دقيق أفضل
+  amenities: amenities[]; // تحديد نوع دقيق أفضل
   reviews: ReviewModel[];
 }
+// translate models
+export interface TranslationRequest {
+  text: string;
+}
 
-
-// 3. نحدث الـ Listing عشان يشيل الحاجات دي
+export interface TranslationResponse {
+  originalText: string;
+  translatedText: string;
+  detectedLanguage: string;
+}
 
 
 

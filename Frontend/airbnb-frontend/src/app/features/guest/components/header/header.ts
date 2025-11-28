@@ -1,21 +1,16 @@
-import { Component, HostListener, OnInit ,inject} from '@angular/core';
+import { Component, HostListener, OnInit, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+
 import { SearchBarComponent } from '../search/components/search-bar/search-bar';
+import { LoginComponent } from '../../../auth/components/login.component/login.component';
 import { SearchFilters } from '../search/models/property.model';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ModalService } from '../../../auth/services/modal.service';
-import { LoginComponent } from '../../../auth/components/login.component/login.component';
-import { Subscription } from 'rxjs';
-
-export interface SearchData {
-  where: string;
-  checkIn: string;
-  checkOut: string;
-  who: string;
-}
+import { SearchService } from '../search/services/search-service';
 
 @Component({
   selector: 'app-header',
@@ -24,84 +19,108 @@ export interface SearchData {
   templateUrl: './header.html',
   styleUrls: ['./header.css']
 })
-export class HeaderComponent implements OnInit {
-  authService = inject(AuthService);
-  
-private AuthService = inject(AuthService);
-private ModalService = inject(ModalService);
+export class HeaderComponent implements OnInit, OnDestroy {
+
+  private authService = inject(AuthService);
+  private modalService = inject(ModalService);
+  private searchService = inject(SearchService);
+
+  private modalSub?: Subscription;
+
   isUserMenuOpen = false;
+
+  // UI State Variables
   isScrolled = false;
-  showExpandedSearch = false;
-   private modalSub?: Subscription;
-  // متغير جديد للتحكم في ظهور البحث بالكامل
+  showBigSearch = true;
+  showFiltersButton = false;
   isSearchEnabled = true;
 
   constructor(private router: Router) {}
 
   ngOnInit() {
     this.checkCurrentRoute();
-    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
       this.checkCurrentRoute();
     });
   }
 
+  ngOnDestroy(): void {
+    this.modalSub?.unsubscribe();
+    if (this.modalService.isOpen()) this.modalService.close();
+  }
+
   private checkCurrentRoute() {
     const url = this.router.url;
-    if (url === '/' || url.startsWith('/search') || url.startsWith('/?')) {
+
+    // 1. صفحة البحث (Search Page)
+    if (url.includes('/search')) {
+      // التعديل هنا: خلينا showBigSearch = true عشان يقبل التوسيع
+      this.showBigSearch = true;
+      this.showFiltersButton = true;
       this.isSearchEnabled = true;
-      if (url.startsWith('/search')) {
-        this.isScrolled = true; // صفحة السيرش تبدأ بالبار الصغير
-        this.showExpandedSearch = false;
-      } else {
-        if (window.scrollY < 50) this.isScrolled = false;
-      }
-    } else {
-      this.isSearchEnabled = false;
+
+      // بنبدأ بـ scrolled = true عشان يظهر الصغير افتراضياً
       this.isScrolled = true;
+    }
+    // 2. صفحة الهوم (Home)
+    else if (url === '/' || url.startsWith('/?')) {
+      this.showFiltersButton = false;
+      this.showBigSearch = true;
+      this.isSearchEnabled = true;
+      // بيعتمد على السكرول
+      this.isScrolled = window.scrollY > 20;
+    }
+    // 3. باقي الصفحات
+    else {
+      this.isScrolled = true;
+      this.showBigSearch = false;
+      this.showFiltersButton = false;
+      this.isSearchEnabled = false;
     }
   }
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
     const scrollY = window.scrollY || window.pageYOffset;
-    this.isScrolled = scrollY > 20;
-    if (this.isScrolled) {
-      this.showExpandedSearch = false;
+
+    // لو في الهوم أو السكرول زاد عن 20، صغر الهيدر
+    // ده عشان لو فتحت الكبير في صفحة السيرش ونزلت، يرجع يلم نفسه تاني
+    if (scrollY > 20) {
+      this.isScrolled = true;
       this.isUserMenuOpen = false;
+    } else {
+      // لو في الهوم ورجعنا لأول الصفحة، نكبره
+      if (this.router.url === '/' || this.router.url.startsWith('/?')) {
+        this.isScrolled = false;
+      }
     }
   }
 
+  // التعديل هنا: شلنا الشرط، فبقى يوسع في أي صفحة فيها بحث (Home or Search)
+  expandHeader() {
+    if (this.isSearchEnabled) {
+      this.isScrolled = false;
+    }
+  }
+
+  // --- باقي الدوال (زي ما هي) ---
+
+  openFiltersModal() {
+    this.searchService.triggerOpenFilters();
+  }
+
   navigateToHome() {
-    this.showExpandedSearch = false;
-    this.isScrolled = false;
     this.router.navigate(['/']);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  expandHeader() {
-    if (this.isSearchEnabled) {
-      this.isScrolled = false;
-      this.showExpandedSearch = true;
-    }
-  }
-
-  toggleUserMenu(event: Event) {
-    event.stopPropagation();
-    this.isUserMenuOpen = !this.isUserMenuOpen;
-  }
-
-  @HostListener('document:click')
-  closeUserMenu() {
-    this.isUserMenuOpen = false;
-  }
-
-  logout() {
-    this.isUserMenuOpen = false;
-    this.router.navigate(['/']);
-  }
+  toggleUserMenu(event: Event) { event.stopPropagation(); this.isUserMenuOpen = !this.isUserMenuOpen; }
+  @HostListener('document:click') closeUserMenu() { this.isUserMenuOpen = false; }
+  onLogout() { this.isUserMenuOpen = false; this.authService.logout(); this.router.navigate(['/']); }
+  isLoggedIn() { return this.authService.isAuthenticated; }
 
   handleSearch(filters: SearchFilters) {
-    this.showExpandedSearch = false;
+    this.isScrolled = true; // نرجعه صغير بعد البحث
     this.router.navigate(['/search'], {
       queryParams: {
         location: filters.location,
@@ -112,93 +131,33 @@ private ModalService = inject(ModalService);
     });
   }
 
-
-
-
-
-  //                         Host 
-  
   onBecomeHostClick() {
-    // 1. لو مش عامل لوجن -> وديه يسجل دخول الأول
     if (!this.authService.isAuthenticated) {
-      // بنبعت returnUrl عشان لما يخلص لوجن يرجع يكمل خطوات الهوست
       this.router.navigate(['/login'], { queryParams: { returnUrl: '/host/properties/intro' } });
-      return;
-    }
-
-    // 2. لو عامل لوجن، نشوف هل هو أصلاً Host؟
-    if (this.authService.isHost()) {
-      // لو هو هوست، وديه على الداشبورد علطول
+    } else if (this.authService.isHost()) {
       this.router.navigate(['/host/dashboard']);
     } else {
-      // 3. لو هو Guest بس -> نكلم الباك إند نرقيه
       this.upgradeToHost();
     }
   }
 
   upgradeToHost() {
     this.authService.becomeHost().subscribe({
-      next: () => {
-        // بعد ما التوكن اتحدث وبقى هوست، نوديه يبدأ يعمل أول عقار
-        this.router.navigate(['/host/properties/intro']);
-      },
-      error: (err) => {
-        alert('Something went wrong while setting up your host account.');
-      }
+      next: () => this.router.navigate(['/host/properties/intro']),
+      error: () => alert('Error upgrading host.')
     });
   }
-   isLoggedIn(): boolean {
-    return this.AuthService.isAuthenticated; 
-  }
-   openLoginModal(): void {
-    // لو في مودال مفتوح خلاص
-    if (this.ModalService.isOpen()) { 
-      return;
-    }
 
-    // افتح الـ LoginComponent كمودال
-    const compRef = this.ModalService.open(LoginComponent);
-
-    // حاول الوصول إلى الـ EventEmitter closed داخل الـ component
+  openLoginModal(): void {
+    if (this.modalService.isOpen()) return;
+    const compRef = this.modalService.open(LoginComponent);
     const instanceAny = compRef.instance as any;
-
-    // إذا الـ LoginComponent عنده event closed (EventEmitter<boolean>)
-    if (instanceAny && instanceAny.closed && typeof instanceAny.closed.subscribe === 'function') {
-      // نشترك وننتظر نتيجة التسجيل (true => نجاح)
+    if (instanceAny?.closed) {
       this.modalSub = instanceAny.closed.subscribe((success: boolean) => {
-        // افصل الاشتراك بعد أول رد
         this.modalSub?.unsubscribe();
-        this.modalSub = undefined;
-
-        // اغلق المودال (غالبًا الـ LoginComponent سيغلق بنفسه، لكن تأكد)
-        this.ModalService.close();
-
-        if (success) {
-          // حاول تحدث حالة الـ Auth: إذا عندك method setLoggedIn استخدمها
-          if (typeof (this.AuthService as any).setLoggedIn === 'function') {
-            (this.AuthService as any).setLoggedIn(true);
-          } else {
-            // fallback: إذا الـ LoginComponent خزّن التوكن في localStorage،
-            // نعمل reload حتى يقرأ التطبيق الحالة الجديدة تلقائياً.
-            // هذا سلوك مؤقت حتى تضيف طريقة رسمية لتعيين التوكن في AuthService.
-            window.location.reload();
-          }
-        } else {
-        }
+        this.modalService.close();
+        if (success) window.location.reload();
       });
-    } else {
-      console.warn('LoginComponent does not expose a closed EventEmitter.');
     }
-  }
-
-  ngOnDestroy(): void {
-    this.modalSub?.unsubscribe();
-    
-    if (this.ModalService.isOpen()) {
-      this.ModalService.close();
-    }
-  }
-  onLogout() {
-    this.AuthService.logout();   
   }
 }
