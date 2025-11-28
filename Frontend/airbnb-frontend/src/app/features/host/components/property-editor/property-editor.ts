@@ -242,6 +242,14 @@ export class PropertyEditorComponent implements OnInit {
     }
   }
 
+  toggleSafety(field: 'exteriorCamera' | 'noiseMonitor' | 'weapons') {
+    const current = this.tempSafety();
+    this.tempSafety.set({
+      ...current,
+      [field]: !current[field]
+    });
+  }
+
   canToggleStatus(): boolean {
     const p = this.property();
     if (!p) return false;
@@ -308,7 +316,13 @@ export class PropertyEditorComponent implements OnInit {
         break;
       case 'booking': updates.isInstantBook = this.tempInstantBook(); break;
       case 'rules': updates.houseRules = this.tempRules(); break;
-      case 'safety': updates.safetyDetails = this.tempSafety(); break;
+      case 'safety': 
+        
+        const safety = this.tempSafety();
+        updates.hasExteriorCamera = safety.exteriorCamera;
+        updates.hasNoiseMonitor = safety.noiseMonitor;
+        updates.hasWeapons = safety.weapons;
+        break;
     }
 
     this.propertyService.updateProperty(prop.id, updates).subscribe({

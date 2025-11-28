@@ -378,25 +378,39 @@
       <section *ngIf="activeSection() === 'safety'" class="editor-section">
         <h2 class="section-title">Guest safety</h2>
         <p class="desc">Does your place have any of these?</p>
+        
         <div class="amenities-list">
+          
+          <!-- Exterior Camera -->
           <div class="amenity-item">
             <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempSafety().exteriorCamera">
+              <input type="checkbox" 
+                     [checked]="tempSafety().exteriorCamera"
+                     (change)="toggleSafety('exteriorCamera')"> <!-- ✅ استخدام الدالة الجديدة -->
               <span class="check-text">Exterior security camera</span>
             </label>
           </div>
+
+          <!-- Noise Monitor -->
           <div class="amenity-item">
             <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempSafety().noiseMonitor">
+              <input type="checkbox" 
+                     [checked]="tempSafety().noiseMonitor"
+                     (change)="toggleSafety('noiseMonitor')"> <!-- ✅ استخدام الدالة الجديدة -->
               <span class="check-text">Noise decibel monitor</span>
             </label>
           </div>
+
+          <!-- Weapons -->
           <div class="amenity-item">
             <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempSafety().weapons">
+              <input type="checkbox" 
+                     [checked]="tempSafety().weapons"
+                     (change)="toggleSafety('weapons')"> <!-- ✅ استخدام الدالة الجديدة -->
               <span class="check-text">Weapons on property</span>
             </label>
           </div>
+
         </div>
       </section>
 
