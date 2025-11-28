@@ -11,31 +11,8 @@
 }
 
 /* --- Header --- */
-.header {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 88px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 48px;
-  background: white;
-  z-index: 100;
-}
-.logo {
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-.logo:hover {
-  opacity: 0.8;
-}
 
-.logo svg {
-  width: 32px;
-  height: 32px;
-  fill: #FF385C;
-}
-.header-actions { display: flex; gap: 12px; }
+
 
 .btn-secondary {
   background: transparent;
@@ -53,8 +30,9 @@
 
 /* --- Main Content --- */
 .main-content {
-  margin-top: 88px; /* Header height */
-  padding: 32px 48px 120px; /* Bottom padding for footer */
+ 
+  padding: 40px; /* Bottom padding for footer */
+  min-height: calc(100vh - 160px);
   display: flex;
   justify-content: center;
 }
