@@ -14,6 +14,7 @@ namespace Airbnb.API.DTOs.Auth
 
         [StringLength(500, ErrorMessage = "Bio cannot be longer than 500 characters.")]
         public string? Bio { get; set; }
+        public string? ProfileImageUrl { get; set; }
 
         // ==========================================
         // الإضافات الجديدة 

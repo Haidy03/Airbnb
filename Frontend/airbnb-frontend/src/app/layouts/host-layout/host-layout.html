@@ -81,9 +81,19 @@
       <div class="mobile-user-section">
         @if (user(); as currentUser) {
           <div class="mobile-user-info" (click)="viewProfileClick()">
-            @if (currentUser.profilePicture) {
-              <img [src]="currentUser.profilePicture" class="mobile-avatar">
-            }
+            
+            <!-- ✅ التعديل هنا: إضافة حاوية للصورة أو الحرف -->
+            <div class="mobile-avatar-wrapper">
+              @if (currentUser.profilePicture) {
+                <img [src]="currentUser.profilePicture" [alt]="currentUser.firstName">
+              } @else {
+                <!-- ✅ إظهار الحرف الأول في حالة عدم وجود صورة -->
+                <div class="avatar-placeholder large">
+                  {{ currentUser.firstName?.charAt(0) | uppercase }}
+                </div>
+              }
+            </div>
+
             <div class="mobile-user-details">
               <div class="mobile-user-name">{{ currentUser.firstName }}</div>
               <span class="mobile-profile-link">View profile</span>
