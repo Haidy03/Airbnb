@@ -54,6 +54,14 @@ export class MessageService {
       });
   }
 
+  markConversationAsRead(conversationId: string): Observable<any> {
+    return this.http.patch<any>(
+      `${this.apiUrl}/conversations/${conversationId}/read`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
   // ✅ دالة لتقليل العداد محلياً عند قراءة رسالة
   decrementUnreadCount(amount: number) {
     this.unreadCount.update(val => Math.max(0, val - amount));

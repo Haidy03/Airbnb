@@ -37,6 +37,7 @@ export class BookingCard implements OnInit { // <--- تم تغيير الاسم 
   @Input() currency: string = 'EGP';
   @Input() serviceFee: number = 0;
   @Input() cleaningFee: number = 0;
+  @Input() isInstantBook: boolean = false; // القيمة الافتراضية
     // 2. ده الحدث اللي هنبعته للأب
   @Output() dateChanged = new EventEmitter<{checkIn: string, checkOut: string}>();
   @Output() reserve = new EventEmitter<void>(); // تعريف الحدث

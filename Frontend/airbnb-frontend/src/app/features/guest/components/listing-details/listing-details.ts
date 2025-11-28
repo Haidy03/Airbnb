@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { HeaderComponent } from '../header/header';
+import { AuthService } from '../../../auth/services/auth.service';
 
 
 
@@ -27,17 +28,30 @@ export class ListingDetails implements OnInit {
   propertyId!: string;
    isLoading: boolean = true;
   error: string | null = null;
+
   // متغيرات التحكم في الشكل (UI Flags)
   isLiked: boolean = false;           // هل القلب أحمر؟
   isTranslated: boolean = true;       // هل النص مترجم؟
   isDescriptionExpanded: boolean = false; // هل الوصف مفتوح بالكامل؟
+  showAmenitiesModal: boolean = false;
+  showFullGallery: boolean = false;
+  // translation variables
+  // 1. خصائص إدارة الترجمة
+  originalDescription: string = '';
+  translatedDescription: string = '';
+  showTranslated: boolean = false;
+  isTranslating: boolean = false;
+  // message host
+  showMessageModal: boolean = false;
+
  // متغيرات التواريخ اللي هتتبعت للاتنين
   selectedCheckIn: string = '';
   selectedCheckOut: string = '';
     constructor(
     private listingService: ListingService,
     private route: ActivatedRoute,
-    private router :Router // استيراد الـ Router
+    private router :Router
+    ,private AuthService:AuthService
   ) {}
   // دالة بتستقبل التغيير من كارت الحجز (هنحتاج نعدل كارت الحجز عشان يبعتها)
   onDatesUpdated(dates: {checkIn: string, checkOut: string}) {
@@ -50,25 +64,49 @@ export class ListingDetails implements OnInit {
       alert('Please select dates first!');
       return;
     }
-    this.router.navigate(['/checkout', this.listing?.id], {
-      queryParams: {
-        checkIn: this.selectedCheckIn,
-        checkOut: this.selectedCheckOut,
-        guests: 2 // أو المتغير الحقيقي لعدد الضيوف
-      }
-    });
 
+
+  // isInstantBook
+
+
+    if (!this.listing?.isInstantBook) {
+
+      this.router.navigate(['/checkout', this.listing?.id], {
+        queryParams: {
+          checkIn: this.selectedCheckIn,
+          checkOut: this.selectedCheckOut,
+          guests: 2
+        }
+      });
+    } else {
+       this.router.navigate(['/request-book', this.listing?.id], {
+        queryParams: {
+          checkIn: this.selectedCheckIn,
+          checkOut: this.selectedCheckOut,
+          guests: 2
+        }
+      });
+      // alert('This listing requires a "Request to Book" approval from the host.');
+    }
+    // ******************************************************
   }
-  // 1. هذه هي قائمة المزايا التي كانت ناقصة
-  amenities = [
-    { icon: 'fa-solid fa-wifi', name: 'Fast Wifi' },
-    { icon: 'fa-solid fa-tv', name: '55" HDTV with Netflix' },
-    { icon: 'fa-solid fa-snowflake', name: 'Central air conditioning' },
-    { icon: 'fa-solid fa-kitchen-set', name: 'Fully equipped kitchen' },
-    { icon: 'fa-solid fa-elevator', name: 'Elevator' },
-    { icon: 'fa-solid fa-washer', name: 'Washing machine' },
-    { icon: 'fa-solid fa-video', name: 'Security cameras' }
-  ];
+
+   showAllAmenities(): void {
+    this.showAmenitiesModal = true;
+    // يمكن إضافة منطق لمنع التمرير (Scroll lock) هنا إذا لزم الأمر
+  }
+
+  /**
+   * دالة لإغلاق الـ Modal عند الضغط على زر الغلق
+   */
+  closeAmenitiesModal(): void {
+    this.showAmenitiesModal = false;
+  }
+
+
+
+
+
 
 
 
@@ -96,14 +134,13 @@ export class ListingDetails implements OnInit {
       )
        .subscribe({
     next: (data) => {
-      // **الإصلاح الرئيسي هنا:**
-      // إذا كان ratingBreakdown مفقوداً، قم بتعيينه كـ undefined بدلاً من null.
-      // وإلا، سيفشل كود الـ HTML.
+        this.originalDescription = data.description;
       this.listing = {
         ...data,
         ratingBreakdown: data.ratingBreakdown ?? undefined, // تعيين قيمة افتراضية
         reviewsCount: data.reviews?.length || 0, // حساب عدد المراجعات من المصفوفة
-        rating: data.rating || 0 // تعيين تقييم افتراضي
+        rating: data.rating || 0 ,// تعيين تقييم افتراضي
+
       };
     },
         error: (err) => {
@@ -113,7 +150,52 @@ export class ListingDetails implements OnInit {
       });
     }
 
-  // 2. دوال الأزرار التي كانت فارغة
+    // translation function
+      translateDescription(): void {
+    if (this.isTranslating || this.showTranslated) {
+        return; // تجنب الترجمة المتكررة
+    }
+
+    // إذا كان لدينا بالفعل النص المترجم، اعرضه مباشرة
+    if (this.translatedDescription) {
+        this.showTranslated = true;
+        return;
+    }
+
+    if (!this.originalDescription) {
+        return; // لا يوجد وصف للترجمة
+    }
+
+    this.isTranslating = true;
+
+    this.listingService.translateText(this.originalDescription)
+      .pipe(finalize(() => this.isTranslating = false))
+      .subscribe({
+        next: (response) => {
+          this.translatedDescription = response.translatedText;
+          this.showTranslated = true; // عرض النص المترجم
+        },
+        error: (err) => {
+          console.error('Translation failed:', err);
+          // يمكن هنا عرض رسالة خطأ للمستخدم
+        }
+      });
+  }
+
+  /**
+   * 3. الرجوع إلى النص الأصلي (Show less)
+   */
+  showOriginal(): void {
+    this.showTranslated = false;
+  }
+
+
+  // 2. دوال الأزرار show all photos
+   isModalOpen: boolean = false;
+       onModalStateChange(isOpen: boolean): void {
+        this.isModalOpen = isOpen; // تحديث الحالة عند فتح/إغلاق الـ Modal
+    }
+
 
   // زر المشاركة: ينسخ رابط الصفحة
   shareListing() {
@@ -137,9 +219,22 @@ export class ListingDetails implements OnInit {
     this.isDescriptionExpanded = !this.isDescriptionExpanded;
   }
 
-  // زر عرض كل المزايا (مبدئياً يطبع في الكونسول)
-  showAllAmenities() {
-    console.log('Open Amenities Modal Triggered');
-  }
+// send message to host function
+openMessageModal(): void {
+  // هنا يجب التأكد من أن المستخدم قام بتسجيل الدخول قبل الفتح
+ if (!this.AuthService.isAuthenticated) {
+      this.router.navigate(['/login']); // أو فتح Modal تسجيل الدخول
+      return;
+ }
 
+  this.showMessageModal = true;
+  // use a proper array of route segments (no stray $)
+  this.router.navigate([`/send-message/${this.listing?.id}`  ]);
 }
+
+  closeMessageModal(): void {
+    this.showMessageModal = false;
+  }
+}
+
+

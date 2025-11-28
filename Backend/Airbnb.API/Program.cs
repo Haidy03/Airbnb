@@ -119,6 +119,9 @@ builder.Services.AddScoped<ITranslationService, TranslationService>();
 builder.Services.AddScoped<IEarningsService, EarningsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddHttpClient<IChatService, ChatService>();
+builder.Services.AddMemoryCache();
 
 
 // ============================================

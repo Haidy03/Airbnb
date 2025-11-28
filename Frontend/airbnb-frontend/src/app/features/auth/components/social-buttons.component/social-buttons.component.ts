@@ -18,10 +18,10 @@ export class SocialButtonsComponent {
   @Output() socialLogin = new EventEmitter<string>();
 
   providers: SocialProvider[] = [
-    { id: 'google', name: 'Continue with Google', icon: 'google' },
-    { id: 'apple', name: 'Continue with Apple', icon: 'apple' },
+   //{ id: 'google', name: 'Continue with Google', icon: 'google' },
+    //{ id: 'apple', name: 'Continue with Apple', icon: 'apple' },
     { id: 'email', name: 'Continue with email', icon: 'email' },
-    { id: 'facebook', name: 'Continue with Facebook', icon: 'facebook' }
+    //{ id: 'facebook', name: 'Continue with Facebook', icon: 'facebook' }
   ];
 
   onProviderClick(providerId: string) {

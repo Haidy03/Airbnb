@@ -2,7 +2,9 @@
 import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms'; 
 import { ActivatedRoute, Router ,  RouterLink} from '@angular/router';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SocialButtonsComponent } from '../social-buttons.component/social-buttons.component';
@@ -11,6 +13,15 @@ import { TokenService } from '../../services/token.service';
 import { ErrorService } from '../../services/error.service'; 
 type LoginMode = 'phone' | 'email' | 'register';
 type PhoneStep = 'input' | 'verify';
+
+// 1. Define your Regex Map (You can put this outside the class or in a constants file)
+const PHONE_PATTERNS: Record<string, RegExp> = {
+  'EG': /^01[0125][0-9]{8}$/, // Egypt: 11 digits, starts with 010, 011, 012, 015
+  'SA': /^05[0-9]{8}$/,       // Saudi Arabia: 10 digits, starts with 05
+  'US': /^[2-9][0-9]{9}$/,    // USA: 10 digits
+  // Add other country codes as needed
+  'DEFAULT': /^[0-9]{8,15}$/  // Fallback
+};
 
 @Component({
   selector: 'app-login',
@@ -46,10 +57,16 @@ export class LoginComponent {
   // Session
   sessionId = signal('');
 
-  // Forms
+
+ // We initialize with the validator for the default selected country (index 0)
   phoneForm = this.fb.nonNullable.group({
-    phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{8,15}$/)]]
+    phoneNumber: ['', [
+      Validators.required, 
+      Validators.pattern(PHONE_PATTERNS[COUNTRY_CODES[0].code] || PHONE_PATTERNS['DEFAULT'])
+    ]],
+    password: ['', [Validators.required]]
   });
+
 
   verificationForm = this.fb.nonNullable.group({
     code: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(6)]]
@@ -64,6 +81,8 @@ export class LoginComponent {
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
+    countryCode: ['+20', [Validators.required]],
+    phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
@@ -87,35 +106,136 @@ export class LoginComponent {
     this.isCountryDropdownOpen.update(v => !v);
   }
 
-  selectCountry(country: CountryCode) {
+   selectCountry(country: CountryCode) {
     this.selectedCountry.set(country);
     this.isCountryDropdownOpen.set(false);
+
+    // ✅ NEW MODIFICATION: Update Validator based on country code
+    const pattern = PHONE_PATTERNS[country.code] || PHONE_PATTERNS['DEFAULT'];
+    
+    const phoneControl = this.phoneForm.controls.phoneNumber;
+    
+    // Reset validators
+    phoneControl.setValidators([
+      Validators.required,
+      Validators.pattern(pattern)
+    ]);
+    
+    // Trigger validation update immediately
+    phoneControl.updateValueAndValidity();
+    
+     
   }
+  
 
   // Phone Authentication Flow
   onPhoneContinue() {
-    if (this.phoneForm.invalid || this.isLoading()) return;
+  if (this.phoneForm.invalid || this.isLoading()) return;
 
-    this.isLoading.set(true);
-    this.errorMessage.set('');
+  this.isLoading.set(true);
+  this.errorMessage.set('');
+  
+  // ✅ Build full phone number
+  const fullPhoneNumber = `${this.selectedCountry().dialCode}${this.phoneForm.value.phoneNumber}`;
+  
+  const request = {
+    identifier: fullPhoneNumber,
+    password: this.phoneForm.value.password!
+  };
 
-    const request = {
-      countryCode: this.selectedCountry().dialCode,
-      phoneNumber: this.phoneForm.value.phoneNumber!
-    };
+  console.log('📱 Phone Login Request:', {
+    identifier: request.identifier,
+    hasPassword: !!request.password
+  });
 
-    this.authService.startPhoneLogin(request).subscribe({
-      next: (response) => {
-        this.isLoading.set(false);
-        this.sessionId.set(response.sessionId);
-        this.phoneStep.set('verify');
-      },
-      error: (error) => {
-        this.isLoading.set(false);
-        this.errorMessage.set(error.message || 'Failed to send verification code');
+  this.authService.loginWithEmail(request).subscribe({
+    next: (response) => {
+      this.isLoading.set(false);
+      console.log('✅ Phone login successful!');
+      
+      const token = this.authService.getToken();
+      if (token) {
+        const userRole = this.tokenService.getUserRole(token);
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+        
+        if (returnUrl) {
+          this.router.navigateByUrl(returnUrl);
+          this.closeModal();
+        } else {
+          this.redirectBasedOnRole(userRole);
+        }
+      } else {
+        this.errorMessage.set('Login failed - no token received');
       }
-    });
-  }
+    },
+    error: (error) => {
+      this.isLoading.set(false);
+      console.error('❌ Phone login failed:', error);
+      this.errorMessage.set(this.getErrorMessage(error));
+    }
+  });
+}
+  // onPhoneContinue() {
+  //   if (this.phoneForm.invalid || this.isLoading()) return;
+
+  //   this.isLoading.set(true);
+  //   this.errorMessage.set('');
+  //   const fullPhoneNumber = `${this.selectedCountry().dialCode}${this.phoneForm.value.phoneNumber}`;
+  //   const request = {
+  //      identifier: fullPhoneNumber,
+  //   password: this.phoneForm.value.password!
+      
+  //   };
+
+  //   // this.authService.startPhoneLogin(request).subscribe({
+  //   //   next: (response) => {
+  //   //     this.isLoading.set(false);
+  //   //     this.sessionId.set(response.sessionId);
+  //   //    // this.phoneStep.set('verify');
+  //   //   },
+  //   //   error: (error) => {
+  //   //     this.isLoading.set(false);
+  //   //     this.errorMessage.set(error.message || 'Failed to send verification code');
+  //   //   }
+  //   // });
+  //  this.authService.loginWithEmail(request).subscribe({
+  //   next: (response) => {
+  //     this.isLoading.set(false);
+  //     console.log('✅ Phone login successful!');
+      
+  //     const token = this.authService.getToken();
+  //     if (token) {
+  //       const userRole = this.tokenService.getUserRole(token);
+  //       const userId = this.tokenService.getUserId(token);
+        
+  //       console.log('👤 User Role:', userRole);
+  //       console.log('🆔 User ID:', userId);
+        
+  //       const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+        
+  //       if (returnUrl) {
+  //         this.router.navigateByUrl(returnUrl);
+  //         this.closeModal();
+  //       } else {
+  //         this.redirectBasedOnRole(userRole);
+  //       }
+  //     } else {
+  //       this.errorMessage.set('Login failed - no token received');
+  //     }
+  //   },
+  //   error: (error) => {
+  //     this.isLoading.set(false);
+  //     console.error('❌ Phone login failed:', error);
+  //     console.error('Error details:', {
+  //       status: error.status,
+  //       message: error.message,
+  //       error: error.error
+  //     });
+  //     this.errorMessage.set(this.getErrorMessage(error));
+  //     this.errorService.handleError(error);
+  //   }
+  // }); 
+  // }
 
   onVerifyCode() {
     if (this.verificationForm.invalid || this.isLoading()) return;
@@ -202,11 +322,8 @@ export class LoginComponent {
           console.log('👤 User Role:', userRole);
           console.log('🆔 User ID:', userId);
           
-          // ============================================================
-          // 🚀 تعديلك يبدأ من هنا (بشكل آمن)
-          // ============================================================
           
-          // 1. نتحقق هل المستخدم جاي من رابط معين؟ (مثل زر Become a Host)
+         
           const returnUrl = this.route.snapshot.queryParams['returnUrl'];
 
           if (returnUrl) {
@@ -215,7 +332,7 @@ export class LoginComponent {
             this.router.navigateByUrl(returnUrl);
             this.closeModal(); // نقفل المودال
           } else {
-            // 2. لو مفيش رابط، نفذ اللوجيك القديم بتاع الفريق
+            
             this.redirectBasedOnRole(userRole);
           }
           // ============================================================
@@ -240,31 +357,40 @@ export class LoginComponent {
 
     this.isLoading.set(true);
     this.errorMessage.set('');
-
+    
+    const formValue = this.registerForm.value;
+    const fullPhoneNumber = `${formValue.countryCode}${formValue.phoneNumber}`;
     const request = {
-      firstName: this.registerForm.value.firstName!,
-      lastName: this.registerForm.value.lastName!,
-      email: this.registerForm.value.email!,
-      password: this.registerForm.value.password!
+      firstName: formValue.firstName!,
+    lastName: formValue.lastName!,
+    email: formValue.email!,
+    phoneNumber: fullPhoneNumber,
+    password: formValue.password!
+      // firstName: this.registerForm.value.firstName!,
+      // lastName: this.registerForm.value.lastName!,
+      // email: this.registerForm.value.email!,
+      // phoneNumber: `${this.registerForm.value.countryCode}${this.registerForm.value.phoneNumber}`,
+      // password: this.registerForm.value.password!
     };
 
     console.log('📝 Attempting registration:', { email: request.email });
 
     this.authService.register(request).subscribe({
       next: (response) => {
-        this.isLoading.set(false);
+       // this.isLoading.set(false);
         console.log('✅ Registration successful!');
         
         // After successful registration, automatically log in
         const loginRequest = {
-          identifier: request.email,
+          identifier: request.email || request.phoneNumber,
           password: request.password
         };
         
         this.authService.loginWithEmail(loginRequest).subscribe({
           next: (response:any) => {
+            this.isLoading.set(false);
             console.log('✅ Auto-login successful after registration');
-             this.isLoading.set(false);
+             
             //this.authService.setToken(response.token);
             // Fetch role from token and redirect
            const token = response?.token || response?.data?.token;
@@ -279,18 +405,26 @@ export class LoginComponent {
             const userId = this.tokenService.getUserId(token);
 
             console.log('👤 User Role:', userRole, '🆔 User ID:', userId);
-            this.redirectBasedOnRole(userRole);
+             localStorage.setItem('userId', userId);
+            localStorage.setItem('email', request.email);
+            localStorage.setItem('userRole', userRole);
+            localStorage.setItem('firstName', request.firstName);
+            localStorage.setItem('lastName', request.lastName);
+            localStorage.setItem('phoneNumber', fullPhoneNumber);
 
+            this.authService.setUserFromToken(token);
+            this.authService.fetchAndSetFullProfile();
             this.closeModal();
+            this.redirectBasedOnRole(userRole);
           } else {
             this.errorMessage.set('Login failed - no token received');
-            this.switchMode('email');
+            //this.switchMode('email');
           }
             // this.router.navigate(['/login']); 
             this.closeModal();
-            
           },
           error: (loginError) => {
+            this.isLoading.set(false);
             console.error('❌ Auto-login failed:', loginError);
             // If auto-login fails, switch to login mode
             this.switchMode('email');
@@ -339,7 +473,9 @@ export class LoginComponent {
   get phoneNumber() {
     return this.phoneForm.get('phoneNumber');
   }
-
+get phonePassword() {
+  return this.phoneForm.get('password');
+}
   get code() {
     return this.verificationForm.get('code');
   }
@@ -380,7 +516,17 @@ export class LoginComponent {
   get isRegisterMode(): boolean {
     return this.mode() === 'register';
   }
+get registerPhone() {
+  return this.registerForm.get('phoneNumber');
+}
 
+get registerCountryCode() {
+  return this.registerForm.get('countryCode');
+}
+
+get countryCode() {
+  return this.registerForm.get('countryCode');
+}
   get isPhoneInput(): boolean {
     return this.phoneStep() === 'input';
   }
@@ -414,15 +560,18 @@ export class LoginComponent {
     }
   }
 
-  // ✅ فتح نافذة نسيت كلمة المرور
+ 
   openForgotPassword(event: Event) {
     event.preventDefault();
     //this.closeModal();
     
-    // استيراد المكون ديناميكياً لتجنب circular dependencies
+    
     import('../forogt-password.component/forogt-password.component').then(module => {
       this.modalService.open(module.ForgotPasswordComponent);
     });
   }
   
+  
+
+
 }

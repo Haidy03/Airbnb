@@ -1,3 +1,4 @@
+// user.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, map, throwError } from 'rxjs';
@@ -12,6 +13,7 @@ export class UserService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private apiUrl = 'https://localhost:5202/api';
+  private readonly API_BASE_URL = 'https://localhost:5202/';
 
   // Helper method to get auth headers
   private getAuthHeaders(): HttpHeaders {
@@ -21,7 +23,13 @@ export class UserService {
       'Content-Type': 'application/json'
     });
   }
-
+  
+  private transformUrl(path: string): string {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    return `${this.API_BASE_URL}${cleanPath}`;
+  }
   getCurrentUser(): Observable<{success: boolean; data: any[]; initial: string}> {
     // Get authenticated user from AuthService
     const currentAuthUser = this.authService.currentUser;
@@ -40,22 +48,46 @@ export class UserService {
                     ? currentAuthUser.firstName.charAt(0).toUpperCase()
                     : fullName.charAt(0).toUpperCase();
 
-    
-    return this.http.get<{success:boolean ; data: any[]}>(
+     return this.http.get<any>(
       `${this.apiUrl}/Auth/profile`, {
       headers: this.getAuthHeaders()
     }).pipe(
-      map(user => ({
-        ...user,
-        initial: initial
-      })),
+      map(user => {
+        // ✅ FIX: Ensure image is transformed here too
+        const rawPic = user.profileImage || user.profilePicture || user.avatar;
+        
+        return {
+          ...user,
+          // Overwrite with full URL
+          profileImage: this.transformUrl(rawPic), 
+          profilePicture: this.transformUrl(rawPic),
+          initial: initial
+        };
+      }),
       catchError(error => {
         console.error('Error fetching user profile:', error);
         return throwError(() => error);
       })
     );
-    
   }
+  
+
+
+  //   return this.http.get<{success:boolean ; data: any[]}>(
+  //     `${this.apiUrl}/Auth/profile`, {
+  //     headers: this.getAuthHeaders()
+  //   }).pipe(
+  //     map(user => ({
+  //       ...user,
+  //       initial: initial
+  //     })),
+  //     catchError(error => {
+  //       console.error('Error fetching user profile:', error);
+  //       return throwError(() => error);
+  //     })
+  //   );
+    
+  // }
 
   getProfileDetails(): Observable<ProfileDetails> {
     // Real API call with authentication
@@ -101,7 +133,7 @@ export class UserService {
 
   uploadProfileImage(file: File): Observable<{url: string}> {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('file', file);
 
     // Real API call with authentication
     const token = this.authService.getToken();
@@ -111,10 +143,16 @@ export class UserService {
     });
 
     return this.http.post<{url: string}>(
-      `${this.apiUrl}/user/upload-image`, 
+      `${this.apiUrl}/Auth/upload-photo`, 
       formData,
       { headers }
     ).pipe(
+
+       map(response => {
+        return { 
+          url: this.transformUrl(response.url) 
+        };
+      }),
       catchError(error => {
         console.error('Error uploading image:', error);
         return throwError(() => error);

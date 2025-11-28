@@ -52,11 +52,33 @@
   </div>
 
   <!-- زر عرض كل الصور -->
-  <button class="show-all-btn" (click)="showAllPhotos()">
+  <button class="show-all-btn" (click)="showAllPhotos()"   *ngIf="images.length > 1">
     <i class="fa fa-th"></i> <!-- أيقونة النقاط -->
+
     Show all photos
   </button>
 
+
 </div>
 
+<div class="full-gallery-modal" *ngIf="showModal">
 
+    <div class="modal-content">
+        <!-- زر الإغلاق (للتثبيت في الزاوية) -->
+<button class="close-modal-btn" (click)="closeFullGallery()">
+          <svg viewBox="0 0 32 32" style="display: block; fill: none; height: 16px; width: 16px; stroke: currentcolor; stroke-width: 3; overflow: visible;"><path d="m6 6 20 20M26 6 6 26"></path></svg>
+        </button>
+
+        <h3> All Photos</h3>
+
+        <div class="full-image-list">
+            <div
+                class="full-image-item"
+                *ngFor="let image of images; let i = index"
+            >
+                <!-- الصورة ستأخذ حجم الـ Div الأب بفضل object-fit: cover -->
+                <img [src]="getFullImageUrl(image)" [alt]="title + ' ' + (i + 1)">
+            </div>
+        </div>
+    </div>
+</div>
