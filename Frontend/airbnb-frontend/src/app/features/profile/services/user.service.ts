@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs'; // ❌ أزلنا of و delay
+import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ProfileDetails, Trip, Connection } from '../models/user.model';
 import { AuthService } from '../../auth/services/auth.service';
@@ -12,9 +12,9 @@ export class UserService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   
-  // تأكدي أن هذا الرابط مطابق للباك إند عندك
-  private apiUrl = 'https://localhost:5202/api'; 
-  private readonly API_BASE_URL = 'https://localhost:5202/';
+  // Ensure this matches your running Backend Port (5202 or 7076)
+  private readonly API_BASE_URL = 'https://localhost:5202';
+  private readonly apiUrl = `${this.API_BASE_URL}/api`;
 
   private getAuthHeaders(): HttpHeaders {
     const token = this.authService.getToken();
@@ -26,41 +26,34 @@ export class UserService {
   
   private transformUrl(path: string): string {
     if (!path) return '';
-    if (path.startsWith('http')) return path;
-    // إزالة السلاش في البداية لتجنب الازدواج //
+    if (path.startsWith('http')) return path; // Already absolute
+    
+    // Remove leading slash to avoid double slashes
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    const cleanBase = this.API_BASE_URL.endsWith('/') ? this.API_BASE_URL : `${this.API_BASE_URL}/`;
-    return `${cleanBase}${cleanPath}`;
+    return `${this.API_BASE_URL}/${cleanPath}`;
   }
 
-  getCurrentUser(): Observable<{success: boolean; data: any[]; initial: string}> {
+  // 1. Get Basic User Info (Header/Avatar)
+  getCurrentUser(): Observable<any> {
     const currentAuthUser = this.authService.currentUser;
     if (!currentAuthUser) {
       return throwError(() => new Error('No authenticated user'));
     }
 
-    const fullName = currentAuthUser.fullName || 
-                     (currentAuthUser.firstName && currentAuthUser.lastName 
-                       ? `${currentAuthUser.firstName} ${currentAuthUser.lastName}` 
-                       : currentAuthUser.email?.split('@')[0] || 'User');
-    
-    const initial = currentAuthUser.firstName 
-                    ? currentAuthUser.firstName.charAt(0).toUpperCase()
-                    : fullName.charAt(0).toUpperCase();
-
-     return this.http.get<any>(
-      `${this.apiUrl}/Auth/profile`, {
+     return this.http.get<any>(`${this.apiUrl}/Auth/profile`, {
       headers: this.getAuthHeaders()
     }).pipe(
       map(user => {
-        // التعامل مع اختلاف المسميات (Backend DTO sends ProfileImageUrl)
-        const rawPic = user.profileImageUrl || user.profileImage || user.profilePicture;
+        // Handle different naming conventions from backend
+        const rawPic = user.profileImageUrl || user.profileImage || user.profilePicture || user.avatar;
         
         return {
           ...user,
+          // Transform to full URL for display
           profileImage: this.transformUrl(rawPic), 
           profilePicture: this.transformUrl(rawPic),
-          initial: initial
+          // Calculate initial if not present
+          initial: user.firstName ? user.firstName.charAt(0).toUpperCase() : 'U'
         };
       }),
       catchError(error => {
@@ -70,32 +63,27 @@ export class UserService {
     );
   }
 
-  // ✅ التعديل الأهم هنا: تفعيل الاتصال الحقيقي
+  // 2. Get Extended Profile Details (About Me Page)
   getProfileDetails(): Observable<ProfileDetails> {
     return this.http.get<any>(`${this.apiUrl}/Auth/profile`, {
       headers: this.getAuthHeaders()
     }).pipe(
       map(data => {
-        // 1. تحويل رابط الصورة ليظهر بشكل صحيح
-        // ملاحظة: الـ DTO في الباك إند يرسل ProfileImageUrl (PascalCase)
-        // أو profileImageUrl (camelCase) حسب إعدادات الـ JSON
+        // 1. Transform Image URL
         let imgUrl = data.profileImageUrl || data.profileImage;
-        
         if (imgUrl) {
           imgUrl = this.transformUrl(imgUrl);
         }
 
-        // 2. تجميع البيانات
-        // ندمج الـ FunFacts (لو موجودة) مع البيانات الأساسية لتظهر في الفورم
+        // 2. Map Backend fields to Frontend Model
         return {
           ...data,
-          ...(data.funFacts || {}), // فك الأسئلة الإضافية
-          profileImage: imgUrl,     // تعيين الرابط الكامل
-          // تأكيد تعيين الأسماء لضمان ظهورها
+          profileImage: imgUrl,
           firstName: data.firstName,
           lastName: data.lastName,
-          aboutMe: data.bio || data.aboutMe, // Bio من الباك إند = AboutMe في الفرونت
-          whereILive: data.city || data.whereILive // City من الباك إند = WhereILive في الفرونت
+          // Map fallbacks (Backend 'Bio' -> Frontend 'aboutMe')
+          aboutMe: data.aboutMe || data.bio, 
+          whereILive: data.whereILive || data.city
         } as ProfileDetails;
       }),
       catchError(error => {
@@ -105,19 +93,13 @@ export class UserService {
     );
   }
 
-  // ✅ التعديل هنا: تفعيل الحفظ الحقيقي
+  // 3. Update Profile Details
   updateProfileDetails(details: ProfileDetails): Observable<ProfileDetails> {
-    
-    // تحويل البيانات لتناسب الـ DTO في الباك إند (اختياري، لو الأسماء متطابقة لا مشكلة)
-    const payload = {
-        ...details,
-        bio: details.aboutMe, // Mapping Frontend 'aboutMe' to Backend 'Bio'
-        city: details.whereILive // Mapping Frontend 'whereILive' to Backend 'City'
-    };
-
+    // We send the details as-is. 
+    // The backend DTO should handle 'AboutMe' and 'WhereILive' directly.
     return this.http.put<ProfileDetails>(
       `${this.apiUrl}/Auth/profile`, 
-      payload,
+      details,
       { headers: this.getAuthHeaders() }
     ).pipe(
       catchError(error => {
@@ -127,11 +109,13 @@ export class UserService {
     );
   }
 
+  // 4. Upload Profile Image
   uploadProfileImage(file: File): Observable<{url: string}> {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file); // Backend expects 'file'
 
     const token = this.authService.getToken();
+    // Do NOT set Content-Type header for FormData
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
@@ -142,10 +126,9 @@ export class UserService {
       { headers }
     ).pipe(
        map(response => {
-        // نرجع الرابط نظيف (بدون transformUrl هنا) لأننا نحتاجه نظيفاً للحفظ في الداتا بيز
-        // التحويل للعرض يتم في الكومبوننت أو عند القراءة
+        // Return the TRANSFORMED URL so the UI can display it immediately
         return { 
-          url: response.url 
+          url: this.transformUrl(response.url) 
         };
        }),
       catchError(error => {
@@ -155,14 +138,16 @@ export class UserService {
     );
   }
 
+  // 5. Get My Trips
   getPastTrips(): Observable<Trip[]> {
     return this.http.get<Trip[]>(`${this.apiUrl}/Booking/my-trips`, {
       headers: this.getAuthHeaders()
     });
   }
 
+  // 6. Connections (Placeholder)
   getConnections(): Observable<Connection[]> {
-    // يمكن تفعيلها لاحقاً
+    // Return empty array to prevent crashes if not implemented
     return throwError(() => new Error('Not implemented'));
   }
 }
