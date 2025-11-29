@@ -43,8 +43,15 @@
         flex: 1;
         padding: 10px 12px;
         position: relative;
+        border: 2px solid transparent;
 
         &.check-in { border-right: 1px solid #b0b0b0; }
+        &.active {
+          background: #fff;
+          border: 2px solid #000; // بوردر أسود عند التنشيط (مثل Airbnb)
+          border-radius: 8px;
+          z-index: 10; // ليكون فوق البوردر المجاور
+        }
 
         label {
           display: block;
@@ -53,6 +60,10 @@
           color: #222;
           margin-bottom: 2px;
         }
+        .fake-input.placeholder {
+            color: #717171;
+          }
+
         
         /* استبدال الـ Input بـ Div للنص فقط */
         .fake-input {

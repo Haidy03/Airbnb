@@ -1,6 +1,6 @@
 <div class="calendar-section">
 
-  <!-- Header -->
+  <!-- 1. Header ( الملخص: عدد الليالي أو اختر التاريخ) -->
   <div class="cal-header">
     <h2>
       <span *ngIf="nightsCount > 0">{{ nightsCount }} nights in {{ location }}</span>
@@ -9,19 +9,54 @@
     <p class="subtitle">{{ dateRangeString }}</p>
   </div>
 
-  <!-- Calendars Container -->
+  <!-- 2. Calendars Wrapper (يحتوي الشهرين وأزرار التنقل) -->
   <div class="calendars-wrapper">
+
+    <!-- زر السابق (يسار) -->
+    <button class="nav-btn prev" (click)="prevMonth()">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+
+    <!-- زر التالي (يمين) -->
+    <button class="nav-btn next" (click)="nextMonth()">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
 
     <!-- Month 1 -->
     <div class="month-container">
       <h3 class="month-name">{{ month1Name }}</h3>
+      
       <div class="weekdays">
         <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
       </div>
+      
       <div class="days-grid">
         <div *ngFor="let day of month1" class="day-cell"
+          [class.empty]="day.isEmpty"
+          [class.past]="day.isPast"
+          [class.blocked]="day.isBlocked" 
+          [class.check-in]="day.isCheckIn"
+          [class.check-out]="day.isCheckOut"
+          [class.in-range]="day.isInRange"
+          (click)="onDayClick(day)">
+          <span *ngIf="!day.isEmpty">{{ day.dayNum }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month 2 -->
+    <div class="month-container">
+      <h3 class="month-name">{{ month2Name }}</h3>
+      
+      <div class="weekdays">
+        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+      </div>
+      
+      <div class="days-grid">
+        <div *ngFor="let day of month2" class="day-cell"
              [class.empty]="day.isEmpty"
              [class.past]="day.isPast"
+             [class.blocked]="day.isBlocked"
              [class.check-in]="day.isCheckIn"
              [class.check-out]="day.isCheckOut"
              [class.in-range]="day.isInRange"
@@ -31,31 +66,9 @@
       </div>
     </div>
 
-    <!-- Month 2 -->
-    <div class="month-container">
-      <div class="month-header-row">
-        <h3 class="month-name">{{ month2Name }}</h3>
-        <button class="nav-btn next"><i class="fa-solid fa-chevron-right"></i></button>
-      </div>
-
-      <div class="weekdays">
-        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
-      </div>
-      <div class="days-grid">
-        <div *ngFor="let day of month2" class="day-cell"
-             [class.empty]="day.isEmpty"
-             [class.past]="day.isPast"
-             [class.check-in]="day.isCheckIn"
-             [class.check-out]="day.isCheckOut"
-             [class.in-range]="day.isInRange">
-          <span *ngIf="!day.isEmpty">{{ day.dayNum }}</span>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- Footer -->
+  <!-- 3. Footer -->
   <div class="cal-footer">
     <button class="keyboard-icon"><i class="fa-regular fa-keyboard"></i></button>
     <button class="clear-btn" (click)="clearDates()">Clear dates</button>

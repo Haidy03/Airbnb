@@ -73,17 +73,21 @@ export class BookingCard implements OnInit, OnChanges {
 
   // دالة تستقبل التاريخ من CalendarSection الداخلي وترسله للأب
   onPopupDatesSelected(dates: {checkIn: string, checkOut: string}) {
-    this.checkInDate = dates.checkIn;
-    this.checkOutDate = dates.checkOut;
-    
-    // إرسال التواريخ للأب (ListingDetails) ليحدث نفسه
-    this.dateChanged.emit(dates);
-    
-    // إذا تم اختيار التاريخين، أغلق الـ Popup
-    if (dates.checkIn && dates.checkOut) {
+  // 1. تحديث القيم المحلية فوراً (ليظهر التاريخ في الـ fake-input)
+  this.checkInDate = dates.checkIn;
+  this.checkOutDate = dates.checkOut;
+  
+  // 2. إرسال التحديث للأب (ListingDetails)
+  this.dateChanged.emit(dates);
+  
+  // 3. إغلاق الـ Popup فقط إذا اكتمل الاختيار (التاريخين موجودين)
+  if (dates.checkIn && dates.checkOut) {
+    // تأخير بسيط لإعطاء المستخدم فرصة لرؤية التحديد قبل الإغلاق
+    setTimeout(() => {
       this.closeCalendar();
-    }
+    }, 300); // 300ms تأخير جمالي
   }
+}
 
   // --- باقي المنطق (الحسابات والضيوف) ---
 

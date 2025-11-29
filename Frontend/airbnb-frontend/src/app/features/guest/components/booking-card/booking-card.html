@@ -16,13 +16,17 @@
     
     <!-- ✅ منطقة التواريخ (تفتح الـ Popup) -->
     <div class="date-picker-wrapper" (click)="toggleCalendarModal()">
-      <div class="date-input check-in">
-         <label>CHECK-IN</label>
-         <div class="fake-input">{{ checkInDate || 'Add date' }}</div>
+      <div class="date-input check-in" [class.active]="isCalendarOpen && !checkInDate">
+        <label>CHECK-IN</label>
+        <div class="fake-input" [class.placeholder]="!checkInDate">
+          {{ checkInDate || 'Add date' }}
+        </div>
       </div>
-      <div class="date-input check-out">
+      <div class="date-input check-out" [class.active]="isCalendarOpen && checkInDate && !checkOutDate">
         <label>CHECK-OUT</label>
-        <div class="fake-input">{{ checkOutDate || 'Add date' }}</div>
+        <div class="fake-input" [class.placeholder]="!checkOutDate">
+          {{ checkOutDate || 'Add date' }}
+        </div>
       </div>
     </div>
 

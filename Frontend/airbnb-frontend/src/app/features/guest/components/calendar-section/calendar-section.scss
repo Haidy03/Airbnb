@@ -1,82 +1,125 @@
 .calendar-section {
-  padding: 48px 0;
+  padding: 20px 0; // تقليل البادينج ليتناسب مع الـ popup
   color: #222;
+  position: relative;
 
   .cal-header {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     h2 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
     .subtitle { font-size: 14px; color: #717171; }
   }
 
-  .blocked-date-css-class {
-  text-decoration: line-through;
-  color: #ccc;
-  pointer-events: none; /* يمنع الضغط عليها */
-  background-color: #f7f7f7;
-}
   .calendars-wrapper {
     display: flex;
-    gap: 30px;
-    margin-bottom: 24px;
+    gap: 24px;
+    margin-bottom: 16px;
+    position: relative; // هام لتموضع الأزرار
 
-    // في الموبايل نخليهم تحت بعض
-    @media (max-width: 744px) { flex-direction: column; }
+    // في الموبايل أو الشاشات الصغيرة جداً
+    @media (max-width: 744px) { 
+      flex-direction: column; 
+      gap: 30px;
+    }
+
+    // أزرار التنقل (الأسهم)
+    .nav-btn {
+      position: absolute;
+      top: 0; // محاذاة مع عنوان الشهر
+      background: white;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: background 0.2s;
+
+      &:hover { background: #f7f7f7; }
+
+      &.prev { left: 0; }
+      &.next { right: 0; }
+    }
 
     .month-container {
       flex: 1;
-
-      .month-header-row {
-        display: flex; justify-content: space-between; align-items: center;
-        position: relative;
-        .nav-btn {
-          background: none; border: none; cursor: pointer; font-size: 14px; padding: 8px;
-          border-radius: 50%;
-          &:hover { background: #f7f7f7; }
-        }
-      }
+      width: 100%; // لضمان ملء المساحة في الـ popup
 
       .month-name {
-        font-size: 16px; font-weight: 600; text-align: center; margin-bottom: 16px;
+        font-size: 16px; 
+        font-weight: 600; 
+        text-align: center; 
+        margin-bottom: 16px;
+        color: #222;
       }
 
       .weekdays {
-        display: grid; grid-template-columns: repeat(7, 1fr);
-        text-align: center; margin-bottom: 8px;
-        span { font-size: 12px; color: #717171; font-weight: 600; }
+        display: grid; 
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center; 
+        margin-bottom: 4px;
+        span { 
+          font-size: 12px; 
+          color: #717171; 
+          font-weight: 600; 
+        }
       }
 
       .days-grid {
-        display: grid; grid-template-columns: repeat(7, 1fr);
+        display: grid; 
+        grid-template-columns: repeat(7, 1fr);
         row-gap: 2px;
 
         .day-cell {
-          height: 44px; // مربع
-          display: flex; align-items: center; justify-content: center;
-          font-size: 14px; font-weight: 600;
+          height: 44px; // ارتفاع الخلية
+          display: flex; 
+          align-items: center; 
+          justify-content: center;
+          font-size: 14px; 
+          font-weight: 600;
           cursor: pointer;
           border-radius: 50%; // الدائرة الافتراضية
           position: relative;
+          border: 1.5px solid transparent; // لتثبيت الحجم عند الهوفر
 
           &.empty { cursor: default; }
-          &.past { color: #ddd; text-decoration: line-through; cursor: not-allowed; }
 
-          &:hover:not(.empty):not(.past):not(.check-in):not(.check-out):not(.in-range) {
-            border: 1px solid #222;
+          // الأيام الماضية والمحجوزة
+          &.past, &.blocked { 
+            color: #dddddd; 
+            text-decoration: line-through; 
+            cursor: default;
+            pointer-events: none; // يمنع النقر
+          }
+
+          // تأثير الهوفر للأيام المتاحة
+          &:hover:not(.empty):not(.past):not(.blocked):not(.check-in):not(.check-out):not(.in-range) {
+            border-color: #222;
           }
 
           // === تنسيقات التحديد (مثل Airbnb) ===
 
           &.check-in, &.check-out {
-            background: #222; color: white; z-index: 2;
-            border-radius: 50%; // دائرة كاملة
+            background: #222; 
+            color: white; 
+            border-radius: 50%;
+            position: relative;
+            z-index: 2;
+          }
+          
+          // لعمل تأثير الاتصال عند الـ Check-in (نصف دائرة يمين)
+          &.check-in.in-range-start::after {
+             // يمكن إضافة pseudo-element هنا إذا أردت تعقيد التصميم ليتصل، لكن الدائرة تكفي حالياً
           }
 
           &.in-range {
-            background: #f7f7f7; // رمادي فاتح
+            background: #f7f7f7; 
             color: #222;
-            border-radius: 0; // مربع عشان يملأ الفراغ
-
-            // تظبيط الحواف لتبدو متصلة
+            border-radius: 0; // مربع لملء الفراغ بين التاريخين
+            
             &:hover { background: #ebebeb; }
           }
         }
@@ -85,12 +128,20 @@
   }
 
   .cal-footer {
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-top: 10px;
+    
     .keyboard-icon { border: none; background: none; cursor: pointer; font-size: 20px; }
     .clear-btn {
       border: none; background: none;
       text-decoration: underline; font-weight: 600; font-size: 14px; cursor: pointer;
-      &:hover { background: #f7f7f7; padding: 8px 12px; margin: -8px -12px; border-radius: 8px; }
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-right: -12px; // محاذاة لليمين
+      
+      &:hover { background: #f7f7f7; }
     }
   }
 }
