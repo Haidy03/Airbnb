@@ -3,14 +3,19 @@
   border: 1px solid rgb(221, 221, 221);
   border-radius: 12px;
   padding: 24px;
+  // 1. ظل قوي ومتناسق
   box-shadow: rgba(0, 0, 0, 0.12) 0px 6px 16px;
 
+  // 2. العرض: يملأ العمود بالكامل
   width: 100%;
-  max-width: 100%; /* حجم الكارت المعتاد */
-  position: sticky; /* هذا ما يجعله يثبت أثناء النزول */
-  top: 120px; /* المسافة من أعلى الشاشة */
+  max-width: 100%; 
+  
+  // 3. التثبيت أثناء النزول
+  position: sticky; 
+  top: 120px; 
   z-index: 50;
 
+  // --- Header (السعر والتقييم) ---
   .card-header {
     display: flex;
     justify-content: space-between;
@@ -28,29 +33,39 @@
     }
   }
 
+  // --- Form Container (التاريخ والضيوف) ---
   .booking-form {
-    border: 1px solid #b0b0b0;
-    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #b0b0b0; // الحدود الخارجية الموحدة
+    border-radius: 8px; // حواف دائرية للإطار كله
     margin-bottom: 16px;
-    position: relative; /* هام للقوائم المنسدلة والبوب أب */
+    position: relative; // هام جداً للبوب أب
 
+    // 1. Date Picker Section
     .date-picker-wrapper {
       display: flex;
-      border-bottom: 1px solid #b0b0b0;
+      border-bottom: 1px solid #b0b0b0; // خط فاصل بين التاريخ والضيوف
       cursor: pointer;
+      position: relative; // عشان الـ z-index للبوردر النشط
 
       .date-input {
         flex: 1;
         padding: 10px 12px;
         position: relative;
-        border: 2px solid transparent;
+        background: white; // هام لعدم ظهور خلفية شفافة
+        
+        // الخط الفاصل العمودي
+        &.check-in {
+          border-right: 1px solid #b0b0b0; 
+        }
 
-        &.check-in { border-right: 1px solid #b0b0b0; }
+        // عند التنشيط (عندما يكون البوب أب مفتوحاً)
         &.active {
-          background: #fff;
-          border: 2px solid #000; // بوردر أسود عند التنشيط (مثل Airbnb)
-          border-radius: 8px;
-          z-index: 10; // ليكون فوق البوردر المجاور
+          border: 2px solid #000; // إطار أسود سميك
+          border-radius: 8px; // حواف دائرية خاصة بالحقل
+          z-index: 10; // يظهر فوق الحقل المجاور
+          margin: -1px; // لتعويض سمك الإطار
         }
 
         label {
@@ -58,79 +73,106 @@
           font-size: 10px;
           font-weight: 800;
           color: #222;
+          text-transform: uppercase;
           margin-bottom: 2px;
         }
-        .fake-input.placeholder {
-            color: #717171;
-          }
-
         
-        /* استبدال الـ Input بـ Div للنص فقط */
         .fake-input {
           font-size: 14px;
-          color: #222;
+          color: #222; // لون النص الافتراضي (التاريخ المختار)
           min-height: 20px;
           line-height: 20px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+          // ✅ الستايل الخاص بالـ Placeholder
+          &.placeholder {
+            color: #717171; // رمادي خفيف
+            font-weight: 400;
+          }
         }
       }
     }
 
-    // --- تنسيق الـ Calendar Popup ---
+    // 2. Calendar Popup (نافذة التقويم المنبثقة)
     .calendar-popup {
       position: absolute;
-      top: -16px;
-      right: -24px; // يفتح من اليمين لليسار
-      width: 660px; // عرض مناسب للكارت الصغير
+      top: -16px; // يرتفع قليلاً فوق الكارد
+      right: -24px; // يخرج لليمين قليلاً ليعطي مساحة
+      width: 660px; // عرض يكفي لشهرين
       background: white;
       border: 1px solid #ddd;
       border-radius: 16px;
-      padding:24px;
-      box-shadow: 0 16px 32px rgba(0,0,0,0.15);
-      z-index: 300; // أعلى من القوائم الأخرى
+      padding: 24px;
+      box-shadow: 0 16px 32px rgba(0,0,0,0.15); // ظل قوي
+      z-index: 300; // يظهر فوق كل شيء
 
-      // تصغير حجم التقويم داخل الـ Popup
+      // في الشاشات المتوسطة والصغيرة
+      @media (max-width: 1128px) {
+        width: 340px; // تصغير العرض لشهر واحد
+        right: 0; // محاذاة لليمين تماماً
+      }
+
+      // تنسيق التقويم الداخلي
       ::ng-deep app-calendar-section {
-        .cal-header h2 { font-size: 18px; margin-bottom: 8px; }
-        .month-container { 
-          width: 100%; 
-          margin-bottom: 10px; 
-          border: none; // إزالة حدود الشهر إذا وجدت
+        .cal-header {
+           display: flex; 
+           justify-content: space-between; 
+           margin-bottom: 16px;
+           h2 { font-size: 20px; font-weight: 600; margin: 0; }
+           .subtitle { font-size: 14px; color: #717171; }
         }
-        
-        // إخفاء الشهر الثاني لضيق المساحة
-        .month-container:nth-child(2) { display: none; }
 
-        .days-grid { gap: 2px; }
+        // إخفاء الشهر الثاني في الشاشات الصغيرة
+        @media (max-width: 1128px) {
+           .month-container:nth-child(2) { display: none; }
+           .calendars-wrapper { gap: 0; }
+        }
+
+        .days-grid { gap: 0; } // إزالة المسافات ليكون متصلاً
+        
         .day-cell { 
-          height: 36px; 
-          font-size: 13px; 
-          border-radius: 50%; // دائري
-          &:hover { background: #f7f7f7; }
-          &.blocked { color: #ddd; text-decoration: line-through; }
+          height: 42px; 
+          font-size: 14px; 
+          
+          &:hover:not(.empty):not(.past):not(.blocked) { 
+             background: #222; 
+             color: white; 
+             border-radius: 50%;
+          }
         }
       }
 
       .popup-footer {
-        text-align: right;
-        margin-top: 12px;
-        padding-top: 12px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        margin-top: 16px;
+        padding-top: 16px;
         border-top: 1px solid #eee;
         
+        .clear-btn {
+           background: transparent; border: none; 
+           text-decoration: underline; font-weight: 600; font-size: 14px; 
+           cursor: pointer;
+        }
+
         .close-link {
           background: #222;
           color: white;
           border: none;
-          padding: 6px 14px;
+          padding: 8px 16px;
           border-radius: 8px;
           cursor: pointer;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 600;
           &:hover { background: black; }
         }
       }
     }
 
-    // --- تنسيق قائمة الضيوف ---
+    // 3. قسم الضيوف (Guests)
     .guests-input-container {
       position: relative;
       
@@ -140,6 +182,8 @@
         justify-content: space-between;
         align-items: center;
         cursor: pointer;
+        background: white;
+        border-radius: 0 0 8px 8px; // تدوير الحواف السفلية فقط
 
         .label-text {
           label { display: block; font-size: 10px; font-weight: 800; color: #222; margin-bottom: 2px;}
@@ -148,39 +192,50 @@
         i { font-size: 12px; }
       }
 
+      // القائمة المنسدلة للضيوف
       .guests-dropdown {
         position: absolute;
-        top: 100%; left: -1px; right: -1px;
+        top: calc(100% + 4px); 
+        left: 0; 
+        right: 0; // عرض كامل
         background: white;
         border: 1px solid #ddd;
         border-radius: 4px;
         padding: 16px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.15);
         z-index: 100;
-        margin-top: 4px;
-
+        
         .guest-row {
           display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;
+          
           .info {
             .type { font-weight: 600; font-size: 16px; color: #222; }
             .sub { font-size: 13px; color: #717171; margin-top: 2px; }
             .sub.link { text-decoration: underline; font-weight: 500; cursor: pointer; }
           }
+          
           .controls {
             display: flex; align-items: center; gap: 12px;
+            
             .round-btn {
-              width: 32px; height: 32px; border-radius: 50%; border: 1px solid #b0b0b0; background: white; color: #717171; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+              width: 32px; height: 32px; border-radius: 50%; border: 1px solid #b0b0b0; 
+              background: white; color: #717171; font-size: 18px; 
+              display: flex; align-items: center; justify-content: center; cursor: pointer;
+              
               &:hover:not(:disabled) { border-color: #222; color: #222; }
               &:disabled { opacity: 0.3; cursor: not-allowed; }
             }
             .count { font-size: 16px; width: 20px; text-align: center; color: #222; }
           }
         }
+        
         .disclaimer { font-size: 12px; color: #717171; margin-bottom: 20px; line-height: 1.4; }
+        
         .dropdown-footer {
           text-align: right;
           .close-link {
-            background: none; border: none; text-decoration: underline; font-weight: 600; font-size: 16px; cursor: pointer; color: #222;
+            background: none; border: none; text-decoration: underline; 
+            font-weight: 600; font-size: 16px; cursor: pointer; color: #222;
             &:hover { background: #f7f7f7; border-radius: 4px; padding: 4px 8px; margin: -4px -8px; }
           }
         }
@@ -188,6 +243,7 @@
     }
   }
 
+  // --- Reserve Button ---
   .reserve-btn {
     width: 100%;
     background: linear-gradient(to right, #E61E4D 0%, #E31C5F 50%, #D70466 100%);
@@ -206,12 +262,24 @@
     text-align: center; margin-top: 16px; font-size: 14px; color: #717171;
   }
 
+  // --- Price Breakdown ---
   .price-breakdown {
     margin-top: 24px;
+    
     .line-item {
       display: flex; justify-content: space-between; margin-bottom: 12px;
-      font-size: 16px; color: #222; text-decoration: underline;
-      &.total { font-weight: 800; text-decoration: none; margin-top: 16px; border-top: 1px solid #ddd; padding-top: 16px; }
+      font-size: 16px; color: #222;
+      
+      .desc { text-decoration: underline; cursor: pointer; }
+
+      &.total { 
+        font-weight: 800; 
+        text-decoration: none; 
+        margin-top: 24px; 
+        border-top: 1px solid #ddd; 
+        padding-top: 24px; 
+        .desc { text-decoration: none; }
+      }
     }
   }
 }

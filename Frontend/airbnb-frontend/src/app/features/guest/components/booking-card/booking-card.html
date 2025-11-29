@@ -14,14 +14,18 @@
   <!-- Booking Form -->
   <div class="booking-form">
     
-    <!-- ✅ منطقة التواريخ (تفتح الـ Popup) -->
+    <!-- ✅ منطقة التواريخ -->
     <div class="date-picker-wrapper" (click)="toggleCalendarModal()">
+      
+      <!-- Check-in Field -->
       <div class="date-input check-in" [class.active]="isCalendarOpen && !checkInDate">
-        <label>CHECK-IN</label>
-        <div class="fake-input" [class.placeholder]="!checkInDate">
-          {{ checkInDate || 'Add date' }}
-        </div>
+         <label>CHECK-IN</label>
+         <div class="fake-input" [class.placeholder]="!checkInDate">
+           {{ checkInDate || 'Add date' }}
+         </div>
       </div>
+      
+      <!-- Check-out Field -->
       <div class="date-input check-out" [class.active]="isCalendarOpen && checkInDate && !checkOutDate">
         <label>CHECK-OUT</label>
         <div class="fake-input" [class.placeholder]="!checkOutDate">
@@ -30,9 +34,10 @@
       </div>
     </div>
 
-    <!-- ✅ الـ Popup Calendar (يظهر فوق الكارت) -->
-    <div class="calendar-popup" *ngIf="isCalendarOpen">
-      <!-- نستخدم نفس المكون الموجود في الصفحة الرئيسية -->
+    <!-- ... (باقي الكود: calendar-popup, guests-input...) ... -->
+    <!-- (نفس الكود السابق للـ Popup والضيوف) -->
+    <!-- تأكدي من نسخ كود الـ guests والـ popup كما هما من ملفك السابق -->
+     <div class="calendar-popup" *ngIf="isCalendarOpen">
       <app-calendar-section
          [checkIn]="checkInDate"
          [checkOut]="checkOutDate"
@@ -47,7 +52,6 @@
 
     <!-- Guests Dropdown (كما هو) -->
     <div class="guests-input-container">
-       <!-- ... (نفس كود الضيوف السابق) ... -->
        <div class="guests-trigger" (click)="toggleGuestMenu()">
           <div class="label-text">
             <label>GUESTS</label>
@@ -57,17 +61,56 @@
        </div>
 
        <div class="guests-dropdown" *ngIf="isGuestMenuOpen">
-          <!-- ... أزرار الضيوف ... -->
-          <!-- (نسخ نفس كود الضيوف السابق هنا) -->
           <div class="guest-row">
              <div class="info">Adults</div>
              <div class="controls">
-               <button class="round-btn" (click)="updateCount('adults', -1)">-</button>
+               <button class="round-btn" [disabled]="guests.adults <= 1" (click)="updateCount('adults', -1)">-</button>
                <span>{{ guests.adults }}</span>
-               <button class="round-btn" (click)="updateCount('adults', 1)">+</button>
+               <button class="round-btn" (click)="updateCount('adults', 1)" [disabled]="(guests.adults + guests.children) >= maxGuests">+</button>
              </div>
           </div>
-          <!-- ... -->
+          <!-- ... (أزرار الأطفال والرضع) ... -->
+           <div class="guest-row">
+          <div class="info">
+            <div class="type">Children</div>
+            <div class="sub">Ages 2–12</div>
+          </div>
+          <div class="controls">
+            <button class="round-btn" [disabled]="guests.children <= 0" (click)="updateCount('children', -1)">-</button>
+            <span class="count">{{ guests.children }}</span>
+            <button class="round-btn" (click)="updateCount('children', 1)"[disabled]="(guests.adults + guests.children) >= maxGuests">+</button>
+          </div>
+        </div>
+
+        <!-- 3. Infants -->
+        <div class="guest-row">
+          <div class="info">
+            <div class="type">Infants</div>
+            <div class="sub">Under 2</div>
+          </div>
+          <div class="controls">
+            <button class="round-btn" [disabled]="guests.infants <= 0" (click)="updateCount('infants', -1)">-</button>
+            <span class="count">{{ guests.infants }}</span>
+            <button class="round-btn" (click)="updateCount('infants', 1)">+</button>
+          </div>
+        </div>
+
+        <!-- 4. Pets -->
+        <div class="guest-row">
+          <div class="info">
+            <div class="type">Pets</div>
+            <div class="sub link">Bringing a service animal?</div>
+          </div>
+          <div class="controls">
+            <button class="round-btn" [disabled]="guests.pets <= 0" (click)="updateCount('pets', -1)">-</button>
+            <span class="count">{{ guests.pets }}</span>
+            <button class="round-btn" (click)="updateCount('pets', 1)">+</button>
+          </div>
+        </div>
+
+        <p class="disclaimer">
+          This place has a maximum of 2 guests, not including infants. If you're bringing more than 2 pets, please let your host know.
+        </p>
           <div class="dropdown-footer">
              <button class="close-link" (click)="toggleGuestMenu()">Close</button>
           </div>
@@ -76,8 +119,8 @@
 
   </div>
 
-  <!-- Reserve Button -->
-  <button class="reserve-btn" (click)="onReserve()">
+  <!-- ... (باقي الكارد: Reserve Button, Price Breakdown) ... -->
+   <button class="reserve-btn" (click)="onReserve()">
      {{ isInstantBook ? 'Request to Book' : 'Reserve' }}
   </button>
   
@@ -89,7 +132,17 @@
       <span class="desc">{{ priceBreakdown.basePrice }} x {{ priceBreakdown.totalNights }} nights</span>
       <span class="value">{{ priceBreakdown.subTotal }} {{ currency }}</span>
     </div>
-    <!-- ... باقي التفاصيل ... -->
+    
+    <div class="line-item" *ngIf="priceBreakdown.cleaningFee > 0">
+      <span class="desc">Cleaning fee</span>
+      <span class="value">{{ priceBreakdown.cleaningFee | number }} {{ currency }}</span>
+    </div>
+
+    <div class="line-item">
+      <span class="desc">Airbnb service fee</span>
+      <span class="value">{{ priceBreakdown.serviceFee | number }} {{ currency }}</span>
+    </div>
+    
     <div class="line-item total">
       <span>Total</span>
       <span>{{ priceBreakdown.finalTotalPrice }} {{ currency }}</span>
