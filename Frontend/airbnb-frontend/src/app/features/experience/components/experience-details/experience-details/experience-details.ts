@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ExperienceService } from '../../../../../shared/Services/experience.service';
 import { Experience, ExperienceReview } from '../../../../../shared/models/experience.model';
+import { environment } from '../../../../../../environments/environment.development';
 
 @Component({
   selector: 'app-experience-details',
@@ -142,7 +143,14 @@ export class ExperienceDetailsComponent implements OnInit {
 
   getImageUrl(imageUrl: string): string {
     if (!imageUrl) return 'assets/images/placeholder.jpg';
+    
+    // لو الصورة رابط خارجي رجعها زي ما هي
     if (imageUrl.startsWith('http')) return imageUrl;
-    return imageUrl;
+    
+    // ✅ التصحيح: نضيف رابط السيرفر (الباك اند) قبل مسار الصورة
+    // بنشيل كلمة '/api' عشان نوصل للروت بتاع السيرفر اللي عليه فولدر uploads
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    
+    return `${baseUrl}${imageUrl}`;
   }
 }

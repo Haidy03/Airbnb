@@ -13,7 +13,7 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<Experience> AddAsync(Experience experience);
         Task UpdateAsync(Experience experience);
         Task DeleteAsync(int id);
-
+        IQueryable<Experience> GetQueryable();
         Task<PagedResult<ExperienceSearchResultDto>> SearchExperiencesAsync(ExperienceSearchDto dto);
         Task<List<ExperienceSearchResultDto>> GetFeaturedExperiencesAsync(int count);
         Task<List<ExperienceCategory>> GetCategoriesAsync();

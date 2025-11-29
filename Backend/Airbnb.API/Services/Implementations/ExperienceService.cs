@@ -635,5 +635,67 @@ namespace Airbnb.API.Services.Implementations
                 CreatedAt = r.CreatedAt
             }).ToList();
         }
+        public async Task<List<ExperienceDto>> GetAllExperiencesAsync(string? status, string? searchTerm, int pageNumber, int pageSize)
+        {
+            // نبدأ الاستعلام
+            var query = _experienceRepository.GetQueryable(); // سنحتاج إضافة دالة GetQueryable في الريبوزيتوري أو استخدام Context مباشرة لو متاح
+
+            // ✅ فلترة حسب الحالة
+            if (!string.IsNullOrEmpty(status) && status != "All")
+            {
+                if (Enum.TryParse<ExperienceStatus>(status, true, out var parsedStatus))
+                {
+                    query = query.Where(e => e.Status == parsedStatus);
+                }
+                else if (status == "PendingApproval") // Frontend sends "PendingApproval"
+                {
+                    query = query.Where(e => e.Status == ExperienceStatus.PendingApproval);
+                }
+            }
+
+            // ✅ بحث بالنص
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                query = query.Where(e =>
+                    e.Title.ToLower().Contains(searchTerm) ||
+                    e.City.ToLower().Contains(searchTerm) ||
+                    e.Host.FirstName.ToLower().Contains(searchTerm) ||
+                    e.Host.LastName.ToLower().Contains(searchTerm)
+                );
+            }
+
+            // ✅ ترتيب وتقسيم الصفحات
+            var experiences = await query
+                .Include(e => e.Host)
+                .Include(e => e.Category)
+                .Include(e => e.Images)
+                .OrderByDescending(e => e.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // تحويل لـ DTO
+            var dtos = new List<ExperienceDto>();
+            foreach (var exp in experiences)
+            {
+                dtos.Add(await MapToDto(exp));
+            }
+            return dtos;
+        }
+
+        public async Task<bool> RejectExperienceAsync(int id, string reason)
+        {
+            var experience = await _experienceRepository.GetByIdAsync(id);
+            if (experience == null) return false;
+
+            experience.Status = ExperienceStatus.Rejected;
+            experience.RejectionReason = reason;
+            experience.UpdatedAt = DateTime.UtcNow;
+            experience.IsActive = false;
+
+            await _experienceRepository.UpdateAsync(experience);
+            return true;
+        }
     }
 }

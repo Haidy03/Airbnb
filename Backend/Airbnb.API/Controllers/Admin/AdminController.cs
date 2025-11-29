@@ -1,5 +1,6 @@
 ﻿using Airbnb.API.DTOs.Admin;
 using Airbnb.API.DTOs.Booking;
+using Airbnb.API.DTOs.Experiences;
 using Airbnb.API.DTOs.Review;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -489,11 +490,31 @@ namespace Airbnb.API.Controllers
 
         #endregion
 
-        #region Experiences Management (Admin Approval)
+        #region Experiences Management
 
         /// <summary>
-        /// POST: api/admin/experiences/{id}/approve
+        /// Get all experiences with filters (Matches Properties Logic)
         /// </summary>
+        [HttpGet("experiences")]
+        public async Task<ActionResult<List<ExperienceDto>>> GetAllExperiences(
+            [FromQuery] string? status = null,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                // ✅ التعديل هنا: استدعاء دالة تقبل الفلاتر مثل Properties
+                var experiences = await _experienceService.GetAllExperiencesAsync(status, searchTerm, pageNumber, pageSize);
+                return Ok(experiences);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting experiences");
+                return StatusCode(500, "Error retrieving experiences");
+            }
+        }
+
         [HttpPost("experiences/{id}/approve")]
         public async Task<IActionResult> ApproveExperience(int id)
         {
@@ -510,6 +531,26 @@ namespace Airbnb.API.Controllers
             {
                 _logger.LogError(ex, $"Error approving experience {id}");
                 return StatusCode(500, "Error approving experience");
+            }
+        }
+
+        [HttpPost("experiences/{id}/reject")]
+        public async Task<IActionResult> RejectExperience(int id, [FromBody] RejectExperienceDto dto)
+        {
+            try
+            {
+                // ✅ التعديل: إضافة دالة الرفض
+                var result = await _experienceService.RejectExperienceAsync(id, dto.RejectionReason);
+
+                if (!result)
+                    return NotFound(new { success = false, message = "Experience not found" });
+
+                return Ok(new { success = true, message = "Experience rejected successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error rejecting experience {id}");
+                return StatusCode(500, "Error rejecting experience");
             }
         }
 
@@ -646,9 +687,16 @@ namespace Airbnb.API.Controllers
         }
 
         #endregion
+        
     }
 
+
     // DTOs for missing actions
+    public class RejectExperienceDto
+    {
+        [Required]
+        public string RejectionReason { get; set; }
+    }
     public class CancelBookingDto
     {
         [Required]

@@ -46,10 +46,10 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header';
 import { ExperienceCardComponent } from '../../../experience/components/experience-card/experience-card.component/experience-card.component';
-// ✅ هنستخدم ExperienceService لأنه هو اللي فيه دالة getWishlist اللي بتجيب الكل
 import { ExperienceService } from '../../../../shared/Services/experience.service';
-// ✅ استيراد LisitingService عشان لو احتاجنا نحذف منه (اختياري)
 import { ListingService } from '../../services/Lisiting-Services';
+import { environment } from '../../../../../environments/environment.development';
+
 
 @Component({
   selector: 'app-wishlists',
@@ -100,5 +100,16 @@ export class WishlistsComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+  getImageUrl(imageUrl?: string): string {
+    if (!imageUrl) return 'assets/images/placeholder.jpg';
+    if (imageUrl.startsWith('http')) return imageUrl;
+
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    let cleanPath = imageUrl;
+    if (!cleanPath.startsWith('/')) {
+        cleanPath = `/${cleanPath}`;
+    }
+    return `${baseUrl}${cleanPath}`;
   }
 }

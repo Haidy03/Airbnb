@@ -25,9 +25,9 @@ export class AdminLayoutComponent {
       icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
     },
     { 
-      path: '/admin/verifications', 
-      label: 'Verifications', 
-      icon: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3'
+      path: '/admin/experiences', 
+      label: 'Experiences', 
+      icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z' // أي أيقونة مناسبة
     },
     { 
       path: '/admin/properties', 
@@ -62,7 +62,12 @@ export class AdminLayoutComponent {
   }
 
   logout(): void {
-    // Implement logout logic
-    this.router.navigate(['/auth/login']);
+    // 1. مسح التوكن من التخزين المحلي
+    localStorage.removeItem('authToken'); 
+    localStorage.removeItem('userRole'); // إذا كنت تخزنين الرول
+    localStorage.removeItem('user'); // أي بيانات أخرى
+
+    // 2. التوجيه لصفحة تسجيل الدخول
+    this.router.navigate(['/login']);
   }
 }

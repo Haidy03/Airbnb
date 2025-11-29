@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ExperienceSearchResult } from '../../../../../shared/models/experience.model';
 import { ExperienceService } from '../../../../../shared/Services/experience.service';
+import { environment } from '../../../../../../environments/environment.development';
 
 @Component({
   selector: 'app-experience-card',
@@ -21,14 +22,31 @@ export class ExperienceCardComponent {
   isWishlisted = false;
 
   getImageUrl(imageUrl?: string): string {
+    // 1. لو مفيش رابط خالص، رجع صورة افتراضية
     if (!imageUrl) {
-      // Use placeholder based on experience ID for variety
-      return `https://via.placeholder.com/400x500/f0f0f0/222222?text=${this.experience?.title?.substring(0, 1) || 'E'}`;
+      return 'assets/images/placeholder.jpg'; 
     }
+
+    // 2. لو الرابط خارجي (https://...) رجعه زي ما هو
     if (imageUrl.startsWith('http')) {
       return imageUrl;
     }
-    return imageUrl;
+
+    // ✅ 3. التعديل الجديد: لو الرابط بيشاور على assets داخلية في الأنجولار
+    // (عشان نعالج الحالة اللي في الداتا بيز عندك)
+    if (imageUrl.includes('assets/')) {
+      return imageUrl; // رجعه زي ما هو عشان الأنجولار يفتحه
+    }
+
+    // 4. لو صورة مرفوعة على السيرفر (uploads)، ركب قبلها رابط الباك اند
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    let cleanPath = imageUrl;
+    
+    if (!cleanPath.startsWith('/')) {
+        cleanPath = `/${cleanPath}`;
+    }
+
+    return `${baseUrl}${cleanPath}`;
   }
 
   toggleWishlist(event: Event): void {
