@@ -1,9 +1,7 @@
-import { Component, Input, OnInit ,Output, EventEmitter  } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-
-// تعريف الموديلات المطلوبة داخلياً لتجنب أخطاء الاستيراد
 export interface GuestCounts {
   adults: number;
   children: number;
@@ -22,13 +20,13 @@ export interface PriceDetails {
 }
 
 @Component({
-  selector: 'app-super-card', // <--- تأكدي أن هذا الاسم هو app-booking-card
+  selector: 'app-super-card',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './booking-card.html', // تأكدي أن اسم ملف الـ html صحيح
-  styleUrls: ['./booking-card.scss']  // تأكدي أن اسم ملف الـ scss صحيح
+  templateUrl: './booking-card.html',
+  styleUrls: ['./booking-card.scss']
 })
-export class BookingCard implements OnInit { // <--- تم تغيير الاسم هنا ليكون BookingCard فقط
+export class BookingCard implements OnInit {
 
   @Input() listingId!: string;
   @Input() pricePerNight: number = 0;
@@ -37,18 +35,20 @@ export class BookingCard implements OnInit { // <--- تم تغيير الاسم 
   @Input() currency: string = 'EGP';
   @Input() serviceFee: number = 0;
   @Input() cleaningFee: number = 0;
-  @Input() isInstantBook: boolean = false; // القيمة الافتراضية
-    // 2. ده الحدث اللي هنبعته للأب
+  @Input() isInstantBook: boolean = false;
+  @Input() maxGuests: number = 100;
+
+  // 1. Outputs
   @Output() dateChanged = new EventEmitter<{checkIn: string, checkOut: string}>();
-  @Output() reserve = new EventEmitter<void>(); // تعريف الحدث
+  @Output() reserve = new EventEmitter<void>();
+  @Output() guestsChange = new EventEmitter<number>(); // ✅ الحدث الجديد للضيوف
 
   checkInDate: string = '';
   checkOutDate: string = '';
-    minDate: string = '';
+  minDate: string = '';
 
-   isGuestMenuOpen: boolean = false;
+  isGuestMenuOpen: boolean = false;
 
-  // 2. كائن أعداد الضيوف
   guests: GuestCounts = {
     adults: 1,
     children: 0,
@@ -56,14 +56,16 @@ export class BookingCard implements OnInit { // <--- تم تغيير الاسم 
     pets: 0
   };
 
-   priceBreakdown: any = null; // (PriceDetails)
+  priceBreakdown: any = null;
 
   constructor() { }
 
   ngOnInit(): void {
-    // 2. كود لحساب تاريخ اليوم بصيغة YYYY-MM-DD
     const today = new Date();
     this.minDate = today.toISOString().split('T')[0];
+    
+    // ✅ إرسال القيمة الافتراضية (1) عند بدء التحميل
+    this.guestsChange.emit(this.guests.adults + this.guests.children);
   }
 
   onDateChange() {
@@ -71,7 +73,6 @@ export class BookingCard implements OnInit { // <--- تم تغيير الاسم 
       this.calculateTotal();
     }
 
-    // 3. (الجديد) ابعتي التواريخ الجديدة للأب
     this.dateChanged.emit({
       checkIn: this.checkInDate,
       checkOut: this.checkOutDate
@@ -101,25 +102,36 @@ export class BookingCard implements OnInit { // <--- تم تغيير الاسم 
       this.priceBreakdown = null;
     }
   }
+
   toggleGuestMenu() {
     this.isGuestMenuOpen = !this.isGuestMenuOpen;
   }
 
-  // 4. دالة لتحديث العدادات (زيادة ونقصان)
   updateCount(type: keyof GuestCounts, change: number) {
+    const currentTotal = this.guests.adults + this.guests.children;
     const newValue = this.guests[type] + change;
 
-    // شروط:
-    // البالغين: أقل حاجة 1
+    // 1. منع النقصان عن الحد الأدنى
     if (type === 'adults' && newValue < 1) return;
-    // الباقي: أقل حاجة 0
     if (newValue < 0) return;
-    // ممكن نحط حد أقصى مثلاً 10
 
+    // 2. ✅ منع الزيادة عن الحد الأقصى (للبالغين والأطفال فقط)
+    // الرضع (infants) والحيوانات الأليفة (pets) عادة لا يحسبون ضمن الحد الأقصى في Airbnb
+    if (change > 0 && (type === 'adults' || type === 'children')) {
+      if (currentTotal >= this.maxGuests) {
+        alert(`This place has a maximum of ${this.maxGuests} guests.`);
+        return;
+      }
+    }
+
+    // تحديث القيمة
     this.guests[type] = newValue;
+
+    // إرسال التحديث للأب
+    const newTotal = this.guests.adults + this.guests.children;
+    this.guestsChange.emit(newTotal);
   }
 
-  // 5. دالة لحساب النص اللي هيظهر في الصندوق (مثال: 3 guests, 1 infant)
   get guestLabel(): string {
     const totalGuests = this.guests.adults + this.guests.children;
     let label = `${totalGuests} guest${totalGuests > 1 ? 's' : ''}`;
@@ -135,6 +147,6 @@ export class BookingCard implements OnInit { // <--- تم تغيير الاسم 
   }
 
   onReserve() {
- this.reserve.emit();
+    this.reserve.emit();
   }
 }

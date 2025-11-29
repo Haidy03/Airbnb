@@ -27,10 +27,7 @@
       </div>
       <div class="date-input check-out">
         <label>CHECK-OUT</label>
-        <!--
-          هنا التريك: الـ min هو تاريخ الـ checkIn لو اختاره،
-          أو تاريخ النهارده لو مختارش حاجة لسه
-        -->
+        
         <input
           type="date"
           [min]="checkInDate ? checkInDate : minDate"
@@ -64,7 +61,11 @@
             <!-- زرار الناقص (Disabled لو 1) -->
             <button class="round-btn" [disabled]="guests.adults <= 1" (click)="updateCount('adults', -1)">-</button>
             <span class="count">{{ guests.adults }}</span>
-            <button class="round-btn" (click)="updateCount('adults', 1)">+</button>
+            <button class="round-btn"
+             (click)="updateCount('adults', 1)"
+             [disabled]="(guests.adults + guests.children) >= maxGuests">
+             +
+            </button>
           </div>
         </div>
 
@@ -77,7 +78,7 @@
           <div class="controls">
             <button class="round-btn" [disabled]="guests.children <= 0" (click)="updateCount('children', -1)">-</button>
             <span class="count">{{ guests.children }}</span>
-            <button class="round-btn" (click)="updateCount('children', 1)">+</button>
+            <button class="round-btn" (click)="updateCount('children', 1)"[disabled]="(guests.adults + guests.children) >= maxGuests">+</button>
           </div>
         </div>
 
