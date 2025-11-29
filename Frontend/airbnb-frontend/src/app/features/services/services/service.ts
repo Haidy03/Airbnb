@@ -21,4 +21,8 @@ export class ServicesService {
   getServicesByCategory(categoryName: string): Observable<ApiResponse<ServiceCard[]>> {
     return this.http.get<ApiResponse<ServiceCard[]>>(`${this.apiUrl}/category/${categoryName}`);
   }
+
+  getServiceDetails(id: number): Observable<ApiResponse<any>> { 
+  return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${id}`);
+}
 }

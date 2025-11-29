@@ -78,6 +78,12 @@ export const routes: Routes = [
           .then(m => m.ServicesHomeComponent)
         },
 
+      {
+      path: 'services/:id',
+      loadComponent: () => import('./features/services/components/service-details/service-details').then(m => m.ServiceDetailsComponent)
+    },
+
+
   {
     path: 'profile',
     component: ProfileComponent,
