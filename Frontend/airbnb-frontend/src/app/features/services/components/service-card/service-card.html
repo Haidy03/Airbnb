@@ -1,0 +1,52 @@
+<div class="card border-0 h-100 bg-transparent service-card-hover" style="cursor: pointer;" [routerLink]="['/services', service.id]">
+  
+  <!-- Image Wrapper -->
+  <div class="position-relative rounded-4 overflow-hidden mb-2 aspect-ratio-1x1 bg-light">
+    
+    <!-- Heart Icon -->
+    <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-3 p-0 d-flex align-items-center justify-content-center shadow-sm border-0 bg-white bg-opacity-75" 
+            style="width: 32px; height: 32px; z-index: 10;">
+      <i class="bi bi-heart text-dark" style="font-size: 15px;"></i>
+    </button>
+
+    <!-- Image -->
+    <img [src]="getImageUrl(service.imageUrl)" 
+         class="w-100 h-100 object-fit-cover" 
+         [alt]="service.title"
+         onerror="this.src='https://placehold.co/600x600?text=Image+Error'">
+  </div>
+
+  <!-- Content -->
+  <div class="card-body p-0 pt-1">
+    
+    <!-- Title & Rating -->
+    <div class="d-flex justify-content-between align-items-start mb-1">
+      <h3 class="h6 fw-bold mb-0 text-dark text-truncate pe-2" style="font-size: 16px;">
+        {{ service.title }}
+      </h3>
+      <div class="d-flex align-items-center gap-1 small text-dark">
+        <i class="bi bi-star-fill" style="font-size: 12px;"></i>
+        <span>{{ service.rating | number:'1.1-1' }}</span>
+      </div>
+    </div>
+
+    <!-- Category / Host -->
+    <p class="text-muted small mb-1 text-truncate">
+      {{ service.categoryName }} by {{ service.hostName }}
+    </p>
+
+    <!-- Price Section -->
+    <div class="mt-1">
+      <div class="d-flex align-items-baseline gap-1 text-dark">
+        <span class="fw-bold fs-6">From {{ service.pricePerUnit | currency:'EGP ':'symbol':'1.0-0' }}</span>
+        <span class="small">/ {{ service.pricingUnit }}</span>
+      </div>
+
+      <!-- ✅ Minimum Cost Logic (يظهر فقط لو موجود) -->
+      <div *ngIf="service.minimumCost" class="text-muted" style="font-size: 13px;">
+        Minimum {{ service.minimumCost | currency:'EGP ':'symbol':'1.0-0' }} to book
+      </div>
+    </div>
+
+  </div>
+</div>
