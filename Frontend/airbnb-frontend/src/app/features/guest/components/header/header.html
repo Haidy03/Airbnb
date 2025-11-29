@@ -214,7 +214,8 @@
 
             <app-search-bar
               [withFilterButton]="showFiltersButton"
-              (search)="handleSearch($event)">
+              (search)="handleSearch($event)"
+              (filtersOpen)="openFiltersModal()">
             </app-search-bar>
 
         </div>
