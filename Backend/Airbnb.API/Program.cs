@@ -103,7 +103,7 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
-
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
 builder.Services.AddScoped<IExperienceRepository, ExperienceRepository>();
 
 // ============================================
@@ -121,6 +121,7 @@ builder.Services.AddScoped<ITranslationService, TranslationService>();
 builder.Services.AddScoped<IEarningsService, EarningsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IExperienceService, ExperienceService>();
+builder.Services.AddScoped<IServicesService, ServicesService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<IChatService, ChatService>();
@@ -225,7 +226,7 @@ using (var scope = app.Services.CreateScope())
         SeedAmenities.SeedData(context);
         logger.LogInformation("✅ Amenities seeded successfully");
 
-
+        await SeedServices.SeedDataAsync(context);
         // ⭐ أضيفي الـ Seed Data للـ Reviews
         await SeedReviewData(services);
         logger.LogInformation("✅ Review test data seeded successfully");
