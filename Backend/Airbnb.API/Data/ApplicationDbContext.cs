@@ -35,10 +35,6 @@ namespace Airbnb.API.Models
         public DbSet<ExperienceReview> ExperienceReviews { get; set; }
         public DbSet<Wishlist> Wishlists { get; set; }
 
-        public DbSet<Service> Services { get; set; }
-        public DbSet<ServiceCategory> ServiceCategories { get; set; }
-        public DbSet<ServiceImage> ServiceImages { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -446,22 +442,6 @@ namespace Airbnb.API.Models
                     .HasForeignKey(r => r.ReviewerId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
-            // ============================================
-            // Services
-            // ============================================
-
-            modelBuilder.Entity<Service>()
-                .HasOne(s => s.Category)
-                .WithMany()
-                .HasForeignKey(s => s.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-                        modelBuilder.Entity<ServiceCategory>().HasData(
-                            new ServiceCategory { Id = 1, Name = "Chefs", Icon = "chef-hat", DisplayOrder = 1 },
-                            new ServiceCategory { Id = 2, Name = "Training", Icon = "dumbbell", DisplayOrder = 2 },
-                            new ServiceCategory { Id = 3, Name = "Beauty", Icon = "spa", DisplayOrder = 3 },
-                            new ServiceCategory { Id = 4, Name = "Cleaning", Icon = "broom", DisplayOrder = 4 }
-                        );
 
             // ============================================
             // Seed Experience Categories
