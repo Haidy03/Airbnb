@@ -1,10 +1,8 @@
-//login.component.ts
 import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms'; 
 import { ActivatedRoute, Router ,  RouterLink} from '@angular/router';
-// import { isValidPhoneNumber } from 'libphonenumber-js';
 import { AuthService } from '../../services/auth.service';
 import { ModalService } from '../../services/modal.service';
 import { SocialButtonsComponent } from '../social-buttons.component/social-buttons.component';
@@ -14,13 +12,11 @@ import { ErrorService } from '../../services/error.service';
 type LoginMode = 'phone' | 'email' | 'register';
 type PhoneStep = 'input' | 'verify';
 
-// 1. Define your Regex Map (You can put this outside the class or in a constants file)
 const PHONE_PATTERNS: Record<string, RegExp> = {
-  'EG': /^01[0125][0-9]{8}$/, // Egypt: 11 digits, starts with 010, 011, 012, 015
-  'SA': /^05[0-9]{8}$/,       // Saudi Arabia: 10 digits, starts with 05
-  'US': /^[2-9][0-9]{9}$/,    // USA: 10 digits
-  // Add other country codes as needed
-  'DEFAULT': /^[0-9]{8,15}$/  // Fallback
+  'EG': /^1[0125][0-9]{8}$/, 
+  'SA': /^5[0-9]{8}$/,   
+  'US': /^[2-9][0-9]{9}$/,  
+  'DEFAULT': /^[0-9]{8,15}$/
 };
 
 @Component({
@@ -42,23 +38,19 @@ export class LoginComponent {
 
   @Output() closed = new EventEmitter<boolean>();
   
-  // State Management
   mode = signal<LoginMode>('phone');
   phoneStep = signal<PhoneStep>('input');
   isLoading = signal(false);
   errorMessage = signal('');
   showPassword = signal(false);
   
-  // Country Selection
   countries = COUNTRY_CODES;
   selectedCountry = signal<CountryCode>(COUNTRY_CODES[0]);
   isCountryDropdownOpen = signal(false);
   
-  // Session
   sessionId = signal('');
 
 
- // We initialize with the validator for the default selected country (index 0)
   phoneForm = this.fb.nonNullable.group({
     phoneNumber: ['', [
       Validators.required, 
@@ -86,7 +78,6 @@ export class LoginComponent {
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  // Mode Switching
   switchMode(newMode: LoginMode) {
     this.mode.set(newMode);
     this.errorMessage.set('');
@@ -101,7 +92,6 @@ export class LoginComponent {
     this.registerForm.reset();
   }
 
-  // Country Selection
   toggleCountryDropdown() {
     this.isCountryDropdownOpen.update(v => !v);
   }
@@ -110,133 +100,65 @@ export class LoginComponent {
     this.selectedCountry.set(country);
     this.isCountryDropdownOpen.set(false);
 
-    // ✅ NEW MODIFICATION: Update Validator based on country code
     const pattern = PHONE_PATTERNS[country.code] || PHONE_PATTERNS['DEFAULT'];
     
     const phoneControl = this.phoneForm.controls.phoneNumber;
     
-    // Reset validators
     phoneControl.setValidators([
       Validators.required,
       Validators.pattern(pattern)
     ]);
-    
-    // Trigger validation update immediately
-    phoneControl.updateValueAndValidity();
-    
-     
+    phoneControl.updateValueAndValidity(); 
   }
   
-
-  // Phone Authentication Flow
   onPhoneContinue() {
-  if (this.phoneForm.invalid || this.isLoading()) return;
+    if (this.phoneForm.invalid || this.isLoading()) return;
 
-  this.isLoading.set(true);
-  this.errorMessage.set('');
-  
-  // ✅ Build full phone number
-  const fullPhoneNumber = `${this.selectedCountry().dialCode}${this.phoneForm.value.phoneNumber}`;
-  
-  const request = {
-    identifier: fullPhoneNumber,
-    password: this.phoneForm.value.password!
-  };
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    
+    const fullPhoneNumber = `${this.selectedCountry().dialCode}${this.phoneForm.value.phoneNumber}`;
+    
+    const request = {
+      identifier: fullPhoneNumber,
+      password: this.phoneForm.value.password!
+    };
 
-  console.log('📱 Phone Login Request:', {
-    identifier: request.identifier,
-    hasPassword: !!request.password
-  });
+    console.log('📱 Phone Login Request:', {
+      identifier: request.identifier,
+      hasPassword: !!request.password
+    });
 
-  this.authService.loginWithEmail(request).subscribe({
-    next: (response) => {
-      this.isLoading.set(false);
-      console.log('✅ Phone login successful!');
-      
-      const token = this.authService.getToken();
-      if (token) {
-        const userRole = this.tokenService.getUserRole(token);
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+    this.authService.loginWithEmail(request).subscribe({
+      next: (response) => {
+        this.isLoading.set(false);
         
-        if (returnUrl) {
-          this.router.navigateByUrl(returnUrl);
-          this.closeModal();
+        const token = this.authService.getToken();
+        if (token) {
+          const userRole = this.tokenService.getUserRole(token);
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+          
+          if (returnUrl) {
+            this.router.navigateByUrl(returnUrl);
+            this.closeModal();
+          } else {
+            this.redirectBasedOnRole(userRole);
+          }
         } else {
-          this.redirectBasedOnRole(userRole);
+          this.errorMessage.set('Login failed - no token received');
         }
-      } else {
-        this.errorMessage.set('Login failed - no token received');
+      },
+      error: (error) => {
+        this.isLoading.set(false);
+        
+        if (error.status === 401) {
+           this.errorMessage.set('Invalid phone number or password.');
+        } else {
+           this.errorMessage.set(this.getErrorMessage(error));
+        }
       }
-    },
-    error: (error) => {
-      this.isLoading.set(false);
-      console.error('❌ Phone login failed:', error);
-      this.errorMessage.set(this.getErrorMessage(error));
-    }
-  });
-}
-  // onPhoneContinue() {
-  //   if (this.phoneForm.invalid || this.isLoading()) return;
-
-  //   this.isLoading.set(true);
-  //   this.errorMessage.set('');
-  //   const fullPhoneNumber = `${this.selectedCountry().dialCode}${this.phoneForm.value.phoneNumber}`;
-  //   const request = {
-  //      identifier: fullPhoneNumber,
-  //   password: this.phoneForm.value.password!
-      
-  //   };
-
-  //   // this.authService.startPhoneLogin(request).subscribe({
-  //   //   next: (response) => {
-  //   //     this.isLoading.set(false);
-  //   //     this.sessionId.set(response.sessionId);
-  //   //    // this.phoneStep.set('verify');
-  //   //   },
-  //   //   error: (error) => {
-  //   //     this.isLoading.set(false);
-  //   //     this.errorMessage.set(error.message || 'Failed to send verification code');
-  //   //   }
-  //   // });
-  //  this.authService.loginWithEmail(request).subscribe({
-  //   next: (response) => {
-  //     this.isLoading.set(false);
-  //     console.log('✅ Phone login successful!');
-      
-  //     const token = this.authService.getToken();
-  //     if (token) {
-  //       const userRole = this.tokenService.getUserRole(token);
-  //       const userId = this.tokenService.getUserId(token);
-        
-  //       console.log('👤 User Role:', userRole);
-  //       console.log('🆔 User ID:', userId);
-        
-  //       const returnUrl = this.route.snapshot.queryParams['returnUrl'];
-        
-  //       if (returnUrl) {
-  //         this.router.navigateByUrl(returnUrl);
-  //         this.closeModal();
-  //       } else {
-  //         this.redirectBasedOnRole(userRole);
-  //       }
-  //     } else {
-  //       this.errorMessage.set('Login failed - no token received');
-  //     }
-  //   },
-  //   error: (error) => {
-  //     this.isLoading.set(false);
-  //     console.error('❌ Phone login failed:', error);
-  //     console.error('Error details:', {
-  //       status: error.status,
-  //       message: error.message,
-  //       error: error.error
-  //     });
-  //     this.errorMessage.set(this.getErrorMessage(error));
-  //     this.errorService.handleError(error);
-  //   }
-  // }); 
-  // }
-
+    });
+  }
   onVerifyCode() {
     if (this.verificationForm.invalid || this.isLoading()) return;
 
@@ -296,7 +218,6 @@ export class LoginComponent {
     return 'Invalid email or password';
   }
 
-  // ✅ FIXED: Email Login Flow with proper navigation
   onEmailLogin() {
     if (this.emailLoginForm.invalid || this.isLoading()) return;
 
@@ -310,32 +231,21 @@ export class LoginComponent {
 
     this.authService.loginWithEmail(request).subscribe({
       next: (response) => {
-        // ⚠️ تصحيح: خليها false عشان اللودينج يختفي لما اللوجن ينجح
         this.isLoading.set(false); 
-        console.log('✅ Login successful!');
         
         const token = this.authService.getToken();
         if (token) {
           const userRole = this.tokenService.getUserRole(token);
-          const userId = this.tokenService.getUserId(token);
-          
-          console.log('👤 User Role:', userRole);
-          console.log('🆔 User ID:', userId);
-          
-          
-         
+          const userId = this.tokenService.getUserId(token);          
           const returnUrl = this.route.snapshot.queryParams['returnUrl'];
 
           if (returnUrl) {
             console.log('🔄 Redirecting to returnUrl:', returnUrl);
-            // لو فيه رابط، روح عليه علطول
             this.router.navigateByUrl(returnUrl);
-            this.closeModal(); // نقفل المودال
+            this.closeModal(); 
           } else {
-            
             this.redirectBasedOnRole(userRole);
           }
-          // ============================================================
 
         } else {
           this.errorMessage.set('Login failed - no token received');
@@ -344,12 +254,16 @@ export class LoginComponent {
       error: (error) => {
         this.isLoading.set(false);
 
-        console.error('❌ Login failed:', error);
-        this.errorMessage.set(this.getErrorMessage(error));
-        this.errorService.handleError(error); 
+        if (error.status === 401) {
+           this.errorMessage.set('Invalid email or password.');
+        } else {
+           this.errorMessage.set(this.getErrorMessage(error));
+           this.errorService.handleError(error); 
+        }
       }
     });
   }
+
 
   // ✅ FIXED: Register Flow with proper navigation
   onRegister() {

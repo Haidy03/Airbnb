@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 
 namespace Airbnb.API.Services.Implementations
 {
@@ -16,12 +17,14 @@ namespace Airbnb.API.Services.Implementations
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _environment;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IWebHostEnvironment environment)
+        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IWebHostEnvironment environment, SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
             _configuration = configuration;
             _environment = environment;
+            _signInManager = signInManager;
         }
 
         public async Task<IdentityResult> RegisterUserAsync(RegisterDto registerDto)
@@ -48,25 +51,68 @@ namespace Airbnb.API.Services.Implementations
             return result;
         }
 
+        //public async Task<AuthResponseDto> LoginUserAsync(LoginDto loginDto)
+        //{
+
+        //    ApplicationUser user = null;
+
+        //    // Check if input is Email or Phone
+        //    if (loginDto.Identifier.Contains("@"))
+        //    {
+        //        user = await _userManager.FindByEmailAsync(loginDto.Identifier);
+        //    }
+        //    else
+        //    {
+        //        // We need to search users by Phone Number
+        //        // Note: UserManager doesn't have FindByPhone, so we use Entity Framework directly or Users list
+        //        user = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == loginDto.Identifier);
+        //    }
+
+        //    if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
+        //        return null;
+        //    var token = await GenerateJwtToken(user);
+
+        //    return new AuthResponseDto
+        //    {
+        //        Token = token,
+        //        UserId = user.Id,
+        //        Email = user.Email
+        //    };
+        //}
         public async Task<AuthResponseDto> LoginUserAsync(LoginDto loginDto)
         {
+            // 1. محاولة البحث بالإيميل
+            var user = await _userManager.FindByEmailAsync(loginDto.Identifier);
 
-            ApplicationUser user = null;
-
-            // Check if input is Email or Phone
-            if (loginDto.Identifier.Contains("@"))
+            // 2. لو ملقناش بالإيميل، نحاول باسم المستخدم (Username)
+            if (user == null)
             {
-                user = await _userManager.FindByEmailAsync(loginDto.Identifier);
-            }
-            else
-            {
-                // We need to search users by Phone Number
-                // Note: UserManager doesn't have FindByPhone, so we use Entity Framework directly or Users list
-                user = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == loginDto.Identifier);
+                user = await _userManager.FindByNameAsync(loginDto.Identifier);
             }
 
-            if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
+            // 3. (التعديل الجديد) لو لسه ملقناش، نحاول برقم الهاتف
+            if (user == null)
+            {
+                // بنبحث في قاعدة البيانات عن مستخدم عنده نفس رقم الهاتف
+                // (تأكدي إن الرقم متسجل بنفس التنسيق +2010...)
+                user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == loginDto.Identifier);
+            }
+
+            // لو بعد كل ده ملقناش مستخدم، يبقى البيانات غلط
+            if (user == null)
+            {
+                return null; // Controller will handle this as 401
+            }
+
+            // 4. التحقق من كلمة المرور
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+
+            if (!result.Succeeded)
+            {
                 return null;
+            }
+
+            // 5. إنشاء التوكن
             var token = await GenerateJwtToken(user);
 
             return new AuthResponseDto
@@ -76,6 +122,7 @@ namespace Airbnb.API.Services.Implementations
                 Email = user.Email
             };
         }
+        // ==========================================
 
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
@@ -230,33 +277,55 @@ namespace Airbnb.API.Services.Implementations
             return result;
         }
 
+        //public async Task<IdentityResult> ResetPasswordAsync(ResetPasswordDto resetDto)
+        //{
+        //    var user = await _userManager.FindByEmailAsync(resetDto.Email);
+        //    if (user == null)
+        //    {
+        //        // Don't reveal that the user does not exist.
+        //        // The token validation will fail anyway, but this is an extra precaution.
+        //        // We return a generic error message that will be handled by the controller.
+        //        return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "Invalid password reset request." });
+        //    }
+
+        //    // =========================================================
+        //    // 1. FIX: Handle URL Encoding
+        //    // =========================================================
+
+        //    // This converts "%2F" back to "/" and "%2B" back to "+"
+        //    string decodedToken = Uri.UnescapeDataString(resetDto.Token);
+
+        //    // 2. Extra Safety: Sometimes web browsers turn '+' into ' ' (space).
+        //    // If the token has spaces, put the plus signs back.
+        //    // (Identity tokens are Base64 and should not have spaces).
+        //    if (decodedToken.Contains(" "))
+        //    {
+        //        decodedToken = decodedToken.Replace(" ", "+");
+        //    }
+
+        //    // 3. Use the clean, decoded token
+        //    var result = await _userManager.ResetPasswordAsync(user, decodedToken, resetDto.NewPassword);
+
+        //    return result;
+        //}
+
         public async Task<IdentityResult> ResetPasswordAsync(ResetPasswordDto resetDto)
         {
             var user = await _userManager.FindByEmailAsync(resetDto.Email);
             if (user == null)
             {
                 // Don't reveal that the user does not exist.
-                // The token validation will fail anyway, but this is an extra precaution.
-                // We return a generic error message that will be handled by the controller.
                 return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "Invalid password reset request." });
             }
 
-            // =========================================================
-            // 1. FIX: Handle URL Encoding
-            // =========================================================
-
-            // This converts "%2F" back to "/" and "%2B" back to "+"
             string decodedToken = Uri.UnescapeDataString(resetDto.Token);
 
-            // 2. Extra Safety: Sometimes web browsers turn '+' into ' ' (space).
-            // If the token has spaces, put the plus signs back.
-            // (Identity tokens are Base64 and should not have spaces).
+            // ✅ 2. Extra Safety: Sometimes web browsers turn '+' into ' ' (space).
             if (decodedToken.Contains(" "))
             {
                 decodedToken = decodedToken.Replace(" ", "+");
             }
 
-            // 3. Use the clean, decoded token
             var result = await _userManager.ResetPasswordAsync(user, decodedToken, resetDto.NewPassword);
 
             return result;
