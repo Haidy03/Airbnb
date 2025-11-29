@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router'; // Added ActivatedRoute from Haidy
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
 import { AuthUser } from '../../../auth/models/auth-user.model';
 import { UserService } from '../../services/user.service';
@@ -18,16 +18,13 @@ export class AboutMeComponent implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute); // From Haidy's code
+  private route = inject(ActivatedRoute);
 
-  // Use the signal from AuthService for the left-side card
   user: Signal<AuthUser | null> = this.authService.user;
   
-  // Local state for the details (Keep as object to work with your HTML loop)
   profileDetails: ProfileDetails | null = null;
   isLoadingDetails = true;
 
-  // ✅ CRITICAL: We Keep this array so the icons show up!
   displayItems = [
     { field: 'school', icon: '🎓', label: 'Where I went to school' },
     { field: 'myWork', icon: '💼', label: 'My work' },
@@ -52,30 +49,28 @@ export class AboutMeComponent implements OnInit {
     this.isLoadingDetails = true;
     this.userService.getProfileDetails().subscribe({
       next: (data) => {
-        // ✅ Adopt Haidy's Image Fix (Cache Busting)
+        // ✅ Cache Busting: Adds timestamp so the new image shows up instantly
         if (data.profileImage) {
           const cleanUrl = data.profileImage.split('?')[0];
           data.profileImage = `${cleanUrl}?t=${new Date().getTime()}`;
         }
         
-        console.log('✅ About Me Data Loaded:', data);
+        console.log('✅ About Me Data:', data);
         this.profileDetails = data;
         this.isLoadingDetails = false;
       },
       error: (err) => {
-        console.error('❌ Failed to load about me details', err);
+        console.error('❌ Failed to load about me', err);
         this.isLoadingDetails = false;
       }
     });
   }
 
-  // Helper needed for your HTML loop
   getValue(fieldName: string): string | undefined {
     return (this.profileDetails as any)?.[fieldName];
   }
 
   onEdit() {
-    // ✅ Adopt Haidy's Navigation (Relative path is safer)
     this.router.navigate(['../edit-profile'], { relativeTo: this.route });
   }
 

@@ -57,11 +57,6 @@ export class ProfileEditComponent implements OnInit {
   }
 
   loadData() {
-    const currentUser = this.authService.currentUser;
-    if (currentUser) {
-       this.profileImage = currentUser.profilePicture || '';
-    }
-
     this.userService.getProfileDetails().subscribe({
       next: (details) => {
         console.log('📥 Loaded Profile Details:', details);
@@ -79,22 +74,17 @@ export class ProfileEditComponent implements OnInit {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       
-      // The Upload API handles saving to DB automatically
       this.userService.uploadProfileImage(file).subscribe({
         next: (response) => {
           const newImageUrl = response.url;
-          console.log('1. Image uploaded & Saved by Backend:', newImageUrl);
+          console.log('1. Image uploaded:', newImageUrl);
 
-          // Update VISUAL state only
+          // Update UI
           this.profileImage = newImageUrl;
           this.profileDetails.profileImage = newImageUrl;
           
-          // Update Global State (Header)
+          // Update Header
           this.authService.updateUserImage(newImageUrl);
-
-          // ⚠️ REMOVED: saveImageToBackendProfile
-          // We do NOT need to call UpdateProfile here anymore. 
-          // The upload endpoint already updated the User table.
         },
         error: (error) => {
           console.error('Error uploading image file:', error);
@@ -102,64 +92,3 @@ export class ProfileEditComponent implements OnInit {
         }
       });
     }
-  }
-
-  openModal(question: ProfileQuestion) {
-    this.activeModal = question;
-    this.modalValue = this.profileDetails[question.field] || '';
-  }
-
-  closeModal() {
-    this.activeModal = null;
-    this.modalValue = '';
-  }
-
-  getModalTitle(): string {
-    return this.activeModal ? this.activeModal.label : '';
-  }
-
-  getModalDescription(): string {
-    return this.activeModal ? this.activeModal.placeholder : '';
-  }
-
-  saveModal() {
-    if (this.activeModal) {
-      this.profileDetails[this.activeModal.field] = this.modalValue;
-      this.closeModal();
-    }
-  }
-
-  onDone() {
-    this.isSaving = true;
-    const currentUser = this.authService.currentUser;
-
-    // Create a CLEAN payload.
-    // ⚠️ IMPORTANT: We intentionally EXCLUDE 'profileImage' from here
-    // to prevent overwriting the correct relative path in DB with an absolute URL.
-    const { profileImage, ...detailsWithoutImage } = this.profileDetails;
-
-    const payload: ProfileDetails = {
-      ...detailsWithoutImage,
-      firstName: this.profileDetails.firstName || currentUser?.firstName || 'User',
-      lastName: this.profileDetails.lastName || currentUser?.lastName || 'Name'
-    };
-
-    console.log('🚀 Sending Text Payload to Backend:', payload);
-
-    this.userService.updateProfileDetails(payload).subscribe({
-      next: (response) => {
-        console.log('✅ Profile details saved successfully:', response);
-        
-        this.authService.fetchAndSetFullProfile();
-        this.isSaving = false;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        this.router.navigate(['/profile/about-me']); 
-      },
-      error: (error) => {
-        console.error('❌ Error saving profile:', error);
-        this.isSaving = false;
-        alert('Failed to save profile. Check console for details.');
-      }
-    });
-  }
-}

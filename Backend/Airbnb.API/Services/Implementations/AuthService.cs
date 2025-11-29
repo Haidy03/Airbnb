@@ -114,13 +114,8 @@ namespace Airbnb.API.Services.Implementations
         public async Task<UserProfileDto> GetUserProfileAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return null;
 
-            if (user == null)
-            {
-                return null;
-            }
-
-            // Map the ApplicationUser to the UserProfileDto
             return new UserProfileDto
             {
                 Id = user.Id,
@@ -128,50 +123,73 @@ namespace Airbnb.API.Services.Implementations
                 LastName = user.LastName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                DateOfBirth = user.DateOfBirth,
-                Address = user.Address,
-                City = user.City,
                 ProfileImageUrl = user.ProfileImageUrl,
-                Country = user.Country
+                IsVerified = user.IsVerified,
+                VerificationStatus = user.VerificationStatus,
+
+                // ✅ Map the new fields back to the DTO
+                AboutMe = user.AboutMe,
+                WhereToGo = user.WhereToGo,
+                MyWork = user.MyWork,
+                SpendTime = user.SpendTime,
+                Pets = user.Pets,
+                BornDecade = user.BornDecade,
+                School = user.School,
+                UselessSkill = user.UselessSkill,
+                FunFact = user.FunFact,
+                FavoriteSong = user.FavoriteSong,
+                ObsessedWith = user.ObsessedWith,
+                BiographyTitle = user.BiographyTitle,
+                Languages = user.Languages,
+                WhereILive = user.WhereILive
             };
         }
 
         public async Task<IdentityResult> UpdateUserProfileAsync(string userId, UpdateProfileDto updateDto)
         {
-            // Find the user by their ID
             var user = await _userManager.FindByIdAsync(userId);
-
             if (user == null)
             {
-                // This is a special case. If the user from a valid token doesn't exist, something is wrong.
                 return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "User not found." });
             }
 
-
-            // Update the user's properties with the values from the DTO
+            // 1. Basic Info
             user.FirstName = updateDto.FirstName;
             user.LastName = updateDto.LastName;
-            user.Bio = updateDto.Bio;
 
-            // ==========================================
-            // الإضافات الجديدة (Mapping)
-            // ==========================================
-            user.PhoneNumber = updateDto.PhoneNumber;
-            user.DateOfBirth = updateDto.DateOfBirth;
-            user.Address = updateDto.Address;
-            user.City = updateDto.City;
-            user.Country = updateDto.Country;
+            // 2. Profile Image (Only update if provided and not null/empty)
+            // Note: The upload endpoint handles the actual file, this just links string URL if needed.
+            // We usually skip this if the frontend sends null to avoid wiping the photo.
             if (!string.IsNullOrEmpty(updateDto.ProfileImageUrl))
             {
                 user.ProfileImageUrl = updateDto.ProfileImageUrl;
             }
 
-            user.UpdatedAt = DateTime.UtcNow; // Track update time
+            // 3. Extended Details - Manual Mapping
+            // We check for nulls? No, if the user clears the text in frontend, 
+            // we want to clear it in DB too. So we assign directly.
 
-            // Persist the changes to the database
-            var result = await _userManager.UpdateAsync(user);
+            // However, to be safe against partial updates, we can check != null
+            // For this project, let's assume the frontend sends the whole object.
 
-            return result;
+            user.AboutMe = updateDto.AboutMe;
+            user.WhereToGo = updateDto.WhereToGo;
+            user.MyWork = updateDto.MyWork;
+            user.SpendTime = updateDto.SpendTime;
+            user.Pets = updateDto.Pets;
+            user.BornDecade = updateDto.BornDecade;
+            user.School = updateDto.School;
+            user.UselessSkill = updateDto.UselessSkill;
+            user.FunFact = updateDto.FunFact;
+            user.FavoriteSong = updateDto.FavoriteSong;
+            user.ObsessedWith = updateDto.ObsessedWith;
+            user.BiographyTitle = updateDto.BiographyTitle;
+            user.Languages = updateDto.Languages;
+            user.WhereILive = updateDto.WhereILive;
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            return await _userManager.UpdateAsync(user);
         }
 
         public async Task<string> GeneratePasswordResetTokenAsync(string email)
@@ -292,36 +310,53 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<string> UploadProfilePhotoAsync(string userId, IFormFile file)
         {
+            // 1. Find User
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) throw new Exception("User not found");
 
-            // A. Validate File
+            // 2. Validate File Existence
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("No file uploaded.");
+
+            // 3. Validate Extensions
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
             var extension = Path.GetExtension(file.FileName).ToLower();
+
             if (!allowedExtensions.Contains(extension))
-                throw new ArgumentException("Invalid file type. Only JPG/PNG/webp allowed.");
+                throw new ArgumentException("Invalid file type. Only JPG, PNG, and WebP are allowed.");
 
-            if (file.Length > 5 * 1024 * 1024) // 5MB limit
-                throw new ArgumentException("File size exceeds 5MB.");
+            // 4. Validate Size (5MB)
+            if (file.Length > 5 * 1024 * 1024)
+                throw new ArgumentException("File size exceeds 5MB limit.");
 
-            // B. Create Path: wwwroot/uploads/profiles
-            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "profiles");
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+            // 5. Determine Path (The Fix for 404s)
+            // If _environment.WebRootPath is null, manually point to the wwwroot folder in the project
+            string webRootPath = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
-            // C. Generate Unique Filename (UserId_Guid.jpg)
+            var uploadsFolder = Path.Combine(webRootPath, "uploads", "profiles");
+
+            // 6. Create Directory if it doesn't exist
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            // 7. Generate Unique Filename (UserId_Guid.jpg) to prevent caching issues
             var fileName = $"{userId}_{Guid.NewGuid()}{extension}";
             var filePath = Path.Combine(uploadsFolder, fileName);
 
-            // D. Save File
+            // 8. Save File to Disk
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            // E. Update Database
-            // We store the relative path so the frontend can load it: /uploads/profiles/filename.jpg
+            // 9. Update Database Record
+            // We store the relative path so the frontend can append the Base URL
             var relativePath = $"/uploads/profiles/{fileName}";
+
             user.ProfileImageUrl = relativePath;
+            user.UpdatedAt = DateTime.UtcNow;
 
             await _userManager.UpdateAsync(user);
 

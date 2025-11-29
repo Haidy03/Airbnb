@@ -103,57 +103,57 @@ namespace Airbnb.API.Migrations
                 name: "AboutMe",
                 table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "BiographyTitle",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "BiographyTitle",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "BornDecade",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "BornDecade",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "FavoriteSong",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "FavoriteSong",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "FunFact",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "FunFact",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "Languages",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "Languages",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "MyWork",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "MyWork",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "ObsessedWith",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "ObsessedWith",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "Pets",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "Pets",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "School",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "School",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "SpendTime",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "SpendTime",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "UselessSkill",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "UselessSkill",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "WhereILive",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "WhereILive",
+            //    table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "WhereToGo",
-                table: "AspNetUsers");
+            //migrationBuilder.DropColumn(
+            //    name: "WhereToGo",
+            //    table: "AspNetUsers");
         }
     }
 }
