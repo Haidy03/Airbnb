@@ -1,11 +1,12 @@
-
 <div class="checkout-page" *ngIf="listing" style="padding-top: 100px;">
 
   <header class="checkout-header">
     <button class="icon-btn back-btn" (click)="goBack()">
       <i class="fa-solid fa-chevron-left"></i>
     </button>
-    <h1>Confirm and pay</h1>
+    <h1>
+      {{ bookingType === 'instant' ? 'Confirm and pay' : 'Request to book' }}
+    </h1>
   </header>
 
   <div class="main-grid">
@@ -13,26 +14,51 @@
     <!-- LEFT COLUMN -->
     <div class="left-section">
 
-      <!-- نموذج العنوان فقط -->
-      <form [formGroup]="paymentForm">
+      <!-- تفاصيل الرحلة (Your trip) -->
+      <div class="trip-section">
+        <div class="section-header">
+          <h2>Your trip</h2>
+        </div>
+        
+        <div class="trip-details-list">
+          <div class="trip-item">
+            <div class="trip-text">
+              <h3>Dates</h3>
+              <p>{{ checkIn | date:'mediumDate' }} – {{ checkOut | date:'mediumDate' }}</p>
+            </div>
+            <button class="edit-btn" (click)="openDateModal()">Edit</button>
+          </div>
+          
+          <div class="trip-item">
+            <div class="trip-text">
+              <h3>Guests</h3>
+              <p>{{ guests }} guest{{ guests > 1 ? 's' : '' }}</p>
+            </div>
+            <button class="edit-btn" (click)="openGuestModal()">Edit</button>
+          </div>
+        </div>
+      </div>
 
-        <div class="step-header">
-          <h2>1. Pay with</h2>
+      <hr class="divider">
+
+      <!-- الدفع أو الطلب (Pay with / Request) -->
+      <div class="payment-section">
+        <div class="section-header">
+          <h2>
+            {{ bookingType === 'instant' ? 'Pay with' : 'Message the host' }}
+          </h2>
         </div>
 
-        <!-- البوكس اللي كان فيه الفيزا، هنحط فيه باي بال -->
-        <div class="payment-card-box">
-
+        <!-- SCENARIO 1: INSTANT BOOK (PAYPAL) -->
+        <div *ngIf="bookingType === 'instant'" class="payment-card-box">
           <div class="payment-method-header">
             <div class="method-info">
-              <!-- أيقونة باي بال -->
               <i class="fa-brands fa-paypal" style="color: #003087;"></i>
               <span>PayPal</span>
             </div>
-            <div class="radio-circle" style="border-color: #003087; background: #003087;"></div>
+            <div class="radio-circle selected"></div>
           </div>
 
-          <!-- مكان زرار باي بال -->
           <div class="paypal-wrapper">
              <ngx-paypal [config]="payPalConfig"></ngx-paypal>
           </div>
@@ -40,20 +66,41 @@
           <p class="secure-text">
             <i class="fa-solid fa-lock"></i> Payments are secure and encrypted.
           </p>
-
         </div>
 
+        <!-- SCENARIO 2: REQUEST TO BOOK (MESSAGE) -->
+        <div *ngIf="bookingType === 'request'" class="request-box">
+          <p class="request-desc">
+            Your reservation won't be confirmed until the host accepts your request (within 24 hours).
+            You won't be charged until then.
+          </p>
 
+          <div class="message-input-box">
+            <label>Message the host (optional)</label>
+            <textarea 
+              rows="4" 
+              placeholder="Hi, I'd love to book your place for my upcoming trip..."
+              class="message-textarea">
+            </textarea>
+          </div>
 
+          <div class="cancellation-policy">
+            <p>By selecting the button below, you agree to the Host's House Rules, Ground rules for guests, and that Airbnb can charge your payment method if you're responsible for damage.</p>
+          </div>
 
-        <!-- زرار الـ Next الأسود القديم هنشيله خلاص، لأن زرار باي بال هو اللي هيدفع -->
+          <button 
+            class="btn-primary-large" 
+            (click)="finalizeBooking()" 
+            [disabled]="isLoading">
+            {{ isLoading ? 'Sending Request...' : 'Request to Book' }}
+          </button>
+        </div>
 
-      </form>
+      </div>
 
     </div>
 
     <!-- RIGHT COLUMN (Summary) -->
-   <!-- ================= RIGHT COLUMN (SUMMARY CARD) ================= -->
     <div class="right-section">
       <div class="sticky-wrapper">
 
@@ -73,64 +120,31 @@
 
           <hr class="divider">
 
-          <!-- Cancellation Policy -->
-          <div class="policy-section">
-            <h4>Free cancellation</h4>
-            <p>Cancel before check-in for a full refund. <a href="#">Full policy</a></p>
-          </div>
-
-          <hr class="divider">
-
-          <!-- Dates & Guests -->
-          <div class="trip-details">
-            <div class="detail-row">
-              <div class="label">
-                <h4>Dates</h4>
-                <p>{{ checkIn | date:'MMM d' }} – {{ checkOut | date:'d, y' }}</p>
-              </div>
-              <button class="link-btn" (click)="openDateModal()">Change</button>
-            </div>
-
-            <div class="detail-row">
-              <div class="label">
-                <h4>Guests</h4>
-                <p>{{ guests }} guest{{ guests > 1 ? 's' : '' }}</p>
-              </div>
-              <button class="link-btn" (click)="openGuestModal()">Change</button>
-            </div>
-          </div>
-
-          <hr class="divider">
-
           <!-- Price Breakdown -->
           <div class="price-section">
             <h4>Price details</h4>
 
             <div class="line-item">
-              <span>{{ nights }} night{{ nights > 1 ? 's' : '' }} x {{ listing.pricePerNight | number }} EGP</span>
-              <span>{{ listing.pricePerNight * nights | number }} EGP</span>
+              <span>${{ listing.pricePerNight | number }} x {{ nights }} nights</span>
+              <span>${{ listing.pricePerNight * nights | number }}</span>
             </div>
 
             <div class="line-item">
-              <span>Service fee</span>
-              <span>{{ serviceFee | number }} EGP</span>
+              <span>Cleaning fee</span>
+              <span>${{ listing.cleaningFee | number }}</span>
+            </div>
+
+            <div class="line-item">
+              <span>Airbnb service fee</span>
+              <span>${{ serviceFee | number }}</span>
             </div>
 
             <hr class="divider">
 
             <div class="line-item total">
-              <span>Total (EGP)</span>
-              <span>{{ totalPrice | number }} EGP</span>
+              <span>Total (USD)</span>
+              <span>${{ totalPrice | number }}</span>
             </div>
-          </div>
-        </div>
-
-        <!-- Rare Find Box -->
-        <div class="rare-find-box">
-          <i class="fa-regular fa-gem"></i>
-          <div class="text">
-            <h4>This is a rare find.</h4>
-            <p>{{ listing.host.firstName }} {{ listing.host.lastName }}'s place is usually booked.</p>
           </div>
         </div>
 
@@ -139,9 +153,7 @@
 
   </div>
 
-
-  <!-- ================= MODALS ================= -->
-
+  <!-- ================= MODALS (Keep as is) ================= -->
   <!-- Edit Dates Modal -->
   <div class="modal-overlay" *ngIf="isEditDateOpen">
     <div class="modal-box">
@@ -171,8 +183,7 @@
         <button class="cancel-btn" (click)="closeGuestModal()">Cancel</button>
         <button class="save-btn" (click)="saveGuests()">Save</button>
       </div>
-
     </div>
-
   </div>
+
 </div>

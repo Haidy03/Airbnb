@@ -189,7 +189,9 @@
           [serviceFee]="150"
           [cleaningFee]="100"
           [isInstantBook]="listing.isInstantBook"
+          [maxGuests]="listing.maxGuests"
            (dateChanged)="onDatesUpdated($event)"
+           (guestsChange)="onGuestsUpdated($event)"
            (reserve)="goToCheckout()">
         </app-super-card>
       </div>
