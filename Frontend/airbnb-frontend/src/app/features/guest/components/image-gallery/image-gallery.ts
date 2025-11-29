@@ -1,11 +1,8 @@
 
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { environment } from '../../../../../environments/environment';
+import { environment } from '../../../../../environments/environment.development';
 import { Output, EventEmitter } from '@angular/core'; 
-
-
-
 
 @Component({
   selector: 'app-image-gallery',
@@ -15,19 +12,37 @@ import { Output, EventEmitter } from '@angular/core';
   styleUrl: './image-gallery.scss',
 })
 export class ImageGallery {
-   // نستقبل الصور من الـ API عبر المكون الأب
-  // تأكدي أن الـ API يرسل 5 صور على الأقل لهذا التصميم
-  @Input() images:string[] = [];
+  @Input() images: string[] = [];
   @Output() modalStateChange = new EventEmitter<boolean>(); 
    title: string = 'Property Image';
     showModal: boolean = false; 
-    imageBaseUrl: string = environment.imageBaseUrl;
-     getFullImageUrl(relativePath: string): string {
-    if (!relativePath) {
-      return 'assets/images/placeholder.jpg'; // صورة احتياطية
+    //imageBaseUrl: string = environment.imageBaseUrl;
+   getFullImageUrl(imageUrl?: string): string {
+    // 1. لو مفيش رابط خالص، رجع صورة افتراضية
+    if (!imageUrl) {
+      return 'assets/images/placeholder.jpg'; 
     }
-    // دمج عنوان الباك إند الأساسي مع المسار النسبي
-    return `${this.imageBaseUrl}${relativePath}`;
+
+    // 2. لو الرابط خارجي (https://...) رجعه زي ما هو
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+
+    // ✅ 3. التعديل الجديد: لو الرابط بيشاور على assets داخلية في الأنجولار
+    // (عشان نعالج الحالة اللي في الداتا بيز عندك)
+    if (imageUrl.includes('assets/')) {
+      return imageUrl; // رجعه زي ما هو عشان الأنجولار يفتحه
+    }
+
+    // 4. لو صورة مرفوعة على السيرفر (uploads)، ركب قبلها رابط الباك اند
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    let cleanPath = imageUrl;
+    
+    if (!cleanPath.startsWith('/')) {
+        cleanPath = `/${cleanPath}`;
+    }
+
+    return `${baseUrl}${cleanPath}`;
   }
  showAllPhotos(): void {
     this.showModal = true;

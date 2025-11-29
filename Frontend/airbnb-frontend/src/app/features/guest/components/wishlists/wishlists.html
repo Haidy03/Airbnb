@@ -1,84 +1,16 @@
-<!-- <div class="min-vh-100 bg-white" style="padding-top: 80px;">
-
-
-  <main class="container py-5">
-
-    <div class="mb-5 border-bottom pb-4">
-      <h1 class="fw-bold text-dark display-6">Wishlists</h1>
-      <p class="text-muted fs-5">Your saved properties</p>
-    </div>
-
-    <div *ngIf="wishlistItems.length === 0"
-         class="d-flex flex-column align-items-center justify-content-center py-5 text-center">
-
-      <div class="mb-4 p-4 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#dddddd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-        </svg>
-      </div>
-      <h3 class="fw-bold text-dark mb-2">No wishlists yet</h3>
-      <p class="text-muted mb-4" style="max-width: 400px;">
-        As you search, click the heart icon to save your favorite places here.
-      </p>
-      <a routerLink="/" class="btn btn-danger btn-lg px-5 py-2 fw-semibold" style="background-color: #FF385C; border: none;">
-        Start exploring
-      </a>
-    </div>
-
-    <div *ngIf="wishlistItems.length > 0" class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
-
-      <div class="col" *ngFor="let item of wishlistItems">
-        <div class="card border-0 h-100 shadow-sm" style="cursor: pointer; transition: transform 0.2s;">
-
-          <div class="position-relative rounded-3 overflow-hidden" style="padding-top: 95%;">
-             <img [src]="item.images && item.images.length > 0 ? item.images[0].url : 'assets/placeholder.jpg'"
-                  class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-                  [alt]="item.title"
-                  onerror="this.src='assets/placeholder.jpg'">
-
-             <button (click)="removeFromWishlist(item.id); $event.stopPropagation()"
-                     class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 p-1 border-0 shadow-sm d-flex align-items-center justify-content-center"
-                     style="width: 32px; height: 32px; background: rgba(255,255,255,0.9);">
-                <i class="bi bi-x-lg text-dark" style="font-size: 14px;"></i>
-             </button>
-          </div>
-
-          <div class="card-body px-0 pt-3">
-            <h6 class="card-title fw-bold text-truncate mb-1">{{ item.location.city }}, {{ item.location.country }}</h6>
-            <p class="text-muted small mb-1 text-truncate">{{ item.title }}</p>
-            <div class="d-flex align-items-center gap-1 small mb-2">
-               <i class="bi bi-star-fill text-dark" style="font-size: 12px;"></i>
-               <span>{{ item.rating | number:'1.1-2' }}</span>
-            </div>
-            <div class="d-flex align-items-baseline gap-1">
-              <span class="fw-bold text-dark">{{ item.price | currency: item.currency :'symbol':'1.0-0' }}</span>
-              <span class="text-dark small">night</span>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </main>
-</div>
- -->
-
 <!-- <app-header></app-header> -->
 <div class="min-vh-100 bg-white" style="padding-top: 30px;">  
 
   <main class="container py-4">
-    <!-- العنوان -->
     <div class="mb-5 border-bottom pb-4">
       <h1 class="fw-bold text-dark display-6">Wishlists</h1>
-      <p class="text-muted fs-5">Your saved experiences</p>
+      <p class="text-muted fs-5">Your saved experiences & homes</p>
     </div>
 
-    <!-- ✅ Loading State -->
     <div *ngIf="isLoading()" class="text-center py-5">
       <div class="spinner-border text-dark" role="status"></div>
     </div>
 
-    <!-- ✅ 1. EMPTY STATE (يظهر لو مفيش عناصر والتحميل خلص) -->
     <div *ngIf="!isLoading() && wishlistItems().length === 0"
          class="d-flex flex-column align-items-center justify-content-center py-5 text-center">
 
@@ -89,16 +21,15 @@
       </div>
       <h3 class="fw-bold text-dark mb-2">No wishlists yet</h3>
       <p class="text-muted mb-4" style="max-width: 400px;">
-        As you search, click the heart icon to save your favorite experiences here.
+        As you search, click the heart icon to save your favorite listings here.
       </p>
       <a routerLink="/" class="btn btn-airbnb btn-lg px-5 py-2 fw-semibold">
         Start exploring
       </a>
     </div>
 
-    <!-- ✅ 2. GRID OF ITEMS (عرض الكروت) -->
     <div *ngIf="!isLoading() && wishlistItems().length > 0" class="wishlist-grid">
-      <!-- استخدام الكومبوننت الجاهز -->
+      <!-- هنا التعديل المهم: تمرير الصورة للكارت بشكل صحيح -->
       <app-experience-card 
         *ngFor="let item of wishlistItems()" 
         [experience]="item"

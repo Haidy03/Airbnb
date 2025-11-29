@@ -253,12 +253,12 @@ if (app.Environment.IsDevelopment())
 // Enable static files (for image uploads)
 app.UseStaticFiles();
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.WebRootPath, "uploads")),
-    RequestPath = "/uploads"
-});
+//app.UseStaticFiles(new StaticFileOptions
+//{
+//    FileProvider = new PhysicalFileProvider(
+//        Path.Combine(builder.Environment.WebRootPath, "uploads")),
+//    RequestPath = "/uploads"
+//});
 app.UseHttpsRedirection();
 
 

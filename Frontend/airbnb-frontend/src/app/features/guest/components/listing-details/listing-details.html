@@ -28,8 +28,11 @@
   </header>
 
   <!-- ================= IMAGE GALLERY ================= -->
-  <!-- المكون الذي قمنا ببرمجته سابقاً -->
-  <app-image-gallery [images]="listing.images"  (modalStateChange)="onModalStateChange($event)"></app-image-gallery>
+   <app-image-gallery 
+    [images]="listing.images" 
+    (modalStateChange)="onModalStateChange($event)">
+  </app-image-gallery>
+  
 
 
   <!-- ================= MAIN GRID CONTENT ================= -->

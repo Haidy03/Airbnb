@@ -14,7 +14,10 @@ namespace Airbnb.API.Repositories.Implementations
         {
             _context = context;
         }
-
+        public IQueryable<Experience> GetQueryable()
+        {
+            return _context.Experiences.AsQueryable();
+        }
         public async Task<Experience?> GetByIdAsync(int id)
         {
             return await _context.Experiences

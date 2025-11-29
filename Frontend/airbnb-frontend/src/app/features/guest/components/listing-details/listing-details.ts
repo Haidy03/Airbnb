@@ -11,7 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { HeaderComponent } from '../header/header';
 import { AuthService } from '../../../auth/services/auth.service';
-
+import { environment } from '../../../../../environments/environment.development';
 
 
 @Component({
@@ -41,10 +41,8 @@ export class ListingDetails implements OnInit {
   translatedDescription: string = '';
   showTranslated: boolean = false;
   isTranslating: boolean = false;
-  // message host
   showMessageModal: boolean = false;
 
- // متغيرات التواريخ اللي هتتبعت للاتنين
   selectedCheckIn: string = '';
   selectedCheckOut: string = '';
     constructor(
@@ -53,7 +51,6 @@ export class ListingDetails implements OnInit {
     private router :Router
     ,private AuthService:AuthService
   ) {}
-  // دالة بتستقبل التغيير من كارت الحجز (هنحتاج نعدل كارت الحجز عشان يبعتها)
   onDatesUpdated(dates: {checkIn: string, checkOut: string}) {
     this.selectedCheckIn = dates.checkIn;
     this.selectedCheckOut = dates.checkOut;
@@ -64,11 +61,6 @@ export class ListingDetails implements OnInit {
       alert('Please select dates first!');
       return;
     }
-
-
-  // isInstantBook
-
-
     if (!this.listing?.isInstantBook) {
 
       this.router.navigate(['/checkout', this.listing?.id], {
@@ -86,30 +78,41 @@ export class ListingDetails implements OnInit {
           guests: 2
         }
       });
-      // alert('This listing requires a "Request to Book" approval from the host.');
     }
-    // ******************************************************
   }
+  getImageUrl(imageUrl?: string): string {
+    // 1. لو مفيش رابط خالص، رجع صورة افتراضية
+    if (!imageUrl) {
+      return 'assets/images/placeholder.jpg'; 
+    }
 
+    // 2. لو الرابط خارجي (https://...) رجعه زي ما هو
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+
+    // ✅ 3. التعديل الجديد: لو الرابط بيشاور على assets داخلية في الأنجولار
+    // (عشان نعالج الحالة اللي في الداتا بيز عندك)
+    if (imageUrl.includes('assets/')) {
+      return imageUrl; // رجعه زي ما هو عشان الأنجولار يفتحه
+    }
+
+    // 4. لو صورة مرفوعة على السيرفر (uploads)، ركب قبلها رابط الباك اند
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    let cleanPath = imageUrl;
+    
+    if (!cleanPath.startsWith('/')) {
+        cleanPath = `/${cleanPath}`;
+    }
+
+    return `${baseUrl}${cleanPath}`;
+  }
    showAllAmenities(): void {
     this.showAmenitiesModal = true;
-    // يمكن إضافة منطق لمنع التمرير (Scroll lock) هنا إذا لزم الأمر
   }
-
-  /**
-   * دالة لإغلاق الـ Modal عند الضغط على زر الغلق
-   */
   closeAmenitiesModal(): void {
     this.showAmenitiesModal = false;
   }
-
-
-
-
-
-
-
-
   ngOnInit(): void {
       // 1. الاشتراك في paramMap لجلب الـ ID من المسار
     this.route.paramMap.subscribe(params => {
@@ -138,6 +141,10 @@ export class ListingDetails implements OnInit {
        .subscribe({
     next: (data) => {
         this.originalDescription = data.description;
+
+        const processedImages = data.images?.map((img: any) => 
+        typeof img === 'string' ? img : (img.url || img.imageUrl)
+    ) || [];
       this.listing = {
         ...data,
         ratingBreakdown: data.ratingBreakdown ?? undefined, // تعيين قيمة افتراضية

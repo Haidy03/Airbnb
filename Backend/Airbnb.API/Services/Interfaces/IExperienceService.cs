@@ -31,6 +31,8 @@ namespace Airbnb.API.Services.Interfaces
         Task<bool> ApproveExperienceAsync(int id);
         Task<ExperienceReviewDto> AddReviewAsync(string guestId, CreateReviewDto dto);
         Task<List<ExperienceReviewDto>> GetReviewsByExperienceIdAsync(int experienceId);
+        Task<List<ExperienceDto>> GetAllExperiencesAsync(string? status, string? searchTerm, int pageNumber, int pageSize);
+        Task<bool> RejectExperienceAsync(int id, string reason);
 
     }
 }
