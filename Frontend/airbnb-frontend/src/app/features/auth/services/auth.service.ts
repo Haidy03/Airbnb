@@ -122,7 +122,6 @@ export class AuthService {
     localStorage.setItem(this.TOKEN_KEY, token);
   }
 
-  // ================= set/get user =================
   private setUser(userPartial: Partial<AuthUser>): void {
     const current = this.userSubject.value || ({} as AuthUser);
     const merged: AuthUser = { ...current, ...userPartial } as AuthUser;
@@ -189,8 +188,6 @@ export class AuthService {
  fetchAndSetFullProfile(): void {
     this.getCurrentUser().subscribe({
       next: (profile) => {
-        // ✅ CRITICAL FIX: Check ALL possible property names from backend
-        // Your backend seems to use 'profileImage', but AuthUser uses 'profilePicture'
         const rawProfilePic = 
           (profile as any).profileImage || 
           (profile as any).profilePicture || 
@@ -205,7 +202,6 @@ export class AuthService {
             ? `${profile.firstName} ${profile.lastName}`
             : undefined,
           
-          // ✅ Convert to Full URL
           profilePicture: this.getFullImageUrl(rawProfilePic),
           
           isEmailVerified: profile.isEmailVerified
@@ -313,18 +309,9 @@ export class AuthService {
       );
   }
 
-  resetPassword(token: string, newPassword: string): Observable<{ success: boolean; message: string }> {
-    const request: ResetPasswordRequest = { token, newPassword };
-    return this.http.post<{ message: string }>(`${this.API_URL}/reset-password`, request)
-      .pipe(
-        map(response => ({ success: true, message: response.message || 'Password reset successfully' })),
-        catchError(error => {
-          const errorMessage = this.handleAuthError(error);
-          return throwError(() => new Error(errorMessage));
-        })
-      );
+  resetPassword(request: any): Observable<any> {
+    return this.http.post(`${this.API_URL}/reset-password`, request);
   }
-
   // ================= logout / refresh =================
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);

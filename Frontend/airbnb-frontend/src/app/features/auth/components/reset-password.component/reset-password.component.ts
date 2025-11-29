@@ -1,86 +1,87 @@
-// components/reset-password/reset-password.component.ts
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css']
 })
 export class ResetPasswordComponent implements OnInit {
+  // ... (نفس الـ Injections القديمة)
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   isLoading = signal(false);
-  errorMessage = signal('');
-  successMessage = signal('');
-  showPassword = signal(false);
-  resetToken = signal('');
+  message = signal('');
+  isSuccess = signal(false);
+  token = signal('');
+  email = signal('');
 
-  resetPasswordForm = this.fb.nonNullable.group({
+  // ✅ التعديل هنا: عملنا متغيرين منفصلين للعين
+  showNewPassword = signal(false);
+  showConfirmPassword = signal(false);
+
+  resetForm = this.fb.nonNullable.group({
     newPassword: ['', [Validators.required, Validators.minLength(6)]],
     confirmPassword: ['', [Validators.required]]
-  }, { validators: this.passwordMatchValidator });
+  });
 
   ngOnInit() {
-    // الحصول على التوكن من query parameters
     this.route.queryParams.subscribe(params => {
-      this.resetToken.set(params['token'] || '');
-      
-      if (!this.resetToken()) {
-        this.errorMessage.set('Invalid or missing reset token');
-      }
+      this.token.set(params['token'] || '');
+      this.email.set(params['email'] || '');
     });
   }
 
-  get newPassword() {
-    return this.resetPasswordForm.get('newPassword');
+  // ✅ دوال التبديل
+  toggleNewPassword() {
+    this.showNewPassword.update(v => !v);
   }
 
-  get confirmPassword() {
-    return this.resetPasswordForm.get('confirmPassword');
+  toggleConfirmPassword() {
+    this.showConfirmPassword.update(v => !v);
   }
 
-  passwordMatchValidator(form: any) {
-    const password = form.get('newPassword').value;
-    const confirmPassword = form.get('confirmPassword').value;
-    return password === confirmPassword ? null : { mismatch: true };
-  }
-
-  togglePasswordVisibility() {
-    this.showPassword.update(v => !v);
-  }
-
+  // ... (باقي كود onSubmit و backToLogin زي ما هو)
   onSubmit() {
-    if (this.resetPasswordForm.invalid || this.isLoading() || !this.resetToken()) return;
+    if (this.resetForm.invalid || !this.token() || !this.email()) return;
+
+    if (this.resetForm.value.newPassword !== this.resetForm.value.confirmPassword) {
+      this.message.set('Passwords do not match');
+      return;
+    }
 
     this.isLoading.set(true);
-    this.errorMessage.set('');
-    this.successMessage.set('');
+    this.message.set('');
 
-    const newPassword = this.resetPasswordForm.value.newPassword!;
+    const request = {
+      email: this.email(),
+      token: this.token(),
+      newPassword: this.resetForm.value.newPassword!
+    };
 
-    this.authService.resetPassword(this.resetToken(), newPassword).subscribe({
-      next: (response) => {
+    this.authService.resetPassword(request).subscribe({
+      next: () => {
         this.isLoading.set(false);
-        this.successMessage.set(response.message);
-        
-        // التوجيه إلى صفحة login بعد 3 ثواني
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 3000);
+        this.isSuccess.set(true);
+        this.message.set('Password reset successfully! Redirecting to login...');
+        setTimeout(() => this.router.navigate(['/login']), 3000);
       },
-      error: (error) => {
+      error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(error.message);
+        this.message.set(err.error?.description || 'Failed to reset password.');
       }
     });
+  }
+
+  backToLogin() {
+    this.router.navigate(['/login']);
   }
 }
