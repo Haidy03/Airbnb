@@ -201,6 +201,15 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
   }
   onMapPropertySelect(p: Property) { this.selectedProperty = p; }
   onMapBoundsChange(b: any) {}
+  onSearchBarSearch(filters: SearchFilters) {
+    console.log('Search from bar:', filters);
+    
+    // Update current query filters
+    this.currentQuery.filters = { ...this.currentQuery.filters, ...filters };
+    
+    // Update URL (This will trigger route subscription and execute search)
+    this.onFiltersApply(this.currentQuery.filters);
+  }
 }
 
 
