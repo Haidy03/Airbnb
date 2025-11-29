@@ -42,6 +42,7 @@ import { SendMessage } from './features/guest/components/send-message/send-messa
 import { HostEarningsComponent } from './features/host/components/earnings/earnings';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout/main-layout';
 import { PropertyCreationLayoutComponent } from './layouts/property-creation-layout/property-creation-layout/property-creation-layout';
+import { ServicesHomeComponent } from './features/services/components/services-home/services-home';
 
 export const routes: Routes = [
   // =================================================
@@ -71,6 +72,11 @@ export const routes: Routes = [
   path: 'messages',
     loadComponent: () => import('./features/messages/Components/messages-inbox').then(m => m.MessagesInboxComponent)
   },
+  { 
+    path: 'services', 
+        loadComponent: () => import('./features/services/components/services-home/services-home')
+          .then(m => m.ServicesHomeComponent)
+        },
 
   {
     path: 'profile',
@@ -115,6 +121,7 @@ export const routes: Routes = [
   path: 'experiences',
   children: experiencesRoutes
 },
+
 
   // =================================================
   // 3. Host Routes (Your original work - Protected)
