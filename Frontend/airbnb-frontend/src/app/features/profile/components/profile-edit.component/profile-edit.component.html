@@ -5,7 +5,7 @@
       <div class="large-avatar">
         <img *ngIf="profileImage" [src]="profileImage" alt="Profile" class="avatar-img">
         <span *ngIf="!profileImage" class="avatar-initial">
-         {{ profileImage }}
+          {{ profileDetails.firstName?.charAt(0) || 'U' }}
         </span>
       </div>
       <button class="add-photo-btn" (click)="fileInput.click()">

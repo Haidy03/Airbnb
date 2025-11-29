@@ -30,7 +30,9 @@ export class UserService {
     if (path.startsWith('http')) return path; 
     
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    return `${this.API_BASE_URL}/${cleanPath}`;
+    // ✅ CACHE BUSTING: The ?t= timestamp forces the browser to re-download the image
+    const timestamp = new Date().getTime();
+    return `${this.API_BASE_URL}/${cleanPath}?t=${timestamp}`;
   }
 
   getCurrentUser(): Observable<any> {
