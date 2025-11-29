@@ -24,7 +24,8 @@
              [class.past]="day.isPast"
              [class.check-in]="day.isCheckIn"
              [class.check-out]="day.isCheckOut"
-             [class.in-range]="day.isInRange">
+             [class.in-range]="day.isInRange"
+             (click)="onDayClick(day)">
           <span *ngIf="!day.isEmpty">{{ day.dayNum }}</span>
         </div>
       </div>

@@ -107,7 +107,7 @@
         <div class="summary-card">
           <!-- Listing Header -->
           <div class="card-header-row">
-            <img [src]="listing.images[0]" alt="Listing">
+            <img [src]="getPrimaryImage()" alt="Listing" onerror="this.src='assets/images/placeholder.jpg'">
             <div class="text-info">
               <p class="listing-desc">Entire rental unit</p>
               <h4>{{ listing.title }}</h4>
@@ -125,25 +125,25 @@
             <h4>Price details</h4>
 
             <div class="line-item">
-              <span>${{ listing.pricePerNight | number }} x {{ nights }} nights</span>
-              <span>${{ listing.pricePerNight * nights | number }}</span>
+              <span>LE.{{ listing.pricePerNight | number }} x {{ nights }} nights</span>
+              <span>LE.{{ listing.pricePerNight * nights | number }}</span>
             </div>
 
             <div class="line-item">
               <span>Cleaning fee</span>
-              <span>${{ listing.cleaningFee | number }}</span>
+              <span>LE.{{ (listing.cleaningFee || 0) | number }}</span>
             </div>
 
             <div class="line-item">
               <span>Airbnb service fee</span>
-              <span>${{ serviceFee | number }}</span>
+              <span>LE.{{ serviceFee | number }}</span>
             </div>
 
             <hr class="divider">
 
             <div class="line-item total">
-              <span>Total (USD)</span>
-              <span>${{ totalPrice | number }}</span>
+              <span>Total (EGP)</span>
+              <span>LE.{{ (totalPrice || 0)| number }}</span>
             </div>
           </div>
         </div>

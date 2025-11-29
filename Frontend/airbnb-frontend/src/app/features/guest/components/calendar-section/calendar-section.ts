@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, Output, EventEmitter,SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 interface CalendarDay {
@@ -19,18 +19,22 @@ interface CalendarDay {
   styleUrls: ['./calendar-section.scss']
 })
 export class CalendarSection implements OnChanges {
-  @Input() location: string = 'Hurghada';
+  @Input() location: string = '';
   @Input() checkIn: string | null = null;
   @Input() checkOut: string | null = null;
-
+  @Input() blockedDates: string[] = []; 
   // الشهر الحالي الذي يعرضه التقويم (لأغراض التصفح)
   currentViewDate: Date = new Date();
+
+  @Output() datesSelected = new EventEmitter<{checkIn: string, checkOut: string}>();
 
   month1: CalendarDay[] = [];
   month2: CalendarDay[] = [];
   month1Name: string = '';
   month2Name: string = '';
 
+  tempCheckIn: Date | null = null;
+  tempCheckOut: Date | null = null;
   nightsCount: number = 0;
   dateRangeString: string = '';
 
@@ -38,6 +42,43 @@ export class CalendarSection implements OnChanges {
     // تحديث التقويم عند تغير المدخلات
     this.generateCalendar();
     this.calculateSummary();
+  }
+
+   onDayClick(day: CalendarDay) {
+    if (day.isEmpty || day.isPast || this.isDateBlocked(day.date)) return;
+
+    if (!this.tempCheckIn || (this.tempCheckIn && this.tempCheckOut)) {
+      // بداية اختيار جديد
+      this.tempCheckIn = day.date;
+      this.tempCheckOut = null;
+    } else {
+      // اختيار تاريخ الخروج
+      if (day.date > this.tempCheckIn) {
+        this.tempCheckOut = day.date;
+        // إرسال التواريخ للأب
+        this.emitDates();
+      } else {
+        // لو اختار تاريخ قبل البدء، نعتبره تاريخ بدء جديد
+        this.tempCheckIn = day.date;
+        this.tempCheckOut = null;
+      }
+    }
+    this.generateCalendar(); // إعادة رسم التقويم لتحديث الألوان
+  }
+
+  emitDates() {
+    if (this.tempCheckIn && this.tempCheckOut) {
+      this.datesSelected.emit({
+        checkIn: this.formatDate(this.tempCheckIn),
+        checkOut: this.formatDate(this.tempCheckOut)
+      });
+    }
+  }
+
+  formatDate(date: Date): string {
+    const offset = date.getTimezoneOffset();
+    const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+    return adjustedDate.toISOString().split('T')[0];
   }
 
   generateCalendar() {
@@ -137,6 +178,10 @@ export class CalendarSection implements OnChanges {
     return days;
   }
 
+  isDateBlocked(date: Date): boolean {
+    const dateString = date.toISOString().split('T')[0];
+    return this.blockedDates.includes(dateString);
+  }
 
   calculateSummary() {
     if (this.checkIn && this.checkOut) {
@@ -159,6 +204,9 @@ export class CalendarSection implements OnChanges {
     const [year, month, day] = dateStr.split('-').map(Number);
     return new Date(year, month - 1, day); // الشهر بيبدأ من 0 في جافاسكريبت
   }
+  dateClass = (d: Date) => {
+    return this.isDateBlocked(d) ? 'blocked-date-css-class' : '';
+  };
 
 
   clearDates() {

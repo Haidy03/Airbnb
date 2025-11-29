@@ -8,6 +8,12 @@
     .subtitle { font-size: 14px; color: #717171; }
   }
 
+  .blocked-date-css-class {
+  text-decoration: line-through;
+  color: #ccc;
+  pointer-events: none; /* يمنع الضغط عليها */
+  background-color: #f7f7f7;
+}
   .calendars-wrapper {
     display: flex;
     gap: 30px;
