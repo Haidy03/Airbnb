@@ -16,6 +16,7 @@ export class SearchService {
   locations$ = this.locationsSubject.asObservable();
   private favoritesSubject = new BehaviorSubject<Set<string>>(new Set());
   favorites$ = this.favoritesSubject.asObservable();
+  
 
   constructor(private http: HttpClient) { this.loadInitialLocations(); }
 
