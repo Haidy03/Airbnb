@@ -1,0 +1,56 @@
+<div class="chatbot-wrapper">
+    
+    <!-- 1. The Chat Window (Expands when open) -->
+    <div class="chat-window" *ngIf="isOpen()" [class.open]="isOpen()">
+        
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="header-info">
+                <div class="ai-avatar">✨</div>
+                <span>Airbnb Assistant</span>
+            </div>
+            <button class="close-btn" (click)="toggleChat()">✕</button>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="chat-messages" #scrollContainer>
+            <div *ngFor="let msg of messages()" 
+                 class="message-row" 
+                 [class.user-row]="msg.sender === 'user'">
+                
+                 <div class="message-bubble" [class.user-bubble]="msg.sender === 'user'">
+                    {{ msg.text }}
+                 </div>
+                 <span class="timestamp">{{ msg.timestamp | date:'shortTime' }}</span>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="message-row" *ngIf="isLoading()">
+                <div class="message-bubble loading-bubble">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+            <input 
+                type="text" 
+                [(ngModel)]="userInput" 
+                (keyup.enter)="sendMessage()"
+                placeholder="Ask about a trip..." 
+                [disabled]="isLoading()"
+            />
+            <button (click)="sendMessage()" [disabled]="!userInput.trim() || isLoading()">
+                ➤
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. The Floating Bubble Button -->
+    <button class="chat-fab" (click)="toggleChat()" [class.active]="isOpen()">
+        <span *ngIf="!isOpen()">💬</span>
+        <span *ngIf="isOpen()">✕</span>
+    </button>
+
+</div>
