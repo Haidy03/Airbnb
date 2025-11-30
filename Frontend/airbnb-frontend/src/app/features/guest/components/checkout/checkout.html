@@ -49,23 +49,47 @@
           </h2>
         </div>
 
-        <!-- SCENARIO 1: INSTANT BOOK (PAYPAL) -->
-        <div *ngIf="bookingType === 'instant'" class="payment-card-box">
-          <div class="payment-method-header">
-            <div class="method-info">
-              <i class="fa-brands fa-paypal" style="color: #003087;"></i>
-              <span>PayPal</span>
-            </div>
-            <div class="radio-circle selected"></div>
+        <!-- SCENARIO 1: INSTANT BOOK -->
+        <div *ngIf="bookingType === 'instant'">
+          
+          <!-- اختيار طريقة الدفع -->
+          <div class="payment-method-selector" style="margin-bottom: 20px;">
+            <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">
+              <input type="radio" name="paymentMethod" [(ngModel)]="paymentMethod" value="stripe" />
+              <i class="fa-brands fa-cc-stripe" style="font-size: 24px; color: #635bff;"></i>
+              <span style="font-weight: 600;">Credit/Debit Card (Stripe)</span>
+            </label>
+            
+            <label style="display: flex; align-items: center; gap: 10px; padding: 15px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+              <input type="radio" name="paymentMethod" [(ngModel)]="paymentMethod" value="paypal" />
+              <i class="fa-brands fa-paypal" style="font-size: 24px; color: #003087;"></i>
+              <span style="font-weight: 600;">PayPal</span>
+            </label>
           </div>
 
-          <div class="paypal-wrapper">
-             <ngx-paypal [config]="payPalConfig"></ngx-paypal>
+          <!-- Stripe Payment -->
+          <div *ngIf="paymentMethod === 'stripe'" class="stripe-section">
+            <button 
+              (click)="payWithStripe()" 
+              [disabled]="isLoading"
+              style="width: 100%; padding: 14px; background: #635bff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
+              <i class="fa-solid fa-lock"></i>
+              {{ isLoading ? 'Processing...' : 'Pay with Stripe' }}
+            </button>
+            <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 10px;">
+              <i class="fa-solid fa-shield-halved"></i> 
+              Secure payment powered by Stripe
+            </p>
           </div>
 
-          <p class="secure-text">
-            <i class="fa-solid fa-lock"></i> Payments are secure and encrypted.
-          </p>
+          <!-- PayPal Payment -->
+          <div *ngIf="paymentMethod === 'paypal'" class="paypal-wrapper">
+            <ngx-paypal [config]="payPalConfig"></ngx-paypal>
+            <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 10px;">
+              <i class="fa-solid fa-lock"></i> Payments are secure and encrypted.
+            </p>
+          </div>
+
         </div>
 
         <!-- SCENARIO 2: REQUEST TO BOOK (MESSAGE) -->

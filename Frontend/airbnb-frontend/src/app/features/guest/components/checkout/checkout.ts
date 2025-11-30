@@ -7,6 +7,7 @@ import { Listing } from '../../models/listing-model';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxPayPalModule, IPayPalConfig, ICreateOrderRequest } from 'ngx-paypal';
 import { environment } from '../../../../../environments/environment'; 
+import { StripeService } from '../../../../core/services/stripe.service';
 @Component({
   selector: 'app-checkout',
   standalone: true,
@@ -26,6 +27,7 @@ export class Checkout implements OnInit {
   // ✅ متغير لتحديد نوع الحجز
   bookingType: 'instant' | 'request' = 'request'; 
   isLoading: boolean = false;
+  paymentMethod: 'stripe' | 'paypal' = 'stripe'; 
 
   paymentForm: FormGroup;
   public payPalConfig?: IPayPalConfig;
@@ -39,12 +41,13 @@ export class Checkout implements OnInit {
   tempGuests: number = 1;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private listingService: ListingService,
-    private bookingService: BookingService, // ✅ حقن BookingService
-    private location: Location,
-    private fb: FormBuilder
+  private route: ActivatedRoute,
+  private router: Router,
+  private listingService: ListingService,
+  private bookingService: BookingService,
+  private stripeService: StripeService, // 🆕
+  private location: Location,
+  private fb: FormBuilder
   ) {
     this.paymentForm = this.fb.group({
       street: ['', Validators.required],
@@ -98,6 +101,57 @@ export class Checkout implements OnInit {
       }
     }
   }
+
+ // 🆕 الدفع بـ Stripe
+payWithStripe() {
+  if (!this.listing) {
+    alert('Listing data not loaded');
+    return;
+  }
+
+  // ✅ Check if user is logged in
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please log in to complete your booking.');
+    this.router.navigate(['/login'], { 
+      queryParams: { 
+        returnUrl: `/checkout/${this.listing.id}`,
+        checkIn: this.checkIn,
+        checkOut: this.checkOut,
+        guests: this.guests,
+        type: this.bookingType
+      } 
+    });
+    return;
+  }
+
+  this.isLoading = true;
+
+  // تحويل EGP إلى USD
+  const amountUSD = this.totalPrice / 50;
+
+  this.stripeService.createCheckoutSession(amountUSD, this.listing.title).subscribe({
+    next: (response) => {
+      console.log('✅ Stripe Checkout URL:', response.url);
+      
+      // حفظ بيانات الحجز
+      sessionStorage.setItem('pendingBooking', JSON.stringify({
+        propertyId: this.listing!.id,
+        checkIn: this.checkIn,
+        checkOut: this.checkOut,
+        guests: this.guests
+      }));
+
+      // التوجيه لـ Stripe
+      window.location.href = response.url;
+    },
+    error: (err) => {
+      this.isLoading = false;
+      console.error('❌ Stripe Error:', err);
+      alert('Failed to create payment session: ' + (err.error?.error || err.message));
+    }
+  });
+}
 
   // ✅ الدالة الأساسية لإنشاء الحجز (تستدعى من PayPal أو زر الطلب)
   finalizeBooking() {

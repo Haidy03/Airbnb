@@ -28,14 +28,14 @@ namespace Airbnb.API.Controllers.Guest
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null || !user.IsVerified)
-            {
-                return StatusCode(403, new 
-                { 
-                    message = "Identity verification required.", 
-                    details = "You must verify your ID before making a booking." 
-                });
-            }
+            //if (user == null || !user.IsVerified)
+            //{
+            //    return StatusCode(403, new 
+            //    { 
+            //        message = "Identity verification required.", 
+            //        details = "You must verify your ID before making a booking." 
+            //    });
+            //}
             try
             {
                 var result = await _bookingService.CreateBookingAsync(userId, createDto);
