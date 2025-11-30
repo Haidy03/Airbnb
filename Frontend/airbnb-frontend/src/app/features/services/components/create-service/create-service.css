@@ -46,52 +46,61 @@
 /* Grid System */
 .categories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(5, 1fr); /* 5 columns بدل auto-fill */
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* Card Styling */
 .cat-card {
   border: 1px solid #DDDDDD;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 32px 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
   background: #fff;
-  height: 160px; /* Fixed height for consistency */
+  height: 200px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .cat-card:hover {
   border-color: #222;
-  background-color: #F7F7F7; /* Slight gray on hover like Airbnb */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
 }
 
 /* Selection State */
 .cat-card.selected {
   border: 2px solid #222;
   background-color: #F7F7F7;
-  padding: 23px; /* Adjust padding to prevent layout shift due to border width */
+  padding: 31px 23px; /* Adjust for border width */
 }
 
 .icon-wrapper {
-  flex-grow: 1;
+  margin-bottom: 16px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cat-icon {
-  width: 48px;
-  height: 48px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
 }
 
 .cat-label {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: #222;
+  line-height: 1.3;
 }
-
 /* Footer Styling */
 .create-footer {
   position: fixed;
@@ -138,12 +147,36 @@
 }
 
 /* Mobile Responsive */
-@media (max-width: 768px) {
-  .create-header, .footer-actions { padding: 16px 24px; }
-  .categories-grid { grid-template-columns: repeat(2, 1fr); }
-  .step-title { font-size: 26px; text-align: left; }
+
+@media (max-width: 1200px) {
+  .categories-grid { 
+    grid-template-columns: repeat(4, 1fr); 
+  }
 }
 
+@media (max-width: 950px) {
+  .categories-grid { 
+    grid-template-columns: repeat(3, 1fr); 
+  }
+}
+
+@media (max-width: 768px) {
+  .create-header, .footer-actions { 
+    padding: 16px 24px; 
+  }
+  .categories-grid { 
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .step-title { 
+    font-size: 28px; 
+    text-align: center;
+  }
+  .cat-card {
+    height: 180px;
+    padding: 24px 16px;
+  }
+}
 
 
 
