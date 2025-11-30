@@ -49,3 +49,10 @@ export interface ServiceDetails {
   qualifications: ServiceQualification[];
   packages: ServicePackage[];
 }
+
+export interface ServiceCategory {
+  id: number;
+  name: string;
+  icon: string;
+  description?: string;
+}

@@ -8,6 +8,6 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<List<Service>> GetServicesByCategoryAsync(string categoryName);
         Task<Service?> GetServiceByIdAsync(int id);
         Task AddServiceAsync(Service service);
-        // ... more methods later
+        Task<List<ServiceCategory>> GetAllCategoriesAsync();
     }
 }
