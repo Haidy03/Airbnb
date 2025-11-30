@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
-// DTO للإرسال إلى الباك إند
+// DTO للإرسال إلى الباك إند (مطابق للـ Backend)
 export interface CreateBookingDto {
   propertyId: number;
   checkInDate: string; // ISO String
@@ -21,6 +21,8 @@ export interface BookingResponse {
   propertyImage: string;
   checkInDate: Date;
   checkOutDate: Date;
+  numberOfGuests: number;
+  numberOfNights: number;
 }
 
 @Injectable({
@@ -32,12 +34,19 @@ export class BookingService {
 
   constructor(private http: HttpClient) { }
 
-  // ✅ 1. إنشاء حجز جديد (Create)
+  // ✅ إنشاء حجز جديد
   createBooking(bookingData: CreateBookingDto): Observable<BookingResponse> {
-    return this.http.post<BookingResponse>(this.apiUrl, bookingData);
+    return this.http.post<BookingResponse>(this.apiUrl, bookingData).pipe(
+      map(dto => ({
+        ...dto,
+        checkInDate: new Date(dto.checkInDate),
+        checkOutDate: new Date(dto.checkOutDate),
+        propertyImage: this.fixImageUrl(dto.propertyImage)
+      }))
+    );
   }
 
-  // ✅ 2. جلب جميع حجوزات المستخدم (Read)
+  // ✅ جلب جميع حجوزات المستخدم
   getMyTrips(): Observable<BookingResponse[]> {
     return this.http.get<any[]>(`${this.apiUrl}/my-trips`).pipe(
       map(dtos => dtos.map(dto => ({
@@ -49,7 +58,7 @@ export class BookingService {
     );
   }
 
-  // ✅ 3. جلب تفاصيل حجز معين
+  // ✅ جلب تفاصيل حجز معين
   getBookingById(id: number): Observable<BookingResponse> {
     return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
       map(dto => ({
@@ -61,7 +70,7 @@ export class BookingService {
     );
   }
 
-  // ✅ 4. إلغاء حجز
+  // ✅ إلغاء حجز
   cancelTrip(bookingId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/${bookingId}/cancel`, {});
   }
@@ -71,6 +80,6 @@ export class BookingService {
     if (!url) return 'assets/images/placeholder.jpg';
     if (url.startsWith('http')) return url;
     const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-    return `${environment.imageBaseUrl}/${cleanUrl}`;
+    return `${environment.imageBaseUrl || 'http://localhost:5000'}/${cleanUrl}`;
   }
 }

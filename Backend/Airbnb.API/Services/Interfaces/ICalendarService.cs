@@ -17,7 +17,7 @@ namespace Airbnb.API.Services.Interfaces
         Task<int> BulkUpdateAvailabilityAsync(BulkUpdateAvailabilityDto dto, string hostId);
 
         Task<CalendarSettingsDto> GetCalendarSettingsAsync(int propertyId, string hostId);
-
+        Task<List<string>> GetBlockedDatesAsync(int propertyId);
         Task<bool> UpdateCalendarSettingsAsync(UpdateCalendarSettingsDto dto, string hostId);
     }
 }

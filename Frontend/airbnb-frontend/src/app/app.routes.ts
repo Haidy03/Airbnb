@@ -43,6 +43,7 @@ import { HostEarningsComponent } from './features/host/components/earnings/earni
 import { MainLayoutComponent } from './layouts/main-layout/main-layout/main-layout';
 import { PropertyCreationLayoutComponent } from './layouts/property-creation-layout/property-creation-layout/property-creation-layout';
 import { ServicesHomeComponent } from './features/services/components/services-home/services-home';
+import { PaymentSuccessComponent } from './features/guest/components/payment-success/payment-success';
 
 export const routes: Routes = [
   // =================================================
@@ -127,6 +128,10 @@ export const routes: Routes = [
   path: 'experiences',
   children: experiencesRoutes
 },
+    {
+      path: 'payment-success',
+      component: PaymentSuccessComponent
+    },
 
 
   // =================================================

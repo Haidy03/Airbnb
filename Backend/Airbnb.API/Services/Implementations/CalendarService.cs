@@ -195,6 +195,49 @@ namespace Airbnb.API.Services.Implementations
             return true;
         }
 
+        public async Task<List<string>> GetBlockedDatesAsync(int propertyId)
+        {
+            var today = DateTime.UtcNow.Date;
+
+            // 1. Get dates manually blocked by the host (IsAvailable = false)
+            var manualBlockedDates = await _context.PropertyAvailabilities
+                .Where(pa => pa.PropertyId == propertyId
+                             && pa.IsAvailable == false
+                             && pa.Date >= today)
+                .Select(pa => pa.Date)
+                .ToListAsync();
+
+            // 2. Get dates occupied by CONFIRMED bookings
+            // We fetch bookings that end after today
+            var bookings = await _bookingRepository.GetByPropertyIdAsync(propertyId);
+            var confirmedBookings = bookings
+                .Where(b => (b.Status == BookingStatus.Confirmed) && b.CheckOutDate > today)
+                .ToList();
+
+            var allBlockedDates = new HashSet<DateTime>(manualBlockedDates);
+
+            foreach (var booking in confirmedBookings)
+            {
+                // Loop through every night of the booking
+                // Note: We go from CheckIn up to (but not including) CheckOut
+                // because the checkout day is technically available for the next guest to check in
+                for (var day = booking.CheckInDate.Date; day < booking.CheckOutDate.Date; day = day.AddDays(1))
+                {
+                    if (day >= today)
+                    {
+                        allBlockedDates.Add(day);
+                    }
+                }
+            }
+
+            // Return as list of strings "yyyy-MM-dd"
+            return allBlockedDates
+                .OrderBy(d => d)
+                .Select(d => d.ToString("yyyy-MM-dd"))
+                .ToList();
+        }
+    
+
         public async Task<int> BulkUpdateAvailabilityAsync(BulkUpdateAvailabilityDto dto, string hostId)
         {
             // Verify ownership

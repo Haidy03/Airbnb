@@ -243,5 +243,22 @@ namespace Airbnb.API.Controllers.Host
                 return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
+
+        [HttpGet("availability/{propertyId}/blocked")]
+        [AllowAnonymous] 
+        public async Task<IActionResult> GetBlockedDates(int propertyId)
+        {
+            try
+            {
+                var blockedDates = await _calendarService.GetBlockedDatesAsync(propertyId);
+                return Ok(blockedDates);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting blocked dates for property {PropertyId}", propertyId);
+                return StatusCode(500, new { success = false, message = "Internal server error" });
+            }
+        }
+
     }
 }
