@@ -88,10 +88,25 @@
 
       <div class="nav-card link-card" (click)="setActiveSection('host')">
         <div class="nav-header"> <span class="nav-label">About the host</span> </div>
-        <div class="nav-content">
-          <img src="assets/images/user-placeholder.png" class="host-avatar" alt="Host">
-          <span>View profile</span>
-        </div>
+         <div class="nav-content">
+            
+            @if (authService.user(); as currentUser) {
+              <div class="host-avatar-wrapper">
+                
+                <div class="avatar-placeholder small">
+                  {{ currentUser.firstName?.charAt(0) | uppercase }}
+                </div>
+
+                
+                <img *ngIf="currentUser.profilePicture" 
+                    [src]="currentUser.profilePicture" 
+                    class="host-avatar-img" 
+                    alt="Host"
+                    (error)="handleImageError($event)">
+              </div>
+                <span class="host-name-text">{{ currentUser.firstName }}</span>
+            }
+    </div>
       </div>
 
       <div class="nav-card" [class.active]="activeSection() === 'booking'" (click)="setActiveSection('booking')">

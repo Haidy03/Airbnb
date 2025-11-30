@@ -598,11 +598,11 @@ input:checked + .slider:before {
   border-color: #222;
 }
 
-/* حالة الاختيار */
+
 .booking-card.selected {
   border: 2px solid #222;
   background-color: #F7F7F7;
-  padding: 23px; /* تعويض فرق البوردر */
+  padding: 23px;
 }
 
 .booking-text h3 {
@@ -635,7 +635,7 @@ input:checked + .slider:before {
 
 .booking-card.selected .custom-radio {
   border-color: #222;
-  border-width: 2px; /* جعل الدائرة أسمك عند الاختيار */
+  border-width: 2px; 
 }
 
 .radio-inner {
@@ -659,4 +659,54 @@ input:checked + .slider:before {
 
 .lightning-icon {
   font-size: 18px;
+}
+
+.host-avatar-wrapper {
+  width: 24px;      
+  height: 24px;
+  border-radius: 50%;
+  position: relative; 
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-right: 8px; 
+  background-color: #EBEBEB;
+}
+
+.avatar-placeholder.small {
+  width: 100%;
+  height: 100%;
+  background-color: #222;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px; 
+  font-weight: 600;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+
+.host-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1; 
+}
+
+
+.nav-content {
+  display: flex;
+  align-items: center; 
+  color: #717171;
+}
+
+.host-name-text {
+  font-size: 14px;
+  color: #222;
+  font-weight: 500;
 }
