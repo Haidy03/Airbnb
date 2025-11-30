@@ -39,6 +39,8 @@ namespace Airbnb.API.Models
         public DbSet<ServiceCategory> ServiceCategories { get; set; }
         public DbSet<ServiceImage> ServiceImages { get; set; }
 
+        public DbSet<ServiceQualification> ServiceQualifications { get; set; }
+        public DbSet<ServicePackage> ServicePackages { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

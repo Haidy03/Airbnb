@@ -60,5 +60,11 @@ namespace Airbnb.API.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public double AverageRating { get; set; } // Cached rating
         public int ReviewCount { get; set; }
+
+        public string? CancellationPolicy { get; set; }
+        public string? GuestRequirements { get; set; }
+
+        public virtual ICollection<ServiceQualification> Qualifications { get; set; } = new List<ServiceQualification>();
+        public virtual ICollection<ServicePackage> Packages { get; set; } = new List<ServicePackage>();
     }
 }

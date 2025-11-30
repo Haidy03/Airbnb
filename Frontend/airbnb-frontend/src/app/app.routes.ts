@@ -172,6 +172,11 @@ export const routes: Routes = [
         .then(m => m.CreateExperienceComponent),
       title: 'Edit Experience - Host'
     },
+    {
+        path: 'services/create',
+        loadComponent: () => import('./features/services/components/create-service/create-service').then(m => m.CreateService).catch(() => NotFoundComponent), 
+        title: 'Create Service - Host'
+      },
       // {
       //   path: 'properties/:id',
       //   component: PropertyDetailsComponent

@@ -1,37 +1,58 @@
-/* Hero Banner Styling */
-.hero-banner {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-}
-
-/* Host Avatar Overlap Logic */
-.host-avatar-container {
-  bottom: -40px; /* يسحب الصورة للأسفل لتتداخل مع البانر */
+/* 1. Host Avatar Overlap */
+.host-avatar-wrapper {
+  bottom: -50px; /* يسحب الصورة لأسفل لتتداخل مع الغلاف */
   z-index: 10;
 }
 
-/* Line Clamp for Text truncation */
-.line-clamp-2 {
+/* 2. Package Cards Styling */
+.package-card {
+  transition: all 0.2s ease;
+  background-color: #fff;
+  border: 1px solid #e0e0e0 !important;
+}
+
+.package-card:hover {
+  border-color: #222 !important; /* لون غامق عند الهوفر */
+  transform: scale(1.01);
+}
+
+.selected-package {
+  border: 2px solid #222 !important; /* إطار سميك عند الاختيار */
+  background-color: #f8f9fa; /* خلفية فاتحة جداً */
+}
+
+/* 3. Gallery Hover Effect */
+.hover-zoom {
+  transition: transform 0.4s ease;
+}
+.hover-zoom:hover {
+  transform: scale(1.05);
+}
+
+/* 4. Utilities */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.line-clamp-3 {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Icons */
-.bi-share, .bi-heart {
-  font-size: 1.2rem;
+.btn-danger:disabled {
+  background-color: #ddd !important;
+  border-color: #ddd !important;
+  color: #888;
 }
 
-/* Specific Airbnb-like Button */
-.btn-danger {
-  transition: transform 0.2s;
-}
-.btn-danger:hover {
-  background-color: #D90B50 !important;
-  transform: scale(1.02);
+/* Animation */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
 }
 
-/* Custom Scrollbar hide if needed */
-::-webkit-scrollbar {
-  width: 8px;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
