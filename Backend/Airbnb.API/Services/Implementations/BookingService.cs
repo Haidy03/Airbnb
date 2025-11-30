@@ -10,6 +10,8 @@ namespace Airbnb.API.Services.Implementations
     {
         private readonly IBookingRepository _bookingRepository;
         private readonly IPropertyRepository _propertyRepository;
+        private readonly IExperienceRepository _experienceRepository;
+        private readonly IReviewRepository _reviewRepository;
         private readonly ILogger<BookingService> _logger;
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
@@ -17,12 +19,16 @@ namespace Airbnb.API.Services.Implementations
         public BookingService(
             IBookingRepository bookingRepository,
             IPropertyRepository propertyRepository,
+            IExperienceRepository experienceRepository,
+            IReviewRepository reviewRepository,
             IEmailService emailService,
             IMapper mapper,
             ILogger<BookingService> logger)
         {
             _bookingRepository = bookingRepository;
             _propertyRepository = propertyRepository;
+            _experienceRepository = experienceRepository;
+            _reviewRepository = reviewRepository;
             _emailService = emailService;
             _mapper = mapper;
             _logger = logger;
@@ -108,11 +114,87 @@ namespace Airbnb.API.Services.Implementations
             return MapToResponseDto(completeBooking);
         }
 
-        public async Task<IEnumerable<BookingResponseDto>> GetGuestBookingsAsync(string guestId)
+        public async Task<List<TripDto>> GetGuestBookingsAsync(string guestId)
         {
-            var bookings = await _bookingRepository.GetByGuestIdAsync(guestId);
-            return bookings.Select(MapToResponseDto).ToList();
+            var allTrips = new List<TripDto>();
+
+            // -------------------------------------------------------
+            // 1. جلب حجوزات الشقق (Properties)
+            // -------------------------------------------------------
+            var propertyBookings = await _bookingRepository.GetBookingsByGuestIdAsync(guestId);
+
+            foreach (var b in propertyBookings)
+            {
+                // ✅ التحقق: هل قام الضيف بتقييم هذا الحجز مسبقاً؟
+                bool hasReview = await _reviewRepository.ReviewExistsForBookingAsync(b.Id);
+
+                // ✅ الشرط: الحالة Completed + لم يتم التقييم من قبل
+                bool canReview = b.Status == BookingStatus.Completed && !hasReview;
+
+                allTrips.Add(new TripDto
+                {
+                    Id = b.Id,
+                    Type = "Property", // ✅ تحديد النوع
+                    Title = b.Property.Title,
+                    // التعامل الآمن مع الصور
+                    ImageUrl = b.Property.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                               ?? b.Property.Images.FirstOrDefault()?.ImageUrl,
+                    HostName = $"{b.Property.Host.FirstName} {b.Property.Host.LastName}",
+                    CheckInDate = b.CheckInDate,
+                    CheckOutDate = b.CheckOutDate,
+                    TotalPrice = b.TotalPrice,
+                    Status = b.Status.ToString(),
+
+                    // ✅ إعدادات التقييم
+                    IsReviewed = hasReview,
+                    CanReview = canReview
+                });
+            }
+
+            // -------------------------------------------------------
+            // 2. جلب حجوزات التجارب (Experiences)
+            // -------------------------------------------------------
+            // تأكدي أن GetBookingsByGuestIdAsync موجودة في IExperienceRepository
+            var experienceBookings = await _experienceRepository.GetBookingsByGuestIdAsync(guestId);
+
+            foreach (var eb in experienceBookings)
+            {
+                // ✅ التحقق: هل قام الضيف بتقييم هذه التجربة لهذا الحجز؟
+                // تأكدي أن ReviewExistsAsync في ExperienceRepository تأخذ bookingId أو experienceId+userId
+                // هنا نفترض أنها تأخذ bookingId
+                bool hasExpReview = await _experienceRepository.ReviewExistsAsync(eb.Id);
+
+                // ✅ الشرط: الحالة Completed + لم يتم التقييم
+                bool canExpReview = eb.Status == ExperienceBookingStatus.Completed && !hasExpReview;
+
+                allTrips.Add(new TripDto
+                {
+                    Id = eb.Id,
+                    Type = "Experience", // ✅ تحديد النوع
+                    Title = eb.Experience.Title,
+                    ImageUrl = eb.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                               ?? eb.Experience.Images.FirstOrDefault()?.ImageUrl,
+                    HostName = "Experience Host", // يفضل جلب الاسم من Includes في الـ Repository
+                    CheckInDate = eb.Availability.Date,
+                    CheckOutDate = eb.Availability.Date, // التجارب يوم واحد عادةً
+                    TotalPrice = eb.TotalPrice,
+                    Status = eb.Status.ToString(),
+
+                    // ✅ إعدادات التقييم
+                    IsReviewed = hasExpReview,
+                    CanReview = canExpReview
+                });
+            }
+
+            // 3. ترتيب الكل حسب التاريخ (الأحدث أولاً)
+            return allTrips.OrderByDescending(t => t.CheckInDate).ToList();
         }
+
+        //public async Task<IEnumerable<BookingResponseDto>> GetGuestBookingsAsync(string guestId)
+        //{
+        //    var bookings = await _bookingRepository.GetByGuestIdAsync(guestId);
+        //    return bookings.Select(MapToResponseDto).ToList();
+        //}
 
         // ==========================================
         // HOST METHODS (EXISTING)

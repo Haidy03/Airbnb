@@ -1,15 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReviewService } from '../../services/review.service';
 import { PropertyReviewsSummary } from '../../models/review.model';
 import { ReviewCardComponent } from '../../components/review-card/review-card.component';
 import { ReviewSummaryComponent } from '../../components/review-summary/review-summary';
+import { HeaderComponent } from '../../../guest/components/header/header'; // تأكدي من المسار
 
 @Component({
   selector: 'app-property-reviews',
   standalone: true,
-  imports: [CommonModule, ReviewCardComponent, ReviewSummaryComponent],
+  imports: [CommonModule, RouterModule, ReviewCardComponent, ReviewSummaryComponent, HeaderComponent],
   templateUrl: './property-reviews.html',
   styleUrl: './property-reviews.css',
 })
@@ -19,32 +20,31 @@ export class PropertyReviews implements OnInit {
   loading = false;
   errorMessage = '';
   
-  currentPage = 1;
-  pageSize = 10;
-  hasMoreReviews = false;
+  currentUserId: string | null = null;
 
   constructor(
     private reviewService: ReviewService,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.currentUserId = localStorage.getItem('userId');
+  }
 
   ngOnInit(): void {
     this.propertyId = +this.route.snapshot.paramMap.get('propertyId')!;
     this.loadReviews();
   }
 
-  loadReviews(page: number = 1): void {
+  loadReviews(): void {
     this.loading = true;
     this.errorMessage = '';
-    this.currentPage = page;
 
-    this.reviewService.getPropertyReviews(this.propertyId, page, this.pageSize).subscribe({
-      next: (data) => {
-        this.reviewsSummary = data;
-        
-        // Check if there are more reviews
-        this.hasMoreReviews = data.reviews.length === this.pageSize;
-        
+    // ملاحظة: نفترض هنا جلب كل الريفيوهات في صفحة واحدة أو استخدام Pagination
+    // لتبسيط الكود وتوحيده مع التجارب، سنعرض البيانات مباشرة
+    this.reviewService.getPropertyReviews(this.propertyId, 1, 100).subscribe({
+      next: (data: any) => {
+        // التعامل مع هيكل البيانات سواء مباشر أو داخل data
+        this.reviewsSummary = data.data || data;
         this.loading = false;
       },
       error: (error) => {
@@ -54,19 +54,25 @@ export class PropertyReviews implements OnInit {
     });
   }
 
-  loadMore(): void {
-    this.loadReviews(this.currentPage + 1);
+  isReviewOwner(reviewerId: string): boolean {
+    const userRole = localStorage.getItem('userRole');
+    return this.currentUserId === reviewerId || userRole === 'Admin';
   }
 
-  goToPreviousPage(): void {
-    if (this.currentPage > 1) {
-      this.loadReviews(this.currentPage - 1);
+  deleteReview(id: number): void {
+    if (confirm('Are you sure you want to delete this review?')) {
+      this.reviewService.deleteReview(id).subscribe({
+        next: () => {
+          this.loadReviews(); // Refresh
+        },
+        error: (error) => {
+          alert(error.error?.message || 'Failed to delete review');
+        }
+      });
     }
   }
 
-  goToNextPage(): void {
-    if (this.hasMoreReviews) {
-      this.loadReviews(this.currentPage + 1);
-    }
+  editReview(id: number): void {
+    this.router.navigate(['/reviews/edit', id]);
   }
 }

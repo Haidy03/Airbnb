@@ -79,6 +79,11 @@
 
       <!-- Property Info -->
       <div class="property-header">
+        <div style="height: 160px; overflow: hidden; border-radius: 8px; margin-bottom: 12px; background: #f0f0f0;">
+            <img [src]="getImageUrl(property.images && property.images[0]?.imageUrl)" 
+                 style="width: 100%; height: 100%; object-fit: cover;"
+                 alt="Property Image">
+        </div>
         <h3 class="property-title">{{ property.title }}</h3>
         <p class="property-location">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -93,7 +98,7 @@
       <div class="property-stats">
         <div class="stat-item">
           <span class="stat-label">Price/Night:</span>
-          <span class="stat-value price">{{ formatCurrency(property.pricePerNight) }}</span>
+          <span class="stat-value price"><span>EGP</span>{{ property.pricePerNight }}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Bookings:</span>
@@ -101,7 +106,7 @@
         </div>
         <div class="stat-item">
           <span class="stat-label">Revenue:</span>
-          <span class="stat-value">{{ formatCurrency(property.totalRevenue) }}</span>
+          <span class="stat-value"><span>EGP</span>{{ property.totalRevenue }}</span>
         </div>
         <div class="stat-item" *ngIf="property.averageRating">
           <span class="stat-label">Rating:</span>
@@ -209,21 +214,6 @@
       <p>Try adjusting your filters or search terms</p>
     </div>
 
-    <!-- Pagination -->
-    <div class="pagination" *ngIf="properties().length > 0">
-      <button 
-        class="page-btn"
-        [disabled]="pageNumber() === 1"
-        (click)="previousPage()">
-        ← Previous
-      </button>
-      <span class="page-info">Page {{ pageNumber() }}</span>
-      <button 
-        class="page-btn"
-        (click)="nextPage()">
-        Next →
-      </button>
-    </div>
   </div>
 
   <!-- Approve Modal -->
@@ -238,7 +228,7 @@
         <div class="property-preview">
           <h3>{{ selectedProperty()?.title }}</h3>
           <p>{{ selectedProperty()?.location }}</p>
-          <p class="price">{{ formatCurrency(selectedProperty()?.pricePerNight || 0) }}/night</p>
+          <p class="price"><span>EGP</span>{{selectedProperty()?.pricePerNight || 0 }}/night</p>
         </div>
         <p>This property will become visible to guests and available for booking.</p>
       </div>

@@ -51,11 +51,10 @@ namespace Airbnb.API.Services.Implementations
             }
 
             // Use repository to check existing review
-            var existingReview = await _reviewRepository.GetReviewByBookingAsync(
-                dto.BookingId, userId, reviewType);
+            var existingReview = await _reviewRepository.ReviewExistsForBookingAsync(dto.BookingId);
+            if (existingReview)
+                throw new InvalidOperationException("You have already reviewed this trip.");
 
-            if (existingReview != null)
-                throw new Exception("You have already reviewed this booking");
 
             var review = new Review
             {

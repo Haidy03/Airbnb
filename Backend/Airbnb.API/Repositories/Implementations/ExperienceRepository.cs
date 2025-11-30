@@ -55,6 +55,7 @@ namespace Airbnb.API.Repositories.Implementations
                 .Include(e => e.Images)
                 .Include(e=> e.Host)
                 .Include(e => e.Reviews)
+                .Include(e => e.Bookings)
                 .Where(e => e.HostId == hostId)
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();

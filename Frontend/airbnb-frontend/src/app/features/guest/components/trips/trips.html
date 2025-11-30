@@ -1,4 +1,3 @@
-<app-header></app-header>
 
 <div class="min-vh-100 bg-white" style="padding-top: 80px;">
 
@@ -46,7 +45,7 @@
         
         <!-- Image -->
         <div class="trip-image">
-          <img [src]="trip.propertyImage || trip.experienceImage || 'assets/images/placeholder.jpg'" alt="Property">
+          <img [src]="getImageUrl(trip.imageUrl || trip.propertyImage || trip.experienceImage)" alt="Property">
           
           <!-- Status Badge Overlay -->
           <div class="status-overlay">
@@ -85,9 +84,9 @@
             </button>
 
             <!-- 2. Review Button (Only for Past/Completed) -->
-            <button *ngIf="activeTab() === 'past' || trip.status === 'Completed'" 
+            <button *ngIf="trip.canReview" 
                     class="btn-review" 
-                    (click)="openReviewModal(trip.id)">
+                    (click)="openReviewPage(trip)"> <!-- ✅ Changed to navigate -->
               Leave a Review
             </button>
 
@@ -117,37 +116,4 @@
     </div>
 
   </main>
-</div>
-
-<!-- Review Modal -->
-<div class="modal-overlay" *ngIf="showReviewModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Rate your stay</h3>
-      <button class="close-btn" (click)="closeReviewModal()">×</button>
-    </div>
-
-    <div class="modal-body">
-      <p class="modal-desc">How was your experience?</p>
-      <div class="star-rating">
-        <span 
-          *ngFor="let star of [1, 2, 3, 4, 5]" 
-          (click)="setRating(star)"
-          [class.active]="star <= reviewForm.rating"
-          class="star">★</span>
-      </div>
-      <textarea 
-        [(ngModel)]="reviewForm.comment" 
-        class="form-control"
-        placeholder="Share details of your experience..."
-        rows="4"></textarea>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-cancel" (click)="closeReviewModal()">Cancel</button>
-      <button class="btn-submit" (click)="submitReview()" [disabled]="isSubmitting">
-        {{ isSubmitting ? 'Submitting...' : 'Submit' }}
-      </button>
-    </div>
-  </div>
 </div>

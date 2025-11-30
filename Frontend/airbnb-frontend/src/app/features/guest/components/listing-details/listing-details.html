@@ -207,16 +207,45 @@
 
 
  <!-- ================= REVIEWS SECTION ================= -->
-<section class="reviews-full-section" *ngIf="listing?.ratingBreakdown && (listing?.reviewsCount || 0) > 0">
+<hr>
 
-  <div class="rating-header">
-    <span class="fa fa-solid fa-star">★</span>
-    <span class="rating">{{ listing?.rating | number:'1.2-2' }}</span>
-    <span class="dot">·</span>
-    <span class="reviews-count">{{ listing?.reviewsCount }} reviews</span>
-  </div>
-   <hr>
-</section>
+  <!-- ================= REVIEWS SECTION ================= -->
+  <section class="reviews-full-section" *ngIf="reviews && reviews.length > 0">
+    
+    <!-- 1. Header (Overall Rating & Count) -->
+    <div class="rating-header">
+      <i class="fa-solid fa-star"></i>
+      <span class="rating-number">{{ listing?.rating | number:'1.1-1' }}</span>
+      <span class="dot">·</span>
+      <span class="reviews-count">{{ listing?.reviewsCount || reviews.length }} reviews</span>
+    </div>
+
+    
+
+    <!-- 3. Reviews List (Grid) -->
+    <div class="reviews-grid">
+        <div *ngFor="let review of reviews.slice(0, 6)" class="review-card">
+          <div class="reviewer-header">
+            <img [src]="getImageUrl(review.reviewerProfileImage)" 
+                 class="reviewer-img" 
+                 alt="User Avatar">
+            <div class="reviewer-info">
+              <span class="reviewer-name">{{ review.reviewerName }}</span>
+              <span class="review-date">{{ review.createdAt | date:'mediumDate' }}</span>
+            </div>
+          </div>
+          <p class="review-text">{{ review.comment }}</p>
+        </div>
+    </div>
+
+    <!-- 4. Show All Button -->
+    <div class="show-all-container">
+      <a [routerLink]="['/reviews/property', listing?.id]" class="outline-btn">
+        Show all reviews
+      </a>
+    </div>
+    
+  </section>
 
  <!-- --- HOSTS SECTION --- -->
 <section class="section hosts-section" *ngIf="listing?.host">

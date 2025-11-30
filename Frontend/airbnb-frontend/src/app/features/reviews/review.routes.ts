@@ -19,6 +19,10 @@ export const reviewRoutes: Routes = [
       import('./components/my-reviews/my-reviews').then(m => m.MyReviews)
   },
   {
+    path: 'experience/:id',
+    loadComponent: () => import('./components/experience-review/experience-reviews.component/experience-reviews.component').then(m => m.ExperienceReviewsComponent)
+  },
+  {
     path: 'property/:propertyId',
     loadComponent: () => 
       import('./components/property-reviews/property-reviews').then(m => m.PropertyReviews)

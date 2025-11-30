@@ -29,5 +29,7 @@ namespace Airbnb.API.Repositories.Interfaces
         // Complex queries
         Task<IEnumerable<Review>> GetReviewsWithUserInfoAsync(int propertyId, int page = 1, int pageSize = 10);
         Task<IEnumerable<Review>> GetUserReviewsAsync(string userId);
+        Task<bool> ReviewExistsForBookingAsync(int bookingId);
+
     }
 }

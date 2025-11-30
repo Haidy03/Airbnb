@@ -6,7 +6,8 @@ namespace Airbnb.API.Services.Interfaces
     {
         // --- Guest Methods (NEW) ---
         Task<BookingResponseDto> CreateBookingAsync(string guestId, CreateBookingDto createDto);
-        Task<IEnumerable<BookingResponseDto>> GetGuestBookingsAsync(string guestId);
+        //Task<IEnumerable<BookingResponseDto>> GetGuestBookingsAsync(string guestId);
+        Task<List<TripDto>> GetGuestBookingsAsync(string guestId);
 
         // --- Host Methods (You already had these) ---
         Task<IEnumerable<BookingResponseDto>> GetHostBookingsAsync(string hostId);

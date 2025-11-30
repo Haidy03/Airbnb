@@ -461,6 +461,9 @@ namespace Airbnb.API.Services.Implementations
         private async Task<ExperienceDto> MapToDto(Experience experience)
         {
             if (experience == null) return null;
+            var validBookingsCount = experience.Bookings?
+                .Count(b => b.Status == ExperienceBookingStatus.Confirmed ||
+                            b.Status == ExperienceBookingStatus.Completed) ?? 0;
 
             return new ExperienceDto
             {
@@ -468,6 +471,7 @@ namespace Airbnb.API.Services.Implementations
                 Title = experience.Title ?? "Untitled",
                 Description = experience.Description,
                 HostId = experience.HostId,
+                TotalBookings = validBookingsCount,
 
                 HostName = experience.Host != null
                     ? $"{experience.Host.FirstName} {experience.Host.LastName}"
@@ -496,7 +500,6 @@ namespace Airbnb.API.Services.Implementations
                 CancellationPolicy = experience.CancellationPolicy,
                 AverageRating = experience.AverageRating,
                 TotalReviews = experience.TotalReviews,
-                TotalBookings = experience.Bookings?.Count ?? 0,
 
                 Images = experience.Images?.Select(i => new ExperienceImageDto
                 {

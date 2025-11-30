@@ -1,3 +1,4 @@
+<app-header></app-header>
 <div *ngIf="isLoading()" class="loading-container">
   <div class="spinner"></div>
   <p>Loading experience...</p>
@@ -218,18 +219,24 @@
   <div class="reviews-grid">
     <div *ngFor="let review of reviews()" class="review-card">
       <div class="reviewer-header">
-        <img [src]="review.reviewerAvatar || 'assets/images/user-placeholder.png'" class="reviewer-img">
+        <img [src]="getImageUrl(review.reviewerAvatar)" class="reviewer-img" alt="User Avatar">
         <div class="reviewer-info">
           <span class="reviewer-name">{{ review.reviewerName }}</span>
           <span class="review-date">{{ review.createdAt | date:'mediumDate' }}</span>
         </div>
+  
       </div>
-      
+      <div class="show-all-reviews">
+      <a [routerLink]="['/reviews/experience', experience()?.id]" class="outline-btn">
+      Show all reviews
+    </a>
+  </div>
       <div class="review-rating">
         <span *ngFor="let star of [1,2,3,4,5]" class="star">
           {{ star <= review.rating ? '★' : '☆' }}
         </span>
       </div>
+      
       
       <p class="review-text">{{ review.comment }}</p>
     </div>

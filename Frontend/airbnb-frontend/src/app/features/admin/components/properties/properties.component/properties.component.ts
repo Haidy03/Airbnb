@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../serevices/admin.service';
 import { AdminProperty } from '../../../models/admin.models';
+import { environment } from '../../../../../../environments/environment.development';
 
 @Component({
   selector: 'app-admin-properties',
@@ -192,6 +193,19 @@ export class AdminPropertiesComponent implements OnInit {
         this.showNotification('Failed to delete property', 'error');
       }
     });
+  }
+  getImageUrl(url: string | undefined): string {
+    if (!url) return 'assets/images/placeholder-property.jpg';
+    
+    if (url.startsWith('http') || url.includes('assets/')) {
+      return url;
+    }
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    let cleanPath = url;
+    if (!cleanPath.startsWith('/')) {
+        cleanPath = `/${cleanPath}`;
+    }
+    return `${baseUrl}${cleanPath}`;
   }
 
   getStatusBadgeClass(status: string): string {

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ReviewService } from '../../services/review.service';
 import { ReviewResponse } from '../../models/review.model';
 import { ReviewCardComponent } from '../../components/review-card/review-card.component';
@@ -8,7 +8,7 @@ import { ReviewCardComponent } from '../../components/review-card/review-card.co
 @Component({
   selector: 'app-my-reviews',
   standalone: true,
-  imports: [CommonModule, ReviewCardComponent],
+  imports: [CommonModule, ReviewCardComponent, RouterModule],
   templateUrl: './my-reviews.html',
   styleUrl: './my-reviews.css',
 })

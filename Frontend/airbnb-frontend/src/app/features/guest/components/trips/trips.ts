@@ -1,134 +1,12 @@
-/* import { Component, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router'; // ✅ مهم عشان routerLink يشتغل
-import { HeaderComponent } from '../header/header';
-import { FormsModule } from '@angular/forms';
-import { ExperienceService } from '../../../../../app/shared/Services/experience.service';
-@Component({
-  selector: 'app-trips',
-  standalone: true,
-  imports: [CommonModule,FormsModule, RouterModule, HeaderComponent],
-  templateUrl: './trips.html',
-  styleUrls: ['./trips.css']
-})
-export class TripsComponent implements OnInit {
-  activeTab: 'upcoming' | 'past' | 'cancelled' = 'upcoming';
-  trips = signal<any[]>([]);
-  loading = signal(true);
-  showReviewModal = false;
-  isSubmitting = false;
-  selectedBookingId: number | null = null;
-  reviewForm = {
-    rating: 0,
-    comment: ''
-  };
-  filteredTrips = computed(() => {
-    const allTrips = this.trips();
-    const tab = this.activeTab;
-    const now = new Date();
-    return allTrips.filter((trip: any) => {
-      console.log('Trip Status:', trip.status, 'Normalized:', trip.status?.toLowerCase().trim());
-      const tripDate = new Date(trip.date); 
-      const status = trip.status?.toLowerCase() || ''; 
-      if (tab === 'cancelled') {
-        return status === 'cancelled' || status === 'rejected' || status === 'declined';
-      }
-      if (tab === 'past') {
-        return status === 'completed' || (tripDate < now && status !== 'cancelled' && status !== 'rejected');
-      }
-      if (tab === 'upcoming') {
-        return tripDate >= now && status !== 'completed' && status !== 'cancelled' && status !== 'rejected';
-      }
-      return false;
-    });
-  });
-
-  constructor(private experienceService: ExperienceService) {} 
-
-  ngOnInit(): void {
-    this.loadTrips(); 
-  }
-
-  loadTrips(): void {
-    this.experienceService.getMyBookings().subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          this.trips.set(res.data);
-        }
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error(err);
-        this.loading.set(false);
-      }
-    });
-  }
-
-
-  setActiveTab(tab: 'upcoming' | 'past' | 'cancelled') {
-    this.activeTab = tab;
-  }
-
-  openReviewModal(bookingId: number): void {
-    this.selectedBookingId = bookingId;
-    this.reviewForm = { rating: 0, comment: '' }; // Reset form
-    this.showReviewModal = true;
-  }
-
-  // ✅ NEW: إغلاق النافذة
-  closeReviewModal(): void {
-    this.showReviewModal = false;
-    this.selectedBookingId = null;
-  }
-
-  // ✅ NEW: تحديد النجوم
-  setRating(stars: number): void {
-    this.reviewForm.rating = stars;
-  }
-
-  // ✅ NEW: إرسال التقييم
-  submitReview(): void {
-    if (!this.selectedBookingId || this.reviewForm.rating === 0) {
-      alert('Please select a star rating.');
-      return;
-    }
-
-    this.isSubmitting = true;
-
-    const dto = {
-      bookingId: this.selectedBookingId,
-      rating: this.reviewForm.rating,
-      comment: this.reviewForm.comment
-    };
-
-    this.experienceService.addReview(dto).subscribe({
-      next: (res) => {
-        if (res.success) {
-          alert('Thank you for your review!');
-          this.closeReviewModal();
-          this.loadTrips(); // Reload to update status if needed
-        }
-        this.isSubmitting = false;
-      },
-      error: (err) => {
-        console.error(err);
-        alert(err.error?.message || 'Failed to submit review');
-        this.isSubmitting = false;
-      }
-    });
-  }
-}
- */
-
-
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http'; // ✅ للاتصال بالدفع
 import { HeaderComponent } from '../header/header';
 import { GuestBookingService } from '../../services/booking.service'; // أو ExperienceService حسب استخدامك
 import { environment } from '../../../../../environments/environment';
+import { ExperienceService } from '../../../../shared/Services/experience.service';
 
 @Component({
   selector: 'app-trips',
@@ -140,6 +18,9 @@ import { environment } from '../../../../../environments/environment';
 export class TripsComponent implements OnInit {
   private http = inject(HttpClient);
   private bookingService = inject(GuestBookingService);
+  private experienceService = inject(ExperienceService);
+  private router = inject(Router); 
+
 
   // State Signals
   activeTab = signal<'upcoming' | 'past' | 'cancelled'>('upcoming');
@@ -148,10 +29,11 @@ export class TripsComponent implements OnInit {
   isProcessingPayment = signal(false); // لمنع النقر المتكرر على زر الدفع
 
   // Review Modal State
-  showReviewModal = false;
+  /* showReviewModal = false;
   isSubmitting = false;
+  selectedTrip: { id: number, type: 'Property' | 'Experience' } | null = null;
   selectedBookingId: number | null = null;
-  reviewForm = { rating: 0, comment: '' };
+  reviewForm = { rating: 0, comment: '' }; */
 
   // ✅ Filter Logic (Updated)
   filteredTrips = computed(() => {
@@ -239,35 +121,25 @@ export class TripsComponent implements OnInit {
   // ==========================================
   // Review Logic
   // ==========================================
-  openReviewModal(bookingId: number): void {
-    this.selectedBookingId = bookingId;
-    this.reviewForm = { rating: 0, comment: '' }; 
-    this.showReviewModal = true;
+
+  openReviewPage(trip: any): void {
+    // التوجيه لصفحة الريفيو مع تمرير الـ ID والنوع
+    // المسار سيكون: /reviews/add/:bookingId?type=Property
+    this.router.navigate(['/reviews/add', trip.id], {
+      queryParams: { type: trip.type } // 'Property' or 'Experience'
+    });
   }
-
-  closeReviewModal(): void {
-    this.showReviewModal = false;
-    this.selectedBookingId = null;
-  }
-
-  setRating(stars: number): void {
-    this.reviewForm.rating = stars;
-  }
-
-  submitReview(): void {
-    if (!this.selectedBookingId || this.reviewForm.rating === 0) {
-      alert('Please select a star rating.');
-      return;
-    }
-
-    this.isSubmitting = true;
-    // استدعاء سيرفس التقييم (عدليها حسب السيرفس الموجودة عندك)
-    console.log('Submitting review...', this.reviewForm);
-    
-    setTimeout(() => {
-        alert('Review submitted!');
-        this.closeReviewModal();
-        this.isSubmitting = false;
-    }, 1000);
+  getImageUrl(url: string): string {
+      if(!url) return 'assets/images/placeholder.jpg';
+      
+      // If external or assets, return as is
+      if(url.startsWith('http') || url.includes('assets/')) return url;
+      
+      // If relative path from API, prepend base URL
+      const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+      let cleanPath = url;
+      if (!cleanPath.startsWith('/')) cleanPath = `/${cleanPath}`;
+      
+      return `${baseUrl}${cleanPath}`;
   }
 }
