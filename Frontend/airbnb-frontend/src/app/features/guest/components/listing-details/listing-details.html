@@ -47,8 +47,14 @@
           <p>{{ listing?.maxGuests }} Guests · {{ listing?.numberOfBedrooms }} beds · {{ listing?.numberOfBathrooms }} bath</p>
         </div>
         <div class="host-avatar">
-          <!-- استخدام ?. مع host لضمان عدم حدوث خطأ -->
-          <img [src]="listing?.host?.profileImageUrl" alt="Host" onerror="this.src='assets/images/user-placeholder.png'">
+        <img 
+        *ngIf="listing?.host?.profileImageUrl" 
+        [src]="listing?.host?.profileImageUrl" 
+        alt="Host" 
+        (error)="handleHostImageError()"> 
+        <div *ngIf="!listing?.host?.profileImageUrl" class="avatar-placeholder">
+          {{ getHostInitial() }}
+        </div>
         </div>
       </section>
       <hr>
@@ -221,12 +227,16 @@
     <div class="host-info-card">
         <div class="profile-summary">
             <div class="image-wrapper">
-                <img
-                    [src]="listing?.host?.profileImageUrl"
-                    alt="{{ listing?.host?.firstName }} profile"
-                    class="host-profile-img"
-                    onerror="this.src='assets/images/user-placeholder.png'"
-                >
+               <img 
+                *ngIf="listing?.host?.profileImageUrl"
+                [src]="listing?.host?.profileImageUrl"
+                alt="{{ listing?.host?.firstName }} profile"
+                class="host-profile-img"
+                (error)="handleHostImageError()">
+
+            <div *ngIf="!listing?.host?.profileImageUrl" class="avatar-placeholder large">
+                {{ getHostInitial() }}
+            </div>
             </div>
 
             <div class="text-info">
