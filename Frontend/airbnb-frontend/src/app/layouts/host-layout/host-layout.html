@@ -45,12 +45,9 @@
           <!-- Clicking the IMAGE specifically navigates to profile -->
           <div class="user-avatar" (click)="viewProfileClick($event)" title="Go to Profile">
             @if (user(); as currentUser) {
-              <!-- 1. الـ Placeholder يظهر دائماً كخلفية -->
               <div class="avatar-placeholder">
                 {{ currentUser.firstName?.charAt(0) | uppercase }}
               </div>
-
-              <!-- 2. الصورة تظهر فوقه، وإذا فشلت تختفي -->
               @if (currentUser.profilePicture) {
                 <img [src]="currentUser.profilePicture" 
                     [alt]="currentUser.firstName"
@@ -118,8 +115,8 @@
 
       <!-- Additional Links -->
       <div class="mobile-links">
-        <a [routerLink]="['/host/settings']" (click)="toggleMobileMenu()" class="mobile-link">Account settings</a>
-        <a [routerLink]="['/help']" (click)="toggleMobileMenu()" class="mobile-link">Help Center</a>
+        <a [routerLink]="['/account-settings']" (click)="toggleMobileMenu()" class="mobile-link">Account settings</a>
+        <a [routerLink]="['/']" (click)="toggleMobileMenu()" class="mobile-link">Help Center</a>
         <a [routerLink]="['/']" (click)="toggleMobileMenu()" class="mobile-link">Switch to traveling</a>
         <button (click)="logout()" class="mobile-link logout">Log out</button>
       </div>
