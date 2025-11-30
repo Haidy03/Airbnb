@@ -41,12 +41,14 @@
     <!-- Safety Checkboxes -->
     <div class="safety-form">
       <div class="safety-items">
+
         <!-- Exterior Camera -->
         <div class="safety-item">
-          <label class="checkbox-label" (click)="toggleSafety('exteriorCamera')">
+          <label class="checkbox-label">
             <input
               type="checkbox"
               [checked]="isSafetyChecked('exteriorCamera')"
+              (change)="toggleSafety('exteriorCamera', $event)"
               class="checkbox-input">
             <span class="checkbox-custom"></span>
             <span class="label-text">Exterior security camera present</span>
@@ -55,10 +57,11 @@
 
         <!-- Noise Monitor -->
         <div class="safety-item">
-          <label class="checkbox-label" (click)="toggleSafety('noiseMonitor')">
+          <label class="checkbox-label">
             <input
               type="checkbox"
               [checked]="isSafetyChecked('noiseMonitor')"
+              (change)="toggleSafety('noiseMonitor', $event)"
               class="checkbox-input">
             <span class="checkbox-custom"></span>
             <span class="label-text">Noise decibel monitor present</span>
@@ -67,16 +70,17 @@
 
         <!-- Weapons -->
         <div class="safety-item">
-          <label class="checkbox-label" (click)="toggleSafety('weapons')">
+          <label class="checkbox-label">
             <input
               type="checkbox"
               [checked]="isSafetyChecked('weapons')"
+              (change)="toggleSafety('weapons', $event)"
               class="checkbox-input">
             <span class="checkbox-custom"></span>
             <span class="label-text">Weapon(s) on the property</span>
           </label>
         </div>
-      </div>
+        </div>
 
       <!-- Divider -->
       <div class="divider"></div>

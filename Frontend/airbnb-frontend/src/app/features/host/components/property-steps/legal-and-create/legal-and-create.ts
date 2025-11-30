@@ -28,6 +28,7 @@ export class legalandcreateComponent implements OnInit {
 
   ngOnInit(): void {
     this.getCurrentDraft();
+    console.log('🟢 Component Initialized');
   }
 
   private getCurrentDraft(): void {
@@ -40,36 +41,66 @@ export class legalandcreateComponent implements OnInit {
           
           // Load safety details if they exist
           if (draft.safetyDetails) {
+            console.log('📦 Loading Safety Details from Draft:', draft.safetyDetails);
             this.exteriorCamera.set(draft.safetyDetails.exteriorCamera || false);
             this.noiseMonitor.set(draft.safetyDetails.noiseMonitor || false);
             this.weapons.set(draft.safetyDetails.weapons || false);
+          } else {
+            console.log('⚠️ No safetyDetails found in draft');
           }
+          
+          // Debug: Show current state
+          console.log('✅ Current State:', {
+            exteriorCamera: this.exteriorCamera(),
+            noiseMonitor: this.noiseMonitor(),
+            weapons: this.weapons()
+          });
           
           console.log('✅ Draft loaded:', draft);
         },
         error: (error) => {
-          console.error('Error loading draft:', error);
+          console.error('❌ Error loading draft:', error);
           this.router.navigate(['/host/properties']);
         }
       });
     } else {
-      console.error('No draft ID found');
+      console.error('❌ No draft ID found');
       this.router.navigate(['/host/properties/intro']);
     }
   }
 
-  toggleSafety(item: 'exteriorCamera' | 'noiseMonitor' | 'weapons'): void {
+  toggleSafety(item: 'exteriorCamera' | 'noiseMonitor' | 'weapons', event?: Event): void {
+    // Prevent double-firing
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    console.log(`🔄 Toggling ${item}`);
+    
     switch (item) {
       case 'exteriorCamera':
-        this.exteriorCamera.set(!this.exteriorCamera());
+        const newCameraValue = !this.exteriorCamera();
+        this.exteriorCamera.set(newCameraValue);
+        console.log(`✅ Exterior Camera: ${this.exteriorCamera()}`);
         break;
       case 'noiseMonitor':
-        this.noiseMonitor.set(!this.noiseMonitor());
+        const newNoiseValue = !this.noiseMonitor();
+        this.noiseMonitor.set(newNoiseValue);
+        console.log(`✅ Noise Monitor: ${this.noiseMonitor()}`);
         break;
       case 'weapons':
-        this.weapons.set(!this.weapons());
+        const newWeaponsValue = !this.weapons();
+        this.weapons.set(newWeaponsValue);
+        console.log(`✅ Weapons: ${this.weapons()}`);
         break;
     }
+
+    // Show all current values after toggle
+    console.log('📊 Current Values After Toggle:', {
+      exteriorCamera: this.exteriorCamera(),
+      noiseMonitor: this.noiseMonitor(),
+      weapons: this.weapons()
+    });
   }
 
   isSafetyChecked(item: 'exteriorCamera' | 'noiseMonitor' | 'weapons'): boolean {
@@ -88,35 +119,39 @@ export class legalandcreateComponent implements OnInit {
   }
 
   private getSafetyPayload() {
-    return{
-      // نرسل الأسماء مطابقة تماماً لـ UpdatePropertyDto في الباك
+    const payload = {
       hasExteriorCamera: this.exteriorCamera(),
       hasNoiseMonitor: this.noiseMonitor(),
       hasWeapons: this.weapons()
     };
+    
+    console.log('📤 Safety Payload Created:', payload);
+    return payload;
   }
 
   exit(): void {
     if (!confirm('Exit? Make sure to publish your listing later.')) return;
 
+    console.log('🚪 Exiting and saving...');
     this.isLoading.set(true);
 
     if (this.currentDraftId) {
-      // ✅ نستخدم الدالة المساعدة لإرسال البيانات مسطحة
       const payload = this.getSafetyPayload();
       
-      console.log('📤 Sending Safety Payload:', payload); // للتأكد في الـ Console
+      console.log('📤 Sending Safety Payload to Backend:', payload);
 
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
         payload, 
         'safety-details'
       ).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('✅ Save Successful! Response:', response);
           this.isLoading.set(false);
           this.router.navigate(['/host/properties']);
         },
         error: (error) => {
+          console.error('❌ Save Failed:', error);
           this.isLoading.set(false);
           alert('Failed to save: ' + error.message);
         }
@@ -131,29 +166,33 @@ export class legalandcreateComponent implements OnInit {
   }
 
   createListing(): void {
+    console.log('🚀 Creating Listing...');
     this.isLoading.set(true);
 
     if (this.currentDraftId) {
-      // ✅ نستخدم نفس الدالة المساعدة هنا أيضاً
       const payload = this.getSafetyPayload();
 
-      console.log('📤 Creating Listing with Safety:', payload);
+      console.log('📤 Creating Listing with Safety Details:', payload);
 
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
         payload,
         'safety-details'
       ).subscribe({
-        next: () => {
-          // Publish logic...
+        next: (updateResponse) => {
+          console.log('✅ Step Update Successful:', updateResponse);
+          
+          // Now publish
           this.propertyService.publishProperty(this.currentDraftId!).subscribe({
-            next: () => {
+            next: (publishResponse) => {
+              console.log('✅ Property Published Successfully:', publishResponse);
               this.isLoading.set(false);
               this.clearAllLocalStorage();
               alert('✅ Your listing has been published successfully!');
               this.router.navigate(['/host/properties']);
             },
             error: (error) => {
+              console.error('❌ Publish Failed:', error);
               this.isLoading.set(false);
               alert('Property saved but not yet published. ' + error.message);
               this.router.navigate(['/host/properties']);
@@ -161,6 +200,7 @@ export class legalandcreateComponent implements OnInit {
           });
         },
         error: (error) => {
+          console.error('❌ Update Failed:', error);
           this.isLoading.set(false);
           alert('Failed to save: ' + error.message);
         }
@@ -170,9 +210,6 @@ export class legalandcreateComponent implements OnInit {
     }
   }
 
-  /**
-   * ✅ Clear ALL localStorage after publish
-   */
   private clearAllLocalStorage(): void {
     const keysToRemove = [
       'currentDraftId',
