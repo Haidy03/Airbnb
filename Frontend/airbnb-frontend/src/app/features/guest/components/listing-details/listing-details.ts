@@ -78,6 +78,15 @@ export class ListingDetails implements OnInit {
     });
   }
 
+  getHostInitial(): string {
+    return this.listing?.host?.firstName?.charAt(0).toUpperCase() || 'H';
+  }
+
+  handleHostImageError() {
+    if (this.listing && this.listing.host) {
+      this.listing.host.profileImageUrl = ''; // تفريغ الرابط ليظهر الـ Placeholder
+    }}
+
   fetchListingDetails(id: string): void {
     this.isLoading = true;
     this.listingService.getListingById(id)
