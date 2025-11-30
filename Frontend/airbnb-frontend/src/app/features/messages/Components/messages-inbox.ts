@@ -8,11 +8,12 @@ import { MessageService } from '../Services/message';
 // تأكدي من مسار الاستيراد الصحيح للموديل
 import { Conversation, ConversationParticipant, Message } from '../models/message.model'; 
 import { AuthService } from '../../auth/services/auth.service';
+import { AvatarComponent } from "../../../shared/components/avatar/avatar";
 
 @Component({
   selector: 'app-messages-inbox',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AvatarComponent],
   templateUrl: './messages-inbox.html',
   styleUrls: ['./messages-inbox.css']
 })

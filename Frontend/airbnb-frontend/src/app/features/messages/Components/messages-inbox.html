@@ -39,9 +39,11 @@
            [class.unread]="conv.unreadCount > 0"
            (click)="selectConversation(conv)">
 
-        <div class="avatar-wrapper">
-          <img [src]="getOtherParticipant(conv).avatar || 'assets/images/user-placeholder.png'" alt="User">
-        </div>
+        <app-avatar 
+          [imageUrl]="getOtherParticipant(conv).avatar"
+          [name]="getOtherParticipant(conv).name"
+          [size]="48">
+        </app-avatar>
 
         <div class="card-content">
           <div class="card-top">
@@ -66,6 +68,11 @@
 
       <!-- Chat Header -->
       <div class="chat-header">
+        <app-avatar 
+          [imageUrl]="getOtherParticipant(selectedConversation()!).avatar"
+          [name]="getOtherParticipant(selectedConversation()!).name"
+          [size]="40">
+        </app-avatar>
         <div class="header-user">
           <h2>{{ getOtherParticipant(selectedConversation()!).name }}</h2>
           <p>{{ selectedConversation()!.propertyTitle }}</p>
@@ -80,9 +87,12 @@
              [class.theirs]="!isMyMessage(msg)">
 
           <!-- ✅ الصورة تظهر فقط للطرف الآخر (على اليسار) -->
-          <img *ngIf="!isMyMessage(msg)"
-               [src]="getOtherParticipant(selectedConversation()!).avatar || 'assets/images/user-placeholder.png'"
-               class="chat-avatar">
+          <app-avatar 
+            *ngIf="!isMyMessage(msg)"
+            [imageUrl]="getOtherParticipant(selectedConversation()!).avatar"
+            [name]="getOtherParticipant(selectedConversation()!).name"
+            [size]="32">
+          </app-avatar>
 
           <div class="bubble-container">
             <div class="bubble">
