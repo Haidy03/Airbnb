@@ -33,70 +33,47 @@ namespace Airbnb.API.Controllers.Auth
             return Ok(new { Message = "User registered successfully!" });
         }
 
-        //[HttpPost("login")]
-        //public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
-        //{
-        //    var authResponse = await _authService.LoginUserAsync(loginDto);
-
-        //    if (authResponse == null)
-        //    {
-        //        return Unauthorized("Invalid credentials.");
-        //    }
-
-        //    return Ok(authResponse);
-        //}
-
-
-        //[HttpGet("profile")]
-        //[Authorize]
-        //public async Task<IActionResult> GetUserProfile()
-        //{
-        //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        //    if (string.IsNullOrEmpty(userId))
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    var userProfile = await _authService.GetUserProfileAsync(userId);
-
-        //    if (userProfile == null)
-        //    {
-        //        return NotFound("User not found.");
-        //    }
-
-        //    return Ok(userProfile);
-        //}
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             try
             {
-                // بنحاول نعمل تسجيل دخول
                 var authResponse = await _authService.LoginUserAsync(loginDto);
 
-                // لو رجع null يبقى البيانات غلط
                 if (authResponse == null)
                 {
-                    // بنرجع Unauthorized (401) مع رسالة خطأ واضحة
-                    // الفرونت اند هيستلم الرسالة دي ويعرضها للمستخدم
-                    return Unauthorized(new { message = "Invalid email or password." });
+                    return Unauthorized("Invalid credentials.");
                 }
 
-                // لو نجح بنرجع البيانات
                 return Ok(authResponse);
             }
-            catch (Exception ex)
+            catch
             {
-                // لو حصل أي خطأ غير متوقع (زي مشكلة في الداتا بيز)
-                // بنسجله ونرجع رسالة عامة عشان منظهرش تفاصيل الخطأ للمستخدم
-                // (ممكن تضيفي _logger هنا لو عايزة تسجلي الخطأ)
                 return StatusCode(500, new { message = "An error occurred during login." });
             }
         }
-        // ==========================================
 
+
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetUserProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var userProfile = await _authService.GetUserProfileAsync(userId);
+
+            if (userProfile == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return Ok(userProfile);
+        }
 
         [HttpPut("profile")]
         [Authorize] // This endpoint is protected and requires a valid token
