@@ -25,7 +25,6 @@ export const adminRoutes: Routes = [
       { path: 'bookings', component: AdminBookingsComponent },
       { path: 'analytics', component: AdminAnalyticsComponent },
       { path: 'settings', component: AdminSettingsComponent },
-      // { path: 'disputes', component: AdminDisputesComponent }, // Add later if needed
     ]
   }
 ];

@@ -2,6 +2,7 @@
 using Airbnb.API.DTOs.Booking;
 using Airbnb.API.DTOs.Experiences;
 using Airbnb.API.DTOs.Review;
+using Airbnb.API.Models;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -237,117 +238,7 @@ namespace Airbnb.API.Controllers
 
         #endregion
 
-        #region Verification Management
-
-        /// <summary>
-        /// Get pending verifications
-        /// </summary>
-        [HttpGet("verifications/pending")]
-        public async Task<ActionResult<List<VerificationRequestDto>>> GetPendingVerifications()
-        {
-            try
-            {
-                var verifications = await _adminService.GetPendingVerificationsAsync();
-                return Ok(verifications);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting pending verifications");
-                return StatusCode(500, "Error retrieving verifications");
-            }
-        }
-
-        /// <summary>
-        /// Get all verifications with optional status filter
-        /// </summary>
-        [HttpGet("verifications")]
-        public async Task<ActionResult<List<VerificationRequestDto>>> GetAllVerifications(
-            [FromQuery] string? status = null)
-        {
-            try
-            {
-                var verifications = await _adminService.GetAllVerificationsAsync(status);
-                return Ok(verifications);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting verifications");
-                return StatusCode(500, "Error retrieving verifications");
-            }
-        }
-
-        /// <summary>
-        /// Get verification by ID
-        /// </summary>
-        [HttpGet("verifications/{verificationId}")]
-        public async Task<ActionResult<VerificationRequestDto>> GetVerificationById(int verificationId)
-        {
-            try
-            {
-                var verification = await _adminService.GetVerificationByIdAsync(verificationId);
-                if (verification == null)
-                    return NotFound("Verification not found");
-
-                return Ok(verification);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error getting verification {verificationId}");
-                return StatusCode(500, "Error retrieving verification");
-            }
-        }
-
-        /// <summary>
-        /// Approve verification
-        /// </summary>
-        [HttpPost("verifications/{verificationId}/approve")]
-        public async Task<ActionResult> ApproveVerification(
-            int verificationId,
-            [FromBody] ApproveVerificationDto dto)
-        {
-            try
-            {
-                var adminId = User.FindFirst("userId")?.Value;
-                var result = await _adminService.ApproveVerificationAsync(verificationId, adminId, dto);
-
-                if (!result)
-                    return NotFound("Verification not found");
-
-                return Ok(new { message = "Verification approved successfully" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error approving verification {verificationId}");
-                return StatusCode(500, "Error approving verification");
-            }
-        }
-
-        /// <summary>
-        /// Reject verification
-        /// </summary>
-        [HttpPost("verifications/{verificationId}/reject")]
-        public async Task<ActionResult> RejectVerification(
-            int verificationId,
-            [FromBody] RejectVerificationDto dto)
-        {
-            try
-            {
-                var adminId = User.FindFirst("userId")?.Value;
-                var result = await _adminService.RejectVerificationAsync(verificationId, adminId, dto);
-
-                if (!result)
-                    return NotFound("Verification not found");
-
-                return Ok(new { message = "Verification rejected successfully" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error rejecting verification {verificationId}");
-                return StatusCode(500, "Error rejecting verification");
-            }
-        }
-
-        #endregion
+        
 
         #region Property Management
 
@@ -512,6 +403,27 @@ namespace Airbnb.API.Controllers
             {
                 _logger.LogError(ex, "Error getting experiences");
                 return StatusCode(500, "Error retrieving experiences");
+            }
+        }
+
+        [HttpPut("experiences/{id}/status")]
+        public async Task<IActionResult> UpdateExperienceStatus(int id, [FromBody] UpdateStatusDto dto)
+        {
+            try
+            {
+                if (dto.Status == "PendingApproval")
+                {
+                    // الآن الدالة دي هتكون موجودة في السيرفس
+                    var result = await _experienceService.UpdateStatusAsync(id, ExperienceStatus.PendingApproval);
+                    if (result) return Ok(new { message = "Status updated successfully" });
+                }
+
+                return BadRequest(new { message = "Invalid status transition" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating experience status {id}");
+                return StatusCode(500, "Error updating status");
             }
         }
 
@@ -710,5 +622,9 @@ namespace Airbnb.API.Controllers
 
         [Required]
         public string Reason { get; set; }
+    }
+    public class UpdateStatusDto
+    {
+        public string Status { get; set; }
     }
 }

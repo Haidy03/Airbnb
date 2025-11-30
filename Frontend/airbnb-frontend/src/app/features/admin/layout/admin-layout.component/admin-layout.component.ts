@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -51,7 +52,8 @@ export class AdminLayoutComponent {
     },
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router,
+    private authService: AuthService) {}
 
   toggleSidebar(): void {
     this.sidebarOpen.set(!this.sidebarOpen());
@@ -62,12 +64,9 @@ export class AdminLayoutComponent {
   }
 
   logout(): void {
-    // 1. مسح التوكن من التخزين المحلي
-    localStorage.removeItem('authToken'); 
+    localStorage.removeItem('token'); 
     localStorage.removeItem('userRole'); // إذا كنت تخزنين الرول
-    localStorage.removeItem('user'); // أي بيانات أخرى
-
-    // 2. التوجيه لصفحة تسجيل الدخول
+    localStorage.removeItem('userId'); // أي بيانات أخرى
     this.router.navigate(['/login']);
   }
 }

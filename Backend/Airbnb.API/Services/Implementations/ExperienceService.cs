@@ -513,6 +513,7 @@ namespace Airbnb.API.Services.Implementations
                 }).ToList() ?? new List<LanguageDto>(),
 
                 Status = experience.Status.ToString(),
+                RejectionReason = experience.RejectionReason,
                 IsActive = experience.IsActive,
                 CreatedAt = experience.CreatedAt,
                 UpdatedAt = experience.UpdatedAt
@@ -683,7 +684,25 @@ namespace Airbnb.API.Services.Implementations
             }
             return dtos;
         }
+        public async Task<bool> UpdateStatusAsync(int id, ExperienceStatus status)
+        {
+            var experience = await _experienceRepository.GetByIdAsync(id);
+            if (experience == null) return false;
 
+            experience.Status = status;
+
+            // لو رجعناها Pending، ممكن نمسح سبب الرفض عشان ينظف
+            if (status == ExperienceStatus.PendingApproval)
+            {
+                experience.RejectionReason = null;
+                experience.IsActive = false;
+            }
+
+            experience.UpdatedAt = DateTime.UtcNow;
+
+            await _experienceRepository.UpdateAsync(experience);
+            return true;
+        }
         public async Task<bool> RejectExperienceAsync(int id, string reason)
         {
             var experience = await _experienceRepository.GetByIdAsync(id);

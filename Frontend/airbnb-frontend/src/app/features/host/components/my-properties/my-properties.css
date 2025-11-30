@@ -214,6 +214,26 @@
   margin: 0;
 }
 
+/* ✅ التعديل: ستايل مربع سبب الرفض */
+.rejection-box-mini {
+  background-color: #FFF8F6;
+  border: 1px solid #C13515;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 12px; /* مسافة من فوق */
+  font-size: 13px;
+  color: #222;
+  line-height: 1.4;
+  width: 100%;
+  display: block  !important;
+}
+
+.rejection-box-mini strong {
+  color: #C13515;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
 /* ==========================================
    LIST VIEW (Table Fallback)
    ========================================== */

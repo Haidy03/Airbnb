@@ -81,70 +81,12 @@
 
       <div class="form-group">
         <label>Currency</label>
-        <select class="form-select" [(ngModel)]="settings().currency">
-          <option value="USD">USD - US Dollar</option>
-          <option value="EUR">EUR - Euro</option>
-          <option value="GBP">GBP - British Pound</option>
-          <option value="EGP">EGP - Egyptian Pound</option>
-        </select>
+        <input 
+          type="text" 
+          class="form-input"
+          [(ngModel)]="settings().currency"
+        />
       </div>
-
-      <div class="form-group toggle-group">
-        <div class="toggle-label">
-          <label>Allow Guest Booking</label>
-          <p class="help-text">Enable guests to make bookings</p>
-        </div>
-        <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="settings().allowGuestBooking"
-          />
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="form-group toggle-group">
-        <div class="toggle-label">
-          <label>Require ID Verification</label>
-          <p class="help-text">Users must verify their identity before booking/listing</p>
-        </div>
-        <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="settings().requireVerification"
-          />
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="form-group toggle-group">
-        <div class="toggle-label">
-          <label>Auto-Approve Properties</label>
-          <p class="help-text">Automatically approve new property listings</p>
-        </div>
-        <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="settings().autoApproveProperties"
-          />
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="form-group toggle-group">
-        <div class="toggle-label">
-          <label>Maintenance Mode</label>
-          <p class="help-text warning">Platform will be unavailable to users</p>
-        </div>
-        <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="settings().maintenanceMode"
-          />
-          <span class="slider danger"></span>
-        </label>
-      </div>
-
       <div class="form-actions">
         <button class="btn btn-primary" (click)="saveSettings()" [disabled]="saving()">
           <span *ngIf="!saving()">Save Changes</span>
@@ -162,7 +104,6 @@
 
       <div class="profile-avatar-section">
         <div class="avatar-large">A</div>
-        <button class="btn btn-secondary">Change Photo</button>
       </div>
 
       <div class="form-grid">
@@ -257,22 +198,7 @@
       </div>
     </div>
 
-    <div class="section-card">
-      <h2>Two-Factor Authentication</h2>
-      <p class="section-description">Add an extra layer of security to your account</p>
-      
-      <div class="info-box">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-          <line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" stroke-width="2"/>
-          <line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        <p>Two-factor authentication is currently <strong>disabled</strong></p>
-      </div>
-
-      <button class="btn btn-secondary">Enable 2FA</button>
-    </div>
-  </div>
+    
 
   <!-- System Settings -->
   <div *ngIf="activeTab() === 'system'" class="settings-section">

@@ -145,9 +145,18 @@
         <div class="chart-placeholder">
           <div class="chart-bars">
             <div *ngFor="let month of stats.revenueByMonth" class="bar-container">
-              <div class="bar" 
-                   [style.height.%]="(month.revenue / getMaxRevenue()) * 100">
+              <div class="tooltip">
+                <span class="tooltip-price">${{ month.revenue | number:'1.0-0' }}</span>
+                <span class="tooltip-count">{{ month.bookingsCount }} bookings</span>
+                <div class="tooltip-arrow"></div>
               </div>
+
+              <!-- العمود -->
+              <div class="bar" 
+                   [style.height.%]="getMaxRevenue() > 0 ? (month.revenue / getMaxRevenue()) * 100 : 0">
+              </div>
+              
+              <!-- اسم الشهر -->
               <span class="bar-label">{{ month.month | slice:5 }}</span>
             </div>
           </div>

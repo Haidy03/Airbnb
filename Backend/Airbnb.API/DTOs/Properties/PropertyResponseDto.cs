@@ -43,6 +43,9 @@ namespace Airbnb.API.DTOs.Properties
         // Draft tracking
         public PropertyStatus Status { get; set; }
         public string? CurrentStep { get; set; }
+        
+        // ✅ NEW: Add this so the Host can see why it was rejected
+        public string? RejectionReason { get; set; }
 
         // RoomType
         public string? RoomType { get; set; }

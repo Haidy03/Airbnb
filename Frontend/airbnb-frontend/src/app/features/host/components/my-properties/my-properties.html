@@ -5,7 +5,7 @@
     <h1 class="page-title">Your listings</h1>
     
     <div class="header-actions">
-      <!-- 1. Search Input -->
+      <!-- Search Input -->
       <div class="search-container" [class.open]="isSearchOpen()">
         <button class="icon-btn" (click)="toggleSearch()" title="Search">
           <svg viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentColor;stroke-width:3">
@@ -20,13 +20,13 @@
         >
       </div>
       
-      <!-- 2. View Toggle (Grid/List) -->
+      <!-- View Toggle -->
       <button class="icon-btn" (click)="toggleViewMode()" title="Change view">
         <svg *ngIf="viewMode() === 'grid'" viewBox="0 0 16 16" style="display:block;height:16px;width:16px;fill:currentColor"><path d="M2 3h12a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm0 4h12a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm0 4h12a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2z"/></svg>
         <svg *ngIf="viewMode() === 'list'" viewBox="0 0 16 16" style="display:block;height:16px;width:16px;fill:currentColor"><path d="M2 3h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2zM2 7h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2zM2 11h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2z"/></svg>
       </button>
 
-      <!-- 3. Create Button (+) -->
+      <!-- Create Button -->
       <button class="icon-btn create-btn" (click)="addNewProperty()" title="Create listing">
         <svg viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentColor;stroke-width:3"><path d="M2 16h28M16 2v28"></path></svg>
       </button>
@@ -35,7 +35,7 @@
 
   <div *ngIf="!isLoading()">
     
-    <!-- GRID VIEW (The Airbnb Look) -->
+    <!-- GRID VIEW -->
     <div *ngIf="viewMode() === 'grid'" class="grid-view-container">
       
       <div *ngFor="let property of properties()" class="listing-card" (click)="editProperty(property)">
@@ -43,13 +43,13 @@
         <!-- Image Wrapper -->
         <div class="image-wrapper">
           
-          <!-- Status Badge (Absolute Positioned) -->
-          <div class="status-badge" *ngIf="!isPublished(property)">
+          <!-- Status Badge -->
+          <!-- ✅ التعديل: إزالة شرط isPublished لضمان ظهور الحالة دائمًا للتجربة -->
+          <div class="status-badge">
             <span class="status-dot" [ngClass]="getStatusColor(property)"></span>
             <span>{{ getStatusLabel(property) }}</span>
           </div>
 
-          <!-- Image -->
           <img 
             [src]="getPropertyImage(property)" 
             *ngIf="getPropertyImage(property) && getPropertyImage(property) !== '/assets/images/placeholder-property.jpg'" 
@@ -57,7 +57,6 @@
             alt="Property image"
           >
           
-          <!-- Placeholder if no image -->
           <div class="image-placeholder" *ngIf="!getPropertyImage(property) || getPropertyImage(property) === '/assets/images/placeholder-property.jpg'">
              <svg viewBox="0 0 32 32" style="fill:#717171;height:32px;width:32px"><path d="M27 3a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4h22zm-13.5 6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm14.28 16.26L18.5 10.28 6.36 26.86l21.42-1.6z"></path></svg>
           </div>
@@ -67,12 +66,17 @@
         <div class="listing-details">
           <h3 class="listing-title">{{ property.title || 'Untitled listing' }}</h3>
           <p class="listing-location">{{ getLocation(property) }}</p>
+
+          <!-- ✅ Rejection Reason Box -->
+          <div *ngIf="isRejected(property) && property.rejectionReason" class="rejection-box-mini" (click)="$event.stopPropagation()">
+            <strong>Rejected:</strong> {{ property.rejectionReason }}
+          </div>
         </div>
 
       </div>
     </div>
 
-    <!-- LIST VIEW (Optional Table) -->
+    <!-- LIST VIEW -->
     <div *ngIf="viewMode() === 'list'" class="list-view-container">
       <div class="list-header">
         <div class="col-listing">Listing</div>
