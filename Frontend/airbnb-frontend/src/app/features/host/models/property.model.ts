@@ -12,7 +12,7 @@ export interface Property {
   hostId: string;
   title: string;
   description: string;
-
+  rejectionReason?: string;
   maxGuests?: number;
   numberOfBedrooms?: number;
   numberOfBeds?: number; 
@@ -202,7 +202,7 @@ export const PROPERTY_STATUS_LABELS: { [key: number]: string } = {
   0: 'In Progress',
   1: 'Pending Review',
   2: 'Approved',
-  3: 'Action Required',
+  3: 'Rejected',
   4: 'Active',
   5: 'Inactive',
   6: 'Suspended'

@@ -43,6 +43,8 @@
         public List<LanguageDto> Languages { get; set; } = new();
 
         public string Status { get; set; }
+        public string? RejectionReason { get; set; }
+
         public bool IsActive { get; set; }
 
         public DateTime CreatedAt { get; set; }

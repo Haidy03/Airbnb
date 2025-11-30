@@ -127,10 +127,10 @@
         </div>
       </div>
 
-      <!-- Rejection Reason (If Rejected) -->
+      <!-- ✅ NEW: Rejection Reason Box (تم إضافته هنا) -->
       <div *ngIf="exp.rejectionReason" class="rejection-box">
         <strong>Rejection Reason:</strong>
-        <p>{{ exp.rejectionReason }}</p>
+        <p>{{ exp.rejectionReason || 'No reason provided.' }}</p>
       </div>
 
       <!-- Actions -->
@@ -153,6 +153,25 @@
             Reject
           </button>
         </div>
+
+        <!-- ✅ زر Move to Pending المعدل -->
+        <div *ngIf="exp.status === 'Rejected'" class="action-row">
+          <button class="btn btn-secondary" (click)="moveToPending(exp)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 3v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Move to Pending
+          </button>
+        </div>
+
+        <!-- Delete (Always Available) -->
+        <button class="btn btn-delete" (click)="openDeleteModal(exp)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Delete
+        </button>
       </div>
     </div>
 
@@ -165,14 +184,6 @@
       <h3>No experiences found</h3>
       <p>Try adjusting your filters or search terms</p>
     </div>
-
-    <!-- Pagination -->
-    <div class="pagination" *ngIf="experiences().length > 0">
-      <button class="page-btn" [disabled]="pageNumber() === 1" (click)="previousPage()">← Previous</button>
-      <span class="page-info">Page {{ pageNumber() }}</span>
-      <button class="page-btn" (click)="nextPage()">Next →</button>
-    </div>
-  </div>
 
   <!-- Approve Modal -->
   <div class="modal-overlay" *ngIf="showApproveModal()" (click)="closeApproveModal()">
@@ -212,6 +223,24 @@
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="closeRejectModal()">Cancel</button>
         <button class="btn btn-danger" (click)="rejectExperience()">Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal()" (click)="closeDeleteModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Delete Experience</h2>
+        <button class="close-btn" (click)="closeDeleteModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong>{{ selectedExperience()?.title }}</strong>?</p>
+        <p class="warning-text">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" (click)="deleteExperience()">Delete</button>
       </div>
     </div>
   </div>

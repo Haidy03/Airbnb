@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../../../environments/environment';
+import { AdminService } from '../../../serevices/admin.service'; 
 
-// ✅ تعريف Interface سريع للتجربة داخل الأدمن
 interface AdminExperience {
   id: number;
   title: string;
@@ -34,13 +34,11 @@ export class AdminExperiencesComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
   
-  // ✅ الفلاتر مثل صفحة Properties
   selectedStatus = signal<string>('PendingApproval');
   searchTerm = signal<string>('');
   pageNumber = signal(1);
   pageSize = 10;
 
-  // ✅ Modal States
   selectedExperience = signal<AdminExperience | null>(null);
   showApproveModal = signal(false);
   showRejectModal = signal(false);
@@ -49,13 +47,12 @@ export class AdminExperiencesComponent implements OnInit {
 
   private apiUrl = `${environment.apiUrl}/admin/experiences`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private adminService: AdminService) {}
 
   ngOnInit(): void {
     this.loadExperiences();
   }
 
-  // ✅ دالة التحميل مع الفلاتر
   loadExperiences(): void {
     this.loading.set(true);
     this.error.set(null);
@@ -64,7 +61,6 @@ export class AdminExperiencesComponent implements OnInit {
       .set('pageNumber', this.pageNumber().toString())
       .set('pageSize', this.pageSize.toString());
 
-    // إرسال الحالة إذا لم تكن All
     if (this.selectedStatus() !== 'All') {
       params = params.set('status', this.selectedStatus());
     }
@@ -78,7 +74,7 @@ export class AdminExperiencesComponent implements OnInit {
         this.experiences.set(data);
         this.loading.set(false);
       },
-      error: (err) => {
+      error: (err: any) => { // ✅ Fixed: Added type 'any'
         console.error(err);
         this.error.set('Failed to load experiences');
         this.loading.set(false);
@@ -86,14 +82,12 @@ export class AdminExperiencesComponent implements OnInit {
     });
   }
 
-  // ✅ تغيير التاب (Status)
   onStatusChange(status: string): void {
     this.selectedStatus.set(status);
     this.pageNumber.set(1);
     this.loadExperiences();
   }
 
-  // ✅ البحث
   onSearch(): void {
     this.pageNumber.set(1);
     this.loadExperiences();
@@ -119,9 +113,54 @@ export class AdminExperiencesComponent implements OnInit {
       next: () => {
         this.loadExperiences();
         this.closeApproveModal();
-        alert('Experience approved successfully');
+        this.showNotification('Experience approved successfully');
       },
-      error: () => alert('Error approving experience')
+      error: () => this.showNotification('Error approving experience', 'error')
+    });
+  }
+
+  moveToPending(exp: AdminExperience): void {
+    if(!confirm('Are you sure you want to move this experience back to pending approval?')) return;
+
+    // ✅ Fixed: Now 'updateExperienceStatus' exists in AdminService
+    this.adminService.updateExperienceStatus(exp.id, 'PendingApproval').subscribe({
+      next: () => {
+        this.loadExperiences();
+        this.showNotification('Experience moved to pending successfully');
+      },
+      error: (err: any) => { // ✅ Fixed: Added type 'any'
+        console.error(err);
+        this.showNotification('Failed to update status', 'error');
+      }
+    });
+  }
+
+  openDeleteModal(exp: AdminExperience): void {
+    this.selectedExperience.set(exp);
+    this.showDeleteModal.set(true);
+  }
+
+  // ✅ Added: Missing closeDeleteModal method (usually needed)
+  closeDeleteModal(): void {
+    this.showDeleteModal.set(false);
+    this.selectedExperience.set(null);
+  }
+
+  // ✅ Added: Missing deleteExperience method implementation
+  deleteExperience(): void {
+    const exp = this.selectedExperience();
+    if (!exp) return;
+
+    this.adminService.deleteExperience(exp.id).subscribe({
+      next: () => {
+        this.loadExperiences();
+        this.closeDeleteModal();
+        this.showNotification('Experience deleted successfully');
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.showNotification('Failed to delete experience', 'error');
+      }
     });
   }
 
@@ -147,13 +186,19 @@ export class AdminExperiencesComponent implements OnInit {
       next: () => {
         this.loadExperiences();
         this.closeRejectModal();
-        alert('Experience rejected');
+        this.showNotification('Experience rejected');
       },
-      error: () => alert('Error rejecting experience')
+      error: () => this.showNotification('Error rejecting experience', 'error')
     });
   }
 
   // --- Helpers ---
+
+  // ✅ Added: Helper method to fix 'showNotification' error
+  private showNotification(message: string, type: 'success' | 'error' = 'success'): void {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    alert(message); // Simple alert for now, can be replaced with Toastr
+  }
 
   getStatusBadgeClass(status: string): string {
     const map: {[key: string]: string} = {
@@ -175,12 +220,12 @@ export class AdminExperiencesComponent implements OnInit {
   }
 
   getImageUrl(url: string): string {
-    if (!url) return 'assets/placeholder.jpg';
+    if (!url) return 'assets/images/placeholder.jpg';
     if (url.startsWith('http')) return url;
+    if (url.includes('assets/')) return url;
     return `${environment.apiUrl.replace('/api', '')}${url}`;
   }
 
-  // Pagination (Simple)
   nextPage() { this.pageNumber.update(v => v + 1); this.loadExperiences(); }
   previousPage() { if(this.pageNumber() > 1) { this.pageNumber.update(v => v - 1); this.loadExperiences(); } }
 }

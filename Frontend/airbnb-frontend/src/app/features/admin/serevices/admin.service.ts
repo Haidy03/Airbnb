@@ -196,4 +196,12 @@ export class AdminService {
       params: new HttpParams().set('reason', reason)
     });
   }
+  updateExperienceStatus(id: number, status: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/experiences/${id}/status`, { status });
+  }
+
+  // دالة حذف التجربة
+  deleteExperience(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/experiences/${id}`);
+  }
 }

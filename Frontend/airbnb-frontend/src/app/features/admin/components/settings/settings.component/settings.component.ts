@@ -26,7 +26,7 @@ export class AdminSettingsComponent implements OnInit {
   settings = signal<PlatformSettings>({
     platformName: 'Airbnb Clone',
     platformFeePercentage: 15,
-    currency: 'USD',
+    currency: 'EGP',
     allowGuestBooking: true,
     requireVerification: true,
     autoApproveProperties: false,

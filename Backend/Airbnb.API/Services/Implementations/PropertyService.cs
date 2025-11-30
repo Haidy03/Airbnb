@@ -425,6 +425,7 @@ namespace Airbnb.API.Services.Implementations
                 HouseRules = property.HouseRules,
                 CheckInTime = property.CheckInTime,
                 CheckOutTime = property.CheckOutTime,
+                RejectionReason = property.RejectionReason,
                 MinimumStay = property.MinimumStay,
                 HasExteriorCamera = property.HasExteriorCamera,
                 HasNoiseMonitor = property.HasNoiseMonitor,

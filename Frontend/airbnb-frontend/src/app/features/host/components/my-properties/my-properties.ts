@@ -45,6 +45,7 @@ export class MyProperties implements OnInit {
     this.isLoading.set(true);
     this.propertyService.getAllDrafts().subscribe({
       next: (data) => {
+        console.log('🏠 Properties Data:', data);
         this.allProperties.set(data);
         this.isLoading.set(false);
       },
@@ -65,12 +66,19 @@ export class MyProperties implements OnInit {
   }
 
   // ✅ Helper: Status Label
-  getStatusLabel(property: Property): string {
-    // Use numerical enum comparison
+  /* getStatusLabel(property: Property): string {
     if (property.currentStep && Number(property.status) === PropertyStatus.DRAFT) {
       return 'In progress';
     }
     return PROPERTY_STATUS_LABELS[Number(property.status)] || 'Unknown';
+  } */
+
+   getStatusLabel(property: Property): string {
+    const status = Number(property.status);
+    if (status === PropertyStatus.DRAFT) return 'In progress';
+    if (status === PropertyStatus.REJECTED) return 'Rejected';
+    if (status === PropertyStatus.PENDING_APPROVAL) return 'Pending Approval';
+    return PROPERTY_STATUS_LABELS[status] || 'Unknown';
   }
 
   // ✅ Helper: Status Color
@@ -86,6 +94,9 @@ export class MyProperties implements OnInit {
       case PropertyStatus.REJECTED: return 'red';
       default: return 'orange';
     }
+  }
+  isRejected(property: Property): boolean {
+    return Number(property.status) === PropertyStatus.REJECTED;
   }
 
   getPropertyImage(property: Property): string {

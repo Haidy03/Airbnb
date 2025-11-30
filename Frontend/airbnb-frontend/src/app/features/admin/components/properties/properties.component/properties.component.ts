@@ -54,6 +54,21 @@ export class AdminPropertiesComponent implements OnInit {
         }
       });
   }
+  moveToPending(property: AdminProperty): void {
+    if(!confirm('Are you sure you want to move this property back to pending approval?')) return;
+
+    // نستخدم دالة updatePropertyStatus الموجودة بالفعل في السيرفس
+    this.adminService.updatePropertyStatus(property.id, 'PendingApproval').subscribe({
+      next: () => {
+        this.loadProperties(); // تحديث القائمة
+        this.showNotification('Property moved to pending successfully');
+      },
+      error: (err) => {
+        console.error(err);
+        this.showNotification('Failed to update status', 'error');
+      }
+    });
+  }
 
   onStatusChange(status: string): void {
     this.selectedStatus.set(status);

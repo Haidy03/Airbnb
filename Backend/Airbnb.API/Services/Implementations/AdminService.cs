@@ -80,25 +80,34 @@ namespace Airbnb.API.Services.Implementations
         }
         private async Task<List<MonthlyRevenueDto>> GetMonthlyRevenueAsync()
         {
-            var sixMonthsAgo = DateTime.UtcNow.AddMonths(-6);
-            var bookings = await _adminRepository.GetAllBookingsAsync(BookingStatus.Completed, sixMonthsAgo, null, 1, 10000);
+            var result = new List<MonthlyRevenueDto>();
+            var now = DateTime.UtcNow;
 
-            // Check if bookings is null or empty
-            if (bookings == null || !bookings.Any())
+            // 1. نجهز لستة بآخر 6 شهور كتواريخ
+            for (int i = 5; i >= 0; i--)
             {
-                return new List<MonthlyRevenueDto>();
+                var date = now.AddMonths(-i);
+                var monthStart = new DateTime(date.Year, date.Month, 1);
+                var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
+                // 2. نجيب الحجوزات للشهر ده
+                var bookings = await _adminRepository.GetAllBookingsAsync(
+                    BookingStatus.Completed,
+                    monthStart,
+                    monthEnd,
+                    1,
+                    10000); // رقم كبير عشان نجيب الكل
+
+                // 3. نحسب المجموع (حتى لو صفر) ونضيفه للقائمة
+                result.Add(new MonthlyRevenueDto
+                {
+                    Month = $"{date.Year}-{date.Month:00}", // صيغة YYYY-MM
+                    Revenue = bookings?.Sum(b => b.TotalPrice) ?? 0,
+                    BookingsCount = bookings?.Count ?? 0
+                });
             }
 
-            return bookings
-                .GroupBy(b => new { b.CreatedAt.Year, b.CreatedAt.Month })
-                .Select(g => new MonthlyRevenueDto
-                {
-                    Month = $"{g.Key.Year}-{g.Key.Month:00}",
-                    Revenue = g.Sum(b => b.TotalPrice),
-                    BookingsCount = g.Count()
-                })
-                .OrderBy(m => m.Month)
-                .ToList();
+            return result;
         }
 
         private async Task<List<PropertyTypeStatsDto>> GetPropertyTypeStatsAsync()
@@ -573,7 +582,9 @@ namespace Airbnb.API.Services.Implementations
             if (property == null) return false;
 
             property.Status = PropertyStatus.Rejected;
+            property.IsApproved = false;
             property.RejectionReason = dto.RejectionReason;
+            property.UpdatedAt = DateTime.UtcNow;
 
             await _adminRepository.UpdatePropertyAsync(property);
             _logger.LogInformation($"Property {propertyId} rejected by admin {adminId}: {dto.RejectionReason}");
