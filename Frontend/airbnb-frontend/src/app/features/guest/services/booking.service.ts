@@ -28,7 +28,7 @@ export interface BookingResponse {
 @Injectable({
   providedIn: 'root'
 })
-export class BookingService {
+export class GuestBookingService  {
 
   private apiUrl = `${environment.apiUrl}/Booking`;
 

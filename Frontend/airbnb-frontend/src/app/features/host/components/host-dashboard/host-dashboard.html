@@ -21,57 +21,44 @@
     <div class="spinner"></div>
   </div>
 
-  <!-- Today Tab Content -->
+  <!-- ==================== TODAY TAB ==================== -->
   <div *ngIf="!loading() && activeTab() === 'today'" class="tab-content">
     
-    <!-- Empty State - No reservations today -->
     <div *ngIf="todayBookings().length === 0" class="empty-state">
       <div class="empty-illustration">
         <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <!-- Book illustration -->
           <rect x="30" y="25" width="60" height="70" rx="3" fill="#E0E0E0"/>
           <rect x="35" y="30" width="50" height="60" rx="2" fill="#F5F5F5"/>
           <line x1="45" y1="40" x2="75" y2="40" stroke="#BDBDBD" stroke-width="2"/>
           <line x1="45" y1="50" x2="75" y2="50" stroke="#BDBDBD" stroke-width="2"/>
           <line x1="45" y1="60" x2="70" y2="60" stroke="#BDBDBD" stroke-width="2"/>
-          <!-- Bookmark -->
           <path d="M60 30 L65 35 L60 40 L55 35 Z" fill="#FF385C"/>
         </svg>
       </div>
-      
       <h2 class="empty-title">You don't have any reservations today</h2>
-      <p class="empty-description">
-        To get booked, you'll need to<br>
-        complete and publish your listing.
-      </p>
-      
-      <button class="complete-listing-btn" (click)="completeYourListing()">
-        Complete your listing
-      </button>
+      <p class="empty-description">To get booked, you'll need to complete and publish your listing.</p>
+      <button class="complete-listing-btn" (click)="completeYourListing()">Complete your listing</button>
     </div>
 
-    <!-- Bookings List - When there are reservations -->
     <div *ngIf="todayBookings().length > 0" class="bookings-list">
       <div *ngFor="let booking of todayBookings()" class="booking-card">
         
         <div class="booking-image">
-          <img [src]="booking.propertyImage" 
-               [alt]="booking.propertyTitle"
-               onerror="this.src='/assets/images/placeholder-property.jpg'">
+          <img [src]="booking.propertyImage" [alt]="booking.propertyTitle" onerror="this.src='/assets/images/placeholder-property.jpg'">
         </div>
 
         <div class="booking-info">
           <div class="booking-header">
+            <!-- ✅ الحالة الديناميكية -->
             <span class="event-badge" 
-                  [class.check-in]="getEventType(booking) === 'check-in'"
-                  [class.check-out]="getEventType(booking) === 'check-out'">
-              {{ getEventType(booking) === 'check-in' ? 'Check-in' : 'Check-out' }}
+                  [class.status-confirmed]="booking.status === 'Confirmed'"
+                  [class.status-pending]="booking.status === 'Pending'"
+                  [class.status-cancelled]="booking.status === 'Cancelled'"
+                  [class.status-awaiting]="booking.status === 'AwaitingPayment'">
+              {{ booking.status }}
             </span>
-            <span class="booking-time">
-              {{ getCheckInOutTime(booking) }}
-            </span>
+            <span class="booking-time">{{ getCheckInOutTime(booking) }}</span>
           </div>
-
           <h3 class="guest-name">{{ booking.guestName }}</h3>
           <p class="property-title">{{ booking.propertyTitle }}</p>
           <p class="booking-dates">{{ formatDateRange(booking.checkInDate, booking.checkOutDate) }}</p>
@@ -79,22 +66,20 @@
         </div>
 
         <div class="booking-actions">
-          <button class="action-btn" [routerLink]="['/host/messages']">
-            <span class="btn-icon">💬</span>
-            Message
+          <button class="action-btn" 
+            [routerLink]="['/host/messages']" 
+            [queryParams]="{ guestId: booking.guestId, propertyId: booking.propertyId }">
+            <span class="btn-icon">💬</span> Message
           </button>
-          <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">
-            View details
-          </button>
+          <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">View details</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Upcoming Tab Content -->
+  <!-- ==================== UPCOMING TAB ==================== -->
   <div *ngIf="!loading() && activeTab() === 'upcoming'" class="tab-content">
     
-    <!-- Empty State - No upcoming reservations -->
     <div *ngIf="upcomingBookings().length === 0" class="empty-state">
       <div class="empty-illustration">
         <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
@@ -106,31 +91,28 @@
           <path d="M60 30 L65 35 L60 40 L55 35 Z" fill="#FF385C"/>
         </svg>
       </div>
-      
       <h2 class="empty-title">You don't have any upcoming reservations</h2>
-      <p class="empty-description">
-        To get booked, you'll need to<br>
-        complete and publish your listing.
-      </p>
-      
-      <button class="complete-listing-btn" (click)="completeYourListing()">
-        Complete your listing
-      </button>
+      <p class="empty-description">To get booked, you'll need to complete and publish your listing.</p>
+      <button class="complete-listing-btn" (click)="completeYourListing()">Complete your listing</button>
     </div>
 
-    <!-- Upcoming Bookings List -->
     <div *ngIf="upcomingBookings().length > 0" class="bookings-list">
       <div *ngFor="let booking of upcomingBookings()" class="booking-card">
         
         <div class="booking-image">
-          <img [src]="booking.propertyImage" 
-               [alt]="booking.propertyTitle"
-               onerror="this.src='assets/images/placeholder-property.jpg'">
+          <img [src]="booking.propertyImage" [alt]="booking.propertyTitle" onerror="this.src='assets/images/placeholder-property.jpg'">
         </div>
 
         <div class="booking-info">
           <div class="booking-header">
-            <span class="event-badge check-in">Confirmed</span>
+            <!-- ✅ تم التعديل هنا أيضاً لإزالة كلمة Confirmed الثابتة -->
+            <span class="event-badge" 
+                  [class.status-confirmed]="booking.status === 'Confirmed'"
+                  [class.status-pending]="booking.status === 'Pending'"
+                  [class.status-cancelled]="booking.status === 'Cancelled'"
+                  [class.status-awaiting]="booking.status === 'AwaitingPayment'">
+              {{ booking.status }}
+            </span>
             <span class="booking-time">Check-in: {{ formatDate(booking.checkInDate) }}</span>
           </div>
 
@@ -141,13 +123,12 @@
         </div>
 
         <div class="booking-actions">
-          <button class="action-btn" [routerLink]="['/host/messages']">
-            <span class="btn-icon">💬</span>
-            Message
+          <button class="action-btn" 
+            [routerLink]="['/host/messages']"
+            [queryParams]="{ guestId: booking.guestId, propertyId: booking.propertyId }">
+            <span class="btn-icon">💬</span> Message
           </button>
-          <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">
-            View details
-          </button>
+          <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">View details</button>
         </div>
       </div>
     </div>

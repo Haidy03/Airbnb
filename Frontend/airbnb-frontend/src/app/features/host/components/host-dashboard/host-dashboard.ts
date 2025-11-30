@@ -57,6 +57,19 @@ export class HostDashboardComponent implements OnInit {
       }
     });
   }
+  /**
+ * Open chat with specific guest
+ */
+openChat(booking: Booking): void {
+  this.router.navigate(['/host/messages'], {
+    queryParams: {
+      guestId: booking.guestId,
+      propertyId: booking.propertyId,
+      bookingId: booking.id,
+      autoOpen: 'true' // ✅ علامة لفتح الشات تلقائياً
+    }
+  });
+}
 
   /**
    * ✅ Load upcoming bookings
