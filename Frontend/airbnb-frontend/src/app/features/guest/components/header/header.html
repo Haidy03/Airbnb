@@ -176,12 +176,34 @@
 
         <div class="position-relative">
           <button class="user-menu-btn border rounded-pill p-1 ps-2 d-flex align-items-center gap-2 bg-white hover-shadow transition" (click)="toggleUserMenu($event)">
+          
             <i class="bi bi-list fs-5"></i>
-            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white"
-                 style="width: 30px; height: 30px;">
-              <i class="bi bi-person-fill fs-5"></i>
-            </div>
-          </button>
+          
+         
+          <div class="user-avatar-wrapper">
+            @if (user(); as currentUser) {
+              
+              
+              
+              <div class="avatar-placeholder small">
+                {{ currentUser.firstName?.charAt(0) | uppercase }}
+              </div>
+
+              
+              <img *ngIf="currentUser.profilePicture" 
+                  [src]="currentUser.profilePicture" 
+                  class="user-avatar-img" 
+                  alt="User"
+                  (error)="handleImageError($event)">
+            } @else {
+              
+              <div class="bg-secondary d-flex align-items-center justify-content-center text-white w-100 h-100">
+                <i class="bi bi-person-fill fs-5"></i>
+              </div>
+            }
+          </div>
+
+        </button>
 
           <div *ngIf="isUserMenuOpen"
                class="custom-dropdown shadow-lg rounded-4 py-2 bg-white position-absolute end-0 mt-2"

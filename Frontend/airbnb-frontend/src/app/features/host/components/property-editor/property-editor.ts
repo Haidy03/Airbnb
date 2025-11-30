@@ -6,6 +6,7 @@ import { PropertyService } from '../../services/property';
 import { Property, HouseRules, SafetyDetails } from '../../models/property.model';
 import * as L from 'leaflet'; // ✅ Import Leaflet
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../auth/services/auth.service';
 
 type EditorSection = 
   | 'photos' | 'title' | 'propertyType' | 'capacity' | 'description' 
@@ -28,6 +29,7 @@ export class PropertyEditorComponent implements OnInit {
   private router = inject(Router);
   private propertyService = inject(PropertyService);
   private http = inject(HttpClient);
+  public authService = inject(AuthService);
 
   property = signal<Property | null>(null);
   isLoading = signal(true);
@@ -115,6 +117,10 @@ export class PropertyEditorComponent implements OnInit {
         this.router.navigate(['/host/properties']);
       }
     });
+  }
+
+  handleImageError(event: any) {
+    event.target.style.display = 'none';
   }
 
   initTempValues(prop: Property) {

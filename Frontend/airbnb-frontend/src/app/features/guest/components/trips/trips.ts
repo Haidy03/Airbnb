@@ -127,7 +127,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http'; // ✅ للاتصال بالدفع
 import { HeaderComponent } from '../header/header';
-import { BookingService } from '../../services/booking.service'; // أو ExperienceService حسب استخدامك
+import { GuestBookingService } from '../../services/booking.service'; // أو ExperienceService حسب استخدامك
 import { environment } from '../../../../../environments/environment';
 
 @Component({
@@ -139,7 +139,7 @@ import { environment } from '../../../../../environments/environment';
 })
 export class TripsComponent implements OnInit {
   private http = inject(HttpClient);
-  private bookingService = inject(BookingService);
+  private bookingService = inject(GuestBookingService);
 
   // State Signals
   activeTab = signal<'upcoming' | 'past' | 'cancelled'>('upcoming');
