@@ -1,184 +1,223 @@
-<div *ngIf="!isLoading && service" class="pb-5 mb-5"> <!-- Margin bottom for fixed bar -->
+<!-- Loader -->
+<div *ngIf="isLoading" class="d-flex justify-content-center align-items-center vh-100">
+  <div class="spinner-border text-danger" role="status"></div>
+</div>
 
-  <!-- 1. Hero Section (Banner + Overlapping Profile) -->
-  <div class="container-fluid px-0 px-md-5 mt-4">
-    <div class="position-relative text-center">
+<!-- Main Container -->
+<div *ngIf="!isLoading && service" class="container pt-4 pb-5 mb-5 fade-in">
+
+  <div class="row gx-lg-5">
+    
+    <!-- ==================================== -->
+    <!-- 🟢 LEFT COLUMN: Details & Sections -->
+    <!-- ==================================== -->
+    <div class="col-lg-7">
       
-      <!-- Banner Image -->
-      <div class="rounded-4 overflow-hidden mx-auto hero-banner" style="max-width: 900px; height: 400px;">
-        <img [src]="service.images[0]" 
-             class="w-100 h-100 object-fit-cover" 
-             onerror="this.src='https://images.unsplash.com/photo-1556910103-1c02745a30bf'">
-      </div>
-
-      <!-- Overlapping Host Profile Picture -->
-      <div class="position-absolute start-50 translate-middle-x host-avatar-container">
-        <img [src]="service.hostAvatar || 'assets/images/placeholder-user.png'" 
-             class="rounded-circle border border-4 border-white shadow-sm object-fit-cover"
-             width="120" height="120">
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 2. Main Info (Title, Rating) -->
-  <div class="container text-center mt-5 pt-3" style="max-width: 700px;">
-    
-    <h1 class="display-5 fw-bold mb-3 text-dark">{{ service.title }}</h1>
-    
-    <p class="text-muted fs-5 mb-4">
-      {{ service.description | slice:0:100 }}...
-    </p>
-
-    <!-- Rating & Host Name -->
-    <div class="d-flex justify-content-center align-items-center gap-2 mb-4 small fw-bold text-dark">
-      <i class="bi bi-star-fill text-dark"></i>
-      <span>{{ service.rating | number:'1.2-2' }}</span>
-      <span>·</span>
-      <span class="text-decoration-underline">{{ service.reviewsCount || 239 }} reviews</span>
-      <span>·</span>
-      <span class="text-muted fw-normal">{{ service.categoryName }} by {{ service.hostName }}</span>
-    </div>
-
-    <!-- Action Icons -->
-    <div class="d-flex justify-content-center gap-4 mb-5">
-      <button class="btn btn-light rounded-circle p-2 shadow-sm"><i class="bi bi-share"></i></button>
-      <button class="btn btn-light rounded-circle p-2 shadow-sm"><i class="bi bi-heart"></i></button>
-    </div>
-
-  </div>
-
-  <div class="container" style="max-width: 700px;">
-    <hr class="text-muted opacity-25">
-  </div>
-
-  <!-- 3. Content Sections (Single Column Layout) -->
-  <div class="container" style="max-width: 700px;">
-
-    <!-- A. Menu Options (Visual Mockup based on screenshot) -->
-    <section class="py-4">
-      <div *ngFor="let item of menuItems" class="d-flex gap-3 mb-4 align-items-center">
-        <img [src]="item.img" class="rounded-3 object-fit-cover" width="100" height="100">
-        <div>
-          <h3 class="h6 fw-bold mb-1">{{ item.title }}</h3>
-          <p class="small text-muted mb-1">{{ item.price | currency:'EGP ':'symbol':'1.0-0' }} / guest</p>
-          <p class="small text-muted mb-0 line-clamp-2">{{ item.desc }}</p>
+      <!-- 1. Hero Section -->
+      <div class="position-relative mb-5">
+        <div class="rounded-4 overflow-hidden shadow-sm bg-light" style="height: 400px;">
+          <img [src]="getImageUrl(service.images[0])" 
+               class="w-100 h-100 object-fit-cover" 
+               alt="Cover Image">
+        </div>
+        <!-- Host Avatar (Overlapping) -->
+        <div class="position-absolute start-50 translate-middle-x host-avatar-wrapper">
+          <img [src]="getImageUrl(service.hostAvatar)" 
+               class="rounded-circle border border-4 border-white shadow-sm object-fit-cover bg-white"
+               width="100" height="100"
+               onerror="this.src='assets/images/user-placeholder.png'">
         </div>
       </div>
-      <button class="btn btn-light border w-100 fw-bold py-2 mt-2">Show all 8</button>
-    </section>
 
-    <hr class="text-muted opacity-25">
+      <!-- Title & Intro -->
+      <div class="text-center px-4 mb-5">
+        <h1 class="display-6 fw-bold mb-3 text-dark">{{ service.title }}</h1>
+        <p class="text-muted fs-5 mb-4 lh-base">{{ service.description }}</p>
+        <div class="text-muted small">
+          <p class="mb-1 fw-bold text-dark">Personal trainer in {{ service.city }}</p>
+          <p>Provided at {{ service.hostName.split(' ')[0] }}'s place</p>
+        </div>
+      </div>
 
-    <!-- B. Qualifications -->
-    <section class="py-4">
-      <h3 class="h4 fw-bold mb-4">My qualifications</h3>
-      
-      <!-- Host Card -->
-      <div class="card shadow-sm border-0 rounded-4 p-4 mb-4">
-        <div class="d-flex align-items-center gap-3 mb-2">
-          <img [src]="service.hostAvatar || 'assets/images/placeholder-user.png'" 
-               class="rounded-circle object-fit-cover" width="64" height="64">
-          <div class="text-center">
-            <h4 class="h5 fw-bold mb-0">{{ service.hostName }}</h4>
-            <span class="small text-muted">Chef</span>
+      <hr class="text-muted opacity-25 mb-5">
+
+      <!-- 2. My Qualifications -->
+      <section class="mb-5">
+        <h3 class="h4 fw-bold mb-4 text-dark">My qualifications</h3>
+
+        <!-- Host Card -->
+        <div class="card shadow-sm border-0 rounded-4 p-4 mb-4 bg-white">
+          <div class="d-flex align-items-center gap-3">
+            <div class="position-relative">
+              <img [src]="getImageUrl(service.hostAvatar)" 
+                   class="rounded-circle object-fit-cover border" width="64" height="64"
+                   onerror="this.src='assets/images/user-placeholder.png'">
+              <span class="position-absolute bottom-0 end-0 bg-dark text-white rounded-circle d-flex align-items-center justify-content-center" 
+                    style="width: 24px; height: 24px; font-size: 10px;">
+                <i class="bi bi-shield-check"></i>
+              </span>
+            </div>
+            <div class="d-flex flex-column">
+              <h4 class="h5 fw-bold mb-0 text-dark">{{ service.hostName }}</h4>
+              <span class="small text-muted">Host</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- List -->
-      <div *ngFor="let q of qualifications" class="d-flex gap-3 mb-4">
-        <i [class]="'bi fs-4 text-dark ' + q.icon"></i>
-        <div>
-          <h5 class="h6 fw-bold mb-1">{{ q.title }}</h5>
-          <p class="text-muted small mb-0">{{ q.desc }}</p>
+        <!-- Qualifications List -->
+        <div class="d-flex flex-column gap-4 mb-4">
+          <div *ngFor="let q of service.qualifications" class="d-flex gap-3">
+            <div class="d-flex align-items-start mt-1">
+              <i [class]="'bi fs-4 text-dark ' + (q.icon || 'bi-star')"></i>
+            </div>
+            <div>
+              <h5 class="h6 fw-bold mb-1 text-dark">{{ q.title }}</h5>
+              <p class="text-muted small mb-0">{{ q.description }}</p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="bg-light rounded-3 p-3 text-center my-4">
-        <button class="btn btn-link text-dark fw-bold text-decoration-none">Message {{ service.hostName }}</button>
-      </div>
-      
-      <p class="small text-muted text-center">To help protect your payment, always use Airbnb to send money and communicate with hosts.</p>
-    </section>
-
-    <hr class="text-muted opacity-25">
-
-    <!-- C. Specialties (Images) -->
-    <section class="py-4">
-      <h3 class="h4 fw-bold mb-4">My specialties</h3>
-      <div class="row g-2">
-        <div class="col-8">
-          <img [src]="specialtiesImages[0]" class="w-100 rounded-3 object-fit-cover" style="height: 300px;">
+        <div class="bg-light rounded-3 p-3 text-center mb-2">
+          <button class="btn btn-link text-dark fw-bold text-decoration-none py-0">
+            Message {{ service.hostName.split(' ')[0] }}
+          </button>
         </div>
-        <div class="col-4">
-          <div class="d-flex flex-column gap-2 h-100">
-            <img [src]="specialtiesImages[1]" class="w-100 rounded-3 object-fit-cover h-50">
-            <div class="position-relative h-50">
-              <img [src]="specialtiesImages[2]" class="w-100 rounded-3 object-fit-cover h-100">
-              <button class="btn btn-light btn-sm position-absolute bottom-0 end-0 m-2 rounded-circle shadow-sm">
-                <i class="bi bi-grid-3x3-gap"></i>
+        <p class="text-muted text-center" style="font-size: 11px;">
+          To help protect your payment, always use Airbnb to send money and communicate with hosts.
+        </p>
+      </section>
+
+      <hr class="text-muted opacity-25 mb-5">
+
+      <!-- 3. My Gallery -->
+      <section class="mb-5" *ngIf="service.images && service.images.length > 0">
+        <h3 class="h4 fw-bold mb-4 text-dark">My gallery</h3>
+        <div class="row g-2 rounded-4 overflow-hidden position-relative" style="height: 350px;">
+          <!-- Left Large Image -->
+          <div class="col-8 h-100">
+            <img [src]="getImageUrl(service.images[1] || service.images[0])" 
+                 class="w-100 h-100 object-fit-cover cursor-pointer hover-zoom" alt="Gallery 1">
+          </div>
+          <!-- Right Stacked Images -->
+          <div class="col-4 h-100 d-flex flex-column gap-2">
+            <div class="h-50 overflow-hidden">
+              <img [src]="getImageUrl(service.images[2] || service.images[0])" 
+                   class="w-100 h-100 object-fit-cover cursor-pointer hover-zoom" alt="Gallery 2">
+            </div>
+            <div class="h-50 position-relative overflow-hidden">
+              <img [src]="getImageUrl(service.images[3] || service.images[0])" 
+                   class="w-100 h-100 object-fit-cover cursor-pointer hover-zoom" alt="Gallery 3">
+              <button class="btn btn-light btn-sm position-absolute bottom-0 end-0 m-3 shadow-sm border fw-bold d-flex align-items-center gap-2">
+                <i class="bi bi-grid-3x3-gap"></i> Show all
               </button>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <hr class="text-muted opacity-25">
+      <hr class="text-muted opacity-25 mb-5">
 
-    <!-- D. Things to know -->
-    <section class="py-4">
-      <h3 class="h4 fw-bold mb-4">Things to know</h3>
-      <div class="row row-cols-1 row-cols-md-2 g-4">
-        <div class="col">
-          <h5 class="h6 fw-bold">Guest requirements</h5>
-          <p class="small text-muted">Guests ages 2 and up can attend.</p>
+      <!-- 4. Things to Know -->
+      <section class="mb-5">
+        <h3 class="h4 fw-bold mb-4 text-dark">Things to know</h3>
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+          <div class="col">
+            <h5 class="h6 fw-bold mb-1 text-dark">Guest requirements</h5>
+            <p class="small text-muted mb-0">{{ service.guestRequirements || 'Standard requirements apply.' }}</p>
+            <a href="javascript:void(0)" class="small text-dark fw-bold text-decoration-underline mt-1 d-inline-block">Show more</a>
+          </div>
+          <div class="col">
+            <h5 class="h6 fw-bold mb-1 text-dark">Cancellation policy</h5>
+            <p class="small text-muted mb-0">{{ service.cancellationPolicy || 'Free cancellation for 48 hours.' }}</p>
+            <a href="javascript:void(0)" class="small text-dark fw-bold text-decoration-underline mt-1 d-inline-block">Read more</a>
+          </div>
         </div>
-        <div class="col">
-          <h5 class="h6 fw-bold">Cancellation policy</h5>
-          <p class="small text-muted">Cancel at least 1 day before for a full refund.</p>
+      </section>
+
+      <hr class="text-muted opacity-25 mb-5">
+
+      <!-- 5. Map -->
+      <section class="mb-5 pb-5">
+        <h3 class="h4 fw-bold mb-2 text-dark">Where you'll go</h3>
+        <p class="text-muted mb-4">{{ service.city }}, {{ service.city }} Beach</p>
+        <div class="rounded-4 overflow-hidden border position-relative bg-light" style="height: 400px;">
+          <!-- Static Map Placeholder -->
+          <img src="https://i.imgur.com/HILmr6r.png" class="w-100 h-100 object-fit-cover opacity-75" alt="Map">
+          <!-- Pin Marker -->
+          <div class="position-absolute top-50 start-50 translate-middle text-center">
+            <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg" 
+                 style="width: 50px; height: 50px;">
+              <i class="bi bi-house-door-fill fs-5"></i>
+            </div>
+            <div class="bg-white px-3 py-1 rounded-pill shadow mt-2 fw-bold small text-nowrap">
+              {{ service.hostName.split(' ')[0] }}'s place
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <hr class="text-muted opacity-25">
+    </div> <!-- End Left Column -->
 
-    <!-- E. Map (I'll come to you) -->
-    <section class="py-4">
-      <h3 class="h4 fw-bold mb-2">I'll come to you</h3>
-      <p class="text-muted mb-4">I travel to guests in {{ service.city }}.</p>
-      <div class="rounded-4 overflow-hidden bg-light" style="height: 300px;">
-        <!-- Static Map Image -->
-        <img src="https://maps.googleapis.com/maps/api/staticmap?center=Rome,Italy&zoom=12&size=600x300&maptype=roadmap&style=feature:all|element:labels|visibility:off&key=YOUR_KEY_OR_MOCK" 
-             class="w-100 h-100 object-fit-cover"
-             onerror="this.src=''"> 
+    <!-- ==================================== -->
+    <!-- 🟢 RIGHT COLUMN: Sticky Packages List -->
+    <!-- ==================================== -->
+    <div class="col-lg-5 mt-4 mt-lg-0 ps-lg-5">
+      <div class="sticky-top" style="top: 100px; z-index: 1;">
+        
+        <h3 class="h5 fw-bold mb-3 d-none d-lg-block">Choose your experience</h3>
+        
+        <div class="d-flex flex-column gap-3">
+          <div *ngFor="let pkg of service.packages" 
+               (click)="selectPackage(pkg)"
+               class="card border-0 rounded-4 p-3 cursor-pointer package-card shadow-sm"
+               [class.selected-package]="selectedPackage === pkg">
             
-      </div>
-    </section>
+            <div class="d-flex gap-3">
+              <img [src]="getImageUrl(pkg.imageUrl)" 
+                   class="rounded-3 object-fit-cover bg-light flex-shrink-0" 
+                   width="110" height="110"
+                   onerror="this.src='assets/images/placeholder.jpg'">
+              
+              <div class="flex-grow-1">
+                <h4 class="h6 fw-bold mb-1 text-dark">{{ pkg.title }}</h4>
+                <div class="d-flex align-items-center gap-1 mb-2">
+                  <span class="fw-bold">{{ pkg.price | currency:'EGP ':'symbol':'1.0-0' }}</span>
+                  <span class="small text-muted">/ guest</span>
+                  <span class="small text-muted">· {{ pkg.duration }}</span>
+                </div>
+                <p class="small text-muted mb-0 line-clamp-3">{{ pkg.description }}</p>
+              </div>
+            </div>
 
-  </div>
+          </div>
+        </div>
+
+      </div>
+    </div> <!-- End Right Column -->
+
+  </div> <!-- End Row -->
 
 </div>
 
-<!-- ✅ Sticky Bottom Action Bar -->
-<div class="fixed-bottom bg-white border-top py-3 px-4 shadow-lg d-flex justify-content-center">
-  <div class="container d-flex justify-content-between align-items-center" style="max-width: 900px;">
+<!-- Sticky Bottom Bar (Mobile/Action) -->
+<div *ngIf="!isLoading && service" class="fixed-bottom bg-white border-top py-3 px-4 shadow-lg z-3">
+  <div class="container d-flex justify-content-between align-items-center" style="max-width: 1200px;">
     
-    <!-- Price Info -->
     <div class="d-flex flex-column">
       <div class="d-flex align-items-baseline gap-1">
-        <span class="h5 fw-bold mb-0 text-dark">From {{ service.pricePerUnit | currency:'EGP ':'symbol':'1.0-0' }}</span>
-        <span class="small text-muted">/ {{ service.pricingUnit }}</span>
+        <span class="h5 fw-bold mb-0 text-dark">
+          {{ (selectedPackage ? selectedPackage.price : service.pricePerUnit) | currency:'EGP ':'symbol':'1.0-0' }}
+        </span>
+        <span class="small text-muted">/ guest</span>
       </div>
-      <span class="small text-success fw-semibold">Free cancellation</span>
+      <span class="small text-success fw-bold" *ngIf="selectedPackage">{{ selectedPackage.title }} selected</span>
+      <span class="small text-muted" *ngIf="!selectedPackage">Select a package</span>
     </div>
 
-    <!-- Reserve Button -->
-    <button class="btn btn-danger px-5 py-2 fw-bold rounded-3" 
-            style="background: #E31C5F; font-size: 1.1rem;">
+    <button class="btn btn-danger px-4 py-2 fw-bold rounded-3" 
+            style="background: #E31C5F; min-width: 140px;"
+            [disabled]="!selectedPackage">
       Reserve
     </button>
-
   </div>
 </div>

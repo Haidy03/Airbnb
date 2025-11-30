@@ -16,3 +16,36 @@ export interface ApiResponse<T> {
   data: T;
   message?: string;
 }
+
+export interface ServicePackage {
+  title: string;
+  description: string;
+  price: number;
+  duration: string;
+  imageUrl: string;
+}
+
+export interface ServiceQualification {
+  title: string;
+  description: string;
+  icon: string;
+}
+
+// تحديث الواجهة الرئيسية لتشمل القوائم الجديدة
+export interface ServiceDetails {
+  id: number;
+  title: string;
+  description: string;
+  pricePerUnit: number;
+  pricingUnit: string;
+  hostName: string;
+  hostAvatar: string;
+  city: string;
+  images: string[];
+  rating: number;
+  reviewsCount: number;
+  cancellationPolicy: string;
+  guestRequirements: string;
+  qualifications: ServiceQualification[];
+  packages: ServicePackage[];
+}

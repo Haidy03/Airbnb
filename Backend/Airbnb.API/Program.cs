@@ -227,6 +227,7 @@ using (var scope = app.Services.CreateScope())
         logger.LogInformation("✅ Amenities seeded successfully");
 
         await SeedServices.SeedDataAsync(context);
+        SeedServiceCategories.Seed(context);
         // ⭐ أضيفي الـ Seed Data للـ Reviews
         await SeedReviewData(services);
         logger.LogInformation("✅ Review test data seeded successfully");
@@ -253,6 +254,19 @@ if (app.Environment.IsDevelopment())
 
 // Enable static files (for image uploads)
 app.UseStaticFiles();
+var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+
+
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
 
 //app.UseStaticFiles(new StaticFileOptions
 //{
