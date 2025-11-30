@@ -70,6 +70,11 @@ export class BookingService {
     );
   }
 
+  confirmBookingPayment(bookingId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${bookingId}/confirm-payment`, {});
+  }
+
+
   // ✅ إلغاء حجز
   cancelTrip(bookingId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/${bookingId}/cancel`, {});

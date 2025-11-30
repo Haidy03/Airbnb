@@ -17,5 +17,6 @@ namespace Airbnb.API.Services.Interfaces
 
         // --- Shared (Updated to allow Guest OR Host) ---
         Task<bool> CancelBookingAsync(int id, string userId);
+        Task<bool> ConfirmBookingAfterPaymentAsync(int id, string guestId);
     }
 }

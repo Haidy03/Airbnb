@@ -92,5 +92,26 @@ namespace Airbnb.API.Controllers.Guest
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpPost("{id}/confirm-payment")]
+        public async Task<IActionResult> ConfirmBookingPayment(int id)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                // هذه الدالة ستقوم بتحويل الحالة من AwaitingPayment إلى Confirmed
+                var success = await _bookingService.ConfirmBookingAfterPaymentAsync(id, userId);
+
+                if (!success)
+                    return BadRequest(new { message = "Cannot confirm booking. Either it's not awaiting payment or you are not the owner." });
+
+                return Ok(new { message = "Booking Confirmed Successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
     }
 }
