@@ -1,11 +1,8 @@
 <div class="review-card">
   <div class="review-header">
     <img
-      [src]="review.reviewerProfileImage || getDefaultAvatar()" 
-      [alt]="review.reviewerName + ' profile picture'"
-      [title]="review.reviewerName"
-      role="img"
-      [attr.aria-label]="review.reviewerName"
+      [src]="getImageUrl(review.reviewerProfileImage)" 
+      [alt]="review.reviewerName"
       class="reviewer-avatar"
       loading="lazy">
     

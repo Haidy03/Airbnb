@@ -55,6 +55,10 @@ namespace Airbnb.API.Repositories.Implementations
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<bool> ReviewExistsForBookingAsync(int bookingId)
+        {
+            return await _context.Reviews.AnyAsync(r => r.BookingId == bookingId);
+        }
 
         // ============================================
         // Query Methods

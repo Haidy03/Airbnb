@@ -413,3 +413,58 @@
     gap: 16px;
   }
 }
+.outline-btn {
+  display: inline-block; /* عشان الـ padding يشتغل صح */
+  padding: 13px 23px;
+  background: white;
+  color: #222; /* أسود */
+  border: 1px solid #222; /* بوردر أسود */
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none; /* عشان هو لينك <a> */
+  text-align: center;
+  transition: background-color 0.2s, border-color 0.2s;
+  min-width: 180px; /* عرض مناسب */
+}
+
+.outline-btn:hover {
+  background-color: #F7F7F7; /* رمادي فاتح جداً */
+  border-color: #000;
+}
+
+/* تنسيق رأس المراجعة (الصورة + الاسم) */
+.reviewer-header {
+  display: flex;
+  align-items: center; /* محاذاة عمودية في المنتصف */
+  gap: 12px; /* مسافة بين الصورة والاسم */
+  margin-bottom: 12px;
+}
+
+/* ✅ تنسيق صورة البروفايل لتكون أيقونة صغيرة ودائرية */
+.reviewer-img {
+  width: 48px;       /* عرض ثابت صغير */
+  height: 48px;      /* ارتفاع ثابت */
+  border-radius: 50%; /* جعلها دائرية تماماً */
+  object-fit: cover;  /* قص الصورة لتملأ الدائرة دون أن تمط */
+  background-color: #ddd; /* لون خلفية في حال تأخر تحميل الصورة */
+  flex-shrink: 0;     /* منع الصورة من الانكماش */
+}
+
+/* تنسيق معلومات المراجع */
+.reviewer-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.reviewer-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #222;
+}
+
+.review-date {
+  font-size: 12px;
+  color: #717171;
+}

@@ -88,6 +88,7 @@ export interface AdminProperty {
   title: string;
   hostId: string;
   hostName: string;
+  images?: { imageUrl: string, isPrimary: boolean }[];
   status: string;
   pricePerNight: number;
   location: string;

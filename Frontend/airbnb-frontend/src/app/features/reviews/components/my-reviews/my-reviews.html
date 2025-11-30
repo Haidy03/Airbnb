@@ -50,6 +50,12 @@
               (click)="deleteReview(review.id)">
               <span class="icon">🗑️</span> Delete
             </button>
+            <a [routerLink]="review.reviewType === 'Experience' ? ['/experiences', review.propertyId] : ['/listing', review.propertyId]" 
+               class="btn" 
+               style="background: #f0f0f0; color: #222; text-decoration: none; margin-left: auto; display: inline-flex; align-items: center; justify-content: center;">
+               <span class="icon">👁️</span> View Listing
+            </a>
+       
           </div>
         </div>
       </div>

@@ -12,6 +12,8 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<Booking> AddAsync(Booking booking);
         Task UpdateAsync(Booking booking);
         Task<int> GetTotalBookingsByPropertyIdAsync(int propertyId);
+        Task<List<Booking>> GetBookingsByGuestIdAsync(string guestId);
+
         Task<bool> IsDateRangeAvailableAsync(int propertyId, DateTime checkIn, DateTime checkOut);
     }
 }

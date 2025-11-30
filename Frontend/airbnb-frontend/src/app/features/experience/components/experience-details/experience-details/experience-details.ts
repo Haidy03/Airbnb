@@ -4,11 +4,12 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ExperienceService } from '../../../../../shared/Services/experience.service';
 import { Experience, ExperienceReview } from '../../../../../shared/models/experience.model';
 import { environment } from '../../../../../../environments/environment.development';
+import { HeaderComponent } from "../../../../guest/components/header/header";
 
 @Component({
   selector: 'app-experience-details',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HeaderComponent],
   templateUrl: './experience-details.html',
   styleUrls: ['./experience-details.css']
 })
@@ -141,16 +142,25 @@ export class ExperienceDetailsComponent implements OnInit {
     }
   }
 
-  getImageUrl(imageUrl: string): string {
-    if (!imageUrl) return 'assets/images/placeholder.jpg';
+  getImageUrl(imageUrl: string | undefined | null): string {
+    // 1. لو مفيش رابط خالص، رجع صورة افتراضية
+    if (!imageUrl) {
+      return 'assets/images/default-avatar.png'; // تأكدي من مسار صورة الـ Avatar الافتراضية
+    }
+
+    // 2. لو الرابط خارجي أو Assets داخلية
+    if (imageUrl.startsWith('http') || imageUrl.includes('assets/')) {
+      return imageUrl;
+    }
+
+    // 3. لو صورة مرفوعة على السيرفر
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    let cleanPath = imageUrl;
     
-    // لو الصورة رابط خارجي رجعها زي ما هي
-    if (imageUrl.startsWith('http')) return imageUrl;
-    
-    // ✅ التصحيح: نضيف رابط السيرفر (الباك اند) قبل مسار الصورة
-    // بنشيل كلمة '/api' عشان نوصل للروت بتاع السيرفر اللي عليه فولدر uploads
-    const baseUrl = environment.apiUrl.replace('/api', '');
-    
-    return `${baseUrl}${imageUrl}`;
+    if (!cleanPath.startsWith('/')) {
+        cleanPath = `/${cleanPath}`;
+    }
+
+    return `${baseUrl}${cleanPath}`;
   }
 }

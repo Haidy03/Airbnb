@@ -1,12 +1,24 @@
+<app-header></app-header>
+
 <div class="property-reviews-container">
   
-  <!-- Loading State -->
+  <!-- 1. Header & Back Button -->
+  <div class="page-header-row">
+    <h1>Property Reviews</h1>
+    <!-- رابط العودة لتفاصيل الشقة -->
+    <a [routerLink]="['/listing', propertyId]" class="btn-back">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation" focusable="false" style="display: block; fill: none; height: 12px; width: 12px; stroke: currentcolor; stroke-width: 5.33333; overflow: visible;"><path fill="none" d="M20 28 8.7 16.7a1 1 0 0 1 0-1.4L20 4"></path></svg>
+      Back to Listing
+    </a>
+  </div>
+
+  <!-- Loading -->
   <div *ngIf="loading && !reviewsSummary" class="loading-container">
     <div class="spinner"></div>
     <p>Loading reviews...</p>
   </div>
 
-  <!-- Error State -->
+  <!-- Error -->
   <div *ngIf="errorMessage && !loading" class="alert alert-error">
     {{ errorMessage }}
   </div>
@@ -14,15 +26,14 @@
   <!-- Reviews Content -->
   <div *ngIf="reviewsSummary && !loading" class="reviews-content">
     
-    <!-- Summary Section -->
+    <!-- Summary -->
     <app-review-summary 
       *ngIf="reviewsSummary.totalReviews > 0"
       [summary]="reviewsSummary">
     </app-review-summary>
 
-    <!-- No Reviews State -->
+    <!-- No Reviews -->
     <div *ngIf="reviewsSummary.totalReviews === 0" class="no-reviews">
-      <div class="no-reviews-icon">📝</div>
       <h3>No reviews yet</h3>
       <p>Be the first to review this property!</p>
     </div>
@@ -34,31 +45,27 @@
       </h2>
 
       <div class="reviews-list">
-        <app-review-card 
-          *ngFor="let review of reviewsSummary.reviews" 
-          [review]="review"
-          [showPropertyName]="false">
-        </app-review-card>
+        <div *ngFor="let review of reviewsSummary.reviews" class="review-item-wrapper">
+            
+            <app-review-card 
+                [review]="review"
+                [showPropertyName]="false">
+            </app-review-card>
+
+            <!-- ✅ Edit & Delete Buttons -->
+            <div class="review-actions" *ngIf="isReviewOwner(review.reviewerId)">
+                <button class="btn btn-edit" (click)="editReview(review.id)">
+                  ✏️ Edit
+                </button>
+                <button class="btn btn-delete" (click)="deleteReview(review.id)">
+                  🗑️ Delete
+                </button>
+            </div>
+
+        </div>
       </div>
 
-      <!-- Pagination -->
-      <div class="pagination" *ngIf="reviewsSummary.totalReviews > pageSize">
-        <button 
-          class="btn btn-pagination" 
-          (click)="goToPreviousPage()"
-          [disabled]="currentPage === 1">
-          ← Previous
-        </button>
-        
-        <span class="page-info">Page {{ currentPage }}</span>
-        
-        <button 
-          class="btn btn-pagination" 
-          (click)="goToNextPage()"
-          [disabled]="!hasMoreReviews">
-          Next →
-        </button>
-      </div>
+      <!-- يمكنك إعادة إضافة الـ Pagination هنا لو أردت -->
     </div>
 
   </div>

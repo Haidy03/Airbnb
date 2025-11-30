@@ -1,21 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { ListingService } from '../../services/Lisiting-Services';
-import { Listing } from '../../models/listing-model';
+import { Listing, RatingBreakdown } from '../../models/listing-model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ImageGallery } from "../image-gallery/image-gallery";
 import { BookingCard } from '../booking-card/booking-card';
 import { CalendarSection } from '../calendar-section/calendar-section';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { HeaderComponent } from '../header/header';
 import { AuthService } from '../../../auth/services/auth.service';
 import { environment } from '../../../../../environments/environment.development';
+import { ReviewService } from '../../../reviews/services/review.service';
 
 @Component({
   selector: 'app-listing-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, ImageGallery, BookingCard, CalendarSection, HeaderComponent],
+  imports: [CommonModule, FormsModule, ImageGallery, BookingCard, CalendarSection, HeaderComponent, RouterModule],
   templateUrl: './listing-details.html',
   styleUrl: './listing-details.scss',
 })
@@ -25,7 +26,7 @@ export class ListingDetails implements OnInit {
   isLoading: boolean = true;
   error: string | null = null;
   blockedDates: string[] = [];
-
+  reviews: any[] = []; 
   isLiked: boolean = false;
   isTranslated: boolean = true;
   isDescriptionExpanded: boolean = false;
@@ -47,6 +48,7 @@ export class ListingDetails implements OnInit {
     private listingService: ListingService,
     private route: ActivatedRoute,
     private router: Router,
+    private reviewService: ReviewService, 
     public AuthService: AuthService
   ) {}
 
@@ -56,7 +58,8 @@ export class ListingDetails implements OnInit {
       if (id) {
         this.propertyId = id;
         this.fetchListingDetails(this.propertyId);
-        this.fetchBlockedDates(this.propertyId)
+        this.fetchBlockedDates(this.propertyId);
+        this.loadReviews(parseInt(id));
         if (this.AuthService.isAuthenticated) {
           this.checkWishlistStatus(id);
         }
@@ -66,6 +69,58 @@ export class ListingDetails implements OnInit {
       }
     });
   }
+  loadReviews(propertyId: number): void {
+    this.reviewService.getPropertyReviews(propertyId).subscribe({
+        next: (res: any) => {
+            if (res && res.reviews) {
+                this.reviews = res.reviews;
+            } else if (Array.isArray(res)) {
+                this.reviews = res;
+            }
+            if (this.listing) {
+                // لو الباك اند مش باعت التفاصيل، نحسبها إحنا
+                if (!this.listing.ratingBreakdown) {
+                    this.listing.ratingBreakdown = this.calculateRatingBreakdown(this.reviews);
+                }
+            }
+        },
+        error: (err) => console.error('Error loading reviews', err)
+    });
+  }
+
+  calculateRatingBreakdown(reviews: any[]): RatingBreakdown | undefined {
+    if (!reviews || reviews.length === 0) return undefined;
+
+    const breakdown = {
+      cleanliness: 0,
+      communication: 0,
+      checkIn: 0,
+      accuracy: 0,
+      location: 0,
+      value: 0
+    };
+
+    reviews.forEach(r => {
+      breakdown.cleanliness += r.cleanlinessRating || 0;
+      breakdown.communication += r.communicationRating || 0;
+      // ✅ تأكدي من اسم الحقل القادم من الريفيو (ممكن يكون checkInRating)
+      breakdown.checkIn += r.checkInRating || 0; 
+      breakdown.accuracy += r.accuracyRating || 0;
+      breakdown.location += r.locationRating || 0;
+      breakdown.value += r.valueRating || 0;
+    });
+
+    const count = reviews.length;
+    return {
+      cleanliness: breakdown.cleanliness / count,
+      communication: breakdown.communication / count,
+      checkin: breakdown.checkIn / count, // ✅ I Capital
+      accuracy: breakdown.accuracy / count,
+      location: breakdown.location / count,
+      value: breakdown.value / count
+    };
+  }
+  
 
   fetchBlockedDates(id: string) {
     this.listingService.getBlockedDates(id).subscribe({
@@ -150,13 +205,17 @@ export class ListingDetails implements OnInit {
   }
 
   // Helper functions
-  getImageUrl(imageUrl?: string): string {
-  if (!imageUrl) return 'assets/images/placeholder.jpg';
-  if (imageUrl.startsWith('http') || imageUrl.includes('assets/')) return imageUrl;
-  const baseUrl = 'https://localhost:5202';
-  const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
-  return `${baseUrl}${cleanPath}`;
-}
+  getImageUrl(imageUrl: string | undefined | null): string {
+    if (!imageUrl) return 'assets/images/placeholder.jpg';
+    if (imageUrl.startsWith('http') || imageUrl.includes('assets/')) return imageUrl;
+
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    let cleanPath = imageUrl;
+    if (!cleanPath.startsWith('/')) {
+        cleanPath = `/${cleanPath}`;
+    }
+    return `${baseUrl}${cleanPath}`;
+  }
 
   checkWishlistStatus(propertyId: string): void {
     this.listingService.checkIsWishlisted(propertyId).subscribe({

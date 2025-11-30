@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ReviewService } from '../../services/review.service';
 import { CreateReviewDto } from '../../models/review.model';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
+import { ExperienceService } from '../../../../shared/Services/experience.service';
 
 @Component({
   selector: 'app-add-review',
@@ -20,7 +21,7 @@ export class AddReviewComponent implements OnInit {
   loading = false;
   errorMessage = '';
   successMessage = '';
-  
+  reviewType: 'Property' | 'Experience' = 'Property';
   overallRating = 0;
   cleanlinessRating = 0;
   communicationRating = 0;
@@ -31,13 +32,20 @@ export class AddReviewComponent implements OnInit {
     private fb: FormBuilder,
     private reviewService: ReviewService,
     private route: ActivatedRoute,
+    private experienceService: ExperienceService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.bookingId = +this.route.snapshot.paramMap.get('bookingId')!;
+    
+    // ✅ NEW: استقبال النوع من الـ Query Params
+    this.route.queryParams.subscribe(params => {
+      this.reviewType = params['type'] || 'Property';
+      this.checkCanReview();
+    });
+
     this.initForm();
-    this.checkCanReview();
   }
 
   initForm(): void {
@@ -48,19 +56,27 @@ export class AddReviewComponent implements OnInit {
 
   checkCanReview(): void {
     this.loading = true;
-    this.reviewService.canReview(this.bookingId).subscribe({
-      next: (response) => {
-        this.canReview = response.canReview;
-        if (!response.canReview) {
-          this.errorMessage = response.reason || 'You cannot review this booking';
+
+    // ✅ NEW: التحقق بناءً على النوع
+    if (this.reviewType === 'Property') {
+      this.reviewService.canReview(this.bookingId).subscribe({
+        next: (response) => {
+          this.canReview = response.canReview;
+          if (!response.canReview) {
+            this.errorMessage = response.reason || 'You cannot review this booking';
+          }
+          this.loading = false;
+        },
+        error: () => {
+          this.errorMessage = 'Error checking review eligibility';
+          this.loading = false;
         }
-        this.loading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Error checking review eligibility';
-        this.loading = false;
-      }
-    });
+      });
+    } else {
+      // ✅ بالنسبة للتجارب، نفترض السماح طالما الزر ظهر (أو يمكنك إضافة دالة canReviewExperience في السيرفس)
+      this.canReview = true; 
+      this.loading = false;
+    }
   }
 
   onOverallRatingChange(rating: number): void {
@@ -89,37 +105,46 @@ export class AddReviewComponent implements OnInit {
       return;
     }
 
-    if (this.reviewForm.invalid) {
-      return;
-    }
+    if (this.reviewForm.invalid) return;
 
     this.loading = true;
     this.errorMessage = '';
 
-    const reviewData: CreateReviewDto = {
+    const reviewData: any = {
       bookingId: this.bookingId,
       rating: this.overallRating,
       comment: this.reviewForm.value.comment,
+      // هذه الحقول اختيارية وقد لا تستخدمها التجارب
       cleanlinessRating: this.cleanlinessRating > 0 ? this.cleanlinessRating : undefined,
       communicationRating: this.communicationRating > 0 ? this.communicationRating : undefined,
       locationRating: this.locationRating > 0 ? this.locationRating : undefined,
       valueRating: this.valueRating > 0 ? this.valueRating : undefined
     };
 
-    this.reviewService.createReview(reviewData).subscribe({
-      next: () => {
-        this.successMessage = 'Review submitted successfully!';
-        this.loading = false;
-        
-        setTimeout(() => {
-          this.router.navigate(['/guest/trips']);
-        }, 2000);
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Error submitting review';
-        this.loading = false;
-      }
-    });
+    // ✅ NEW: إرسال البيانات حسب النوع
+    if (this.reviewType === 'Property') {
+      this.reviewService.createReview(reviewData).subscribe({
+        next: () => this.handleSuccess(),
+        error: (error) => this.handleError(error)
+      });
+    } else {
+      this.experienceService.addReview(reviewData).subscribe({
+        next: () => this.handleSuccess(),
+        error: (error) => this.handleError(error)
+      });
+    }
+  }
+  handleSuccess() {
+    this.successMessage = 'Review submitted successfully!';
+    this.loading = false;
+    setTimeout(() => {
+      this.router.navigate(['/guest/trips']);
+    }, 2000);
+  }
+
+  handleError(error: any) {
+    this.errorMessage = error.error?.message || 'Error submitting review';
+    this.loading = false;
   }
 
   cancel(): void {

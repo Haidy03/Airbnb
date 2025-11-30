@@ -51,11 +51,36 @@ namespace Airbnb.API.Controllers.Guest
             }
         }
 
+        //[HttpGet("my-trips")]
+        //public async Task<IActionResult> GetMyTrips()
+        //{
+        //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //    var result = await _bookingService.GetGuestBookingsAsync(userId);
+        //    return Ok(result);
+        //}
+
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetTripDetails(int id)
+        //{
+        //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //    var booking = await _bookingService.GetBookingByIdAsync(id, userId);
+
+        //    if (booking == null)
+        //    {
+        //        return NotFound(new { message = "Booking not found" });
+        //    }
+
+        //    return Ok(booking);
+        //}
+
         [HttpGet("my-trips")]
-        public async Task<IActionResult> GetMyTrips()
+        public async Task<ActionResult<List<TripDto>>> GetMyTrips()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // السيرفس الآن بترجع List<TripDto> فيها الشقق والتجارب معاً
             var result = await _bookingService.GetGuestBookingsAsync(userId);
+
             return Ok(result);
         }
 
