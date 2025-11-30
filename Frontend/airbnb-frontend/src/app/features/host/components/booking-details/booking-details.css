@@ -74,8 +74,29 @@
   gap: 16px;
   margin-bottom: 20px;
 }
+.guest-avatar {
+  width: 64px; 
+  height: 64px;
+  flex-shrink: 0;
+}
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #222222; /* أسود غامق */
+  color: #ffffff; /* أبيض */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px; /* حجم خط مناسب */
+  font-weight: 600;
+  text-transform: uppercase;
+}
 .guest-avatar img {
-  width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 .guest-info h2 { margin: 0; font-size: 22px; font-weight: 600; }
 .guest-meta { margin: 4px 0 0; color: #717171; font-size: 14px; }
