@@ -57,20 +57,22 @@ export class ProfileEditComponent implements OnInit {
   }
 
   loadData() {
-    // 1. Load Initial State from Auth (Fast)
+    // 1. Load from Auth first (Fast preview)
     const currentUser = this.authService.currentUser;
-    if (currentUser && currentUser.profilePicture) {
-       this.profileImage = currentUser.profilePicture;
+    if (currentUser) {
+       this.profileImage = currentUser.profilePicture || '';
+       // ✅ Initialize names from Auth state first
+       this.profileDetails.firstName = currentUser.firstName;
+       this.profileDetails.lastName = currentUser.lastName;
     }
 
-    // 2. Load Fresh Data from Server (Slower but accurate)
+    // 2. Load from API (Source of Truth)
     this.userService.getProfileDetails().subscribe({
       next: (details) => {
         console.log('📥 Loaded Profile Details:', details);
-        this.profileDetails = details;
+        // Merge API data into local state
+        this.profileDetails = { ...this.profileDetails, ...details };
         
-        // ✅ CRITICAL: If backend returns an image, use it. 
-        // The service has already transformed it to https://localhost...
         if (details.profileImage) {
           this.profileImage = details.profileImage;
         }

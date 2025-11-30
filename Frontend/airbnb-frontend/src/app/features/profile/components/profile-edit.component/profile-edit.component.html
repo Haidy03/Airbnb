@@ -20,6 +20,19 @@
         style="display: none">
     </div>
 
+    <div class="name-section" style="margin-bottom: 30px;">
+      <div class="grid-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="input-group">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #717171; margin-bottom: 8px;">First Name</label>
+          <input type="text" [(ngModel)]="profileDetails.firstName" class="modal-input" placeholder="First Name">
+        </div>
+        <div class="input-group">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #717171; margin-bottom: 8px;">Last Name</label>
+          <input type="text" [(ngModel)]="profileDetails.lastName" class="modal-input" placeholder="Last Name">
+        </div>
+      </div>
+    </div>
+
     <h2 class="edit-title">My profile</h2>
     <p class="edit-description">
       Hosts and guests can see your profile and it may appear across Airbnb to help us build trust in our community. 
