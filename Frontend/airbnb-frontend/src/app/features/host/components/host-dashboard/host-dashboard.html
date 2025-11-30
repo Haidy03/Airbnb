@@ -124,8 +124,7 @@
 
         <div class="booking-actions">
           <button class="action-btn" 
-            [routerLink]="['/host/messages']"
-            [queryParams]="{ guestId: booking.guestId, propertyId: booking.propertyId }">
+            (click)="openChat(booking)">
             <span class="btn-icon">💬</span> Message
           </button>
           <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">View details</button>

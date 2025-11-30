@@ -60,16 +60,18 @@ export class HostDashboardComponent implements OnInit {
   /**
  * Open chat with specific guest
  */
-openChat(booking: Booking): void {
-  this.router.navigate(['/host/messages'], {
-    queryParams: {
-      guestId: booking.guestId,
-      propertyId: booking.propertyId,
-      bookingId: booking.id,
-      autoOpen: 'true' // ✅ علامة لفتح الشات تلقائياً
+  openChat(booking: Booking): void {
+      this.router.navigate(['/host/messages'], {
+        queryParams: {
+          guestId: booking.guestId,
+          guestName: booking.guestName, // مهم: الاسم للعرض
+          propertyId: booking.propertyId,
+          propertyTitle: booking.propertyTitle, // مهم: العنوان للعرض
+          propertyImage: booking.propertyImage, // اختياري: الصورة
+          autoOpen: 'true'
+        }
+      });
     }
-  });
-}
 
   /**
    * ✅ Load upcoming bookings

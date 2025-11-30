@@ -35,6 +35,9 @@ export class MessageService {
       headers: this.getHeaders()
     });
   }
+  createConversation(data: { propertyId: number, guestId: string, initialMessage: string }) {
+  return this.http.post<any>(`${this.apiUrl}/conversations`, data);
+}
 
   // ✅ دالة إرسال الرسالة
   sendMessage(data: any): Observable<any> {
