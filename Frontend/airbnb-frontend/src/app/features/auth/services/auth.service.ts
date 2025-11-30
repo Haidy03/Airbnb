@@ -149,6 +149,7 @@ export class AuthService {
   }
 
     this.userSubject.next(merged);
+    this.user.set(merged); 
   }
 
    getUserFromStorage(): AuthUser | null {
@@ -186,33 +187,45 @@ export class AuthService {
   // ================= fetch full profile and merge =================
  
  fetchAndSetFullProfile(): void {
-    this.getCurrentUser().subscribe({
-      next: (profile) => {
-        const rawProfilePic = 
-          (profile as any).profileImage || 
-          (profile as any).profilePicture || 
-          (profile as any).avatar;
+  this.getCurrentUser().subscribe({
+    next: (profile) => {
+      // ✅ 1. استخراج رابط الصورة الصحيح بناءً على الـ JSON Response
+      const rawProfilePic = 
+        (profile as any).profileImageUrl || // هذا هو الاسم الصحيح من الباك اند
+        (profile as any).profilePicture || 
+        (profile as any).avatar;
 
-        const userPartial: Partial<AuthUser> = {
-          id: profile.id,
-          email: profile.email,
-          firstName: profile.firstName,
-          lastName: profile.lastName,
-          fullName: profile.firstName && profile.lastName
-            ? `${profile.firstName} ${profile.lastName}`
-            : undefined,
-          
-          profilePicture: this.getFullImageUrl(rawProfilePic),
-          
-          isEmailVerified: profile.isEmailVerified
-        };
-        this.setUser(userPartial as Partial<AuthUser>);
-      },
-      error: (err) => {
-        console.warn('Could not fetch full profile', err);
+      // ✅ 2. تحويل الرابط لرابط كامل (Full URL)
+      const fullProfilePicUrl = this.getFullImageUrl(rawProfilePic);
+
+      const userPartial: Partial<AuthUser> = {
+        id: profile.id,
+        email: profile.email,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        fullName: profile.firstName && profile.lastName
+          ? `${profile.firstName} ${profile.lastName}`
+          : undefined,
+        
+        // ✅ 3. حفظ الرابط الكامل
+        profilePicture: fullProfilePicUrl,
+        
+        isEmailVerified: profile.isEmailVerified
+      };
+      
+      // ✅ 4. تحديث الـ User Signal والـ LocalStorage
+      this.setUser(userPartial as Partial<AuthUser>);
+      
+      // ✅ 5. حفظ الصورة في LocalStorage لضمان ظهورها عند عمل Refresh
+      if (fullProfilePicUrl) {
+        localStorage.setItem('profilePicture', fullProfilePicUrl);
       }
-    });
-  }
+    },
+    error: (err) => {
+      console.warn('Could not fetch full profile', err);
+    }
+  });
+}
 
   // ================= Change Password (LOGGED IN) =================
   changePassword(currentPassword: string, newPassword: string): Observable<ChangePasswordResponse> {
@@ -349,38 +362,43 @@ export class AuthService {
     return this.http.get<UserProfile>(`${this.API_URL}/profile`);
   }
   updateUserImage(imageUrl: string): void {
-  const current = this.userSubject.value;
-  if (!current) return;
+      const current = this.userSubject.value;
+      if (!current) return;
 
-  // Update the user object with new image
-  const updatedUser: AuthUser = {
-    ...current,
-    profilePicture: imageUrl
-  };
+     
+      const updatedUser: AuthUser = {
+        ...current,
+        profilePicture: imageUrl
+      };
 
-  // Save to localStorage for persistence
-  localStorage.setItem('profilePicture', imageUrl);
+      localStorage.setItem('profilePicture', imageUrl);
 
-  // Emit the updated user
-  this.userSubject.next(updatedUser);
-}
+      
+      this.userSubject.next(updatedUser);
+      this.user.set(updatedUser); 
+    }
 
   updateUserProfile(data: Partial<UserProfile>): Observable<UserProfile> {
-    return this.http.put<UserProfile>(`${this.API_URL}/profile`, data)
-      .pipe(
-        tap(updated => {
-          const userPartial: Partial<AuthUser> = {
-            email: updated.email,
-            firstName: updated.firstName,
-            lastName: updated.lastName,
-           profilePicture: this.getFullImageUrl(updated.avatar),
-            //profilePicture: (updated as any).avatar || (updated as any).profilePicture,
-            isEmailVerified: updated.isEmailVerified
-          };
-          this.setUser(userPartial);
-        })
-      );
-  }
+  return this.http.put<UserProfile>(`${this.API_URL}/profile`, data)
+    .pipe(
+      tap(updated => {
+        const fullImageUrl = this.getFullImageUrl(updated.avatar);
+        
+        const userPartial: Partial<AuthUser> = {
+          email: updated.email,
+          firstName: updated.firstName,
+          lastName: updated.lastName,
+          profilePicture: fullImageUrl, // ✅ استخدام الرابط الكامل
+          isEmailVerified: updated.isEmailVerified
+        };
+        
+        this.setUser(userPartial);
+        if (fullImageUrl) {
+          localStorage.setItem('profilePicture', fullImageUrl);
+        }
+      })
+    );
+}
 
   
 

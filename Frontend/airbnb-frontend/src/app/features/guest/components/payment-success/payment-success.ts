@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BookingService, CreateBookingDto } from '../../services/booking.service';
+import { GuestBookingService, CreateBookingDto } from '../../services/booking.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -141,7 +141,7 @@ export class PaymentSuccessComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private bookingService: BookingService
+    private guestBookingService: GuestBookingService
   ) {}
 
   ngOnInit() {
@@ -195,7 +195,7 @@ export class PaymentSuccessComponent implements OnInit {
 
     console.log('📤 Creating New Booking:', payload);
 
-    this.bookingService.createBooking(payload).subscribe({
+    this.guestBookingService.createBooking(payload).subscribe({
       next: (res) => {
         console.log('✅ Booking created:', res);
         sessionStorage.removeItem('pendingBooking'); // تنظيف
@@ -211,7 +211,7 @@ export class PaymentSuccessComponent implements OnInit {
   confirmExistingBooking(bookingId: string) {
     console.log('🔄 Confirming Existing Booking ID:', bookingId);
 
-    this.bookingService.confirmBookingPayment(Number(bookingId)).subscribe({
+    this.guestBookingService.confirmBookingPayment(Number(bookingId)).subscribe({
       next: (res) => {
         console.log('✅ Booking confirmed:', res);
         sessionStorage.removeItem('payingBookingId'); // تنظيف

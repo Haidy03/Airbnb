@@ -45,14 +45,14 @@
           <!-- Clicking the IMAGE specifically navigates to profile -->
           <div class="user-avatar" (click)="viewProfileClick($event)" title="Go to Profile">
             @if (user(); as currentUser) {
+              <div class="avatar-placeholder">
+                {{ currentUser.firstName?.charAt(0) | uppercase }}
+              </div>
               @if (currentUser.profilePicture) {
-                <img [src]="currentUser.profilePicture" [alt]="currentUser.firstName">
-              } @else {
-                <!-- Fallback Placeholder if no image -->
-                <!-- <img src="assets/images/placeholder-avatar.png" alt="User"> -->
-                <div class="avatar-placeholder">
-                  {{ currentUser.firstName?.charAt(0) | uppercase }}
-                </div>
+                <img [src]="currentUser.profilePicture" 
+                    [alt]="currentUser.firstName"
+                    (error)="handleImageError($event)"
+                    class="profile-img-overlay">
               }
             }
           </div>
@@ -84,17 +84,24 @@
         @if (user(); as currentUser) {
           <div class="mobile-user-info" (click)="viewProfileClick()">
             
-            <!-- ✅ التعديل هنا: إضافة حاوية للصورة أو الحرف -->
+            
             <div class="mobile-avatar-wrapper">
-              @if (currentUser.profilePicture) {
-                <img [src]="currentUser.profilePicture" [alt]="currentUser.firstName">
-              } @else {
-                <!-- ✅ إظهار الحرف الأول في حالة عدم وجود صورة -->
+              @if (user(); as currentUser) {
+                <!-- 1. Placeholder -->
                 <div class="avatar-placeholder large">
                   {{ currentUser.firstName?.charAt(0) | uppercase }}
                 </div>
+
+                <!-- 2. Image Overlay -->
+                @if (currentUser.profilePicture) {
+                  <img [src]="currentUser.profilePicture" 
+                      [alt]="currentUser.firstName"
+                      (error)="handleImageError($event)"
+                      class="profile-img-overlay">
+                }
               }
             </div>
+
 
             <div class="mobile-user-details">
               <div class="mobile-user-name">{{ currentUser.firstName }}</div>
@@ -108,8 +115,8 @@
 
       <!-- Additional Links -->
       <div class="mobile-links">
-        <a [routerLink]="['/host/settings']" (click)="toggleMobileMenu()" class="mobile-link">Account settings</a>
-        <a [routerLink]="['/help']" (click)="toggleMobileMenu()" class="mobile-link">Help Center</a>
+        <a [routerLink]="['/account-settings']" (click)="toggleMobileMenu()" class="mobile-link">Account settings</a>
+        <a [routerLink]="['/']" (click)="toggleMobileMenu()" class="mobile-link">Help Center</a>
         <a [routerLink]="['/']" (click)="toggleMobileMenu()" class="mobile-link">Switch to traveling</a>
         <button (click)="logout()" class="mobile-link logout">Log out</button>
       </div>

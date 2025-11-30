@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location, CommonModule } from '@angular/common';
 import { ListingService } from '../../services/Lisiting-Services';
-import { BookingService, CreateBookingDto } from '../../services/booking.service'; // ✅ تأكدي من المسار الصحيح
+import { GuestBookingService, CreateBookingDto } from '../../services/booking.service'; // ✅ تأكدي من المسار الصحيح
 import { Listing } from '../../models/listing-model';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxPayPalModule, IPayPalConfig, ICreateOrderRequest } from 'ngx-paypal';
@@ -45,7 +45,7 @@ export class Checkout implements OnInit {
   private route: ActivatedRoute,
   private router: Router,
   private listingService: ListingService,
-  private bookingService: BookingService,
+  private guestBookingService: GuestBookingService,
   private stripeService: StripeService, // 🆕
   private location: Location,
   private fb: FormBuilder
@@ -168,7 +168,7 @@ payWithStripe() {
       specialRequests:this.guestMessage 
     };
 
-    this.bookingService.createBooking(bookingPayload).subscribe({
+    this.guestBookingService.createBooking(bookingPayload).subscribe({
       next: (res) => {
         this.isLoading = false;
         if (this.bookingType === 'instant') {

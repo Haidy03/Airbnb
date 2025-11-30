@@ -41,7 +41,7 @@ namespace Airbnb.API.DTOs.Services
         public string? City { get; set; }
     }
 
-    // تفاصيل الخدمة الكاملة (Details Page)
+    
     public class ServiceDetailsDto : ServiceCardDto
     {
         public string Description { get; set; }
@@ -50,8 +50,30 @@ namespace Airbnb.API.DTOs.Services
         public string? CoveredAreas { get; set; }
         public string? City { get; set; }
 
-        // ✅ الإضافات الجديدة لربط بيانات الـ Host في صفحة التفاصيل
+        
         public string HostId { get; set; }
         public DateTime HostJoinedDate { get; set; }
+
+        public string CancellationPolicy { get; set; }
+        public string GuestRequirements { get; set; }
+        public List<ServiceQualificationDto> Qualifications { get; set; }
+        public List<ServicePackageDto> Packages { get; set; }
+    }
+
+    public class ServiceQualificationDto
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Icon { get; set; }
+    }
+
+    public class ServicePackageDto
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public decimal Price { get; set; }
+        public string Duration { get; set; }
+        public string ImageUrl { get; set; }
+
     }
 }

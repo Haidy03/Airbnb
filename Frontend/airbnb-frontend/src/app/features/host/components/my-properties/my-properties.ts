@@ -4,11 +4,13 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PropertyService } from '../../services/property';
 import { Property, PropertyStatus, PROPERTY_STATUS_LABELS } from '../../models/property.model';
+import { ListingTypeModalComponent } from '../listing-type-modal/listing-type-modal';
 
 @Component({
   selector: 'app-my-properties',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  // ✅ Add ListingTypeModalComponent to imports
+  imports: [CommonModule, RouterLink, FormsModule, ListingTypeModalComponent],
   templateUrl: './my-properties.html',
   styleUrl: './my-properties.css',
 })
@@ -18,6 +20,9 @@ export class MyProperties implements OnInit {
   isLoading = signal(false);
   viewMode = signal<'grid' | 'list'>('grid');
   isSearchOpen = signal(false);
+
+  // ✅ Signal to control modal visibility
+  isCreationModalOpen = signal(false);
 
   properties = computed(() => {
     const query = this.searchQuery().toLowerCase();
@@ -65,15 +70,48 @@ export class MyProperties implements OnInit {
     if (!this.isSearchOpen()) this.searchQuery.set('');
   }
 
-  // ✅ Helper: Status Label
-  /* getStatusLabel(property: Property): string {
-    if (property.currentStep && Number(property.status) === PropertyStatus.DRAFT) {
-      return 'In progress';
-    }
-    return PROPERTY_STATUS_LABELS[Number(property.status)] || 'Unknown';
-  } */
+  // ==========================================
+  // ✅ NEW CREATION FLOW LOGIC
+  // ==========================================
+  
+  openCreationModal(): void {
+    this.isCreationModalOpen.set(true);
+  }
 
-   getStatusLabel(property: Property): string {
+  closeCreationModal(): void {
+    this.isCreationModalOpen.set(false);
+  }
+
+  handleCreationType(type: 'home' | 'experience' | 'service'): void {
+    this.closeCreationModal(); // Close modal first
+
+    if (type === 'home') {
+      this.createNewHomeListing();
+    } else if (type === 'experience') {
+      this.router.navigate(['/host/experiences/create']);
+    } else if (type === 'service') {
+      // ✅ Ensure this route exists in app.routes.ts
+      this.router.navigate(['/host/services/create']); 
+    }
+  }
+
+  // Moved previous Logic here (Only for Homes)
+  private createNewHomeListing(): void {
+    this.propertyService.createPropertyDraft().subscribe({
+      next: (draft) => {
+        if (draft.id) {
+          localStorage.setItem('currentDraftId', draft.id);
+          this.router.navigate(['/host/properties/intro']);
+        }
+      }
+    });
+  }
+
+  // ==========================================
+  // Helpers & Display Logic
+  // ==========================================
+
+  getStatusLabel(property: Property): string {
     const status = Number(property.status);
     if (status === PropertyStatus.DRAFT) return 'In progress';
     if (status === PropertyStatus.REJECTED) return 'Rejected';
@@ -81,10 +119,8 @@ export class MyProperties implements OnInit {
     return PROPERTY_STATUS_LABELS[status] || 'Unknown';
   }
 
-  // ✅ Helper: Status Color
   getStatusColor(property: Property): string {
     const status = Number(property.status);
-    
     if (property.currentStep && status === PropertyStatus.DRAFT) return 'orange';
     
     switch (status) {
@@ -95,6 +131,7 @@ export class MyProperties implements OnInit {
       default: return 'orange';
     }
   }
+
   isRejected(property: Property): boolean {
     return Number(property.status) === PropertyStatus.REJECTED;
   }
@@ -103,13 +140,11 @@ export class MyProperties implements OnInit {
     return property.coverImage || 'assets/images/placeholder-property.jpg';
   }
 
-  // ✅ Helper: Missing Method Implementation
   getPropertyTypeLabel(property: Property): string {
     return property.propertyType || 'Unknown';
   }
 
   getLocation(property: Property): string {
-    // Safely access flat fields
     const city = property.city || property.location?.city || '';
     const country = property.country || property.location?.country || '';
     if (city && country) return `${city}, ${country}`;
@@ -143,20 +178,4 @@ export class MyProperties implements OnInit {
       this.router.navigate(['/host/properties/editor', propertyId]);
     }
   }
-
-  addNewProperty(): void {
-    this.propertyService.createPropertyDraft().subscribe({
-      next: (draft) => {
-        if (draft.id) {
-          localStorage.setItem('currentDraftId', draft.id);
-          this.router.navigate(['/host/properties/intro']);
-        }
-      }
-    });
-  }
-  
-  // Template Helpers
-  isDraft(p: Property) { return Number(p.status) === PropertyStatus.DRAFT; }
-  isActionRequired(p: Property) { return Number(p.status) === PropertyStatus.REJECTED; }
-  isPublished(p: Property) { return Number(p.status) === PropertyStatus.ACTIVE; }
 }

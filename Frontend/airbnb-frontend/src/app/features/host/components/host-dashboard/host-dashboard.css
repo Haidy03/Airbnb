@@ -27,6 +27,37 @@
   cursor: pointer;
   transition: all 0.2s;
 }
+.event-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ✅ الألوان لكل حالة */
+.event-badge.status-confirmed {
+  background: #E8F5E9;
+  color: #2E7D32; /* أخضر */
+}
+
+.event-badge.status-pending {
+  background: #FFF3E0;
+  color: #E65100; /* برتقالي */
+}
+
+.event-badge.status-cancelled {
+  background: #FFEBEE;
+  color: #C62828; /* أحمر */
+  text-decoration: line-through;
+}
+
+.event-badge.status-awaiting {
+  background: #E3F2FD;
+  color: #1565C0; /* أزرق */
+}
 
 .tab-button:hover {
   background: #EBEBEB;

@@ -1,4 +1,4 @@
-import { Component, Signal, inject, signal, OnInit, ChangeDetectorRef } from '@angular/core'; // 1. Add ChangeDetectorRef
+import { Component, Signal, inject, signal, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -33,27 +33,24 @@ interface NavItem {
   ]
 })
 export class HostLayoutComponent implements OnInit {
-  // Services
   private authService = inject(AuthService);
   public messageService = inject(MessageService);
   private router = inject(Router);
   private hostStatsService = inject(HostStatsService);
-  private cdr = inject(ChangeDetectorRef); // 2. Inject ChangeDetectorRef
+  private cdr = inject(ChangeDetectorRef);
 
-  // User Data (Reactive Signal from Auth Service)
+  // ✅ استخدام Signal مباشرة من AuthService
   user: Signal<AuthUser | null> = this.authService.user;
 
-  // State Signals
   sidebarOpen = signal<boolean>(true);
   mobileMenuOpen = signal<boolean>(false);
   unreadNotifications = signal<number>(0);
 
-  // Navigation Items
   navItems: NavItem[] = [
     { label: 'Dashboard', route: '/host/dashboard', icon: '📊' },
     { label: 'Calendar', route: '/host/calendar', icon: '📅' },
     { label: 'My Listings', route: '/host/properties', icon: '🏠' },
-    { label: 'Bookings', route: '/host/bookings', icon: '📝' },
+    { label: 'Bookings', route: '/host/bookings', icon: '📋' },
     { label: 'Messages', route: '/host/messages', icon: '💬', badge: 2 },
     { label: 'Earnings', route: '/host/earnings', icon: '💰' },
     { label: 'Reviews', route: '/host/reviews', icon: '⭐' },
@@ -65,8 +62,17 @@ export class HostLayoutComponent implements OnInit {
   }
 
   ngOnInit() {
-    // تحديث العداد عند تحميل الصفحة لأول مرة
     this.messageService.refreshUnreadCount();
+    console.log('🖼️ User Profile Picture:', this.user()?.profilePicture);
+  }
+
+  handleImageError(event: any) {
+    event.target.style.display = 'none';
+    const parent = event.target.parentElement;
+    const placeholder = parent.querySelector('.avatar-placeholder');
+    if (placeholder) {
+      placeholder.style.display = 'flex';
+    }
   }
 
   loadNotificationCount(): void {
@@ -82,15 +88,11 @@ export class HostLayoutComponent implements OnInit {
   toggleMobileMenu(): void {
     this.mobileMenuOpen.set(!this.mobileMenuOpen());
     
-    // 3. Force change detection to ensure User info renders immediately
     setTimeout(() => {
       this.cdr.detectChanges();
     }, 0);
   }
 
-  /**
-   * DIRECT NAVIGATION TO PROFILE
-   */
   viewProfileClick(event?: Event) {
     if (event) {
       event.stopPropagation();

@@ -93,7 +93,22 @@ namespace Airbnb.API.Services.Implementations
                 CoveredAreas = service.CoveredAreas,
                 Images = service.Images.Select(i => i.Url).ToList(),
                 HostId = service.HostId,
-                HostJoinedDate = service.Host.CreatedAt
+                HostJoinedDate = service.Host.CreatedAt,
+                Qualifications = service.Qualifications.Select(q => new ServiceQualificationDto
+                {
+                    Title = q.Title,
+                    Description = q.Description,
+                    Icon = q.Icon
+                }).ToList(),
+
+                Packages = service.Packages.Select(p => new ServicePackageDto
+                {
+                    Title = p.Title,
+                    Description = p.Description,
+                    Price = p.Price,
+                    Duration = p.Duration,
+                    ImageUrl = p.ImageUrl
+                }).ToList()
             };
         }
     }

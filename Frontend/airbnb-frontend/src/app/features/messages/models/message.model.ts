@@ -34,8 +34,8 @@ export interface ConversationParticipant {
 // 3. Main Interfaces (الأساسية)
 
 export interface Message {
-  id: string;
-  conversationId: string;
+  id: number;
+  conversationId: number;
   senderId: string;
   receiverId: string;
   content: string;
@@ -48,16 +48,17 @@ export interface Message {
 
 // ✅ تعديل Conversation ليشمل Host و Guest بشكل صريح
 export interface Conversation {
-  id: string;
-  propertyId?: string;
+  id: number;
+  propertyId: number;
   propertyTitle?: string;
   propertyImage?: string;
-  bookingId?: string;
+  bookingId?: number;
   
   // بيانات الطرفين (عشان نعرف نعرض مين حسب الـ mode)
   host: ConversationParticipant;
   guest: ConversationParticipant;
-  
+  participants: ConversationParticipant[];
+
   lastMessage?: Message;
   unreadCount: number;
   createdAt: Date;

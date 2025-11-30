@@ -78,6 +78,15 @@ export class ListingDetails implements OnInit {
     });
   }
 
+  getHostInitial(): string {
+    return this.listing?.host?.firstName?.charAt(0).toUpperCase() || 'H';
+  }
+
+  handleHostImageError() {
+    if (this.listing && this.listing.host) {
+      this.listing.host.profileImageUrl = ''; // تفريغ الرابط ليظهر الـ Placeholder
+    }}
+
   fetchListingDetails(id: string): void {
     this.isLoading = true;
     this.listingService.getListingById(id)
@@ -85,15 +94,16 @@ export class ListingDetails implements OnInit {
       .subscribe({
         next: (data) => {
           this.originalDescription = data.description;
-
-          // ✅ إصلاح: معالجة روابط الصور وتعيينها للمتغير
           const processedImages = data.images?.map((img: any) => 
              typeof img === 'string' ? this.getImageUrl(img) : this.getImageUrl(img.url || img.imageUrl)
           ) || [];
 
+          if (data.host && data.host.profileImageUrl) {
+            data.host.profileImageUrl = this.getImageUrl(data.host.profileImageUrl);
+          }
           this.listing = {
             ...data,
-            images: processedImages, // ✅ تعيين الصور المعالجة هنا
+            images: processedImages,
             ratingBreakdown: data.ratingBreakdown ?? undefined,
             reviewsCount: data.reviews?.length || 0,
             rating: data.rating || 0,
@@ -141,13 +151,12 @@ export class ListingDetails implements OnInit {
 
   // Helper functions
   getImageUrl(imageUrl?: string): string {
-    if (!imageUrl) return 'assets/images/placeholder.jpg';
-    if (imageUrl.startsWith('http') || imageUrl.includes('assets/')) return imageUrl;
-    
-    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
-    const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
-    return `${baseUrl}${cleanPath}`;
-  }
+  if (!imageUrl) return 'assets/images/placeholder.jpg';
+  if (imageUrl.startsWith('http') || imageUrl.includes('assets/')) return imageUrl;
+  const baseUrl = 'https://localhost:5202';
+  const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+  return `${baseUrl}${cleanPath}`;
+}
 
   checkWishlistStatus(propertyId: string): void {
     this.listingService.checkIsWishlisted(propertyId).subscribe({
@@ -193,10 +202,36 @@ export class ListingDetails implements OnInit {
   shareListing() { navigator.clipboard.writeText(window.location.href); alert('Copied!'); }
   
   contactHost() {
-    if (!this.AuthService.isAuthenticated) { this.router.navigate(['/login']); return; }
+    // 1. التحقق من تسجيل الدخول
+    if (!this.AuthService.isAuthenticated) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
     if (this.listing) {
-      const hostId = (this.listing as any).hostId || (this.listing as any).host?.id;
-      this.router.navigate(['/messages'], { queryParams: { hostId, contextId: this.listing.id, type: 'property' } });
+      const hostId = this.listing.host.id;
+      
+      const propertyId = this.listing.id;
+      const propertyTitle = this.listing.title;
+      
+      let propertyImage = '';
+      if (this.listing.images && this.listing.images.length > 0) {
+         const firstImg = this.listing.images[0];
+         propertyImage = typeof firstImg === 'string' ? firstImg : (firstImg as any).url;
+      }
+
+      const hostName = `${this.listing.host.firstName} ${this.listing.host.lastName}`;
+
+      this.router.navigate(['/messages'], { 
+        queryParams: { 
+          hostId: hostId,
+          hostName: hostName,
+          propertyId: propertyId,
+          propertyTitle: propertyTitle,
+          propertyImage: propertyImage,
+          autoOpen: 'true'
+        } 
+      });
     }
   }
   openMessageModal() { this.contactHost(); }
