@@ -37,8 +37,10 @@
               }
             </div>
 
-            <h3 class="profile-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</h3>
-            <p class="profile-status">{{ currentUser.role }}</p>
+            <h3 class="profile-name">
+              {{ profileDetails?.firstName || currentUser.firstName || 'User' }} 
+              {{ profileDetails?.lastName || currentUser.lastName || '' }}
+            </h3>
           </div>
 
           <!-- RIGHT SIDE: Details & Grid (Kept from HEAD) -->
