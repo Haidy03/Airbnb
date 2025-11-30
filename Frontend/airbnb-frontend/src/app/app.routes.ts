@@ -174,7 +174,7 @@ export const routes: Routes = [
     },
     {
         path: 'services/create',
-        loadComponent: () => import('./features/services/components/create-service/create-service').then(m => m.CreateService).catch(() => NotFoundComponent), 
+        loadComponent: () => import('./features/services/components/create-service/create-service').then(m => m.CreateServiceComponent).catch(() => NotFoundComponent), 
         title: 'Create Service - Host'
       },
       // {

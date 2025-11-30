@@ -111,5 +111,10 @@ namespace Airbnb.API.Services.Implementations
                 }).ToList()
             };
         }
+
+        public async Task<List<ServiceCategory>> GetAllCategoriesAsync()
+        {
+            return await _serviceRepository.GetAllCategoriesAsync();
+        }
     }
 }

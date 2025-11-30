@@ -52,5 +52,12 @@ namespace Airbnb.API.Controllers
 
             return Ok(new { success = true, data = service });
         }
+
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetAllCategories()
+        {
+           var categories = await _servicesService.GetAllCategoriesAsync();
+            return Ok(new { success = true, data = categories });
+        }
     }
 }

@@ -1,1 +1,64 @@
-<p>create-service works!</p>
+<div class="page-container">
+  
+  <!-- 1. Header (Back Button) -->
+  <header class="create-header">
+    <button class="btn-icon" (click)="goBack()">
+      <i class="bi bi-chevron-left"></i> Back
+    </button>
+    <!-- Logo could go here if needed -->
+  </header>
+
+  <!-- 2. Main Content -->
+  <main class="content-area">
+    
+    <h1 class="step-title">Which service will<br>you provide?</h1>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoading()" class="loading-container">
+      <div class="spinner-border text-danger" role="status"></div>
+    </div>
+
+    <!-- Categories Grid -->
+    <div *ngIf="!isLoading()" class="categories-grid fade-in">
+      
+      <div 
+        *ngFor="let cat of categories()" 
+        class="cat-card"
+        [class.selected]="selectedCategoryId() === cat.id"
+        (click)="selectCategory(cat.id)"
+      >
+        <!-- Icon -->
+        <div class="icon-wrapper">
+         <img [src]="cat.icon" 
+            [alt]="cat.name" 
+            class="cat-icon" 
+            onerror="this.src='https://placehold.co/100x100?text=Icon'">
+            </div>
+        
+        <!-- Label -->
+        <span class="cat-label">{{ cat.name }}</span>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- 3. Sticky Footer (Next Button) -->
+  <footer class="create-footer">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width: 10%;"></div> <!-- 10% progress -->
+    </div>
+    
+    <div class="footer-actions">
+      <button class="btn btn-link text-dark fw-bold text-decoration-underline" (click)="goBack()">Back</button>
+      
+      <button 
+        class="btn btn-dark px-4 py-2 fw-bold rounded-3" 
+        [disabled]="!selectedCategoryId()"
+        (click)="onNext()">
+        Next
+      </button>
+    </div>
+  </footer>
+
+</div>
