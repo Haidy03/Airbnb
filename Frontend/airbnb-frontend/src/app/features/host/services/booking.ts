@@ -16,6 +16,7 @@ export interface Booking {
   guestName: string;
   guestEmail: string;
   guestPhone?: string;
+  guestProfileImage?: string;
   
   // Dates
   checkInDate: Date;
@@ -81,6 +82,7 @@ export class BookingService {
       guestName: apiData.guestName || 'Guest',
       guestEmail: apiData.guestEmail || '',
       guestPhone: apiData.guestPhone,
+      guestProfileImage: apiData.guestProfileImage, 
       checkInDate: new Date(apiData.checkInDate),
       checkOutDate: new Date(apiData.checkOutDate),
       numberOfGuests: apiData.numberOfGuests,

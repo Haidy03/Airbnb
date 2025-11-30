@@ -52,5 +52,8 @@ checkIsWishlisted(propertyId: string): Observable<boolean> {
     map((res: any) => res.isWishlisted) // يحتاج import { map } from 'rxjs/operators';
   );
 }
+getBlockedDates(propertyId: string): Observable<string[]> {
+  return this.http.get<string[]>(`${environment.apiUrl}/host/calendar/availability/${propertyId}/blocked`);
+}
 
 }

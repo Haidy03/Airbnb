@@ -152,11 +152,32 @@ namespace Airbnb.API.Services.Implementations
             if (booking.Property.HostId != hostId) throw new UnauthorizedAccessException();
             if (booking.Status != BookingStatus.Pending) throw new InvalidOperationException("Only pending bookings can be approved");
 
-            booking.Status = BookingStatus.Confirmed;
-            booking.ConfirmedAt = DateTime.UtcNow;
+            // ✅ التغيير هنا: بدلاً من Confirmed، نجعله AwaitingPayment
+            booking.Status = BookingStatus.AwaitingPayment;
+
+            // لا نضع ConfirmedAt الآن، سنضعه بعد الدفع
+            // booking.ConfirmedAt = DateTime.UtcNow; 
 
             await _bookingRepository.UpdateAsync(booking);
-            _logger.LogInformation("Booking {Id} approved", id);
+
+            // ✅ إرسال إيميل للزائر يطلب الدفع
+            try
+            {
+                var guestEmail = booking.Guest.Email;
+                var subject = "Booking Approved! Please complete payment";
+                var paymentLink = $"http://localhost:4200/trips"; // توجيه لصفحة رحلاته للدفع
+                var body = $@"
+            <h3>Good news! {booking.Property.Host.FirstName} accepted your request.</h3>
+            <p>To confirm your reservation at <strong>{booking.Property.Title}</strong>, please complete the payment.</p>
+            <p><a href='{paymentLink}'>Click here to Pay</a></p>";
+
+                await _emailService.SendEmailAsync(guestEmail, subject, body);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"Failed to send email: {ex.Message}");
+            }
+
             return true;
         }
 
@@ -196,6 +217,30 @@ namespace Airbnb.API.Services.Implementations
             }
 
             _logger.LogInformation("Booking {Id} approved", id);
+            return true;
+        }
+
+        public async Task<bool> ConfirmBookingAfterPaymentAsync(int id, string guestId)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(id);
+
+            if (booking == null) return false;
+
+            // التأكد من أن المستخدم هو صاحب الحجز
+            if (booking.GuestId != guestId)
+                throw new UnauthorizedAccessException("Not authorized to confirm this booking");
+
+            // التأكد من أن الحالة تسمح بالتأكيد (يجب أن تكون بانتظار الدفع)
+            if (booking.Status != BookingStatus.AwaitingPayment)
+                return false;
+
+            booking.Status = BookingStatus.Confirmed;
+            booking.ConfirmedAt = DateTime.UtcNow;
+
+            await _bookingRepository.UpdateAsync(booking);
+
+            // (اختياري) إرسال إيميل تأكيد نهائي
+
             return true;
         }
 

@@ -3,16 +3,16 @@
   <!-- ================= HEADER SECTION ================= -->
   <header class="listing-header">
     <div class="title-row">
-      <h1>{{ listing.title }}</h1>
+      <h1>{{ listing?.title }}</h1>
     </div>
 
     <div class="actions-row">
       <div class="left-actions">
-        <span class="rating">★ {{ listing.rating }}</span>
+        <span class="rating">★ {{ listing?.rating }}</span>
         <span class="dot">·</span>
-        <span class="reviews-link">{{ listing.reviewsCount }} reviews</span>
+        <span class="reviews-link">{{ listing?.reviewsCount }} reviews</span>
         <span class="dot">·</span>
-        <span class="location">{{ listing.country }},{{listing.city}},{{listing.address}}</span>
+        <span class="location">{{ listing?.country }}, {{ listing?.city }}, {{ listing?.address }}</span>
       </div>
 
       <div class="right-actions">
@@ -29,11 +29,10 @@
 
   <!-- ================= IMAGE GALLERY ================= -->
    <app-image-gallery 
-    [images]="listing.images" 
+    [images]="listing?.images || []" 
     (modalStateChange)="onModalStateChange($event)">
   </app-image-gallery>
   
-
 
   <!-- ================= MAIN GRID CONTENT ================= -->
   <div class="main-content-grid">
@@ -44,12 +43,12 @@
       <!-- Host & Room Info -->
       <section class="section host-info-section">
         <div class="text-info">
-          <h2>Entire serviced apartment hosted by {{ listing.host.firstName }} {{listing.host.lastName}}</h2>
-          <p>{{listing.maxGuests}} Guests · {{listing.numberOfBedrooms}} beds · {{listing.numberOfBathrooms}} bath</p>
+          <h2>Entire serviced apartment hosted by {{ listing?.host?.firstName }} {{ listing?.host?.lastName }}</h2>
+          <p>{{ listing?.maxGuests }} Guests · {{ listing?.numberOfBedrooms }} beds · {{ listing?.numberOfBathrooms }} bath</p>
         </div>
         <div class="host-avatar">
-          <img [src]="listing.host.profileImageUrl" alt="Host">
-
+          <!-- استخدام ?. مع host لضمان عدم حدوث خطأ -->
+          <img [src]="listing?.host?.profileImageUrl" alt="Host" onerror="this.src='assets/images/user-placeholder.png'">
         </div>
       </section>
       <hr>
@@ -66,7 +65,7 @@
         <div class="highlight-item">
           <i class="fa-solid fa-medal"></i>
           <div>
-            <h3>{{ listing.host.firstName }} {{listing.host.lastName}} is a Superhost</h3>
+            <h3>{{ listing?.host?.firstName }} is a Superhost</h3>
             <p>Superhosts are experienced, highly rated hosts.</p>
           </div>
         </div>
@@ -100,79 +99,72 @@
       </section>
       <hr>
 
-      <!-- Sleeping Arrangements (Slider) -->
+      <!-- Sleeping Arrangements -->
       <section class="section sleeping-section">
         <h2>Where you'll sleep</h2>
         <div class="bedroom-card">
           <div class="img-placeholder"><i class="fa-solid fa-bed"></i></div>
           <h3>Bedroom area</h3>
-          <p>{{listing.numberOfBedrooms}}single beds</p>
+          <p>{{ listing?.numberOfBedrooms }} single beds</p>
         </div>
       </section>
       <hr>
 
       <!-- Amenities -->
-    <section class="section amenities-section" *ngIf="listing?.amenities && listing.amenities.length > 0">
+    <section class="section amenities-section" *ngIf="listing?.amenities && listing!.amenities.length > 0">
   <h2>What this place offers</h2>
 
-  <!-- شبكة عرض التسهيلات -->
   <div class="amenities-grid">
-
-    <!-- استخدام *ngFor لعرض أول 6 تسهيلات فقط في البداية -->
+    <!-- استخدام ؟. والتحقق من وجود المصفوفة -->
     <div
         class="amenity-item"
-        *ngFor="let amenity of listing.amenities | slice:0:6"
+        *ngFor="let amenity of listing?.amenities | slice:0:6"
     >
-
       <i class="fa-solid fa-{{ amenity.icon }}"></i>
       <span>{{ amenity.name }}</span>
     </div>
   </div>
 
-  <!-- زر عرض الكل: يظهر فقط إذا كان هناك أكثر من 6 تسهيلات -->
   <button
       class="outline-btn"
       (click)="showAllAmenities()"
-      *ngIf="listing.amenities.length > 6">
-    Show all {{ listing.amenities.length }} amenities
+      *ngIf="listing!.amenities.length > 6">
+    Show all {{ listing?.amenities?.length }} amenities
   </button>
 </section>
+
+<!-- Amenities Modal -->
 <div class="amenities-modal-backdrop" *ngIf="showAmenitiesModal" (click)="closeAmenitiesModal()"></div>
 <div class="amenities-modal-card" *ngIf="showAmenitiesModal">
 
-    <!-- Header مع زر الغلق -->
     <div class="modal-header">
         <button class="close-modal-btn" (click)="closeAmenitiesModal()">
-            <!-- أيقونة الغلق (مثل X) -->
             <svg viewBox="0 0 32 32" style="display: block; fill: none; height: 16px; width: 16px; stroke: currentcolor; stroke-width: 3; overflow: visible;"><path d="m6 6 20 20M26 6 6 26"></path></svg>
         </button>
         <h3 class="modal-title">What this place offers</h3>
     </div>
 
-    <!-- المحتوى (عرض جميع التسهيلات) -->
     <div class="modal-body-content">
-        <!-- يمكنك هنا استخدام *ngFor وتجميع التسهيلات حسب الفئة (category) -->
-
-        <!-- مثال: قائمة بكل التسهيلات -->
         <div class="full-amenities-list">
             <div
                 class="amenity-item-full"
-                *ngFor="let amenity of listing.amenities"
+                *ngFor="let amenity of listing?.amenities"
             >
                 <i class="fa-solid fa-{{ amenity.icon }}"></i>
                 <span>{{ amenity.name }}</span>
             </div>
         </div>
-
     </div>
 </div>
       <hr>
 
-      <!-- Calendar (Placeholder for now) -->
+      <!-- Calendar -->
     <app-calendar-section
-     [location]="listing.city"
+     [location]="listing?.city || ''"
      [checkIn]="selectedCheckIn"
-     [checkOut]="selectedCheckOut">
+     [checkOut]="selectedCheckOut"
+     [blockedDates]="blockedDates"
+     (datesSelected)="onDatesUpdated($event)">
   </app-calendar-section>
 
     </div> <!-- End of Left Column -->
@@ -181,15 +173,21 @@
     <!-- ::::: RIGHT COLUMN (STICKY CARD) ::::: -->
     <div class="booking-column">
       <div class="sticky-wrapper">
+        <!-- استخدام ؟. مع كل خصائص listing وتوفير قيم افتراضية عند الحاجة -->
         <app-super-card
-          [listingId]="listing.id"
-          [pricePerNight]="listing.pricePerNight"
-          [reviewsCount]="listing.reviewsCount"
-          [rating]="listing.rating"
+          [checkInDate]="selectedCheckIn"
+          [checkOutDate]="selectedCheckOut"
+          [blockedDates]="blockedDates"
+          
+          [listingId]="listing!.id"
+          [pricePerNight]="listing!.pricePerNight"
+          [reviewsCount]="listing?.reviewsCount || 0"
+          [rating]="listing?.rating || 0"
           [serviceFee]="150"
           [cleaningFee]="100"
-          [isInstantBook]="listing.isInstantBook"
-          [maxGuests]="listing.maxGuests"
+          [isInstantBook]="listing!.isInstantBook"
+          [maxGuests]="listing?.maxGuests || 1" 
+           
            (dateChanged)="onDatesUpdated($event)"
            (guestsChange)="onGuestsUpdated($event)"
            (reserve)="goToCheckout()">
@@ -203,66 +201,49 @@
 
 
  <!-- ================= REVIEWS SECTION ================= -->
-<!-- --- START OF REVIEWS SECTION CODE (listing-details.html) --- -->
+<section class="reviews-full-section" *ngIf="listing?.ratingBreakdown && (listing?.reviewsCount || 0) > 0">
 
-<section class="reviews-full-section" *ngIf="listing?.ratingBreakdown && listing.reviewsCount && listing.reviewsCount > 0">
-
-  <!-- -------------------- HEADER -------------------- -->
   <div class="rating-header">
     <span class="fa fa-solid fa-star">★</span>
-    <span class="rating">{{ listing.rating | number:'1.2-2' }}</span>
+    <span class="rating">{{ listing?.rating | number:'1.2-2' }}</span>
     <span class="dot">·</span>
-    <span class="reviews-count">{{ listing.reviewsCount }} reviews</span>
+    <span class="reviews-count">{{ listing?.reviewsCount }} reviews</span>
   </div>
    <hr>
 </section>
 
-
-
-
-
- <!-- --- START OF HOSTS SECTION CODE (listing-details.html - Final Review) --- -->
-
+ <!-- --- HOSTS SECTION --- -->
 <section class="section hosts-section" *ngIf="listing?.host">
   <h2>Meet your hosts</h2>
 
   <div class="host-profile-container">
 
-    <!-- 1. كارد معلومات المضيف الأساسية (يحتوي فقط على الصورة والاسم واللقب) -->
     <div class="host-info-card">
-
         <div class="profile-summary">
-            <!-- الصورة -->
             <div class="image-wrapper">
                 <img
-                    [src]="listing.host.profileImageUrl"
-                    alt="{{ listing.host.firstName }} profile"
+                    [src]="listing?.host?.profileImageUrl"
+                    alt="{{ listing?.host?.firstName }} profile"
                     class="host-profile-img"
+                    onerror="this.src='assets/images/user-placeholder.png'"
                 >
             </div>
 
-            <!-- الاسم واللقب -->
             <div class="text-info">
-                <h3 class="host-name">{{ listing.host.firstName }}</h3>
+                <h3 class="host-name">{{ listing?.host?.firstName }}</h3>
                 <span class="superhost-badge">★ Superhost</span>
             </div>
         </div>
-
-      <!-- سيتم وضع تنسيقات الإحصائيات التي كانت هنا في ملف SCSS لتجنب مشاكل العرض -->
     </div>
 
-    <!-- 2. التفاصيل والسيرة الذاتية (اليمين) -->
     <div class="host-details-bio">
-      <!-- حالة Superhost و الوصف -->
-      <h4 class="superhost-title">{{ listing.host.firstName }} is a Superhost</h4>
+      <h4 class="superhost-title">{{ listing?.host?.firstName }} is a Superhost</h4>
       <p class="superhost-description">Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.</p>
 
-      <!-- زر إرسال الرسالة -->
       <button class="message-host-btn" (click)="openMessageModal()">
         Message hosts
       </button>
 
-      <!-- معدل الاستجابة -->
       <div class="response-rate-info">
         <p class="rate-number">Response rate: 100%</p>
         <p class="rate-desc">They typically respond within an hour</p>
@@ -271,7 +252,6 @@
   </div>
 </section>
 
-<!-- ... (باقي كود الـ Modal) ... -->
 <hr>
 
 </div>

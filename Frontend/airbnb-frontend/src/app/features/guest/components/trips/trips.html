@@ -1,6 +1,6 @@
 <app-header></app-header>
 
-<div class="min-vh-100 bg-white" style="padding-top: 30px;">
+<div class="min-vh-100 bg-white" style="padding-top: 80px;">
 
   <main class="container py-4">
     <!-- Title -->
@@ -14,28 +14,22 @@
       <div class="d-flex gap-4">
         <button
           (click)="setActiveTab('upcoming')"
-          class="btn btn-link text-decoration-none pb-3 px-1 border-0 position-relative tab-btn"
-          [class.active]="activeTab() === 'upcoming'"
-          [class.text-dark]="activeTab() === 'upcoming'"
-          [class.text-muted]="activeTab() !== 'upcoming'">
+          class="tab-btn"
+          [class.active]="activeTab() === 'upcoming'">
           Upcoming
         </button>
 
         <button
           (click)="setActiveTab('past')"
-          class="btn btn-link text-decoration-none pb-3 px-1 border-0 position-relative tab-btn"
-          [class.active]="activeTab() === 'past'"
-          [class.text-dark]="activeTab() === 'past'"
-          [class.text-muted]="activeTab() !== 'past'">
+          class="tab-btn"
+          [class.active]="activeTab() === 'past'">
           Past
         </button>
 
         <button
           (click)="setActiveTab('cancelled')"
-          class="btn btn-link text-decoration-none pb-3 px-1 border-0 position-relative tab-btn"
-          [class.active]="activeTab() === 'cancelled'"
-          [class.text-dark]="activeTab() === 'cancelled'"
-          [class.text-muted]="activeTab() !== 'cancelled'">
+          class="tab-btn"
+          [class.active]="activeTab() === 'cancelled'">
           Cancelled
         </button>
       </div>
@@ -46,55 +40,78 @@
       <div class="spinner-border text-dark" role="status"></div>
     </div>
 
-    <!-- Trips List -->
+    <!-- Trips Grid -->
     <div *ngIf="!loading() && filteredTrips().length > 0" class="trips-grid">
       <div *ngFor="let trip of filteredTrips()" class="trip-card">
         
+        <!-- Image -->
         <div class="trip-image">
-          <img [src]="trip.experienceImage || 'assets/images/placeholder.jpg'" alt="Experience">
+          <img [src]="trip.propertyImage || trip.experienceImage || 'assets/images/placeholder.jpg'" alt="Property">
+          
+          <!-- Status Badge Overlay -->
+          <div class="status-overlay">
+            <span class="status-badge" [class]="trip.status?.toLowerCase()">
+              {{ trip.status === 'AwaitingPayment' ? 'Payment Needed' : trip.status }}
+            </span>
+          </div>
         </div>
 
         <div class="trip-details">
-          <h3 class="trip-title">{{ trip.experienceTitle }}</h3>
-          <p class="host-name">Hosted by {{ trip.guestName }}</p>
+          <div class="trip-header">
+            <h3 class="trip-title">{{ trip.propertyTitle || trip.experienceTitle }}</h3>
+            <p class="host-name" *ngIf="trip.hostName">Hosted by {{ trip.hostName }}</p>
+          </div>
           
           <div class="trip-meta">
-            <span>{{ trip.date | date:'mediumDate' }}</span>
-            <span>•</span>
-            <span>{{ trip.startTime }}</span>
+            <div class="date-row">
+              <i class="fa-regular fa-calendar"></i>
+              <span>{{ trip.checkInDate | date:'MMM d' }} - {{ trip.checkOutDate | date:'MMM d, y' }}</span>
+            </div>
+            <div class="price-row">
+               <strong>{{ trip.totalPrice | currency:'EGP':'symbol':'1.0-0' }}</strong> total
+            </div>
           </div>
           
-          <div class="trip-footer">
-            <span class="status-badge" [class]="trip.status.toLowerCase()">
-              {{ trip.status }}
-            </span>
-            <span class="price-tag">${{ trip.totalPrice }} total</span>
-          </div>
-        </div>
+          <!-- ✅ Action Buttons Section -->
+          <div class="trip-actions">
+            
+            <!-- 1. PAY NOW Button (Only for AwaitingPayment) -->
+            <button *ngIf="trip.status === 'AwaitingPayment'" 
+                    class="btn-pay" 
+                    (click)="payForBooking(trip)"
+                    [disabled]="isProcessingPayment()">
+              <i class="fa-solid fa-credit-card"></i> 
+              {{ isProcessingPayment() ? 'Processing...' : 'Pay & Confirm' }}
+            </button>
 
-        <!-- ✅ التعديل هنا: إضافة أقواس () لـ activeTab -->
-        <div class="trip-actions" *ngIf="activeTab() === 'past' || trip.status === 'Completed'"> 
-          <button class="btn-review" (click)="openReviewModal(trip.id)">
-            Leave a Review
-          </button>
+            <!-- 2. Review Button (Only for Past/Completed) -->
+            <button *ngIf="activeTab() === 'past' || trip.status === 'Completed'" 
+                    class="btn-review" 
+                    (click)="openReviewModal(trip.id)">
+              Leave a Review
+            </button>
+
+             <!-- 3. Pending Status Info -->
+             <div *ngIf="trip.status === 'Pending'" class="pending-info">
+                <i class="fa-solid fa-hourglass-half"></i> Waiting for host approval
+             </div>
+
+          </div>
         </div>
 
       </div>
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="!loading() && filteredTrips().length === 0" class="text-center py-5 my-4">
-      <div class="mb-4">
-        <svg class="text-secondary opacity-25" width="80" height="80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-        </svg>
+    <div *ngIf="!loading() && filteredTrips().length === 0" class="empty-state">
+      <div class="mb-4 icon-wrapper">
+        <i class="fa-solid fa-suitcase-rolling"></i>
       </div>
 
-      <!-- ✅ التعديل هنا: إضافة أقواس () -->
       <h3 class="fw-bold text-dark mb-2">No trips found</h3>
       <p class="text-muted mb-4">You don't have any {{ activeTab() }} reservations.</p>
 
-      <a routerLink="/" class="btn btn-airbnb px-4 py-2 fw-bold">
+      <a routerLink="/" class="btn btn-airbnb">
         Start searching
       </a>
     </div>
@@ -102,11 +119,11 @@
   </main>
 </div>
 
-<!-- Review Modal (كما هو) -->
+<!-- Review Modal -->
 <div class="modal-overlay" *ngIf="showReviewModal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>Rate this Experience</h3>
+      <h3>Rate your stay</h3>
       <button class="close-btn" (click)="closeReviewModal()">×</button>
     </div>
 
@@ -122,147 +139,15 @@
       <textarea 
         [(ngModel)]="reviewForm.comment" 
         class="form-control"
-        placeholder="Share details of your own experience..."
+        placeholder="Share details of your experience..."
         rows="4"></textarea>
     </div>
 
     <div class="modal-footer">
       <button class="btn-cancel" (click)="closeReviewModal()">Cancel</button>
       <button class="btn-submit" (click)="submitReview()" [disabled]="isSubmitting">
-        {{ isSubmitting ? 'Submitting...' : 'Submit Review' }}
+        {{ isSubmitting ? 'Submitting...' : 'Submit' }}
       </button>
     </div>
   </div>
 </div>
-<!--<div class="min-vh-100 bg-white" style="padding-top: 50px;">
-
-
-  <main class="container py-4">
-    <div class="mb-4">
-      <h1 class="fw-bold text-dark display-6">Trips</h1>
-      <p class="text-muted fs-5">Your upcoming and past reservations</p>
-    </div>
-
-    <div class="border-bottom mb-5">
-      <div class="d-flex gap-4">
-        <button
-          (click)="setActiveTab('upcoming')"
-          class="btn btn-link text-decoration-none pb-3 px-1 border-0 position-relative tab-btn"
-          [class.active]="activeTab === 'upcoming'"
-          [class.text-dark]="activeTab === 'upcoming'"
-          [class.text-muted]="activeTab !== 'upcoming'">
-          Upcoming
-        </button>
-
-        <button
-          (click)="setActiveTab('past')"
-          class="btn btn-link text-decoration-none pb-3 px-1 border-0 position-relative tab-btn"
-          [class.active]="activeTab === 'past'"
-          [class.text-dark]="activeTab === 'past'"
-          [class.text-muted]="activeTab !== 'past'">
-          Past
-        </button>
-
-        <button
-          (click)="setActiveTab('cancelled')"
-          class="btn btn-link text-decoration-none pb-3 px-1 border-0 position-relative tab-btn"
-          [class.active]="activeTab === 'cancelled'"
-          [class.text-dark]="activeTab === 'cancelled'"
-          [class.text-muted]="activeTab !== 'cancelled'">
-          Cancelled
-        </button>
-      </div>
-    </div>
-
-    <div *ngIf="loading()" class="text-center py-5">
-      <div class="spinner-border text-dark" role="status"></div>
-    </div>
-
-    <div *ngIf="!loading() && filteredTrips().length > 0" class="trips-grid">
-      <div *ngFor="let trip of filteredTrips()" class="trip-card">
-        
-        <div class="trip-image">
-          <img [src]="trip.experienceImage || 'assets/images/placeholder.jpg'" alt="Experience">
-        </div>
-
-        <div class="trip-details">
-          <h3 class="trip-title">{{ trip.experienceTitle }}</h3>
-          <p class="host-name">Hosted by {{ trip.guestName }}</p> 
-          
-          <div class="trip-meta">
-            <span>{{ trip.date | date:'mediumDate' }}</span>
-            <span>•</span>
-            <span>{{ trip.startTime }}</span>
-          </div>
-          
-          <div class="trip-footer">
-            <span class="status-badge" [class]="trip.status.toLowerCase()">
-              {{ trip.status }}
-            </span>
-            <span class="price-tag">${{ trip.totalPrice }} total</span>
-          </div>
-        </div>
-
-        <div class="trip-actions" *ngIf="activeTab === 'past' || trip.status === 'Completed'"> 
-          <button class="btn-review" (click)="openReviewModal(trip.id)">
-            Leave a Review
-          </button>
-        </div>
-
-      </div>
-    </div>
-
-    <div *ngIf="!loading() && filteredTrips().length === 0" class="text-center py-5 my-4">
-      <div class="mb-4">
-        <svg class="text-secondary opacity-25" width="80" height="80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-        </svg>
-      </div>
-
-      <h3 class="fw-bold text-dark mb-2">No trips found</h3>
-      <p class="text-muted mb-4">You don't have any {{ activeTab }} reservations.</p>
-
-      <a routerLink="/" class="btn btn-airbnb px-4 py-2 fw-bold">
-        Start searching
-      </a>
-    </div>
-
-  </main>
-</div>
-
-<div class="modal-overlay" *ngIf="showReviewModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Rate this Experience</h3>
-      <button class="close-btn" (click)="closeReviewModal()">×</button>
-    </div>
-
-    <div class="modal-body">
-      <p class="modal-desc">How was your experience?</p>
-      
-      <div class="star-rating">
-        <span 
-          *ngFor="let star of [1, 2, 3, 4, 5]" 
-          (click)="setRating(star)"
-          [class.active]="star <= reviewForm.rating"
-          class="star">
-          ★
-        </span>
-      </div>
-
-      <textarea 
-        [(ngModel)]="reviewForm.comment" 
-        class="form-control"
-        placeholder="Share details of your own experience..."
-        rows="4">
-      </textarea>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-cancel" (click)="closeReviewModal()">Cancel</button>
-      <button class="btn-submit" (click)="submitReview()" [disabled]="isSubmitting">
-        {{ isSubmitting ? 'Submitting...' : 'Submit Review' }}
-      </button>
-    </div>
-  </div>
-</div> -->

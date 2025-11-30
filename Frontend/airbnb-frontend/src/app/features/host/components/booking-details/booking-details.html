@@ -22,9 +22,20 @@
       <div class="info-card guest-card">
         <div class="guest-header">
           <div class="guest-avatar">
-            <!-- صورة افتراضية لو مفيش صورة -->
-            <img [src]="'assets/images/user-placeholder.png'" alt="Guest">
+            <!-- 1. إذا وجدت الصورة -->
+            <img 
+              *ngIf="booking()?.guestProfileImage" 
+              [src]="booking()?.guestProfileImage" 
+              alt="Guest"
+              (error)="booking()!.guestProfileImage = ''" 
+            >
+            
+            <!-- 2. إذا لم توجد (Placeholder بالحرف الأول) -->
+            <div *ngIf="!booking()?.guestProfileImage" class="avatar-placeholder">
+              {{ getGuestInitial() }}
+            </div>
           </div>
+
           <div class="guest-info">
             <h2>{{ booking()?.guestName }}</h2>
             <p class="guest-meta">Joined Airbnb in 2024</p>
@@ -38,6 +49,7 @@
         </div>
       </div>
 
+      <!-- ... باقي الصفحة كما هي ... -->
       <!-- Trip Details -->
       <div class="info-card trip-card">
         <h3>Trip details</h3>
@@ -93,23 +105,23 @@
         <!-- Payout Breakdown -->
         <h3>Payout details</h3>
         <div class="price-row">
-          <span>${{ booking()?.pricePerNight }} x {{ nightsCount() }} nights</span>
-          <span>${{ (booking()?.pricePerNight || 0) * nightsCount() }}</span>
+          <span>LE.{{ booking()?.pricePerNight }} x {{ nightsCount() }} nights</span>
+          <span>LE.{{ (booking()?.pricePerNight || 0) * nightsCount() }}</span>
         </div>
         <div class="price-row">
           <span>Cleaning fee</span>
-          <span>${{ booking()?.cleaningFee }}</span>
+          <span>LE.{{ booking()?.cleaningFee }}</span>
         </div>
         <div class="price-row" style="color: #008A05;">
           <span>Service fee (Host)</span>
-          <span>-$0.00</span>
+          <span>-LE.0.00</span>
         </div>
         
         <hr class="divider">
         
         <div class="price-row total">
           <span>Total payout</span>
-          <span>${{ booking()?.totalPrice }}</span>
+          <span>LE.{{ booking()?.totalPrice }}</span>
         </div>
 
       </div>

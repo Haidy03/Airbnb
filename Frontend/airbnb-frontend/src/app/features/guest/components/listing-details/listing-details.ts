@@ -24,6 +24,7 @@ export class ListingDetails implements OnInit {
   propertyId!: string;
   isLoading: boolean = true;
   error: string | null = null;
+  blockedDates: string[] = [];
 
   isLiked: boolean = false;
   isTranslated: boolean = true;
@@ -46,7 +47,7 @@ export class ListingDetails implements OnInit {
     private listingService: ListingService,
     private route: ActivatedRoute,
     private router: Router,
-    public AuthService: AuthService // Made public for HTML access
+    public AuthService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -55,6 +56,7 @@ export class ListingDetails implements OnInit {
       if (id) {
         this.propertyId = id;
         this.fetchListingDetails(this.propertyId);
+        this.fetchBlockedDates(this.propertyId)
         if (this.AuthService.isAuthenticated) {
           this.checkWishlistStatus(id);
         }
@@ -65,6 +67,17 @@ export class ListingDetails implements OnInit {
     });
   }
 
+  fetchBlockedDates(id: string) {
+    this.listingService.getBlockedDates(id).subscribe({
+      next: (dates) => {
+        // تأكد من أخذ الجزء الأول فقط من التاريخ
+        this.blockedDates = dates.map(d => d.split('T')[0]);
+        console.log('🚫 Blocked Dates:', this.blockedDates);
+      },
+      error: (err) => console.error('Failed to load blocked dates', err)
+    });
+  }
+
   fetchListingDetails(id: string): void {
     this.isLoading = true;
     this.listingService.getListingById(id)
@@ -72,8 +85,15 @@ export class ListingDetails implements OnInit {
       .subscribe({
         next: (data) => {
           this.originalDescription = data.description;
+
+          // ✅ إصلاح: معالجة روابط الصور وتعيينها للمتغير
+          const processedImages = data.images?.map((img: any) => 
+             typeof img === 'string' ? this.getImageUrl(img) : this.getImageUrl(img.url || img.imageUrl)
+          ) || [];
+
           this.listing = {
             ...data,
+            images: processedImages, // ✅ تعيين الصور المعالجة هنا
             ratingBreakdown: data.ratingBreakdown ?? undefined,
             reviewsCount: data.reviews?.length || 0,
             rating: data.rating || 0,
@@ -89,15 +109,14 @@ export class ListingDetails implements OnInit {
   onDatesUpdated(dates: {checkIn: string, checkOut: string}) {
     this.selectedCheckIn = dates.checkIn;
     this.selectedCheckOut = dates.checkOut;
+    console.log('Dates Selected:', this.selectedCheckIn, this.selectedCheckOut);
   }
 
   onGuestsUpdated(guests: number) {
     this.selectedGuests = guests;
-    console.log('Guests count updated:', this.selectedGuests);
   }
 
-  // ✅ الدالة المعدلة للتوجيه لصفحة الدفع
-   goToCheckout() {
+  goToCheckout() {
     if (!this.selectedCheckIn || !this.selectedCheckOut) {
       alert('Please select dates first!');
       return;
@@ -114,15 +133,22 @@ export class ListingDetails implements OnInit {
       queryParams: {
         checkIn: this.selectedCheckIn,
         checkOut: this.selectedCheckOut,
-        guests: this.selectedGuests, // ✅ هنا التعديل: استخدام المتغير الديناميكي
+        guests: this.selectedGuests,
         type: bookingType
       }
     });
   }
 
+  // Helper functions
+  getImageUrl(imageUrl?: string): string {
+    if (!imageUrl) return 'assets/images/placeholder.jpg';
+    if (imageUrl.startsWith('http') || imageUrl.includes('assets/')) return imageUrl;
+    
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+    return `${baseUrl}${cleanPath}`;
+  }
 
-  // ... (باقي الدوال Helper functions, Translation, Wishlist كما هي) ...
-  
   checkWishlistStatus(propertyId: string): void {
     this.listingService.checkIsWishlisted(propertyId).subscribe({
       next: (isListed) => this.isLiked = isListed,
@@ -142,11 +168,26 @@ export class ListingDetails implements OnInit {
     });
   }
 
-  translateDescription() { /* ... نفس الكود القديم ... */ }
+  translateDescription() { 
+    if (this.isTranslating || this.showTranslated) return;
+    if (this.translatedDescription) { this.showTranslated = true; return; }
+    if (!this.originalDescription) return;
+
+    this.isTranslating = true;
+    this.listingService.translateText(this.originalDescription)
+      .pipe(finalize(() => this.isTranslating = false))
+      .subscribe({
+        next: (res) => {
+          this.translatedDescription = res.translatedText;
+          this.showTranslated = true;
+        },
+        error: (err) => console.error('Translation failed', err)
+      });
+  }
+
   showOriginal() { this.showTranslated = false; }
   toggleDescription() { this.isDescriptionExpanded = !this.isDescriptionExpanded; }
   onModalStateChange(isOpen: boolean) { this.isModalOpen = isOpen; }
-  getImageUrl(url?: string) { /* ... نفس الكود القديم ... */ return url || ''; }
   showAllAmenities() { this.showAmenitiesModal = true; }
   closeAmenitiesModal() { this.showAmenitiesModal = false; }
   shareListing() { navigator.clipboard.writeText(window.location.href); alert('Copied!'); }

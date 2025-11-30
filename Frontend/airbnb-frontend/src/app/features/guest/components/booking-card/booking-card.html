@@ -1,76 +1,76 @@
 <div class="booking-card">
 
-  <!-- Header: Price & Rating -->
+  <!-- Header -->
   <div class="card-header">
     <div class="price">
       <span class="amount">{{ pricePerNight | number }} {{ currency }}</span>
       <span class="period">night</span>
     </div>
     <div class="rating" *ngIf="(reviewsCount ?? 0) > 0">
-      <span class="star">★</span>
-      <span class="score">{{ rating }}</span>
-      <span class="reviews"> · <u>{{ reviewsCount }} reviews</u></span>
+      <span class="star">★</span> {{ rating }} · <u>{{ reviewsCount }} reviews</u>
     </div>
   </div>
 
-  <!-- Input Form -->
+  <!-- Booking Form -->
   <div class="booking-form">
-    <div class="date-picker-wrapper">
-      <div class="date-input check-in">
+    
+    <!-- ✅ منطقة التواريخ -->
+    <div class="date-picker-wrapper" (click)="toggleCalendarModal()">
+      
+      <!-- Check-in Field -->
+      <div class="date-input check-in" [class.active]="isCalendarOpen && !checkInDate">
          <label>CHECK-IN</label>
-        <!-- ضفنا [min]="minDate" عشان يمنع الأيام اللي فاتت -->
-        <input
-          type="date"
-          [min]="minDate"
-          [(ngModel)]="checkInDate"
-          (change)="onDateChange()">
+         <div class="fake-input" [class.placeholder]="!checkInDate">
+           {{ checkInDate || 'Add date' }}
+         </div>
       </div>
-      <div class="date-input check-out">
+      
+      <!-- Check-out Field -->
+      <div class="date-input check-out" [class.active]="isCalendarOpen && checkInDate && !checkOutDate">
         <label>CHECK-OUT</label>
-        
-        <input
-          type="date"
-          [min]="checkInDate ? checkInDate : minDate"
-          [(ngModel)]="checkOutDate"
-          (change)="onDateChange()">
+        <div class="fake-input" [class.placeholder]="!checkOutDate">
+          {{ checkOutDate || 'Add date' }}
+        </div>
       </div>
     </div>
 
-   <div class="guests-input-container">
-
-      <!-- الصندوق اللي بنضغط عليه -->
-      <div class="guests-trigger" (click)="toggleGuestMenu()">
-        <div class="label-text">
-          <label>GUESTS</label>
-          <span>{{ guestLabel }}</span>
-        </div>
-        <!-- سهم بيتغير اتجاهه -->
-        <i class="fa-solid" [class.fa-chevron-up]="isGuestMenuOpen" [class.fa-chevron-down]="!isGuestMenuOpen"></i>
+    <!-- ... (باقي الكود: calendar-popup, guests-input...) ... -->
+    <!-- (نفس الكود السابق للـ Popup والضيوف) -->
+    <!-- تأكدي من نسخ كود الـ guests والـ popup كما هما من ملفك السابق -->
+     <div class="calendar-popup" *ngIf="isCalendarOpen">
+      <app-calendar-section
+         [checkIn]="checkInDate"
+         [checkOut]="checkOutDate"
+         [blockedDates]="blockedDates" 
+         (datesSelected)="onPopupDatesSelected($event)">
+      </app-calendar-section>
+      
+      <div class="popup-footer">
+        <button class="close-link" (click)="closeCalendar()">Close</button>
       </div>
+    </div>
 
-      <!-- القائمة المنسدلة (بتظهر وتختفي حسب isGuestMenuOpen) -->
-      <div class="guests-dropdown" *ngIf="isGuestMenuOpen">
-
-        <!-- 1. Adults -->
-        <div class="guest-row">
-          <div class="info">
-            <div class="type">Adults</div>
-            <div class="sub">Age 13+</div>
+    <!-- Guests Dropdown (كما هو) -->
+    <div class="guests-input-container">
+       <div class="guests-trigger" (click)="toggleGuestMenu()">
+          <div class="label-text">
+            <label>GUESTS</label>
+            <span>{{ guestLabel }}</span>
           </div>
-          <div class="controls">
-            <!-- زرار الناقص (Disabled لو 1) -->
-            <button class="round-btn" [disabled]="guests.adults <= 1" (click)="updateCount('adults', -1)">-</button>
-            <span class="count">{{ guests.adults }}</span>
-            <button class="round-btn"
-             (click)="updateCount('adults', 1)"
-             [disabled]="(guests.adults + guests.children) >= maxGuests">
-             +
-            </button>
-          </div>
-        </div>
+          <i class="fa-solid" [class.fa-chevron-up]="isGuestMenuOpen" [class.fa-chevron-down]="!isGuestMenuOpen"></i>
+       </div>
 
-        <!-- 2. Children -->
-        <div class="guest-row">
+       <div class="guests-dropdown" *ngIf="isGuestMenuOpen">
+          <div class="guest-row">
+             <div class="info">Adults</div>
+             <div class="controls">
+               <button class="round-btn" [disabled]="guests.adults <= 1" (click)="updateCount('adults', -1)">-</button>
+               <span>{{ guests.adults }}</span>
+               <button class="round-btn" (click)="updateCount('adults', 1)" [disabled]="(guests.adults + guests.children) >= maxGuests">+</button>
+             </div>
+          </div>
+          <!-- ... (أزرار الأطفال والرضع) ... -->
+           <div class="guest-row">
           <div class="info">
             <div class="type">Children</div>
             <div class="sub">Ages 2–12</div>
@@ -111,31 +111,28 @@
         <p class="disclaimer">
           This place has a maximum of 2 guests, not including infants. If you're bringing more than 2 pets, please let your host know.
         </p>
-
-        <!-- زر الإغلاق في الأسفل -->
-        <div class="dropdown-footer">
-          <button class="close-link" (click)="toggleGuestMenu()">Close</button>
-        </div>
-
-      </div>
+          <div class="dropdown-footer">
+             <button class="close-link" (click)="toggleGuestMenu()">Close</button>
+          </div>
+       </div>
     </div>
-  </div>
+
   </div>
 
-  <!-- Reserve Button -->
-  <button class="reserve-btn" (click)="onReserve()"> {{ isInstantBook ? 'Request to Book' : 'Reserve' }}</button>
-  <p class="small-text">{{ isInstantBook ? 'You won’t be charged yet' : 'You will be asked to confirm your dates' }}</p>
-    <p class="no-charge-text">You won't be charged yet</p>
+  <!-- ... (باقي الكارد: Reserve Button, Price Breakdown) ... -->
+   <button class="reserve-btn" (click)="onReserve()">
+     {{ isInstantBook ? 'Request to Book' : 'Reserve' }}
+  </button>
+  
+  <p class="no-charge-text" *ngIf="!priceBreakdown">You won't be charged yet</p>
 
   <!-- Price Breakdown -->
-  <!-- التعديل الثاني: الاعتماد على priceBreakdown -->
   <div class="price-breakdown" *ngIf="priceBreakdown">
-
     <div class="line-item">
-      <span class="desc">{{ priceBreakdown.basePrice | number }} {{ currency }} x {{ priceBreakdown.totalNights }} nights</span>
-      <span class="value">{{ priceBreakdown.subTotal | number }} {{ currency }}</span>
+      <span class="desc">{{ priceBreakdown.basePrice }} x {{ priceBreakdown.totalNights }} nights</span>
+      <span class="value">{{ priceBreakdown.subTotal }} {{ currency }}</span>
     </div>
-
+    
     <div class="line-item" *ngIf="priceBreakdown.cleaningFee > 0">
       <span class="desc">Cleaning fee</span>
       <span class="value">{{ priceBreakdown.cleaningFee | number }} {{ currency }}</span>
@@ -145,14 +142,11 @@
       <span class="desc">Airbnb service fee</span>
       <span class="value">{{ priceBreakdown.serviceFee | number }} {{ currency }}</span>
     </div>
-
-    <hr>
-
+    
     <div class="line-item total">
-      <span>Total before taxes</span>
-      <!-- التعديل الثالث: استخدام finalTotalPrice -->
-      <span>{{ priceBreakdown.finalTotalPrice | number }} {{ currency }}</span>
+      <span>Total</span>
+      <span>{{ priceBreakdown.finalTotalPrice }} {{ currency }}</span>
     </div>
   </div>
 
-
+</div>
