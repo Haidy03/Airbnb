@@ -68,7 +68,7 @@
               <span>{{ trip.checkInDate | date:'MMM d' }} - {{ trip.checkOutDate | date:'MMM d, y' }}</span>
             </div>
             <div class="price-row">
-               <strong>{{ trip.totalPrice | currency }}</strong> total
+               <strong>{{ trip.totalPrice | currency:'EGP':'symbol':'1.0-0' }}</strong> total
             </div>
           </div>
           

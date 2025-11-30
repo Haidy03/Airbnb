@@ -23,7 +23,8 @@ export class Checkout implements OnInit {
   nights: number = 0;
   totalPrice: number = 0;
   serviceFee: number = 150;
-  
+  guestMessage: string = ''; 
+
   // ✅ متغير لتحديد نوع الحجز
   bookingType: 'instant' | 'request' = 'request'; 
   isLoading: boolean = false;
@@ -164,7 +165,7 @@ payWithStripe() {
       checkInDate: new Date(this.checkIn).toISOString(),
       checkOutDate: new Date(this.checkOut).toISOString(),
       numberOfGuests: this.guests,
-      specialRequests: '' // يمكن ربطه بحقل input
+      specialRequests:this.guestMessage 
     };
 
     this.bookingService.createBooking(bookingPayload).subscribe({

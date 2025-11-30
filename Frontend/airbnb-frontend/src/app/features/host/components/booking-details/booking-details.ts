@@ -68,6 +68,11 @@ export class BookingDetailsComponent implements OnInit {
     this.processAction('decline');
   }
 
+  getGuestInitial(): string {
+  const name = this.booking()?.guestName;
+  return name ? name.charAt(0).toUpperCase() : 'G';
+}
+
   private processAction(action: 'approve' | 'decline') {
     const b = this.booking();
     if (!b) return;

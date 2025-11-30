@@ -103,6 +103,8 @@
             <label>Message the host (optional)</label>
             <textarea 
               rows="4" 
+              [(ngModel)]="guestMessage" 
+              [ngModelOptions]="{standalone: true}"
               placeholder="Hi, I'd love to book your place for my upcoming trip..."
               class="message-textarea">
             </textarea>
