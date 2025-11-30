@@ -49,5 +49,12 @@ namespace Airbnb.API.Repositories.Implementations
             await _context.Services.AddAsync(service);
             await _context.SaveChangesAsync();
         }
+        public async Task<List<ServiceCategory>> GetAllCategoriesAsync()
+        {
+            return await _context.ServiceCategories
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.DisplayOrder)
+                .ToListAsync();
+        }
     }
 }

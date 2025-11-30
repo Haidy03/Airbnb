@@ -1,5 +1,4 @@
 ﻿using Airbnb.API.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Airbnb.API.Data
 {
@@ -7,23 +6,38 @@ namespace Airbnb.API.Data
     {
         public static void Seed(ApplicationDbContext context)
         {
-            if (context.ServiceCategories.Any()) return;
+            // هام: لو الجدول مليان داتا قديمة (Icon text)، لازم نمسحها أو نعمل تحديث
+            // للتسهيل: اعملي Delete للداتا من الداتابيز أو استخدمي الكود ده عشان يحدث الداتا لو الاسم موجود
 
             var categories = new List<ServiceCategory>
-            {
-                new ServiceCategory { Name = "Catering", Icon = "https://cdn-icons-png.flaticon.com/512/1996/1996068.png", Description = "Food service for events" },
-                new ServiceCategory { Name = "Chef", Icon = "https://cdn-icons-png.flaticon.com/512/1830/1830839.png", Description = "Personal cooking service" },
-                new ServiceCategory { Name = "Hair styling", Icon = "https://cdn-icons-png.flaticon.com/512/3050/3050226.png", Description = "Professional hair styling" },
-                new ServiceCategory { Name = "Makeup", Icon = "https://cdn-icons-png.flaticon.com/512/3050/3050253.png", Description = "Beauty and makeup" },
-                new ServiceCategory { Name = "Massage", Icon = "https://cdn-icons-png.flaticon.com/512/2853/2853364.png", Description = "Relaxation and therapy" },
-                new ServiceCategory { Name = "Nails", Icon = "https://cdn-icons-png.flaticon.com/512/3662/3662818.png", Description = "Manicure and pedicure" },
-                new ServiceCategory { Name = "Personal training", Icon = "https://cdn-icons-png.flaticon.com/512/2548/2548530.png", Description = "Fitness coaching" },
-                new ServiceCategory { Name = "Photography", Icon = "https://cdn-icons-png.flaticon.com/512/2983/2983067.png", Description = "Professional photography" },
-                new ServiceCategory { Name = "Prepared meals", Icon = "https://cdn-icons-png.flaticon.com/512/706/706164.png", Description = "Ready-to-eat meals" },
-                new ServiceCategory { Name = "Spa treatments", Icon = "https://cdn-icons-png.flaticon.com/512/2647/2647617.png", Description = "Wellness treatments" }
-            };
+{
+   // Option 2: Modern Colored Icons
+new ServiceCategory { Name = "Catering", Icon = "https://cdn-icons-png.flaticon.com/512/3480/3480822.png" },
+new ServiceCategory { Name = "Chef", Icon = "https://cdn-icons-png.flaticon.com/512/1831/1831251.png" },
+new ServiceCategory { Name = "Hair styling", Icon = "https://cdn-icons-png.flaticon.com/512/3037/3037316.png" },
+new ServiceCategory { Name = "Makeup", Icon = "https://cdn-icons-png.flaticon.com/512/2913/2913212.png" },
+new ServiceCategory { Name = "Massage", Icon = "https://cdn-icons-png.flaticon.com/512/2784/2784428.png" },
+new ServiceCategory { Name = "Nails", Icon = "https://cdn-icons-png.flaticon.com/512/3051/3051726.png" },
+new ServiceCategory { Name = "Personal training", Icon = "https://cdn-icons-png.flaticon.com/512/2936/2936886.png" },
+new ServiceCategory { Name = "Photography", Icon = "https://cdn-icons-png.flaticon.com/512/3342/3342137.png" },
+new ServiceCategory { Name = "Prepared meals", Icon = "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" },
+new ServiceCategory { Name = "Spa treatments", Icon = "https://cdn-icons-png.flaticon.com/512/2647/2647880.png" } };
 
-            context.ServiceCategories.AddRange(categories);
+            // منطق بسيط: لو التصنيف موجود حدثه، لو مش موجود ضيفه
+            foreach (var cat in categories)
+            {
+                var existingCat = context.ServiceCategories.FirstOrDefault(c => c.Name == cat.Name);
+                if (existingCat != null)
+                {
+                    existingCat.Icon = cat.Icon; // تحديث الأيقونة
+                    existingCat.DisplayOrder = cat.DisplayOrder;
+                }
+                else
+                {
+                    context.ServiceCategories.Add(cat);
+                }
+            }
+
             context.SaveChanges();
         }
     }

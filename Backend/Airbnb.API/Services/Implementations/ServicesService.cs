@@ -112,9 +112,9 @@ namespace Airbnb.API.Services.Implementations
             };
         }
 
-        public Task<List<ServiceCategory>> GetAllCategoriesAsync()
+        public async Task<List<ServiceCategory>> GetAllCategoriesAsync()
         {
-            throw new NotImplementedException();
+            return await _serviceRepository.GetAllCategoriesAsync();
         }
     }
 }

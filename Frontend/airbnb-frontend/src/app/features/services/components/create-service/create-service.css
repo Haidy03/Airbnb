@@ -1,0 +1,218 @@
+/* Layout */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #fff;
+}
+
+/* Header */
+.create-header {
+  padding: 32px 48px;
+  display: flex;
+  align-items: center;
+}
+
+.btn-icon {
+  background: #F7F7F7;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn-icon:hover { background: #eee; }
+
+/* Content */
+.content-area {
+  flex: 1;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 24px 100px; /* padding bottom for footer */
+  width: 100%;
+}
+
+.step-title {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 40px;
+  color: #222;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Grid System */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 columns بدل auto-fill */
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Card Styling */
+.cat-card {
+  border: 1px solid #DDDDDD;
+  border-radius: 16px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fff;
+  height: 200px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.cat-card:hover {
+  border-color: #222;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* Selection State */
+.cat-card.selected {
+  border: 2px solid #222;
+  background-color: #F7F7F7;
+  padding: 31px 23px; /* Adjust for border width */
+}
+
+.icon-wrapper {
+  margin-bottom: 16px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cat-icon {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.cat-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #222;
+  line-height: 1.3;
+}
+/* Footer Styling */
+.create-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border-top: 1px solid #DDDDDD;
+  z-index: 10;
+}
+
+.progress-bar-bg {
+  height: 4px;
+  background: #DDDDDD;
+  width: 100%;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #222;
+  transition: width 0.3s ease;
+}
+
+.footer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 48px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Responsive */
+
+@media (max-width: 1200px) {
+  .categories-grid { 
+    grid-template-columns: repeat(4, 1fr); 
+  }
+}
+
+@media (max-width: 950px) {
+  .categories-grid { 
+    grid-template-columns: repeat(3, 1fr); 
+  }
+}
+
+@media (max-width: 768px) {
+  .create-header, .footer-actions { 
+    padding: 16px 24px; 
+  }
+  .categories-grid { 
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .step-title { 
+    font-size: 28px; 
+    text-align: center;
+  }
+  .cat-card {
+    height: 180px;
+    padding: 24px 16px;
+  }
+}
+
+
+
+
+
+
+.cat-card {
+  /* ... نفس الستايل القديم ... */
+  justify-content: center; /* توسيط المحتوى رأسياً */
+  align-items: center;     /* توسيط المحتوى أفقياً */
+  text-align: center;      /* توسيط النص */
+}
+
+.icon-wrapper {
+  /* flex-grow: 1;  <-- شيلي السطر ده عشان الأيقونة متترمش فوق */
+  margin-bottom: 12px;
+  height: 64px; /* مساحة ثابتة للأيقونة */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cat-icon {
+  width: 64px;       /* كبرنا الأيقونة شوية عشان تبقى واضحة زي Airbnb */
+  height: 64px;
+  object-fit: contain;
+  transition: transform 0.3s ease; /* تأثير حركة ناعم */
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); /* ظل خفيف عشان تبان 3D */
+}
+
+.cat-card:hover .cat-icon {
+  transform: scale(1.1); /* تكبير بسيط عند الهوفر */
+}
+
+.cat-label {
+  font-size: 15px; /* تصغير الخط سنة بسيطة */
+  font-weight: 600;
+  color: #222;
+}
