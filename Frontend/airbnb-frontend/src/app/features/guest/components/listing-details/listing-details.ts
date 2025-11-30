@@ -202,10 +202,39 @@ export class ListingDetails implements OnInit {
   shareListing() { navigator.clipboard.writeText(window.location.href); alert('Copied!'); }
   
   contactHost() {
-    if (!this.AuthService.isAuthenticated) { this.router.navigate(['/login']); return; }
+    // 1. التحقق من تسجيل الدخول
+    if (!this.AuthService.isAuthenticated) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
     if (this.listing) {
-      const hostId = (this.listing as any).hostId || (this.listing as any).host?.id;
-      this.router.navigate(['/messages'], { queryParams: { hostId, contextId: this.listing.id, type: 'property' } });
+      // ✅ تصحيح: الوصول للـ ID من داخل كائن الـ host مباشرة حسب الـ Model
+      const hostId = this.listing.host.id;
+      
+      const propertyId = this.listing.id;
+      const propertyTitle = this.listing.title;
+      
+      // استخراج الصورة الأولى
+      let propertyImage = '';
+      if (this.listing.images && this.listing.images.length > 0) {
+         const firstImg = this.listing.images[0];
+         propertyImage = typeof firstImg === 'string' ? firstImg : (firstImg as any).url;
+      }
+
+      const hostName = `${this.listing.host.firstName} ${this.listing.host.lastName}`;
+
+      // 3. الانتقال إلى صفحة الرسائل
+      this.router.navigate(['/messages'], { 
+        queryParams: { 
+          hostId: hostId,
+          hostName: hostName,
+          propertyId: propertyId,
+          propertyTitle: propertyTitle,
+          propertyImage: propertyImage,
+          autoOpen: 'true'
+        } 
+      });
     }
   }
   openMessageModal() { this.contactHost(); }
