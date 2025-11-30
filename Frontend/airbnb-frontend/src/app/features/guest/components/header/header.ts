@@ -4,7 +4,7 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
-
+import { AuthUser } from '../../../auth/models/auth-user.model';
 import { SearchBarComponent } from '../search/components/search-bar/search-bar';
 import { SearchFilters } from '../search/models/property.model';
 import { AuthService } from '../../../auth/services/auth.service';
@@ -21,10 +21,11 @@ import { SearchService } from '../search/services/search-service';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private modalService = inject(ModalService);
   private searchService = inject(SearchService);
   public router = inject(Router);
+  user = this.authService.user; 
   
   private modalSub?: Subscription;
   
@@ -108,6 +109,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.isScrolled = false;
       this.showExpandedSearch = true;
     }
+  }
+  handleImageError(event: any) {
+    event.target.style.display = 'none';
   }
 
   toggleUserMenu(event: Event) {
