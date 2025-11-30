@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
           <i class="fa-solid fa-circle-check"></i>
         </div>
         <h1>Payment Successful!</h1>
-        <p>Your booking has been confirmed.</p>
+        <p>{{ successMessage }}</p>
         <p class="session-id">Session ID: {{ sessionId }}</p>
         <button class="btn-primary" (click)="goToTrips()">
           View My Trips
@@ -25,7 +25,7 @@ import { CommonModule } from '@angular/common';
       <!-- Processing Card -->
       <div class="processing-card" *ngIf="isProcessing">
         <i class="fa-solid fa-spinner fa-spin"></i>
-        <p>Creating your booking...</p>
+        <p>Finalizing your booking...</p>
       </div>
 
       <!-- Error Card -->
@@ -33,7 +33,7 @@ import { CommonModule } from '@angular/common';
         <div class="icon-wrapper error">
           <i class="fa-solid fa-circle-xmark"></i>
         </div>
-        <h1>Booking Creation Failed</h1>
+        <h1>Action Failed</h1>
         <p>{{ errorMessage }}</p>
         <button class="btn-secondary" (click)="retry()">
           Retry
@@ -136,6 +136,7 @@ export class PaymentSuccessComponent implements OnInit {
   isProcessing: boolean = true;
   hasError: boolean = false;
   errorMessage: string = '';
+  successMessage: string = 'Your booking has been confirmed.';
 
   constructor(
     private route: ActivatedRoute,
@@ -160,67 +161,89 @@ export class PaymentSuccessComponent implements OnInit {
       return;
     }
 
+    // 1. Check for Existing Booking Payment (From Trips Page)
+    // يتم تخزين هذا الـ ID عند الضغط على Pay Now في صفحة Trips
+    const payingBookingId = sessionStorage.getItem('payingBookingId');
+
+    // 2. Check for New Instant Booking (From Checkout Page)
     const pendingBooking = sessionStorage.getItem('pendingBooking');
     
-    if (pendingBooking) {
+    if (payingBookingId) {
+      // ✅ السيناريو الأول: دفع لحجز موجود مسبقاً
+      this.confirmExistingBooking(payingBookingId);
+    } else if (pendingBooking) {
+      // ✅ السيناريو الثاني: إنشاء حجز جديد فوري
       const bookingData = JSON.parse(pendingBooking);
       this.createBooking(bookingData);
     } else {
+      // خطأ: لا توجد بيانات حجز
       this.hasError = true;
-      this.errorMessage = 'Booking data not found. Payment was successful but booking could not be completed.';
+      this.errorMessage = 'No booking data found. Payment processed but booking details are missing.';
       this.isProcessing = false;
     }
   }
 
+  // --- السيناريو الأول: إنشاء حجز جديد ---
   createBooking(data: any) {
-  const payload: CreateBookingDto = {
-    propertyId: Number(data.propertyId), // ✅ تأكد إنه رقم
-    checkInDate: new Date(data.checkIn).toISOString(),
-    checkOutDate: new Date(data.checkOut).toISOString(),
-    numberOfGuests: Number(data.guests),
-    specialRequests: ''
-  };
+    const payload: CreateBookingDto = {
+      propertyId: Number(data.propertyId),
+      checkInDate: new Date(data.checkIn).toISOString(),
+      checkOutDate: new Date(data.checkOut).toISOString(),
+      numberOfGuests: Number(data.guests),
+      specialRequests: ''
+    };
 
-  console.log('📤 Sending booking payload:', payload);
+    console.log('📤 Creating New Booking:', payload);
 
-  this.bookingService.createBooking(payload).subscribe({
-    next: (res) => {
-      console.log('✅ Booking created successfully:', res);
-      sessionStorage.removeItem('pendingBooking');
-      this.isProcessing = false;
-      this.hasError = false;
-    },
-    error: (err) => {
-      console.error('❌ Full error:', err);
-      console.error('❌ Error status:', err.status);
-      console.error('❌ Error message:', err.error);
-      
-      this.isProcessing = false;
-      this.hasError = true;
-      
-      if (err.status === 401) {
-        this.errorMessage = 'Your session has expired. Please log in again.';
-        setTimeout(() => {
-          this.router.navigate(['/login'], { 
-            queryParams: { returnUrl: '/payment-success' } 
-          });
-        }, 3000);
-      } else if (err.status === 403) {
-        this.errorMessage = err.error?.message || 'Identity verification required. Please verify your account first.';
-      } else {
-        this.errorMessage = err.error?.message || 'Failed to create booking. Please contact support.';
-      }
+    this.bookingService.createBooking(payload).subscribe({
+      next: (res) => {
+        console.log('✅ Booking created:', res);
+        sessionStorage.removeItem('pendingBooking'); // تنظيف
+        this.successMessage = 'Your new reservation is confirmed!';
+        this.isProcessing = false;
+        this.hasError = false;
+      },
+      error: (err) => this.handleError(err)
+    });
+  }
+
+  // --- السيناريو الثاني: تأكيد حجز موجود ---
+  confirmExistingBooking(bookingId: string) {
+    console.log('🔄 Confirming Existing Booking ID:', bookingId);
+
+    this.bookingService.confirmBookingPayment(Number(bookingId)).subscribe({
+      next: (res) => {
+        console.log('✅ Booking confirmed:', res);
+        sessionStorage.removeItem('payingBookingId'); // تنظيف
+        this.successMessage = 'Payment received! Your booking is now fully confirmed.';
+        this.isProcessing = false;
+        this.hasError = false;
+      },
+      error: (err) => this.handleError(err)
+    });
+  }
+
+  // --- معالجة الأخطاء الموحدة ---
+  handleError(err: any) {
+    console.error('❌ Error:', err);
+    this.isProcessing = false;
+    this.hasError = true;
+    
+    if (err.status === 401) {
+      this.errorMessage = 'Session expired. Please log in again.';
+    } else if (err.status === 403) {
+      this.errorMessage = 'Permission denied. Identity verification required.';
+    } else if (err.status === 400 || err.status === 409) {
+      this.errorMessage = err.error?.message || 'Booking conflict or invalid request.';
+    } else {
+      this.errorMessage = 'An unexpected error occurred. Please contact support.';
     }
-  });
-}
+  }
 
   retry() {
     this.hasError = false;
     this.isProcessing = true;
-    const pendingBooking = sessionStorage.getItem('pendingBooking');
-    if (pendingBooking) {
-      this.createBooking(JSON.parse(pendingBooking));
-    }
+    this.ngOnInit(); // إعادة المحاولة
   }
 
   goToTrips() {

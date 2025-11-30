@@ -1,87 +1,4 @@
-/* .btn-airbnb {
-  background-color: #FF385C;
-  color: white;
-  border-radius: 8px;
-  padding: 12px 24px;
-  transition: transform 0.1s ease, background-color 0.2s;
-}
-
-.btn-airbnb:hover {
-  background-color: #E31C5F;
-  color: white;
-  transform: scale(1.02);
-}
-
-.tab-btn {
-  font-weight: 600;
-  font-size: 16px;
-  transition: color 0.2s;
-}
-
-.tab-btn:hover {
-  color: #000 !important; 
-  background-color: #f7f7f7;
-}
-
-.tab-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: #222; 
-}
-
-.tab-btn.active {
-  font-weight: 700;
-}
- */
-
-
- /* Airbnb Primary Button */
-.btn-airbnb {
-  background-color: #FF385C;
-  color: white;
-  border-radius: 8px;
-  padding: 12px 24px;
-  transition: transform 0.1s ease, background-color 0.2s;
-}
-
-.btn-airbnb:hover {
-  background-color: #E31C5F;
-  color: white;
-  transform: scale(1.02);
-}
-
-/* Custom Tab Styling */
-.tab-btn {
-  border-bottom: 2px solid transparent !important;
-  border-radius: 0;
-}
-
-.tab-btn:hover {
-  color: #000 !important;
-  background-color: #f7f7f7;
-}
-
-.tab-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: #222;
-}
-
-
-
-.tab-btn.active {
-  font-weight: 700;
-}
-
-/* ✅ NEW: Trips Grid Layout */
+/* --- Layout --- */
 .trips-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -89,13 +6,39 @@
   margin-bottom: 40px;
 }
 
-/* ✅ NEW: Trip Card Styling */
+/* --- Tabs --- */
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 16px;
+  font-size: 16px;
+  color: #717171;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: #222;
+  background-color: #f7f7f7;
+  border-radius: 8px 8px 0 0;
+}
+
+.tab-btn.active {
+  color: #222;
+  border-bottom-color: #222;
+}
+
+/* --- Trip Card --- */
 .trip-card {
   border: 1px solid #DDDDDD;
   border-radius: 12px;
   overflow: hidden;
   transition: box-shadow 0.2s;
   background: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .trip-card:hover {
@@ -104,7 +47,8 @@
 
 .trip-image {
   height: 200px;
-  overflow: hidden;
+  position: relative;
+  background-color: #f0f0f0;
 }
 
 .trip-image img {
@@ -113,8 +57,35 @@
   object-fit: cover;
 }
 
+/* Status Badge */
+.status-overlay {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: white;
+  color: #222;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.status-badge.confirmed { background: #E6FFFA; color: #008A05; }
+.status-badge.pending { background: #FFF8F6; color: #C13515; }
+.status-badge.awaitingpayment { background: #FFF3E0; color: #E65100; border: 1px solid #E65100; }
+.status-badge.cancelled { background: #F7F7F7; color: #717171; text-decoration: line-through; }
+
+/* Details */
 .trip-details {
   padding: 16px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .trip-title {
@@ -129,41 +100,56 @@
 .host-name {
   font-size: 14px;
   color: #717171;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .trip-meta {
   font-size: 14px;
   color: #222;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.trip-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.date-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px; color: #717171;
 }
 
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.status-badge.confirmed { background: #E6FFFA; color: #008A05; }
-.status-badge.pending { background: #FFF8F6; color: #C13515; }
-.status-badge.completed { background: #F7F7F7; color: #717171; }
-.status-badge.cancelled { background: #F7F7F7; color: #717171; text-decoration: line-through; }
-
+/* --- Actions --- */
 .trip-actions {
-  padding: 0 16px 16px 16px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
 }
 
-.btn-review {
+/* Pay Button */
+.btn-pay {
   width: 100%;
   padding: 10px;
+  background: #FF385C; /* Airbnb Red */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-pay:hover {
+  background: #E31C5F;
+}
+
+.btn-pay:disabled {
+  background: #fab1bb;
+  cursor: not-allowed;
+}
+
+/* Review Button */
+.btn-review {
+  width: 100%;
+  padding: 8px;
   background: white;
   border: 1px solid #222;
   border-radius: 8px;
@@ -174,10 +160,44 @@
 
 .btn-review:hover {
   background: #F7F7F7;
-  border-color: #000;
 }
 
-/* ✅ NEW: Modal Styling */
+.pending-info {
+    font-size: 14px;
+    color: #C13515;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* --- Empty State --- */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.icon-wrapper {
+  font-size: 48px;
+  color: #ddd;
+  margin-bottom: 16px;
+}
+
+.btn-airbnb {
+  background-color: #FF385C;
+  color: white;
+  border-radius: 8px;
+  padding: 12px 24px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.btn-airbnb:hover {
+  background-color: #E31C5F;
+}
+
+/* --- Modal --- */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -209,7 +229,6 @@
   border: none;
   font-size: 24px;
   cursor: pointer;
-  padding: 0;
 }
 
 .star-rating {
@@ -223,7 +242,6 @@
   font-size: 32px;
   cursor: pointer;
   color: #DDDDDD;
-  transition: color 0.2s;
 }
 
 .star.active {
@@ -257,7 +275,4 @@
 .btn-submit:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-}
-  border-bottom: 2px solid #222 !important;
-  color: #222 !important;
 }

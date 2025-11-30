@@ -11,6 +11,7 @@ namespace Airbnb.API.Models
         Confirmed = 1,
         Cancelled = 2,
         Completed = 3,
-        Rejected = 4
+        Rejected = 4,
+        AwaitingPayment = 5
     }
 }
