@@ -1,0 +1,86 @@
+<div class="page-container">
+  
+  <!-- Header -->
+  <header class="step-header">
+    <button class="btn-icon" (click)="goBack()">
+      <i class="bi bi-chevron-left"></i> Back
+    </button>
+    <button class="btn-save">Save & exit</button>
+  </header>
+
+  <!-- Main Content -->
+  <main class="content-area">
+    <div class="content-wrapper">
+      
+      <h1 class="step-title">Where is your service located?</h1>
+      <p class="step-subtitle">Choose how you will provide this service.</p>
+
+      <!-- Location Type Selection -->
+      <div class="cards-container">
+        
+        <!-- Mobile (Type 0) -->
+        <div 
+          class="selection-card" 
+          [class.selected]="locationType() === 0"
+          (click)="selectType(0)"
+        >
+          <div class="card-content">
+            <h3 class="card-title">I travel to guests</h3>
+            <p class="card-desc">You go to the guest's home, event, or a public place.</p>
+          </div>
+          <i class="bi bi-car-front card-icon"></i>
+        </div>
+
+        <!-- OnSite (Type 1) -->
+        <div 
+          class="selection-card" 
+          [class.selected]="locationType() === 1"
+          (click)="selectType(1)"
+        >
+          <div class="card-content">
+            <h3 class="card-title">Guests come to me</h3>
+            <p class="card-desc">The service happens at your property or a specific location.</p>
+          </div>
+          <i class="bi bi-house-door card-icon"></i>
+        </div>
+
+      </div>
+
+      <!-- City Input (Visible only after selection or always visible) -->
+      <div class="city-input-container">
+        <label class="input-label">Which city?</label>
+        <div class="input-wrapper">
+          <i class="bi bi-geo-alt input-icon"></i>
+          <input 
+            type="text" 
+            [ngModel]="city()" 
+            (ngModelChange)="city.set($event)"
+            placeholder="e.g. Cairo, Egypt" 
+            class="city-input"
+          >
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="step-footer">
+    <!-- Progress Bar (80%) -->
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width: 80%;"></div>
+    </div>
+    
+    <div class="footer-actions">
+      <button class="btn btn-link text-dark fw-bold text-decoration-underline" (click)="goBack()">Back</button>
+      
+      <button 
+        class="btn btn-dark px-4 py-2 fw-bold rounded-3" 
+        [disabled]="locationType() === null || !city().trim()"
+        (click)="onNext()">
+        Next
+      </button>
+    </div>
+  </footer>
+
+</div>

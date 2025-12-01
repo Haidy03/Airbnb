@@ -1,0 +1,75 @@
+<div class="page-container">
+  
+  <!-- Header -->
+  <header class="step-header">
+    <button class="btn-icon" (click)="goBack()">
+      <i class="bi bi-chevron-left"></i> Back
+    </button>
+    <button class="btn-save">Save & exit</button>
+  </header>
+
+  <!-- Main Content -->
+  <main class="content-area">
+    <div class="content-wrapper">
+      
+      <h1 class="step-title">Now, set your price</h1>
+      <p class="step-subtitle">You can change it anytime.</p>
+
+      <div class="price-input-container">
+        
+        <!-- Currency & Amount -->
+        <div class="amount-wrapper">
+          <span class="currency-symbol">EGP</span>
+          <input 
+            type="number" 
+            [ngModel]="price()" 
+            (ngModelChange)="onPriceChange($event)"
+            placeholder="0"
+            class="price-input"
+            min="1"
+          >
+        </div>
+
+        <!-- Pricing Unit Dropdown -->
+        <div class="unit-selector">
+          <label class="unit-label">Price is per</label>
+          <div class="select-wrapper">
+            <select [ngModel]="selectedUnit()" (ngModelChange)="onUnitChange($event)" class="unit-select">
+              <option *ngFor="let unit of pricingUnits" [value]="unit.value">
+                {{ unit.label }}
+              </option>
+            </select>
+            <i class="bi bi-chevron-down select-icon"></i>
+          </div>
+        </div>
+
+        <!-- Warning if price is low/missing (Optional) -->
+        <div *ngIf="price() && price()! < 50" class="price-tip">
+          <i class="bi bi-lightbulb"></i> Consider setting a price that covers your costs.
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="step-footer">
+    <!-- Progress Bar (60%) -->
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width: 60%;"></div>
+    </div>
+    
+    <div class="footer-actions">
+      <button class="btn btn-link text-dark fw-bold text-decoration-underline" (click)="goBack()">Back</button>
+      
+      <button 
+        class="btn btn-dark px-4 py-2 fw-bold rounded-3" 
+        [disabled]="!price() || price()! <= 0"
+        (click)="onNext()">
+        Next
+      </button>
+    </div>
+  </footer>
+
+</div>

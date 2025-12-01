@@ -176,6 +176,18 @@ export const routes: Routes = [
         .then(m => m.CreateServiceDescriptionComponent),
       title: 'Service Description - Host'
     },
+    {
+        path: 'services/price',
+        loadComponent: () => import('./features/services/components/create-service-price/create-service-price')
+          .then(m => m.CreateServicePriceComponent),
+        title: 'Service Price - Host'
+      },
+      {
+        path: 'services/location',
+        loadComponent: () => import('./features/services/components/create-service-location/create-service-location')
+          .then(m => m.CreateServiceLocationComponent),
+        title: 'Service Location - Host'
+      },
 
       // {
       //   path: 'properties/:id',

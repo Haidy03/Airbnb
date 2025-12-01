@@ -12,10 +12,9 @@ import { FormsModule } from '@angular/forms';
 })
 export class CreateServiceDescriptionComponent {
   description = signal<string>('');
-  maxLength = 500; // وصف أطول من العنوان
+  maxLength = 500;
 
   constructor(private router: Router) {
-    // استرجاع البيانات القديمة لو موجودة
     const savedDesc = localStorage.getItem('draftServiceDescription');
     if (savedDesc) {
       this.description.set(savedDesc);
@@ -33,7 +32,7 @@ export class CreateServiceDescriptionComponent {
   onNext() {
     if (this.description().trim().length > 0) {
       localStorage.setItem('draftServiceDescription', this.description().trim());
-      alert('Description saved! Ready for Location Step.'); 
+      this.router.navigate(['/host/services/price']);  
     }
   }
 }
