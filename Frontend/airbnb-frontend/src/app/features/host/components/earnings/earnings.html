@@ -6,15 +6,15 @@
   <div class="stats-grid">
     <div class="stat-card">
       <h3>Total Earnings</h3>
-      <p class="amount">${{ data()?.totalEarnings | number:'1.0-2' }}</p>
+      <p class="amount">EGP{{ data()?.totalEarnings | number:'1.0-2' }}</p>
     </div>
     <div class="stat-card">
       <h3>Paid this month</h3>
-      <p class="amount">${{ data()?.thisMonthEarnings | number:'1.0-2' }}</p>
+      <p class="amount">EGP{{ data()?.thisMonthEarnings | number:'1.0-2' }}</p>
     </div>
     <div class="stat-card pending">
       <h3>Expected</h3>
-      <p class="amount">${{ data()?.pendingPayouts | number:'1.0-2' }}</p>
+      <p class="amount">EGP{{ data()?.pendingPayouts | number:'1.0-2' }}</p>
     </div>
   </div>
 
@@ -24,7 +24,7 @@
     <div class="bar-chart">
       <div class="bar-item" *ngFor="let item of data()?.chartData">
         <div class="bar-value" [style.height]="getBarHeight(item.amount)">
-          <span class="tooltip">${{ item.amount }}</span>
+          <span class="tooltip">EGP{{ item.amount }}</span>
         </div>
         <span class="bar-label">{{ item.month }}</span>
       </div>
@@ -41,7 +41,7 @@
             <th>Date</th>
             <th>Status</th>
             <th>Guest</th>
-            <th>Listing</th>
+            <th>Listing / Experience</th>
             <th class="text-right">Amount</th>
           </tr>
         </thead>
@@ -55,7 +55,7 @@
             </td>
             <td>{{ trans.guestName }}</td>
             <td>{{ trans.propertyTitle }}</td>
-            <td class="text-right font-bold">${{ trans.amount | number:'1.0-2' }}</td>
+            <td class="text-right font-bold">EGP{{ trans.amount | number:'1.0-2' }}</td>
           </tr>
         </tbody>
       </table>

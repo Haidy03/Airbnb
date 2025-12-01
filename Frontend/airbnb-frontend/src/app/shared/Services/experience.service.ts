@@ -9,8 +9,8 @@ import {
   UpdateExperienceDto,
   ExperienceSearchDto,
   BookExperienceDto,
-  //CreateAvailabilityDto,
-  CreateReviewDto // تأكدي إن المودلز دي موجودة
+  CreateReviewDto,
+  CreateAvailabilityDto
 } from '../models/experience.model';
 
 @Injectable({
@@ -217,4 +217,31 @@ export class ExperienceService {
       default: return 'badge-secondary';
     }
   }
+
+  addAvailability(experienceId: number, dto: CreateAvailabilityDto): Observable<any> {
+  return this.http.post<any>(`${this.apiUrl}/${experienceId}/availability`, dto, {
+    headers: this.getHeaders()
+  });
+}
+
+// 2. دالة جلب المواعيد
+getAvailabilities(experienceId: number, startDate: Date, endDate: Date): Observable<any> {
+  const params = new HttpParams()
+    .set('startDate', startDate.toISOString())
+    .set('endDate', endDate.toISOString());
+
+  return this.http.get<any>(`${this.apiUrl}/${experienceId}/availability`, { 
+    params,
+    headers: this.getHeaders() 
+  }).pipe(
+    map((res: any) => res.data || [])
+  );
+}
+
+// 3. دالة حذف موعد
+deleteAvailability(availabilityId: number): Observable<any> {
+  return this.http.delete<any>(`${this.apiUrl}/availability/${availabilityId}`, {
+    headers: this.getHeaders()
+  });
+}
 }

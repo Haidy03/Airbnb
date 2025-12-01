@@ -38,6 +38,62 @@
       </div>
     </div>
 
+    <div class="form-section">
+      <h2 class="section-title">Availability & Schedule</h2>
+      <p class="section-subtitle">Set up to 6 dates when this experience will occur.</p>
+
+      <!-- 1. Form to add new slot -->
+      <div class="availability-form-row">
+        <div class="form-group" style="flex: 1;">
+          <label class="form-label">Date</label>
+          <input type="date" [(ngModel)]="newSlotDate" class="form-input">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label class="form-label">Start Time</label>
+          <input type="time" [(ngModel)]="newSlotTime" class="form-input">
+        </div>
+        <button 
+          type="button" 
+          class="add-slot-btn" 
+          (click)="addSlot()"
+          [disabled]="tempSlots().length >= 6">
+          + Add Date
+        </button>
+      </div>
+      <p style="font-size: 12px; color: #717171; margin-top: -16px; margin-bottom: 24px;">
+        * End time will be calculated automatically based on duration.
+      </p>
+
+      <!-- 2. List of Temporary Slots (Not saved yet) -->
+      <div *ngIf="tempSlots().length > 0" class="slots-list mb-4">
+        <h4 class="mini-title">New slots to be added:</h4>
+        <div *ngFor="let slot of tempSlots(); let i = index" class="slot-card new-slot">
+          <div class="slot-info">
+            <span class="slot-date">{{ slot.date | date:'mediumDate' }}</span>
+            <span class="slot-time">
+        {{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}
+      </span>
+          </div>
+          <button type="button" class="remove-slot-btn" (click)="removeSlot(i)">×</button>
+        </div>
+      </div>
+
+      <!-- 3. List of Existing Slots (Saved in DB) -->
+      <div *ngIf="existingSlots().length > 0" class="slots-list">
+        <h4 class="mini-title">Existing Schedule:</h4>
+        <div *ngFor="let slot of existingSlots()" class="slot-card existing-slot">
+          <div class="slot-info">
+            <span class="slot-date">{{ slot.date | date:'mediumDate' }}</span>
+            <span class="slot-time">
+        {{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}
+      </span>
+            <span class="slot-spots">{{ slot.availableSpots }} spots left</span>
+          </div>
+          <button type="button" class="remove-slot-btn" (click)="deleteExistingSlot(slot.id)">🗑️</button>
+        </div>
+      </div>
+    </div>
+
     <form [formGroup]="experienceForm" (ngSubmit)="onSubmit()">
       
       <!-- Basic Info -->

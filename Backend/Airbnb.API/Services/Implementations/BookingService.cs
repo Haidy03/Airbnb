@@ -134,6 +134,8 @@ namespace Airbnb.API.Services.Implementations
                 allTrips.Add(new TripDto
                 {
                     Id = b.Id,
+                    PropertyId = b.PropertyId, // ✅✅ 1. تم إضافة رقم الوحدة هنا
+                    ExperienceId = null,
                     Type = "Property", // ✅ تحديد النوع
                     Title = b.Property.Title,
                     // التعامل الآمن مع الصور
@@ -144,6 +146,7 @@ namespace Airbnb.API.Services.Implementations
                     CheckOutDate = b.CheckOutDate,
                     TotalPrice = b.TotalPrice,
                     Status = b.Status.ToString(),
+
 
                     // ✅ إعدادات التقييم
                     IsReviewed = hasReview,
@@ -170,6 +173,8 @@ namespace Airbnb.API.Services.Implementations
                 allTrips.Add(new TripDto
                 {
                     Id = eb.Id,
+                    ExperienceId = eb.ExperienceId, // ✅✅ 2. تم إضافة رقم التجربة هنا
+                    PropertyId = null,
                     Type = "Experience", // ✅ تحديد النوع
                     Title = eb.Experience.Title,
                     ImageUrl = eb.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl

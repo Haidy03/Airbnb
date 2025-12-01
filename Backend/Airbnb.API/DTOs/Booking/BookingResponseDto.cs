@@ -3,8 +3,9 @@
     public class BookingResponseDto
     {
         public int Id { get; set; }
+        public string Type { get; set; }
         public int PropertyId { get; set; }
-        public string PropertyTitle { get; set; } = string.Empty;
+        public int PropertyTitle { get; set; }
         public string PropertyImage { get; set; } = string.Empty;
 
         public string GuestId { get; set; } = string.Empty;

@@ -91,7 +91,7 @@
         </div>
         <div class="card-content">
           <p class="card-label">Total Revenue</p>
-          <p class="card-value">{{ formatCurrency(revenueReport()!.totalRevenue) }}</p>
+          <p class="card-value"><span>EGP</span>{{ revenueReport()!.totalRevenue }}</p>
         </div>
       </div>
 
@@ -104,7 +104,7 @@
         </div>
         <div class="card-content">
           <p class="card-label">Platform Fees (15%)</p>
-          <p class="card-value">{{ formatCurrency(revenueReport()!.platformFees) }}</p>
+          <p class="card-value"><span>EGP</span>{{ revenueReport()!.platformFees }}</p>
         </div>
       </div>
 
@@ -117,7 +117,7 @@
         </div>
         <div class="card-content">
           <p class="card-label">Host Payouts</p>
-          <p class="card-value">{{ formatCurrency(revenueReport()!.hostPayouts) }}</p>
+          <p class="card-value"><span>EGP</span>{{ revenueReport()!.hostPayouts }}</p>
         </div>
       </div>
 
@@ -132,7 +132,7 @@
         <div class="card-content">
           <p class="card-label">Total Bookings</p>
           <p class="card-value">{{ revenueReport()!.totalBookings }}</p>
-          <p class="card-sublabel">Avg: {{ formatCurrency(revenueReport()!.averageBookingValue) }}</p>
+          <p class="card-sublabel">Avg: <span>EGP</span>{{ revenueReport()!.averageBookingValue }}</p>
         </div>
       </div>
     </div>
@@ -154,7 +154,7 @@
               [style.width.%]="(location.revenue / getMaxRevenue(revenueReport()!.revenueByLocation)) * 100">
             </div>
           </div>
-          <span class="location-revenue">{{ formatCurrency(location.revenue) }}</span>
+          <span class="location-revenue"><span>EGP</span>{{ location.revenue }}</span>
         </div>
       </div>
     </div>
@@ -284,7 +284,7 @@
           <div class="property-info">
             <span class="property-name">{{ property.propertyTitle }}</span>
             <span class="property-stats">
-              {{ property.totalBookings }} bookings · {{ formatCurrency(property.revenue) }}
+              {{ property.totalBookings }} bookings · <span>EGP</span> {{ property.revenue }}
             </span>
           </div>
           <span class="occupancy-badge high">{{ formatPercent(property.occupancyRate) }}</span>
@@ -300,7 +300,7 @@
           <div class="property-info">
             <span class="property-name">{{ property.propertyTitle }}</span>
             <span class="property-stats">
-              {{ property.totalBookings }} bookings · {{ formatCurrency(property.revenue) }}
+              {{ property.totalBookings }} bookings · <span>EGP</span> {{ property.revenue }}
             </span>
           </div>
           <span class="occupancy-badge low">{{ formatPercent(property.occupancyRate) }}</span>

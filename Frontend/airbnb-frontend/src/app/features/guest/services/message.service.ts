@@ -7,7 +7,8 @@ import { environment } from '../../../../environments/environment';
 
 // الموديل لحمولة الطلب (Payload)
 export interface SendMessagePayload {
-  propertyId: string;
+  propertyId?: string;
+  experienceId?: number;
   guestId: string;
   initialMessage: string;
 }

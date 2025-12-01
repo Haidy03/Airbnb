@@ -228,6 +228,24 @@ namespace Airbnb.API.Services.Implementations
             };
         }
 
+        public async Task<bool> DeleteAvailabilityAsync(int availabilityId, string hostId)
+        {
+            // 1. جلب الموعد
+            var availability = await _experienceRepository.GetAvailabilityByIdAsync(availabilityId);
+
+            if (availability == null)
+                return false;
+
+            // 2. التأكد من أن الهوست هو صاحب التجربة
+            // (نحتاج نتأكد ان الـ Experience loaded، الدالة GetAvailabilityByIdAsync في الريبوزيتوري بتعمل Include للـ Experience)
+            if (availability.Experience.HostId != hostId)
+                throw new UnauthorizedAccessException("You are not authorized to delete this schedule");
+
+            // 3. الحذف
+            await _experienceRepository.DeleteAvailabilityAsync(availabilityId);
+            return true;
+        }
+
         public async Task<bool> DeleteImageAsync(int imageId, string hostId)
         {
             var image = await _experienceRepository.GetImageByIdAsync(imageId);

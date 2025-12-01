@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ExperienceService } from '../../../../../shared/Services/experience.service';
 import { Experience, BookExperienceDto, ExperienceAvailability } from '../../../../../shared/models/experience.model';
 import { HeaderComponent } from "../../../../guest/components/header/header";
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-experience-booking',
@@ -242,5 +243,16 @@ export class ExperienceBookingComponent implements OnInit {
 
   formatDate(date: Date): string {
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  getImageUrl(imageUrl: string | undefined | null): string {
+    if (!imageUrl) return 'assets/images/placeholder.jpg';
+
+    if (imageUrl.startsWith('http') || imageUrl.includes('assets/')) {
+      return imageUrl;
+    }
+    // هنا بنجيب رابط الباك اند ونشيل منه كلمة api لو موجودة
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+    return `${baseUrl}${cleanPath}`;
   }
 }

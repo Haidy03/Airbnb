@@ -40,6 +40,7 @@ namespace Airbnb.API.Services.Interfaces
         Task<ExperienceReviewDto?> GetReviewByIdAsync(int reviewId);
         Task<ExperienceReviewDto> UpdateReviewAsync(int reviewId, string userId, UpdateReviewDto dto);
         Task<bool> DeleteReviewAsync(int reviewId, string userId);
+        Task<bool> DeleteAvailabilityAsync(int availabilityId, string hostId);
 
 
     }

@@ -100,6 +100,9 @@ export interface Message {
 export interface Conversation {
   id: string;
   propertyId?: string;
+  experienceId?: number;
+  experienceTitle?: string;
+  experienceImage?: string;
   propertyTitle?: string;
   propertyImage?: string;
   bookingId?: string;

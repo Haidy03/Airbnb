@@ -89,7 +89,7 @@
         </div>
         <div class="stat-content">
           <h3>Total Revenue</h3>
-          <p class="stat-number">${{ stats.totalRevenue | number:'1.2-2' }}</p>
+          <p class="stat-number">EGP{{ stats.totalRevenue | number:'1.2-2' }}</p>
           <div class="stat-details">
             <span class="detail-item growth">+{{ revenueGrowth | number:'1.1-1' }}% this month</span>
           </div>
@@ -146,7 +146,7 @@
           <div class="chart-bars">
             <div *ngFor="let month of stats.revenueByMonth" class="bar-container">
               <div class="tooltip">
-                <span class="tooltip-price">${{ month.revenue | number:'1.0-0' }}</span>
+                <span class="tooltip-price">EGP{{ month.revenue | number:'1.0-0' }}</span>
                 <span class="tooltip-count">{{ month.bookingsCount }} bookings</span>
                 <div class="tooltip-arrow"></div>
               </div>
@@ -175,7 +175,7 @@
               <span class="type-name">{{ type.propertyType }}</span>
               <span class="type-count">{{ type.count }} properties</span>
             </div>
-            <div class="type-revenue">${{ type.totalRevenue | number:'1.0-0' }}</div>
+            <div class="type-revenue">EGP{{ type.totalRevenue | number:'1.0-0' }}</div>
           </div>
         </div>
       </div>
@@ -195,7 +195,7 @@
         </div>
         <div class="activity-item">
           <span class="activity-label">Platform Fees</span>
-          <span class="activity-value">${{ stats.platformFees | number:'1.2-2' }}</span>
+          <span class="activity-value">EGP{{ stats.platformFees | number:'1.2-2' }}</span>
         </div>
         <div class="activity-item">
           <span class="activity-label">Active Users</span>
