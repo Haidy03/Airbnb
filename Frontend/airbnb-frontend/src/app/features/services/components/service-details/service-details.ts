@@ -1,14 +1,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common'; // ✅ DatePipe Added
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ServicesService } from '../../services/service';
 import { ServiceDetails, ServicePackage } from '../../models/service.model';
 import { environment } from '../../../../../environments/environment';
-
+import { ServiceBookingModalComponent } from '../service-booking-modal/service-booking-modal';
 @Component({
   selector: 'app-service-details',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, DatePipe, ServiceBookingModalComponent], // ✅ DatePipe Imported
   templateUrl: './service-details.html',
   styleUrls: ['./service-details.css']
 })
@@ -16,12 +16,10 @@ export class ServiceDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private servicesService = inject(ServicesService);
   
-  // Data Signals
   service = signal<ServiceDetails | null>(null);
   isLoading = signal(true);
-  
-  // Logic
   selectedPackage = signal<ServicePackage | null>(null);
+  showBookingModal = false;
   private baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
 
   ngOnInit() {
@@ -37,22 +35,14 @@ export class ServiceDetailsComponent implements OnInit {
       next: (res) => {
         if (res.success) {
           this.service.set(res.data);
-          // لو فيه باقات، نختار الأولى افتراضياً (اختياري)
-          // if (res.data.packages.length > 0) {
-          //   this.selectedPackage.set(res.data.packages[0]);
-          // }
         }
         this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error(err);
-        this.isLoading.set(false);
-      }
+      error: () => this.isLoading.set(false)
     });
   }
 
   selectPackage(pkg: ServicePackage) {
-    // لو ضغط على نفس الباقة يلغي الاختيار، وإلا يختارها
     if (this.selectedPackage() === pkg) {
       this.selectedPackage.set(null);
     } else {
@@ -60,7 +50,6 @@ export class ServiceDetailsComponent implements OnInit {
     }
   }
 
-  // ✅ دالة معالجة الصور (نفس اللوجيك السليم)
   getImageUrl(url: string | undefined | null): string {
     if (!url) return 'assets/images/placeholder.jpg';
     if (url.startsWith('http')) return url;
@@ -68,9 +57,30 @@ export class ServiceDetailsComponent implements OnInit {
     return `${this.baseUrl}/${cleanPath}`;
   }
 
-  // Helper formatting text
-  formatPricingUnit(unit: string): string {
-    // يحول "PerPerson" إلى "guest" أو "PerSession" إلى "session"
-    return unit.replace('Per', '').toLowerCase(); 
+  // ✅ 1. تنسيق وحدة السعر
+  formatUnit(unit: string): string {
+    const map: any = { 
+      'PerPerson': 'guest', 
+      'PerHour': 'hour', 
+      'PerSession': 'session', 
+      'FlatFee': 'service' 
+    };
+    return map[unit] || unit.toLowerCase();
+  }
+
+  // ✅ 2. نص الموقع (مهم جداً)
+  getLocationText(s: ServiceDetails): string {
+    if (s.locationType === 'Mobile') {
+      return `Mobile Service • Host travels to you in ${s.city}`;
+    }
+    return `On-Site Service • Located in ${s.city}`;
+  }
+
+  openBookingModal() {
+    this.showBookingModal = true;
+  }
+
+  closeBookingModal() {
+    this.showBookingModal = false;
   }
 }

@@ -72,6 +72,7 @@ namespace Airbnb.API.DTOs.Services
 
     public class ServicePackageDto
     {
+        public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
@@ -85,6 +86,8 @@ namespace Airbnb.API.DTOs.Services
         public int ServiceId { get; set; }
         public int? PackageId { get; set; }
         public DateTime Date { get; set; }
+        [Range(1, 50)]
+        public int NumberOfGuests { get; set; }
     }
 
     public class ApproveServiceDto

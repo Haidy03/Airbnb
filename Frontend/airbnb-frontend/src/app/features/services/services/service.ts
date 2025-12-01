@@ -49,4 +49,7 @@ export class ServicesService {
   toggleServiceStatus(id: number): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${id}/toggle-status`, {});
   }
+  bookService(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/book`, data);
+  }
 }

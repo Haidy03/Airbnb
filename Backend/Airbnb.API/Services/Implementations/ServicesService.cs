@@ -118,6 +118,7 @@ namespace Airbnb.API.Services.Implementations
                 }).ToList(),
                 Packages = service.Packages.Select(p => new ServicePackageDto
                 {
+                    Id = p.Id,
                     Title = p.Title,
                     Description = p.Description,
                     Price = p.Price,
@@ -187,6 +188,10 @@ namespace Airbnb.API.Services.Implementations
                     finalPrice = package.Price;
                 }
             }
+            if (service.PricingUnit == ServicePricingUnit.PerPerson)
+            {
+                finalPrice = finalPrice * dto.NumberOfGuests;
+            }
 
             // 3. Create Booking Object
             var booking = new ServiceBooking
@@ -197,7 +202,8 @@ namespace Airbnb.API.Services.Implementations
                 BookingDate = dto.Date,
                 TotalPrice = finalPrice,
                 Status = "Confirmed", // Or "PendingPayment" based on your flow
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                NumberOfGuests = dto.NumberOfGuests
             };
 
             // 4. Save via Repo

@@ -11,7 +11,7 @@ namespace Airbnb.API.Models
         public int ServiceId { get; set; }
         [ForeignKey("ServiceId")]
         public virtual Service Service { get; set; }
-
+        public int NumberOfGuests { get; set; }
         public int? PackageId { get; set; } 
         [ForeignKey("PackageId")]
         public virtual ServicePackage Package { get; set; }

@@ -18,6 +18,7 @@ export interface ApiResponse<T> {
 }
 
 export interface ServicePackage {
+  id: number;
   title: string;
   description: string;
   price: number;

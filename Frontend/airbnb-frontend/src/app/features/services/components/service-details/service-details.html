@@ -2,161 +2,185 @@
   <div class="spinner-border text-danger" role="status"></div>
 </div>
 
-<div *ngIf="!isLoading() && service() as s" class="pb-5 mb-5 fade-in"> 
+<div *ngIf="!isLoading() && service() as s" class="container pt-4 pb-5">
 
-  <!-- 1. Hero Images Grid (Airbnb Style) -->
-  <div class="container-fluid px-0 px-md-5 mt-4">
-    <div class="gallery-grid rounded-4 overflow-hidden position-relative">
-      
-      <!-- Main Large Image -->
-      <div class="main-img position-relative bg-light">
-        <img [src]="getImageUrl(s.images[0])" class="w-100 h-100 object-fit-cover" alt="Main Service Image">
-      </div>
-
-      <!-- Side Images (Show only if available) -->
-      <div class="side-imgs d-none d-md-grid">
-        <div *ngFor="let img of s.images.slice(1, 5)" class="side-img-item bg-light">
-          <img [src]="getImageUrl(img)" class="w-100 h-100 object-fit-cover">
-        </div>
-      </div>
-
-      <!-- Show All Button -->
-      <button class="btn btn-light btn-sm position-absolute bottom-0 end-0 m-4 shadow-sm border fw-bold">
-        <i class="bi bi-grid-3x3-gap me-2"></i> Show all photos
-      </button>
+  <!-- 1. HEADER & TITLE -->
+  <div class="mb-4">
+    <h1 class="display-6 fw-bold text-dark">{{ s.title }}</h1>
+    <div class="d-flex align-items-center gap-2 text-dark small mt-2">
+      <span class="fw-bold"><i class="bi bi-star-fill"></i> {{ s.rating | number:'1.1-1' }}</span>
+      <span>·</span>
+      <span class="text-decoration-underline fw-bold">Reviews</span>
+      <span>·</span>
+      <span class="text-muted">{{ s.city }}, Egypt</span>
     </div>
   </div>
 
-  <div class="container mt-5" style="max-width: 1120px;">
-    <div class="row">
+  <!-- 2. IMAGE GALLERY -->
+  <div class="gallery-grid rounded-4 overflow-hidden mb-5">
+    <div class="main-img bg-light position-relative">
+      <img [src]="getImageUrl(s.images[0])" class="w-100 h-100 object-fit-cover">
+    </div>
+    <div class="side-imgs d-none d-md-grid">
+      <div *ngFor="let img of s.images.slice(1, 5)" class="side-img-item bg-light">
+        <img [src]="getImageUrl(img)" class="w-100 h-100 object-fit-cover">
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- ================= LEFT COLUMN ================= -->
+    <div class="col-lg-8 pe-lg-5">
       
-      <!-- LEFT COLUMN: Content -->
-      <div class="col-lg-7 pe-lg-5">
-        
-        <!-- Header: Title & Host -->
-        <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
-          <div>
-            <h1 class="h2 fw-bold mb-2">{{ s.title }}</h1>
-            <p class="text-muted mb-0">
-              {{ s.categoryName }} service in {{ s.city }} · 
-              <span *ngIf="s.locationType === 'Mobile'">Host travels to you</span>
-              <span *ngIf="s.locationType === 'OnSite'">Hosted at specific location</span>
-            </p>
-            <div class="mt-2 d-flex align-items-center gap-1 small fw-bold">
-              <i class="bi bi-star-fill text-dark"></i>
-              <span>{{ s.rating | number:'1.1-1' }}</span>
-              <span class="text-muted mx-1">·</span>
-              <span class="text-decoration-underline">Reviews</span>
-            </div>
-          </div>
-          
-          <!-- Host Avatar -->
-          <div class="text-center">
-            <img [src]="getImageUrl(s.hostAvatar)" 
-                 class="rounded-circle object-fit-cover shadow-sm border" 
-                 width="56" height="56"
-                 onerror="this.src='assets/images/placeholder-user.png'">
-            <p class="small text-muted mt-1 mb-0">{{ s.hostName }}</p>
-          </div>
-        </div>
-
-        <!-- Description -->
-        <div class="mb-5 border-bottom pb-4">
-          <h3 class="h5 fw-bold mb-3">About this service</h3>
-          <p class="text-muted lh-base" style="white-space: pre-line;">{{ s.description }}</p>
-        </div>
-
-        <!-- Qualifications -->
-        <div *ngIf="s.qualifications.length > 0" class="mb-5 border-bottom pb-4">
-          <h3 class="h5 fw-bold mb-4">Why {{ s.hostName }}?</h3>
-          <div *ngFor="let q of s.qualifications" class="d-flex gap-3 mb-4">
-            <i [class]="'bi fs-4 text-dark ' + (q.icon || 'bi-patch-check')"></i>
-            <div>
-              <h5 class="h6 fw-bold mb-1">{{ q.title }}</h5>
-              <p class="text-muted small mb-0">{{ q.description }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Location Info -->
-        <div class="mb-5">
-          <h3 class="h5 fw-bold mb-3">Where you'll meet</h3>
-          <p class="text-muted mb-2">
-            <i class="bi bi-geo-alt me-2"></i> {{ s.city }}
-            <span *ngIf="s.coveredAreas" class="ms-1">({{ s.coveredAreas }})</span>
+      <!-- 3. HOST INFO & TYPE -->
+      <div class="d-flex justify-content-between align-items-center border-bottom pb-4 mb-4">
+        <div>
+          <h2 class="h4 fw-bold mb-1">{{ s.categoryName }} Service hosted by {{ s.hostName }}</h2>
+          <p class="text-muted mb-0">
+            {{ getLocationText(s) }}
           </p>
-          <!-- Static Map Image Placeholder -->
-          <div class="rounded-4 overflow-hidden bg-light border mt-3" style="height: 240px;">
-             <img src="https://i.imgur.com/HILmr6r.png" class="w-100 h-100 object-fit-cover opacity-75">
+        </div>
+        <div class="host-avatar-wrapper">
+          <img [src]="getImageUrl(s.hostAvatar)" class="host-avatar" onerror="this.src='assets/images/placeholder-user.png'">
+        </div>
+      </div>
+
+      <!-- 4. HIGHLIGHTS (Static for now, Dynamic based on data) -->
+      <div class="highlights border-bottom pb-4 mb-4">
+        
+        <!-- Location Highlight -->
+        <div class="d-flex gap-3 mb-3">
+          <i class="bi fs-4" [ngClass]="s.locationType === 'Mobile' ? 'bi-car-front' : 'bi-house-door'"></i>
+          <div>
+            <h6 class="fw-bold mb-0">
+              {{ s.locationType === 'Mobile' ? 'We come to you' : 'Hosted at a location' }}
+            </h6>
+            <p class="text-muted small mb-0">
+              {{ s.locationType === 'Mobile' ? 'Relax, the service comes to your doorstep.' : 'Enjoy the experience at the host’s venue.' }}
+            </p>
           </div>
         </div>
 
-        <!-- Things to know -->
-        <div class="row g-4 border-top pt-4">
-          <div class="col-6">
+        <!-- Cancellation Highlight -->
+        <div class="d-flex gap-3">
+          <i class="bi bi-calendar-check fs-4"></i>
+          <div>
+            <h6 class="fw-bold mb-0">Cancellation Policy</h6>
+            <p class="text-muted small mb-0">{{ s.cancellationPolicy || 'Free cancellation for 48 hours.' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. DESCRIPTION -->
+      <div class="border-bottom pb-4 mb-4">
+        <h3 class="h5 fw-bold mb-3">About this service</h3>
+        <p class="text-muted lh-lg" style="white-space: pre-line;">{{ s.description }}</p>
+      </div>
+
+      <!-- 6. HOST DETAILS (Joined Date) -->
+      <div class="border-bottom pb-4 mb-4">
+        <h3 class="h5 fw-bold mb-3">Meet your Host</h3>
+        <div class="host-card bg-light rounded-4 p-4 d-flex align-items-center gap-3">
+          <img [src]="getImageUrl(s.hostAvatar)" class="host-avatar-lg rounded-circle">
+          <div>
+            <h4 class="h5 fw-bold mb-1">{{ s.hostName }}</h4>
+            <p class="text-muted small mb-0">Joined in {{ s.hostJoinedDate | date:'MMMM yyyy' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. THINGS TO KNOW -->
+      <div class="mb-5">
+        <h3 class="h5 fw-bold mb-4">Things to know</h3>
+        <div class="row g-4">
+          <div class="col-md-6">
             <h6 class="fw-bold">Guest Requirements</h6>
             <p class="small text-muted">{{ s.guestRequirements || 'No specific requirements.' }}</p>
           </div>
-          <div class="col-6">
-            <h6 class="fw-bold">Cancellation Policy</h6>
-            <p class="small text-muted">{{ s.cancellationPolicy || 'Flexible cancellation.' }}</p>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- RIGHT COLUMN: Sticky Booking -->
-      <div class="col-lg-5 mt-5 mt-lg-0">
-        <div class="sticky-top" style="top: 100px; z-index: 10;">
-          <div class="border rounded-4 shadow-lg p-4 bg-white">
-            
-            <h3 class="h5 fw-bold mb-3">Choose your package</h3>
-
-            <!-- Packages List -->
-            <div class="d-flex flex-column gap-3 mb-4" *ngIf="s.packages.length > 0">
-              <div *ngFor="let pkg of s.packages" 
-                   class="pkg-card p-3 rounded-3 border cursor-pointer transition"
-                   [class.active-pkg]="selectedPackage() === pkg"
-                   (click)="selectPackage(pkg)">
-                
-                <div class="d-flex justify-content-between align-items-start mb-1">
-                  <h6 class="fw-bold mb-0">{{ pkg.title }}</h6>
-                  <span class="fw-bold text-dark">{{ pkg.price | currency:'EGP ' }}</span>
-                </div>
-                
-                <p class="small text-muted mb-2">{{ pkg.description }}</p>
-                <div class="d-flex align-items-center gap-2 small text-secondary">
-                  <i class="bi bi-clock"></i> {{ pkg.duration }}
-                </div>
-              </div>
-            </div>
-
-            <div *ngIf="s.packages.length === 0" class="alert alert-light border text-center text-muted">
-              Base Service Only
-            </div>
-
-            <!-- Total Price Display -->
-            <div class="d-flex justify-content-between align-items-center mb-3 pt-3 border-top">
-              <span class="fw-bold fs-5">Total</span>
-              <span class="fw-bold fs-4">
-                {{ (selectedPackage() ? selectedPackage()!.price : s.pricePerUnit) | currency:'EGP ' }}
-              </span>
-            </div>
-
-            <button class="btn btn-danger w-100 py-3 fw-bold rounded-3" 
-                    style="background: #E31C5F;">
-              Reserve
-            </button>
-            
-            <div class="text-center mt-3 small text-muted">
-              You won't be charged yet
-            </div>
-
+          <div class="col-md-6">
+            <h6 class="fw-bold">Location Details</h6>
+            <p class="small text-muted">
+              City: {{ s.city }} <br>
+              <span *ngIf="s.locationType === 'Mobile'">Areas covered: {{ s.coveredAreas || 'City wide' }}</span>
+            </p>
           </div>
         </div>
       </div>
 
     </div>
-  </div>
 
+    <!-- ================= RIGHT COLUMN (STICKY) ================= -->
+    <div class="col-lg-4">
+      <div class="sticky-top" style="top: 100px; z-index: 10;">
+        <div class="booking-card shadow-lg rounded-4 p-4 border bg-white">
+          
+          <!-- Pricing Header -->
+          <div class="d-flex justify-content-between align-items-baseline mb-3">
+            <div>
+              <span class="fs-3 fw-bold text-dark">
+                {{ (selectedPackage() ? selectedPackage()!.price : s.pricePerUnit) | currency:'EGP ' }}
+              </span>
+              <span class="text-muted small"> / {{ formatUnit(s.pricingUnit) }}</span>
+            </div>
+            <div class="small fw-bold">
+              <i class="bi bi-star-fill"></i> {{ s.rating | number:'1.1-1' }}
+            </div>
+          </div>
+
+          <!-- Packages Selection (If Exists) -->
+          <div *ngIf="s.packages && s.packages.length > 0" class="mb-3">
+            <label class="small fw-bold text-muted mb-2">CHOOSE PACKAGE</label>
+            <div class="d-flex flex-column gap-2">
+              <div *ngFor="let pkg of s.packages" 
+                   class="pkg-item p-2 border rounded cursor-pointer"
+                   [class.active-pkg]="selectedPackage() === pkg"
+                   (click)="selectPackage(pkg)">
+                <div class="d-flex justify-content-between">
+                  <span class="fw-bold small">{{ pkg.title }}</span>
+                  <span class="small">{{ pkg.price | currency:'EGP ' }}</span>
+                </div>
+                <div class="small text-muted text-truncate">{{ pkg.duration }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- If No Packages -->
+          <div *ngIf="(!s.packages || s.packages.length === 0)" class="mb-3 p-3 bg-light rounded border text-center">
+            <p class="mb-0 small text-muted">Standard Service Booking</p>
+          </div>
+
+          <!-- Submit Button -->
+          <button class="btn btn-danger w-100 py-3 fw-bold rounded-3 mt-2" 
+                  style="background: #E31C5F; font-size: 16px;" (click)="openBookingModal()">
+            Reserve
+          </button>
+
+          <div class="text-center mt-3">
+            <small class="text-muted">You won't be charged yet</small>
+          </div>
+
+          <!-- Price Breakdown -->
+          <div class="mt-4 pt-3 border-top">
+            <div class="d-flex justify-content-between mb-2 small text-muted">
+              <span>Service fee</span>
+              <span>EGP 0</span>
+            </div>
+            <div class="d-flex justify-content-between fw-bold fs-5 mt-3 pt-3 border-top">
+              <span>Total</span>
+              <span>{{ (selectedPackage() ? selectedPackage()!.price : s.pricePerUnit) | currency:'EGP ' }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
+
+<app-service-booking-modal
+  *ngIf="showBookingModal"
+  [service]="service()!"
+  [selectedPackage]="selectedPackage()"
+  (close)="closeBookingModal()">
+</app-service-booking-modal>
