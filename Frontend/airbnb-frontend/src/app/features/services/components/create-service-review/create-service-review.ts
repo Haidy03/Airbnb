@@ -64,7 +64,7 @@ export class CreateServiceReviewComponent implements OnInit {
 
     const formData = new FormData();
 
-    // 1. Append Text Data (تأكدي أن الأسماء تطابق CreateServiceDto في الباك إند)
+    
     formData.append('Title', this.title);
     formData.append('Description', this.description);
     formData.append('CategoryId', localStorage.getItem('draftServiceCategory') || '1');

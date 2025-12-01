@@ -1,5 +1,5 @@
 ﻿using Airbnb.API.DTOs.Services;
-using Airbnb.API.Services.Interfaces; // استخدام السيرفس
+using Airbnb.API.Services.Interfaces; 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -35,7 +35,7 @@ namespace Airbnb.API.Controllers
         // POST: api/Services
         [HttpPost]
         [Authorize(Roles = "Host")]
-        public async Task<IActionResult> CreateService([FromBody] CreateServiceDto dto)
+        public async Task<IActionResult> CreateService([FromForm] CreateServiceDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             await _servicesService.CreateServiceAsync(userId, dto);

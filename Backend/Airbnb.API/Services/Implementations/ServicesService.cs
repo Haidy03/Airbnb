@@ -2,17 +2,20 @@
 using Airbnb.API.Models;
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Interfaces;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Airbnb.API.Services.Implementations
 {
     public class ServicesService : IServicesService
     {
         private readonly IServiceRepository _serviceRepository;
+        private readonly IWebHostEnvironment _environment;
 
-        public ServicesService(IServiceRepository serviceRepository)
+        public ServicesService(IServiceRepository serviceRepository, IWebHostEnvironment environment)
         {
             _serviceRepository = serviceRepository;
-        }
+            _environment = environment;
+        }   
 
         // 1. Get Featured Services (Guest Home)
         public async Task<List<ServiceCardDto>> GetFeaturedServicesAsync()
@@ -31,6 +34,7 @@ namespace Airbnb.API.Services.Implementations
         // 3. Create Service (Host)
         public async Task<bool> CreateServiceAsync(string hostId, CreateServiceDto dto)
         {
+            
             var service = new Service
             {
                 HostId = hostId,
@@ -46,6 +50,36 @@ namespace Airbnb.API.Services.Implementations
                 CreatedAt = DateTime.UtcNow
             };
 
+            
+            if (dto.Images != null && dto.Images.Count > 0)
+            {
+                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "services");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                foreach (var file in dto.Images)
+                {
+                    if (file.Length > 0)
+                    {
+                        
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(fileStream);
+                        }
+                        bool isCover = service.Images.Count == 0;
+
+                        service.Images.Add(new ServiceImage
+                        {
+                            Url = $"uploads/services/{uniqueFileName}", // الرابط النسبي
+                            IsCover = isCover
+                        });
+                    }
+                }
+            }
             await _serviceRepository.AddServiceAsync(service);
             return true;
         }

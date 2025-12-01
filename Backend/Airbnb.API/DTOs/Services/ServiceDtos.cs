@@ -1,5 +1,6 @@
 ﻿using Airbnb.API.Models;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http; 
 
 namespace Airbnb.API.DTOs.Services
 {
@@ -39,6 +40,7 @@ namespace Airbnb.API.DTOs.Services
         public ServiceLocationType LocationType { get; set; }
 
         public string? City { get; set; }
+        public List<IFormFile>? Images { get; set; }
     }
 
 
