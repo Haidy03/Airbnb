@@ -92,5 +92,47 @@ namespace Airbnb.API.Controllers
             }
         }
 
+        [HttpGet("host/{id}")]
+        [Authorize(Roles = "Host")]
+        public async Task<IActionResult> GetHostServiceDetails(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var service = await _servicesService.GetHostServiceDetailsAsync(id, userId);
+
+            if (service == null) return NotFound(new { message = "Service not found or unauthorized" });
+            return Ok(new { success = true, data = service });
+        }
+
+        // DELETE: api/Services/{id}
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Host")]
+        public async Task<IActionResult> DeleteService(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _servicesService.DeleteServiceAsync(id, userId);
+
+            if (!result) return NotFound(new { message = "Service not found or unauthorized" });
+            return Ok(new { success = true, message = "Service deleted successfully" });
+        }
+
+        // PATCH: api/Services/{id}/toggle-status
+        [HttpPatch("{id}/toggle-status")]
+        [Authorize(Roles = "Host")]
+        public async Task<IActionResult> ToggleStatus(int id)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var result = await _servicesService.ToggleServiceStatusAsync(id, userId);
+
+                if (!result) return NotFound(new { message = "Service not found" });
+                return Ok(new { success = true, message = "Service status updated" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
     }
 }

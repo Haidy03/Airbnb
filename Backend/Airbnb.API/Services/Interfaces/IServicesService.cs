@@ -16,5 +16,9 @@ namespace Airbnb.API.Services.Interfaces
         Task<List<ServiceCardDto>> GetPendingServicesForAdminAsync();
         Task<bool> UpdateServiceStatusAsync(int serviceId, bool isApproved, string? reason); // للآدمن
         Task<int> BookServiceAsync(string guestId, BookServiceDto dto);
+
+        Task<bool> DeleteServiceAsync(int id, string hostId);
+        Task<bool> ToggleServiceStatusAsync(int id, string hostId);
+        Task<ServiceDetailsDto> GetHostServiceDetailsAsync(int id, string hostId);
     }
 }

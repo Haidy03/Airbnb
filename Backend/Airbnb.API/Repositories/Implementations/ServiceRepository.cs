@@ -62,6 +62,7 @@ namespace Airbnb.API.Repositories.Implementations
             return await _context.Services
                 .Include(s => s.Category)
                 .Include(s => s.Images)
+                .Include(s => s.Host)
                 .Where(s => s.HostId == hostId)
                 .OrderByDescending(s => s.CreatedAt)
                 .ToListAsync();
@@ -96,6 +97,21 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task<ServicePackage?> GetPackageByIdAsync(int packageId)
         {
             return await _context.ServicePackages.FindAsync(packageId);
+        }
+
+        public async Task<Service?> GetServiceByIdForHostAsync(int id)
+        {
+            return await _context.Services
+                .Include(s => s.Category)
+                .Include(s => s.Images)
+                .Include(s => s.Host) // مهم للتحقق من الملكية
+                .FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        public async Task DeleteServiceAsync(Service service)
+        {
+            _context.Services.Remove(service);
+            await _context.SaveChangesAsync();
         }
     }
 }

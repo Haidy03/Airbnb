@@ -17,5 +17,7 @@ namespace Airbnb.API.Repositories.Interfaces
 
         Task<ServicePackage?> GetPackageByIdAsync(int packageId);
         Task AddServiceBookingAsync(ServiceBooking booking);
+        Task DeleteServiceAsync(Service service);
+        Task<Service?> GetServiceByIdForHostAsync(int id);
     }
 }

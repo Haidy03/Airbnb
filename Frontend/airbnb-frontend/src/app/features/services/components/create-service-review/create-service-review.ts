@@ -85,7 +85,7 @@ export class CreateServiceReviewComponent implements OnInit {
       next: (res) => {
         alert('Service created successfully! Waiting for admin approval.');
         this.clearDraft();
-        this.router.navigate(['/host/properties']); // Or 'my-services'
+        this.router.navigate(['/host/services']); // Or 'my-services'
       },
       error: (err) => {
         console.error(err);

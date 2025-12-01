@@ -52,7 +52,8 @@ namespace Airbnb.API.DTOs.Services
         public string? CoveredAreas { get; set; }
         public string? City { get; set; }
 
-
+        public string Status { get; set; }
+        public string? RejectionReason { get; set; }
         public string HostId { get; set; }
         public DateTime HostJoinedDate { get; set; }
 

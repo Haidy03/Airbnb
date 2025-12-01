@@ -199,15 +199,20 @@ export const routes: Routes = [
     loadComponent: () => import('./features/services/components/create-service-review/create-service-review')
       .then(m => m.CreateServiceReviewComponent),
     title: 'Review Service - Host'
-  },
+    },
+    {
+      path: 'services',
+      loadComponent: () => import('./features/services/components/host-services/host-services')
+        .then(m => m.HostServicesComponent),
+      title: 'My Services - Host'
+    },
+    {
+      path: 'services/:id/details', // صفحة تفاصيل الهوست
+      loadComponent: () => import('./features/services/components/host-service-details/host-service-details')
+        .then(m => m.HostServiceDetailsComponent),
+      title: 'Service Details - Host'
+    },
 
-      // {
-      //   path: 'properties/:id',
-      //   component: PropertyDetailsComponent
-      // }
-      // { path: 'messages', component: HostMessages },
-      // { path: 'properties/addd', component: AddProperty },
-      // { path: 'properties/edit/:id', component: EditProperty },
       { path: 'earnings', component: HostEarningsComponent },
       { path: 'reviews', component: HostReviewsComponent },
       {

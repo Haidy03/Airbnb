@@ -6,7 +6,7 @@ export interface ServiceCard {
   imageUrl: string;
   pricePerUnit: number;
   pricingUnit: string; // 'guest', 'hour', 'session'
-  minimumCost: number | null; // الحقل الجديد المهم
+  minimumCost: number | null; 
   rating: number;
   categoryName: string;
 }
@@ -31,7 +31,7 @@ export interface ServiceQualification {
   icon: string;
 }
 
-// تحديث الواجهة الرئيسية لتشمل القوائم الجديدة
+
 export interface ServiceDetails {
   id: number;
   title: string;
@@ -55,4 +55,17 @@ export interface ServiceCategory {
   name: string;
   icon: string;
   description?: string;
+}
+
+export interface HostService {
+  id: number;
+  title: string;
+  hostName: string;
+  imageUrl: string;
+  pricePerUnit: number;
+  pricingUnit: string;
+  status: string; // 'Active', 'PendingApproval', 'Rejected', 'Draft'
+  rating: number;
+  categoryName: string;
+  rejectionReason?: string;
 }

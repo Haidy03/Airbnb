@@ -142,16 +142,16 @@ namespace Airbnb.API.Services.Implementations
             {
                 Id = s.Id,
                 Title = s.Title,
-                HostName = $"{s.Host.FirstName} {s.Host.LastName}",
-                HostAvatar = s.Host.ProfileImageUrl,
-                ImageUrl = s.Images.FirstOrDefault(i => i.IsCover)?.Url ??
-                           s.Images.FirstOrDefault()?.Url ??
-                           "assets/placeholder.jpg",
+                HostName = s.Host != null ? $"{s.Host.FirstName} {s.Host.LastName}" : "Unknown",
+                HostAvatar = s.Host?.ProfileImageUrl ?? "assets/images/placeholder-user.png",
+                ImageUrl = (s.Images != null && s.Images.Any())
+                    ? (s.Images.FirstOrDefault(i => i.IsCover)?.Url ?? s.Images.FirstOrDefault()?.Url)
+                    : "assets/placeholder.jpg",
                 PricePerUnit = s.PricePerUnit,
                 PricingUnit = s.PricingUnit.ToString(),
                 Status = s.Status.ToString(), // Active, Pending, Rejected
                 Rating = s.AverageRating,
-                CategoryName = s.Category?.Name
+                CategoryName = s.Category?.Name ?? "General"
             }).ToList();
         }
 
@@ -224,6 +224,84 @@ namespace Airbnb.API.Services.Implementations
                 Rating = s.AverageRating,
                 CategoryName = s.Category?.Name ?? "General"
             };
+        }
+
+        public async Task<ServiceDetailsDto> GetHostServiceDetailsAsync(int id, string hostId)
+        {
+            var service = await _serviceRepository.GetServiceByIdForHostAsync(id);
+
+            
+            if (service == null || service.HostId != hostId) return null;
+
+
+            return new ServiceDetailsDto
+            {
+                Id = service.Id,
+                Title = service.Title,
+                Description = service.Description,
+                PricePerUnit = service.PricePerUnit,
+                PricingUnit = service.PricingUnit.ToString(),
+                LocationType = service.LocationType.ToString(),
+                City = service.City,
+                CoveredAreas = service.CoveredAreas,
+
+                Status = service.Status.ToString(),
+                
+
+                Images = service.Images.Select(i => i.Url).ToList(),
+                CategoryName = service.Category?.Name,
+                HostId = service.HostId,
+                HostJoinedDate = service.Host.CreatedAt,
+                CancellationPolicy = service.CancellationPolicy,
+                GuestRequirements = service.GuestRequirements,
+
+                Qualifications = service.Qualifications.Select(q => new ServiceQualificationDto
+                {
+                    Title = q.Title,
+                    Description = q.Description,
+                    Icon = q.Icon
+                }).ToList(),
+
+                Packages = service.Packages.Select(p => new ServicePackageDto
+                {
+                    Title = p.Title,
+                    Description = p.Description,
+                    Price = p.Price,
+                    Duration = p.Duration,
+                    ImageUrl = p.ImageUrl
+                }).ToList()
+            };
+        }
+
+        // 2. Delete Logic
+        public async Task<bool> DeleteServiceAsync(int id, string hostId)
+        {
+            var service = await _serviceRepository.GetServiceByIdForHostAsync(id);
+            if (service == null || service.HostId != hostId) return false;
+
+            await _serviceRepository.DeleteServiceAsync(service);
+            return true;
+        }
+
+        // 3. Toggle Status Logic
+        public async Task<bool> ToggleServiceStatusAsync(int id, string hostId)
+        {
+            var service = await _serviceRepository.GetServiceByIdForHostAsync(id);
+            if (service == null || service.HostId != hostId) return false;
+
+            // ❌ لو الخدمة لسه "قيد المراجعة" أو "مرفوضة"، مينفعش الهوست يخليها Active بمزاجه
+            if (service.Status == ServiceStatus.PendingApproval || service.Status == ServiceStatus.Rejected)
+            {
+                throw new InvalidOperationException("Cannot toggle status for pending or rejected services.");
+            }
+
+            // ✅ التبديل: لو Active خليها Inactive والعكس
+            var newStatus = service.Status == ServiceStatus.Active
+                            ? ServiceStatus.Inactive
+                            : ServiceStatus.Active;
+
+            await _serviceRepository.UpdateServiceStatusAsync(id, newStatus);
+            return true;
         }
     }
 }
