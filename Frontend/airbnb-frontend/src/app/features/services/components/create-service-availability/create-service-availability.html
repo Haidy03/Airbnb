@@ -1,0 +1,54 @@
+<div class="page-container">
+  <header class="step-header">
+    <button class="btn-icon" (click)="goBack()"><i class="bi bi-chevron-left"></i> Back</button>
+    <button class="btn-save">Save & exit</button>
+  </header>
+
+  <main class="content-area">
+    <div class="content-wrapper">
+      
+      <h1 class="step-title">Availability & Capacity</h1>
+      <p class="step-subtitle">Set your limits and available hours.</p>
+
+      <!-- 1. Max Guests -->
+      <div class="input-group mb-5">
+        <label class="label">Maximum Guests per booking</label>
+        <div class="counter-wrapper">
+          <button class="counter-btn" (click)="maxGuests.set(maxGuests() - 1)" [disabled]="maxGuests() <= 1">−</button>
+          <span class="counter-val">{{ maxGuests() }}</span>
+          <button class="counter-btn" (click)="maxGuests.set(maxGuests() + 1)">+</button>
+        </div>
+      </div>
+
+      <!-- 2. Time Slots -->
+      <div class="input-group">
+        <label class="label">Available Start Times</label>
+        <p class="small text-muted">When can guests start this service?</p>
+        
+        <div class="add-time-row">
+          <input type="time" [ngModel]="newTime()" (ngModelChange)="newTime.set($event)" class="time-input">
+          <button class="btn-add" (click)="addTimeSlot()" [disabled]="!newTime()">Add</button>
+        </div>
+
+        <div class="slots-container mt-3">
+          <div *ngFor="let time of timeSlots(); let i = index" class="slot-chip">
+            {{ time }}
+            <button (click)="removeTimeSlot(i)" class="btn-remove">×</button>
+          </div>
+          <p *ngIf="timeSlots().length === 0" class="text-danger small">
+            <i class="bi bi-exclamation-circle"></i> Please add at least one time slot.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="step-footer">
+    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 85%;"></div></div>
+    <div class="footer-actions">
+      <button class="btn-link" (click)="goBack()">Back</button>
+      <button class="btn-next" [disabled]="timeSlots().length === 0" (click)="onNext()">Next</button>
+    </div>
+  </footer>
+</div>

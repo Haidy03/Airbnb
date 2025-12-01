@@ -38,6 +38,7 @@ namespace Airbnb.API.Models
         public DbSet<Service> Services { get; set; }
         public DbSet<ServiceCategory> ServiceCategories { get; set; }
         public DbSet<ServiceImage> ServiceImages { get; set; }
+        public DbSet<ServiceBooking> ServiceBookings { get; set; }
 
         public DbSet<ServiceQualification> ServiceQualifications { get; set; }
         public DbSet<ServicePackage> ServicePackages { get; set; }
@@ -474,6 +475,33 @@ namespace Airbnb.API.Models
             // Seed PropertyTypes Data
             // ============================================
             SeedPropertyTypes(modelBuilder);
+
+            // ============================================
+            // ServiceBooking Configuration (Fix Cycles)
+            // ============================================
+            modelBuilder.Entity<ServiceBooking>(entity =>
+            {
+                entity.HasKey(b => b.Id);
+
+                entity.HasOne(b => b.Service)
+                    .WithMany() 
+                    .HasForeignKey(b => b.ServiceId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+
+                
+                entity.HasOne(b => b.Guest)
+                    .WithMany()
+                    .HasForeignKey(b => b.GuestId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+
+               
+                entity.HasOne(b => b.Package)
+                    .WithMany()
+                    .HasForeignKey(b => b.PackageId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Property(b => b.TotalPrice).HasPrecision(18, 2);
+            });
         }
 
         private void SeedExperienceCategories(ModelBuilder modelBuilder)

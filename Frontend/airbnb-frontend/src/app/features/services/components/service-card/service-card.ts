@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ServiceCard } from '../../models/service.model';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-service-card',
@@ -12,16 +13,13 @@ import { ServiceCard } from '../../models/service.model';
 })
 export class ServiceCardComponent {
   @Input() service!: ServiceCard;
-
-  // دالة مساعدة لمعالجة رابط الصورة
-  getImageUrl(url: string): string {
-    if (!url) return 'https://placehold.co/600x600?text=No+Image';
-    // لو الرابط نسبي من الباك إند، نضيف الـ BaseUrl
-    if (!url.startsWith('http')) {
-        // يمكنك تعديل هذا الرابط حسب الـ API بتاعك
-       // return `${environment.imageBaseUrl}/${url}`; 
+  private baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+  getImageUrl(url: string | undefined | null): string {
+    if (!url) return 'assets/images/placeholder.jpg';
+    if (url.startsWith('http') || url.startsWith('https')) {
        return url; 
     }
-    return url;
+    const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+    return `${this.baseUrl}/${cleanPath}`;
   }
 }
