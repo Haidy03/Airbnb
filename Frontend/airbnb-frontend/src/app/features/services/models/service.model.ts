@@ -37,17 +37,27 @@ export interface ServiceDetails {
   title: string;
   description: string;
   pricePerUnit: number;
-  pricingUnit: string;
+  pricingUnit: string; // 'PerPerson', 'PerHour', etc.
+  minimumCost?: number;
+  
+  hostId: string;
   hostName: string;
-  hostAvatar: string;
+  hostAvatar?: string;
+  hostJoinedDate: Date;
+
+  locationType: string; // 'Mobile' or 'OnSite'
   city: string;
+  coveredAreas?: string;
+
   images: string[];
   rating: number;
-  reviewsCount: number;
-  cancellationPolicy: string;
-  guestRequirements: string;
+  
+  cancellationPolicy?: string;
+  guestRequirements?: string;
+  
   qualifications: ServiceQualification[];
   packages: ServicePackage[];
+  categoryName: string;
 }
 
 export interface ServiceCategory {
