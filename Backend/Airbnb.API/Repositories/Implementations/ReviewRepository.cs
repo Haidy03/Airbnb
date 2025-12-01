@@ -186,7 +186,16 @@ namespace Airbnb.API.Repositories.Implementations
         // ============================================
         // Complex Queries
         // ============================================
-
+        public async Task<IEnumerable<Review>> GetReviewsForHostAsync(string hostId)
+        {
+            return await _context.Reviews
+                .Include(r => r.Booking)
+                .Include(r => r.Property)
+                .Include(r => r.Reviewer) // مهم عشان الصورة والاسم
+                .Where(r => r.Property.HostId == hostId && r.ReviewType == ReviewType.GuestToProperty)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
         public async Task<IEnumerable<Review>> GetReviewsWithUserInfoAsync(int propertyId, int page = 1, int pageSize = 10)
         {
             return await _context.Reviews

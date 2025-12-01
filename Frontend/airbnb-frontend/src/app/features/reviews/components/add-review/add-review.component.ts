@@ -135,11 +135,11 @@ export class AddReviewComponent implements OnInit {
     }
   }
   handleSuccess() {
-    this.successMessage = 'Review submitted successfully!';
-    this.loading = false;
-    setTimeout(() => {
-      this.router.navigate(['/guest/trips']);
-    }, 2000);
+  this.successMessage = 'Review submitted successfully!';
+  this.loading = false;
+  setTimeout(() => {
+    this.router.navigate(['/trips']); 
+  }, 2000);
   }
 
   handleError(error: any) {

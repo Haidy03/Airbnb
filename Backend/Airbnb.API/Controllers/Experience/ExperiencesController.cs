@@ -1,9 +1,12 @@
 ﻿using Airbnb.API.DTOs.Experiences;
+using Airbnb.API.DTOs.Review;
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using CreateReviewDto = Airbnb.API.DTOs.Review.CreateReviewDto;
+using UpdateReviewDto = Airbnb.API.DTOs.Review.UpdateReviewDto;
 
 namespace Airbnb.API.Controllers
 {
@@ -572,10 +575,6 @@ namespace Airbnb.API.Controllers
 
         #region Reviews
 
-        /// <summary>
-        /// Add a review for an experience
-        /// POST: api/experiences/reviews
-        /// </summary>
         [HttpPost("reviews")]
         [Authorize]
         public async Task<IActionResult> AddReview([FromBody] CreateReviewDto dto)
@@ -593,17 +592,55 @@ namespace Airbnb.API.Controllers
             }
         }
 
-        /// <summary>
-        /// GET: api/experiences/{id}/reviews
-        /// </summary>
         [HttpGet("{id}/reviews")]
         [AllowAnonymous]
         public async Task<IActionResult> GetReviews(int id)
         {
             var reviews = await _experienceService.GetReviewsByExperienceIdAsync(id);
+            // ✅ Data wrapper consistency
             return Ok(new { success = true, data = reviews });
         }
 
-        #endregion
+        // ✅ 1. جلب ريفيو واحد (لصفحة التعديل)
+        [HttpGet("reviews/{reviewId}")]
+        public async Task<ActionResult<ExperienceReviewDto>> GetReview(int reviewId)
+        {
+            var review = await _experienceService.GetReviewByIdAsync(reviewId);
+            if (review == null) return NotFound(new { message = "Review not found" });
+            return Ok(review);
+        }
+
+        // ✅ 2. تحديث الريفيو
+        [Authorize]
+        [HttpPut("reviews/{reviewId}")]
+        public async Task<IActionResult> UpdateReview(int reviewId, [FromBody] UpdateReviewDto dto)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var result = await _experienceService.UpdateReviewAsync(reviewId, userId, dto);
+                return Ok(new { success = true, data = result, message = "Review updated successfully" });
+            }
+            catch (KeyNotFoundException) { return NotFound(new { message = "Review not found" }); }
+            catch (UnauthorizedAccessException) { return Forbid(); }
+            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        // ✅ 3. حذف الريفيو
+        [Authorize]
+        [HttpDelete("reviews/{reviewId}")]
+        public async Task<IActionResult> DeleteReview(int reviewId)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var success = await _experienceService.DeleteReviewAsync(reviewId, userId);
+                if (!success) return NotFound(new { message = "Review not found" });
+                return Ok(new { success = true, message = "Review deleted successfully" });
+            }
+            catch (UnauthorizedAccessException) { return Forbid(); }
+            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
+        }
     }
+    #endregion
 }

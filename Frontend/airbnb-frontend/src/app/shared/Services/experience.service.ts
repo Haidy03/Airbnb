@@ -164,6 +164,17 @@ export class ExperienceService {
   getReviews(experienceId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${experienceId}/reviews`);
   }
+  deleteReview(reviewId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/reviews/${reviewId}`);
+  }
+
+  getReviewById(reviewId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/reviews/${reviewId}`);
+  }
+
+  updateReview(reviewId: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/reviews/${reviewId}`, data);
+  }
 
   // ==========================================
   // 6. WISHLIST (المفضلة) ✅✅✅ (الجزء الناقص)

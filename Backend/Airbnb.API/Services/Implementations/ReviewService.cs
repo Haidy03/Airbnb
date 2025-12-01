@@ -10,13 +10,16 @@ namespace Airbnb.API.Services.Implementations
     {
         private readonly ApplicationDbContext _context;
         private readonly IReviewRepository _reviewRepository;
+        private readonly IExperienceRepository _experienceRepository;
 
         public ReviewService(
             ApplicationDbContext context,
-            IReviewRepository reviewRepository)
+            IReviewRepository reviewRepository,
+            IExperienceRepository experienceRepository)
         {
             _context = context;
             _reviewRepository = reviewRepository;
+            _experienceRepository = experienceRepository;
         }
 
         public async Task<ReviewResponseDto> CreateReviewAsync(string userId, CreateReviewDto dto)
@@ -131,10 +134,8 @@ namespace Airbnb.API.Services.Implementations
             if (property == null)
                 throw new Exception("Property not found");
 
-            // Use repository to get reviews
             var reviews = await _reviewRepository.GetReviewsByPropertyAsync(propertyId, page, pageSize);
 
-            // Use repository to get statistics
             var averageRating = await _reviewRepository.GetAverageRatingByPropertyAsync(propertyId);
             var totalReviews = await _reviewRepository.GetTotalReviewsCountByPropertyAsync(propertyId);
             var detailedRatings = await _reviewRepository.GetDetailedRatingsAverageAsync(propertyId);
@@ -206,7 +207,6 @@ namespace Airbnb.API.Services.Implementations
             else
                 return new CanReviewResponseDto { CanReview = false, Reason = "You are not part of this booking" };
 
-            // Use repository to check if already reviewed
             var hasReviewed = await _reviewRepository.HasUserReviewedBookingAsync(
                 bookingId, userId, reviewType);
 
@@ -263,48 +263,69 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<HostReviewsResponseDto> GetHostReviewsAsync(string hostId)
         {
-           
-            var reviews = await _context.Reviews
+            var propertyReviews = await _reviewRepository.GetReviewsForHostAsync(hostId); 
+            var propReviewsList = await _context.Reviews
                 .Include(r => r.Booking)
                 .Include(r => r.Property)
                 .Include(r => r.Reviewer)
                 .Where(r => r.Property.HostId == hostId && r.ReviewType == ReviewType.GuestToProperty)
-                .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
 
-            if (!reviews.Any())
+            var expReviewsList = await _experienceRepository.GetReviewsByHostIdAsync(hostId);
+
+            var allReviewsDto = new List<ReviewResponseDto>();
+
+            foreach (var r in propReviewsList)
+            {
+                allReviewsDto.Add(await MapToResponseDto(r));
+            }
+
+            foreach (var r in expReviewsList)
+            {
+                allReviewsDto.Add(new ReviewResponseDto
+                {
+                    Id = r.Id,
+                    PropertyTitle = r.Experience.Title,
+                    ReviewType = "Experience",
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CleanlinessRating = r.CleanlinessRating,
+                    CommunicationRating = r.CommunicationRating,
+                    LocationRating = r.LocationRating,
+                    ValueRating = r.ValueRating,
+                    ReviewerId = r.ReviewerId,
+                    ReviewerName = $"{r.Reviewer.FirstName} {r.Reviewer.LastName}",
+                    ReviewerProfileImage = r.Reviewer.ProfileImageUrl,
+                    CreatedAt = r.CreatedAt,
+                    IsApproved = true
+                });
+            }
+
+            allReviewsDto = allReviewsDto.OrderByDescending(x => x.CreatedAt).ToList();
+
+            if (!allReviewsDto.Any())
             {
                 return new HostReviewsResponseDto();
             }
 
-           
-            var stats = new HostReviewsResponseDto
+            double CalculateAvg(Func<ReviewResponseDto, int?> selector)
             {
-                TotalReviews = reviews.Count,
-                OverallRating = Math.Round(reviews.Average(r => r.Rating), 2),
-
-                CleanlinessAvg = reviews.Any(r => r.CleanlinessRating.HasValue)
-                    ? Math.Round(reviews.Where(r => r.CleanlinessRating.HasValue).Average(r => r.CleanlinessRating.Value), 1) : 0,
-
-                CommunicationAvg = reviews.Any(r => r.CommunicationRating.HasValue)
-                    ? Math.Round(reviews.Where(r => r.CommunicationRating.HasValue).Average(r => r.CommunicationRating.Value), 1) : 0,
-
-                LocationAvg = reviews.Any(r => r.LocationRating.HasValue)
-                    ? Math.Round(reviews.Where(r => r.LocationRating.HasValue).Average(r => r.LocationRating.Value), 1) : 0,
-
-                ValueAvg = reviews.Any(r => r.ValueRating.HasValue)
-                    ? Math.Round(reviews.Where(r => r.ValueRating.HasValue).Average(r => r.ValueRating.Value), 1) : 0,
-
-             
-                Reviews = new List<ReviewResponseDto>()
-            };
-
-            foreach (var review in reviews)
-            {
-                stats.Reviews.Add(await MapToResponseDto(review));
+                var items = allReviewsDto.Where(r => selector(r).HasValue).ToList();
+                return items.Any() ? Math.Round(items.Average(r => selector(r).Value), 1) : 0;
             }
 
-            return stats;
+            return new HostReviewsResponseDto
+            {
+                TotalReviews = allReviewsDto.Count,
+                OverallRating = Math.Round(allReviewsDto.Average(r => r.Rating), 2),
+
+                CleanlinessAvg = CalculateAvg(r => r.CleanlinessRating),
+                CommunicationAvg = CalculateAvg(r => r.CommunicationRating),
+                LocationAvg = CalculateAvg(r => r.LocationRating),
+                ValueAvg = CalculateAvg(r => r.ValueRating),
+
+                Reviews = allReviewsDto
+            };
         }
     }
 }

@@ -1,0 +1,122 @@
+/* حاوية الصفحة الرئيسية */
+.property-reviews-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  min-height: 80vh;
+}
+
+/* الهيدر وزر العودة */
+.page-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.page-header-row h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+}
+
+/* تنسيق زر العودة كزر حقيقي */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;      /* مساحة داخلية مريحة */
+  background-color: bisque; /* خلفية بيضاء */
+  color: #222;             /* لون النص أسود */
+  border: 1px solid #222;  /* إطار أسود رفيع */
+  border-radius: 8px;      /* حواف دائرية */
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;   /* إزالة الخط اللي تحت الكلام */
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* تأثير عند المرور بالماوس */
+.btn-back:hover {
+  background-color: #F7F7F7; /* لون رمادي فاتح جداً */
+  border-color: #000;
+  transform: translateY(-2px); /* حركة بسيطة للأعلى */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* ظل خفيف */
+}
+
+/* تنسيق الأيقونة داخل الزر (السهم) */
+.btn-back svg {
+  height: 14px; 
+  width: 14px;
+  stroke-width: 4; /* جعل السهم أسمك قليلاً */
+}
+/* قسم التحميل */
+.loading-container { text-align: center; padding: 80px 0; }
+.spinner {
+  width: 48px; height: 48px; border: 4px solid #f3f3f3;
+  border-top: 4px solid #FF385C; border-radius: 50%;
+  animation: spin 1s linear infinite; margin: 0 auto 16px;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* قائمة الريفيوهات */
+.reviews-list-section {
+  margin-top: 48px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #222;
+}
+
+.review-item-wrapper {
+  border-bottom: 1px solid #dddddd;
+  padding: 24px 0;
+}
+.review-item-wrapper:last-child { border-bottom: none; }
+
+/* تنسيق الأزرار لتكون مثل Property Reviews تماماً */
+.review-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: flex-end; /* وضع الأزرار في اليمين */
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+/* زر التعديل (إطار رمادي) */
+.btn-edit {
+  border: 1px solid #222;
+  color: #222;
+}
+.btn-edit:hover {
+  background: #f7f7f7;
+}
+
+/* زر الحذف (إطار أحمر) */
+.btn-delete {
+  border: 1px solid #C13515;
+  color: #C13515;
+}
+.btn-delete:hover {
+  background: #FFF8F6;
+}
+
+/* حالة لا يوجد ريفيوهات */
+.no-reviews { text-align: center; padding: 60px; color: #717171; }

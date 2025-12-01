@@ -1,9 +1,12 @@
 ﻿using Airbnb.API.DTOs.Experiences;
+using Airbnb.API.DTOs.Review;
 using Airbnb.API.DTOs.Search;
 using Airbnb.API.Models;
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using CreateReviewDto = Airbnb.API.DTOs.Review.CreateReviewDto;
+using UpdateReviewDto = Airbnb.API.DTOs.Review.UpdateReviewDto;
 
 namespace Airbnb.API.Services.Implementations
 {
@@ -607,6 +610,10 @@ namespace Airbnb.API.Services.Implementations
                 ReviewerId = guestId,
                 Rating = dto.Rating,
                 Comment = dto.Comment,
+                CleanlinessRating = dto.CleanlinessRating,
+                CommunicationRating = dto.CommunicationRating,
+                LocationRating = dto.LocationRating,
+                ValueRating = dto.ValueRating,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -617,8 +624,10 @@ namespace Airbnb.API.Services.Implementations
             return new ExperienceReviewDto
             {
                 Id = review.Id,
+                ExperienceId = review.ExperienceId,
                 ReviewerName = user != null ? $"{user.FirstName} {user.LastName}" : "Guest",
-                ReviewerAvatar = user?.ProfileImageUrl,
+                ReviewerProfileImage = user?.ProfileImageUrl,
+                ReviewerId = guestId,
                 Rating = review.Rating,
                 Comment = review.Comment,
                 CreatedAt = review.CreatedAt
@@ -633,12 +642,18 @@ namespace Airbnb.API.Services.Implementations
             {
                 Id = r.Id,
                 ReviewerName = r.Reviewer != null ? $"{r.Reviewer.FirstName} {r.Reviewer.LastName}" : "Guest",
-                ReviewerAvatar = r.Reviewer?.ProfileImageUrl,
+                ReviewerProfileImage = r.Reviewer?.ProfileImageUrl,
+                ReviewerId = r.ReviewerId,
                 Rating = r.Rating,
                 Comment = r.Comment,
+                CleanlinessRating = r.CleanlinessRating,
+                CommunicationRating = r.CommunicationRating,
+                LocationRating = r.LocationRating,
+                ValueRating = r.ValueRating,
                 CreatedAt = r.CreatedAt
             }).ToList();
         }
+        
         public async Task<List<ExperienceDto>> GetAllExperiencesAsync(string? status, string? searchTerm, int pageNumber, int pageSize)
         {
             // نبدأ الاستعلام
@@ -718,6 +733,77 @@ namespace Airbnb.API.Services.Implementations
 
             await _experienceRepository.UpdateAsync(experience);
             return true;
+        }
+
+        // ✅ دوال جديدة للتحكم في ريفيوهات التجارب
+
+        public async Task<ExperienceReviewDto?> GetReviewByIdAsync(int reviewId)
+        {
+            var review = await _experienceRepository.GetReviewByIdAsync(reviewId);
+            if (review == null) return null;
+
+            return new ExperienceReviewDto
+            {
+                Id = review.Id,
+                ExperienceId = review.ExperienceId,
+                ReviewerName = review.Reviewer != null ? $"{review.Reviewer.FirstName} {review.Reviewer.LastName}" : "Guest",
+                ReviewerProfileImage = review.Reviewer?.ProfileImageUrl,
+                ReviewerId = review.ReviewerId,
+                Rating = review.Rating,
+                CleanlinessRating = review.CleanlinessRating,
+                CommunicationRating = review.CommunicationRating,
+                LocationRating = review.LocationRating,
+                ValueRating = review.ValueRating,
+                Comment = review.Comment,
+                CreatedAt = review.CreatedAt
+            };
+        }
+
+        public async Task<ExperienceReviewDto> UpdateReviewAsync(int reviewId, string userId, UpdateReviewDto dto)
+        {
+            var review = await _experienceRepository.GetReviewByIdAsync(reviewId);
+            if (review == null) throw new KeyNotFoundException("Review not found");
+
+            if (review.ReviewerId != userId)
+                throw new UnauthorizedAccessException("You are not authorized to update this review");
+
+            review.Rating = dto.Rating;
+            review.Comment = dto.Comment;
+            review.CleanlinessRating = dto.CleanlinessRating;
+            review.CommunicationRating = dto.CommunicationRating;
+            review.LocationRating = dto.LocationRating;
+            review.ValueRating = dto.ValueRating;
+
+            await _experienceRepository.UpdateReviewAsync(review);
+
+            return new ExperienceReviewDto
+            {
+                Id = review.Id,
+                ExperienceId = review.ExperienceId,
+                ReviewerName = review.Reviewer != null ? $"{review.Reviewer.FirstName} {review.Reviewer.LastName}" : "Guest",
+                ReviewerProfileImage = review.Reviewer?.ProfileImageUrl,
+                ReviewerId = review.ReviewerId,
+                Rating = review.Rating,
+                Comment = review.Comment,
+                CreatedAt = review.CreatedAt
+            };
+        }
+
+        public async Task<bool> DeleteReviewAsync(int reviewId, string userId)
+        {
+            var review = await _experienceRepository.GetReviewByIdAsync(reviewId);
+            if (review == null) return false;
+
+            if (review.ReviewerId != userId)
+                throw new UnauthorizedAccessException("You are not authorized to delete this review");
+
+            await _experienceRepository.DeleteReviewAsync(reviewId);
+            return true;
+        }
+
+        public Task<ExperienceReviewDto> AddReviewAsync(string guestId, DTOs.Experiences.CreateReviewDto dto)
+        {
+            throw new NotImplementedException();
         }
     }
 }

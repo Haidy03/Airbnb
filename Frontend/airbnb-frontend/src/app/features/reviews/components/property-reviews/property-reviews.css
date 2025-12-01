@@ -10,13 +10,31 @@
 }
 
 .btn-back {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 16px;
-  background: transparent;
-  color: #222; font-weight: 600; text-decoration: underline;
-  border-radius: 8px; transition: 0.2s; cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;      /* مساحة داخلية مريحة */
+  background-color: bisque; /* خلفية بيضاء */
+  color: #222;             /* لون النص أسود */
+  border: 1px solid #222;  /* إطار أسود رفيع */
+  border-radius: 8px;      /* حواف دائرية */
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;   /* إزالة الخط اللي تحت الكلام */
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
-.btn-back:hover { background: #f7f7f7; }
+.btn-back:hover {
+  background-color: #F7F7F7; /* لون رمادي فاتح جداً */
+  border-color: #000;
+  transform: translateY(-2px); /* حركة بسيطة للأعلى */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* ظل خفيف */
+}
+.btn-back svg {
+  height: 14px; 
+  width: 14px;
+  stroke-width: 4; /* جعل السهم أسمك قليلاً */
+}
 
 .loading-container { text-align: center; padding: 80px 0; }
 .spinner {

@@ -219,7 +219,7 @@
   <div class="reviews-grid">
     <div *ngFor="let review of reviews()" class="review-card">
       <div class="reviewer-header">
-        <img [src]="getImageUrl(review.reviewerAvatar)" class="reviewer-img" alt="User Avatar">
+        <img [src]="getImageUrl(review.reviewerProfileImage)" class="reviewer-img" alt="User Avatar">
         <div class="reviewer-info">
           <span class="reviewer-name">{{ review.reviewerName }}</span>
           <span class="review-date">{{ review.createdAt | date:'mediumDate' }}</span>

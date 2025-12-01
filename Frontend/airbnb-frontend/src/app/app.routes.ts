@@ -22,7 +22,6 @@ import { legalandcreateComponent } from './features/host/components/property-ste
 import { PricingComponent } from './features/host/components/property-steps/pricing/pricing';
 import { FinishsetupComponent } from './features/host/components/property-steps/finish-setup/finish-setup';
 import { instantBookComponent } from './features/host/components/property-steps/instant-book/instant-book';
-import { TestLoginComponent } from './features/auth/components/test-login/test-login.component/test-login.component';
 import { LoginComponent } from './features/auth/components/login.component/login.component';
 import { authGuard, noAuthGuard, hostGuard, adminGuard } from './features/auth/services/auth.guard';
 import { ListingDetails } from './features/guest/components/listing-details/listing-details';
@@ -46,9 +45,7 @@ import { ServicesHomeComponent } from './features/services/components/services-h
 import { PaymentSuccessComponent } from './features/guest/components/payment-success/payment-success';
 
 export const routes: Routes = [
-  // =================================================
   // 1. Public / Guest Routes (Merged from Claude's suggestion)
-  // =================================================
   {
     path: '',
     component: MainLayoutComponent,
@@ -101,20 +98,13 @@ export const routes: Routes = [
     path: 'account-settings',
     loadComponent: () => import('./features/guest/components/account-settings/account-settings')
       .then(m => m.AccountSettingsComponent),
-    canActivate: [authGuard] // ✅ Added authGuard
+    canActivate: [authGuard] 
   },
    { path: 'listing/:id', component: ListingDetails },
     { path: 'checkout/:id', component: Checkout },
      { path: 'send-message/:id', component: SendMessage },
 
     ]},
-  // =================================================
-  // 2. Auth Routes (Your original work)
-  // =================================================
-  {
-    path: 'test-login',
-    component: TestLoginComponent
-  },
   {
     path: 'login',
     component: LoginComponent,
@@ -134,13 +124,10 @@ export const routes: Routes = [
     },
 
 
-  // =================================================
-  // 3. Host Routes (Your original work - Protected)
-  // =================================================
   {
     path: 'host',
     component: HostLayoutComponent,
-    canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
+    canActivate: [hostGuard], 
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: HostDashboardComponent },
@@ -205,13 +192,11 @@ export const routes: Routes = [
     ]
   },
 
-  // =================================================
   // 4. Property Creation Flow (Your original work)
-  // =================================================
   {
     path: 'host/properties',
     component: PropertyCreationLayoutComponent,
-    canActivate: [hostGuard], // ✅ Changed from authGuard to hostGuard
+    canActivate: [hostGuard], 
     children: [
       {
         path: 'intro',
@@ -272,29 +257,22 @@ export const routes: Routes = [
     ]
   },
 
-  // =================================================
   // 5. Admin Routes (Your original work)
-  // =================================================
   {
     path: 'admin',
     loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes),
     canActivate: [adminGuard]
   },
 
-  // Reviews routes
 
-  // =================================================
   // 6. Feature Routes (Reviews)
-  // =================================================
   {
     path: 'reviews',
     loadChildren: () => import('./features/reviews/review.routes')
       .then(m => m.reviewRoutes)
   },
 
-  // =================================================
   // 7. Wildcard / 404 Handling
-  // =================================================
   // Note: Changed catch-all to redirect to Home instead of test-login for better UX
 
   { path: 'not-found', component: NotFoundComponent },

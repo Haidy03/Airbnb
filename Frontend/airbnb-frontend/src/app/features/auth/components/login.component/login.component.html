@@ -292,11 +292,15 @@
               class="form-input"
               [class.error]="registerPassword?.invalid && registerPassword?.touched"
             />
-            <button 
-              type="button" 
-              class="password-toggle"
-              (click)="togglePasswordVisibility()">
-              {{ showPassword() ? 'Hide' : 'Show' }}
+            <button type="button" class="password-toggle" (click)="togglePasswordVisibility()">
+              <svg *ngIf="showPassword()" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor">
+                <path d="M16 23.334a12.72 12.72 0 0 1-9.927-4.684l-.105-.133-.106-.134.106-.133A12.72 12.72 0 0 1 16 13.55a12.72 12.72 0 0 1 9.927 4.684l.105.133.106.134-.106.133A12.72 12.72 0 0 1 16 23.334zM6.55 18.417A10.72 10.72 0 0 0 16 21.334a10.72 10.72 0 0 0 9.45-2.917A10.72 10.72 0 0 0 16 15.55a10.72 10.72 0 0 0-9.45 2.867zM16 20.667a2.25 2.25 0 1 1 0-4.5 2.25 2.25 0 0 1 0 4.5z"></path>
+                <circle cx="16" cy="18.417" r="1.25"></circle>
+              </svg>
+              <svg *ngIf="!showPassword()" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor">
+                <path d="M26.667 2.667 3.334 26l1.883 1.883L28.55 4.55z"></path>
+                <path d="M22.25 12.167a12.72 12.72 0 0 1 3.683 6.166l.106.134-.106.133A12.72 12.72 0 0 1 16 23.333a12.63 12.63 0 0 1-5.467-1.216l1.6-1.6a10.7 10.7 0 0 0 3.867.716 10.72 10.72 0 0 0 9.45-2.916 10.66 10.66 0 0 0-2.65-4.5zM12.967 20.467 9.4 24.033a16.6 16.6 0 0 1-3.333-5.45l-.106-.133.106-.133a12.72 12.72 0 0 1 9.75-4.734c.833 0 1.633.1 2.4.284l-1.567 1.566a10.7 10.7 0 0 0-.833-.033 10.72 10.72 0 0 0-9.45 2.866 10.67 10.67 0 0 0 2.233 4.017l1.734-1.734a2.25 2.25 0 0 1 2.633-1.783z"></path>
+              </svg>
             </button>
           </div>
           <small class="error-text" *ngIf="registerPassword?.invalid && registerPassword?.touched">

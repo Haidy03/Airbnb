@@ -183,7 +183,15 @@ namespace Airbnb.API.Repositories.Implementations
                 PageSize = dto.PageSize
             };
         }
-
+        public async Task<List<ExperienceReview>> GetReviewsByHostIdAsync(string hostId)
+        {
+            return await _context.ExperienceReviews
+                .Include(r => r.Reviewer) // عشان الصورة والاسم
+                .Include(r => r.Experience)
+                .Where(r => r.Experience.HostId == hostId)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
         public async Task<List<ExperienceSearchResultDto>> GetFeaturedExperiencesAsync(int count)
         {
             return await _context.Experiences
@@ -372,6 +380,30 @@ namespace Airbnb.API.Repositories.Implementations
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
+        public async Task<ExperienceReview?> GetReviewByIdAsync(int reviewId)
+        {
+            return await _context.ExperienceReviews
+                .Include(r => r.Reviewer)
+                .FirstOrDefaultAsync(r => r.Id == reviewId);
+        }
+
+        public async Task UpdateReviewAsync(ExperienceReview review)
+        {
+            _context.ExperienceReviews.Update(review);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteReviewAsync(int reviewId)
+        {
+            var review = await _context.ExperienceReviews.FindAsync(reviewId);
+            if (review != null)
+            {
+                _context.ExperienceReviews.Remove(review);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        
 
         public async Task<ApplicationUser> GetUserByIdAsync(string userId)
         {
