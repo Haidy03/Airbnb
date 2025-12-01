@@ -1,0 +1,105 @@
+<div class="checkout-page" *ngIf="service">
+  
+  <header class="checkout-header">
+    <button class="icon-btn back-btn" (click)="goBack()">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+    <h1>Confirm and pay</h1>
+  </header>
+
+  <div class="main-grid">
+    
+    <!-- Left: Booking Details -->
+    <div class="left-section">
+      
+      <div class="section-box">
+        <h2 class="section-title">Your Service</h2>
+        
+        <div class="detail-row">
+          <div class="detail-info">
+            <h3>Date & Time</h3>
+            <p>{{ date | date:'mediumDate' }} at {{ time }}</p>
+          </div>
+          <!-- Edit button could navigate back -->
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-info">
+            <h3>Guests</h3>
+            <p>{{ guests }} guest{{ guests > 1 ? 's' : '' }}</p>
+          </div>
+        </div>
+
+        <div class="detail-row" *ngIf="selectedPackage">
+          <div class="detail-info">
+            <h3>Package</h3>
+            <p>{{ selectedPackage.title }}</p>
+            <p class="text-muted small">{{ selectedPackage.duration }}</p>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="section-box">
+        <h2 class="section-title">Pay with</h2>
+        <div class="payment-method">
+          <i class="bi bi-credit-card-2-front fs-4"></i>
+          <span>Credit or Debit Card</span>
+          <span class="badge bg-dark ms-auto">Stripe</span>
+        </div>
+        
+        <button class="btn btn-danger w-100 py-3 fw-bold rounded-3 mt-4" 
+                (click)="confirmAndPay()"
+                [disabled]="isProcessing">
+          <span *ngIf="!isProcessing">Confirm and pay</span>
+          <div *ngIf="isProcessing" class="spinner-border spinner-border-sm text-light" role="status"></div>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Right: Summary Card -->
+    <div class="right-section">
+      <div class="summary-card">
+        
+        <div class="card-header-row">
+          <img [src]="getImageUrl(service.images[0])" class="service-img">
+          <div class="text-info">
+            <p class="category">{{ service.categoryName }}</p>
+            <h4>{{ service.title }}</h4>
+            <div class="rating">
+              <i class="bi bi-star-fill"></i> {{ service.rating | number:'1.1-1' }}
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="price-breakdown">
+          <h4>Price details</h4>
+          
+          <div class="line-item">
+            <span *ngIf="selectedPackage">{{ selectedPackage.price | currency:'EGP ' }} x {{ guests }} guests</span>
+            <span *ngIf="!selectedPackage">{{ service.pricePerUnit | currency:'EGP ' }} x {{ guests }} guests</span>
+            <span>{{ totalPrice | currency:'EGP ' }}</span>
+          </div>
+
+          <div class="line-item">
+            <span>Service fee</span>
+            <span>EGP 0.00</span>
+          </div>
+
+          <hr class="divider">
+
+          <div class="line-item total">
+            <span>Total (EGP)</span>
+            <span>{{ totalPrice | currency:'EGP ' }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

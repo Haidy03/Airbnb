@@ -104,13 +104,27 @@ namespace Airbnb.API.Repositories.Implementations
             return await _context.Services
                 .Include(s => s.Category)
                 .Include(s => s.Images)
-                .Include(s => s.Host) // مهم للتحقق من الملكية
+                .Include(s => s.Host) 
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
         public async Task DeleteServiceAsync(Service service)
         {
             _context.Services.Remove(service);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<List<ServiceBooking>> GetServiceBookingsByGuestIdAsync(string guestId)
+        {
+            return await _context.ServiceBookings
+                .Include(b => b.Service).ThenInclude(s => s.Images)
+                .Include(b => b.Service).ThenInclude(s => s.Host)
+                .Where(b => b.GuestId == guestId)
+                .OrderByDescending(b => b.BookingDate)
+                .ToListAsync();
+        }
+        public async Task UpdateServiceAsync(Service service)
+        {
+            _context.Services.Update(service);
             await _context.SaveChangesAsync();
         }
     }

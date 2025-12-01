@@ -1,14 +1,14 @@
-
+<!-- 
 <div class="min-vh-100 bg-white" style="padding-top: 80px;">
 
   <main class="container py-4">
-    <!-- Title -->
+    
     <div class="mb-4">
       <h1 class="fw-bold text-dark display-6">Trips</h1>
       <p class="text-muted fs-5">Your upcoming and past reservations</p>
     </div>
 
-    <!-- Tabs Navigation -->
+    
     <div class="border-bottom mb-5">
       <div class="d-flex gap-4">
         <button
@@ -34,20 +34,19 @@
       </div>
     </div>
 
-    <!-- Loading State -->
     <div *ngIf="loading()" class="text-center py-5">
       <div class="spinner-border text-dark" role="status"></div>
     </div>
 
-    <!-- Trips Grid -->
+    
     <div *ngIf="!loading() && filteredTrips().length > 0" class="trips-grid">
       <div *ngFor="let trip of filteredTrips()" class="trip-card">
         
-        <!-- Image -->
+        
         <div class="trip-image">
           <img [src]="getImageUrl(trip.imageUrl || trip.propertyImage || trip.experienceImage)" alt="Property">
           
-          <!-- Status Badge Overlay -->
+         
           <div class="status-overlay">
             <span class="status-badge" [class]="trip.status?.toLowerCase()">
               {{ trip.status === 'AwaitingPayment' ? 'Payment Needed' : trip.status }}
@@ -71,10 +70,10 @@
             </div>
           </div>
           
-          <!-- ✅ Action Buttons Section -->
+   
           <div class="trip-actions">
             
-            <!-- 1. PAY NOW Button (Only for AwaitingPayment) -->
+
             <button *ngIf="trip.status === 'AwaitingPayment'" 
                     class="btn-pay" 
                     (click)="payForBooking(trip)"
@@ -83,14 +82,13 @@
               {{ isProcessingPayment() ? 'Processing...' : 'Pay & Confirm' }}
             </button>
 
-            <!-- 2. Review Button (Only for Past/Completed) -->
+         
             <button *ngIf="trip.canReview" 
                     class="btn-review" 
-                    (click)="openReviewPage(trip)"> <!-- ✅ Changed to navigate -->
+                    (click)="openReviewPage(trip)"> 
               Leave a Review
             </button>
 
-             <!-- 3. Pending Status Info -->
              <div *ngIf="trip.status === 'Pending'" class="pending-info">
                 <i class="fa-solid fa-hourglass-half"></i> Waiting for host approval
              </div>
@@ -101,7 +99,7 @@
       </div>
     </div>
 
-    <!-- Empty State -->
+
     <div *ngIf="!loading() && filteredTrips().length === 0" class="empty-state">
       <div class="mb-4 icon-wrapper">
         <i class="fa-solid fa-suitcase-rolling"></i>
@@ -113,6 +111,121 @@
       <a routerLink="/" class="btn btn-airbnb">
         Start searching
       </a>
+    </div>
+
+  </main>
+</div> -->
+<div class="min-vh-100 bg-white" style="padding-top: 80px;">
+
+  <main class="container py-4">
+    <!-- Title & Tabs (زي ما هم) -->
+    <div class="mb-4">
+      <h1 class="fw-bold text-dark display-6">Trips</h1>
+      <p class="text-muted fs-5">Your upcoming and past reservations</p>
+    </div>
+
+    <div class="border-bottom mb-5">
+      <div class="d-flex gap-4">
+        <button (click)="setActiveTab('upcoming')" class="tab-btn" [class.active]="activeTab() === 'upcoming'">Upcoming</button>
+        <button (click)="setActiveTab('past')" class="tab-btn" [class.active]="activeTab() === 'past'">Past</button>
+        <button (click)="setActiveTab('cancelled')" class="tab-btn" [class.active]="activeTab() === 'cancelled'">Cancelled</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading()" class="text-center py-5">
+      <div class="spinner-border text-dark" role="status"></div>
+    </div>
+
+    <!-- Trips Grid -->
+    <div *ngIf="!loading() && filteredTrips().length > 0" class="trips-grid">
+      <div *ngFor="let trip of filteredTrips()" class="trip-card">
+        
+        <!-- Image -->
+        <div class="trip-image">
+          <!-- استخدمنا الـ pipe أو الدالة للصورة -->
+          <img [src]="getImageUrl(trip.imageUrl || trip.propertyImage)" alt="Listing">
+          
+          <div class="status-overlay d-flex flex-column gap-1 align-items-start">
+            <!-- ✅ 1. إضافة Badge للنوع (جديد) -->
+            <span class="type-badge" [class.service]="trip.type === 'Service'">
+              {{ trip.type === 'Property' ? 'Home' : trip.type }}
+            </span>
+
+            <!-- Status Badge (موجود سابقاً) -->
+            <span class="status-badge" [class]="trip.status?.toLowerCase()">
+              {{ trip.status === 'AwaitingPayment' ? 'Payment Needed' : trip.status }}
+            </span>
+          </div>
+        </div>
+
+        <div class="trip-details">
+          <div class="trip-header">
+            <!-- Title -->
+            <h3 class="trip-title">{{ trip.title || trip.propertyTitle }}</h3>
+            <p class="host-name">Hosted by {{ trip.hostName }}</p>
+          </div>
+          
+          <div class="trip-meta">
+            <div class="date-row">
+              <i class="fa-regular fa-calendar"></i>
+              
+              <!-- ✅ 2. عرض التاريخ حسب النوع (جديد) -->
+              
+              <!-- لو عقار أو تجربة: عرض فترة (من - إلى) -->
+              <span *ngIf="trip.type !== 'Service'">
+                {{ trip.checkInDate | date:'MMM d' }} - {{ trip.checkOutDate | date:'MMM d, y' }}
+              </span>
+
+              <!-- لو خدمة: عرض التاريخ + الساعة -->
+              <span *ngIf="trip.type === 'Service'">
+                {{ trip.checkInDate | date:'MMM d, y • h:mm a' }}
+              </span>
+            </div>
+
+            <div class="price-row">
+               <strong>{{ trip.totalPrice | currency:'EGP ':'symbol':'1.0-0' }}</strong> total
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="trip-actions">
+            
+            <!-- Pay Button -->
+            <button *ngIf="trip.status === 'AwaitingPayment' || trip.status === 'PendingPayment'" 
+                    class="btn-pay" 
+                    (click)="payForBooking(trip)"
+                    [disabled]="isProcessingPayment()">
+              <i class="fa-solid fa-credit-card"></i> 
+              {{ isProcessingPayment() ? 'Processing...' : 'Pay & Confirm' }}
+            </button>
+
+            <!-- Review Button -->
+            <button *ngIf="trip.canReview" 
+                    class="btn-review" 
+                    (click)="openReviewPage(trip)">
+              Leave a Review
+            </button>
+
+             <!-- Pending Info -->
+             <div *ngIf="trip.status === 'Pending'" class="pending-info">
+                <i class="fa-solid fa-hourglass-half"></i> Waiting for host approval
+             </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Empty State (زي ما هو) -->
+    <div *ngIf="!loading() && filteredTrips().length === 0" class="empty-state">
+      <div class="mb-4 icon-wrapper">
+        <i class="fa-solid fa-suitcase-rolling"></i>
+      </div>
+      <h3 class="fw-bold text-dark mb-2">No trips found</h3>
+      <p class="text-muted mb-4">You don't have any {{ activeTab() }} reservations.</p>
+      <a routerLink="/" class="btn btn-airbnb">Start searching</a>
     </div>
 
   </main>

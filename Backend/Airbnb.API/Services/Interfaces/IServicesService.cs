@@ -20,5 +20,6 @@ namespace Airbnb.API.Services.Interfaces
         Task<bool> DeleteServiceAsync(int id, string hostId);
         Task<bool> ToggleServiceStatusAsync(int id, string hostId);
         Task<ServiceDetailsDto> GetHostServiceDetailsAsync(int id, string hostId);
+        Task<bool> UpdateServiceAsync(int id, string hostId, UpdateServiceDto dto);
     }
 }

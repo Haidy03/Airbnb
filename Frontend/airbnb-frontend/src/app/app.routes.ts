@@ -80,6 +80,12 @@ export const routes: Routes = [
       path: 'services/:id',
       loadComponent: () => import('./features/services/components/service-details/service-details').then(m => m.ServiceDetailsComponent)
     },
+    {
+      path: 'service-checkout/:id',
+      loadComponent: () => import('./features/services/components/service-checkout/service-checkout')
+        .then(m => m.ServiceCheckoutComponent),
+      title: 'Checkout - Service'
+    },
 
 
   {
@@ -217,6 +223,12 @@ export const routes: Routes = [
       loadComponent: () => import('./features/services/components/host-service-details/host-service-details')
         .then(m => m.HostServiceDetailsComponent),
       title: 'Service Details - Host'
+    },
+    {
+      path: 'services/:id/edit',
+      loadComponent: () => import('./features/services/components/edit-service/edit-service')
+        .then(m => m.EditServiceComponent),
+      title: 'Edit Service - Host'
     },
 
       { path: 'earnings', component: HostEarningsComponent },
