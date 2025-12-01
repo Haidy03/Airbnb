@@ -61,10 +61,15 @@
       
       <div class="review-card" *ngFor="let review of stats()?.reviews">
         <div class="review-header">
-          <img [src]="review.reviewerProfileImage || 'assets/images/user-placeholder.png'" class="avatar" alt="Guest">
+          <img 
+    [src]="getImageUrl(review.reviewerProfileImage)" 
+    class="avatar" 
+    alt="Guest"
+    loading="lazy">
           <div class="reviewer-info">
             <h3 class="guest-name">{{ review.reviewerName }}</h3>
             <p class="review-date">Reviewed on {{ review.createdAt | date:'MMMM yyyy' }}</p>
+            <span style="font-size: 12px; color: #FF385C" *ngIf="review.reviewType === 'Experience'">Experience Review</span>
           </div>
         </div>
 

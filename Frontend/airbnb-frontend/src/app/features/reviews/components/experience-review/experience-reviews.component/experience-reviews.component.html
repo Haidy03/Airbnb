@@ -1,1 +1,71 @@
-<p>experience-reviews.component works!</p>
+<app-header></app-header>
+
+<div class="property-reviews-container">
+  
+  <!-- Header & Back Button -->
+  <div class="page-header-row">
+    <!-- إذا كان هناك summary نعرض العنوان، وإلا نعرض عنوان افتراضي -->
+    <h1>Experience Reviews</h1>
+    
+    <a [routerLink]="['/experiences', experienceId]" class="btn-back">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation" focusable="false" style="display: block; fill: none; height: 12px; width: 12px; stroke: currentcolor; stroke-width: 5.33333; overflow: visible;"><path fill="none" d="M20 28 8.7 16.7a1 1 0 0 1 0-1.4L20 4"></path></svg>
+      Back to Experience
+    </a>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage && !loading" class="alert alert-error" style="color: red; text-align: center; margin: 20px 0;">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="reviewsSummary && !loading" class="reviews-content">
+    
+    <!-- 1. Review Summary (The Red Box) -->
+    <!-- تأكدنا من تمرير الـ summary فقط لو العدد > 0 -->
+    <app-review-summary 
+      *ngIf="reviewsSummary.totalReviews > 0"
+      [summary]="reviewsSummary">
+    </app-review-summary>
+
+    <!-- 2. No Reviews State -->
+    <div *ngIf="reviewsSummary.totalReviews === 0" class="no-reviews">
+      <h3>No reviews (yet)</h3>
+      <p>Be the first to create a memory here!</p>
+    </div>
+
+    <!-- 3. Reviews List -->
+    <div *ngIf="reviewsSummary.totalReviews > 0" class="reviews-list-section">
+      <h2 class="section-title">All Reviews ({{ reviewsSummary.totalReviews }})</h2>
+
+      <div class="reviews-list">
+        <!-- Loop through reviews -->
+        <div *ngFor="let review of reviewsSummary.reviews" class="review-item-wrapper">
+          
+          <!-- Review Card -->
+          <app-review-card 
+            [review]="review" 
+            [showPropertyName]="false">
+          </app-review-card>
+
+          <div class="review-actions" *ngIf="isReviewOwner(review)">
+            <button class="btn-action btn-edit" (click)="editReview(review.id)">
+              ✏️ Edit
+            </button>
+            <button class="btn-action btn-delete" (click)="deleteReview(review.id)">
+              🗑️ Delete
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

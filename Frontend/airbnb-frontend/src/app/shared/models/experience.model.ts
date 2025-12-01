@@ -262,7 +262,7 @@ export interface CreateReviewDto {
 export interface ExperienceReview {
   id: number;
   reviewerName: string;
-  reviewerAvatar?: string;
+  reviewerProfileImage?: string;
   rating: number;
   comment?: string;
   createdAt: string;

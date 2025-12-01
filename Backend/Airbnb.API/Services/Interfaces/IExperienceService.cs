@@ -1,6 +1,9 @@
 ﻿using Airbnb.API.DTOs.Experiences;
+using Airbnb.API.DTOs.Review;
 using Airbnb.API.DTOs.Search;
 using Airbnb.API.Models;
+using CreateReviewDto = Airbnb.API.DTOs.Review.CreateReviewDto;
+using UpdateReviewDto = Airbnb.API.DTOs.Review.UpdateReviewDto;
 
 namespace Airbnb.API.Services.Interfaces
 {
@@ -34,6 +37,9 @@ namespace Airbnb.API.Services.Interfaces
         Task<List<ExperienceDto>> GetAllExperiencesAsync(string? status, string? searchTerm, int pageNumber, int pageSize);
         Task<bool> RejectExperienceAsync(int id, string reason);
         Task<bool> UpdateStatusAsync(int id, ExperienceStatus status);
+        Task<ExperienceReviewDto?> GetReviewByIdAsync(int reviewId);
+        Task<ExperienceReviewDto> UpdateReviewAsync(int reviewId, string userId, UpdateReviewDto dto);
+        Task<bool> DeleteReviewAsync(int reviewId, string userId);
 
 
     }

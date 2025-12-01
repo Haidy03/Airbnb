@@ -37,7 +37,8 @@ namespace Airbnb.API.Models
         public int? HostRating { get; set; }
         public int? ValueRating { get; set; }
         public int? CommunicationRating { get; set; }
-
+        public int? LocationRating { get; set; }
+        public int? CleanlinessRating { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
