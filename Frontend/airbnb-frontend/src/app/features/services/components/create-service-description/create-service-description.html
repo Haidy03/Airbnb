@@ -1,0 +1,55 @@
+<div class="page-container">
+  
+  <!-- Header -->
+  <header class="step-header">
+    <button class="btn-icon" (click)="goBack()">
+      <i class="bi bi-chevron-left"></i> Back
+    </button>
+    <button class="btn-save">Save & exit</button>
+  </header>
+
+  <!-- Main Content -->
+  <main class="content-area">
+    <div class="content-wrapper">
+      
+      <h1 class="step-title">Create your description</h1>
+      <p class="step-subtitle">Share what makes your service special. You can add more details later.</p>
+
+      <div class="input-container">
+        <textarea 
+          [ngModel]="description()"
+          (ngModelChange)="onDescChange($event)"
+          [maxlength]="maxLength"
+          rows="7"
+          placeholder="e.g. I’ll guide you through the process of making pasta from scratch, using family recipes handed down for generations..."
+          class="desc-input"
+        ></textarea>
+        
+        <div class="char-counter" [class.limit-reached]="description().length >= maxLength">
+          {{ description().length }}/{{ maxLength }}
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="step-footer">
+    <!-- Progress Bar (40%) -->
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width: 40%;"></div>
+    </div>
+    
+    <div class="footer-actions">
+      <button class="btn btn-link text-dark fw-bold text-decoration-underline" (click)="goBack()">Back</button>
+      
+      <button 
+        class="btn btn-dark px-4 py-2 fw-bold rounded-3" 
+        [disabled]="!description().trim()"
+        (click)="onNext()">
+        Next
+      </button>
+    </div>
+  </footer>
+
+</div>

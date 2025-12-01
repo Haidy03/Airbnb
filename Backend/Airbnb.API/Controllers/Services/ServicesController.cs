@@ -10,8 +10,7 @@ namespace Airbnb.API.Controllers
     [ApiController]
     public class ServicesController : ControllerBase
     {
-        private readonly IServicesService _servicesService; // تغيير النوع هنا
-
+        private readonly IServicesService _servicesService; 
         public ServicesController(IServicesService servicesService)
         {
             _servicesService = servicesService;
@@ -59,5 +58,39 @@ namespace Airbnb.API.Controllers
            var categories = await _servicesService.GetAllCategoriesAsync();
             return Ok(new { success = true, data = categories });
         }
+
+        // ✅ 1. NEW: Get Host's Own Services (My Services Dashboard)
+        [HttpGet("my-services")]
+        [Authorize(Roles = "Host")]
+        public async Task<IActionResult> GetMyServices()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _servicesService.GetHostServicesAsync(userId);
+            return Ok(new { success = true, data = result });
+        }
+
+        // ✅ 2. NEW: Book a Service (Guest Action)
+        [HttpPost("book")]
+        [Authorize] // Guests and Hosts can book
+        public async Task<IActionResult> BookService([FromBody] BookServiceDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var bookingId = await _servicesService.BookServiceAsync(userId, dto);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Service booking created successfully",
+                    bookingId = bookingId
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
     }
 }

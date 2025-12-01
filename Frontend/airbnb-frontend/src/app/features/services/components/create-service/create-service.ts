@@ -52,7 +52,8 @@ export class CreateServiceComponent implements OnInit {
   onNext() {
     if (this.selectedCategoryId()) {
       localStorage.setItem('draftServiceCategory', this.selectedCategoryId()!.toString());
-      alert('Selected Category ID: ' + this.selectedCategoryId() + ' - Ready for next step!');
+      //alert('Selected Category ID: ' + this.selectedCategoryId() + ' - Ready for next step!');
+      this.router.navigate(['/host/services/title']); 
     }
   }
 }

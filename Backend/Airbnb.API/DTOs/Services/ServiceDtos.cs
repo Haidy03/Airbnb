@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Airbnb.API.DTOs.Services
 {
-    // للعرض في القوائم (Home Page)
+
     public class ServiceCardDto
     {
         public int Id { get; set; }
@@ -18,7 +18,7 @@ namespace Airbnb.API.DTOs.Services
         public string CategoryName { get; set; }
     }
 
-    // لإنشاء خدمة جديدة (Host Flow)
+
     public class CreateServiceDto
     {
         [Required]
@@ -41,7 +41,7 @@ namespace Airbnb.API.DTOs.Services
         public string? City { get; set; }
     }
 
-    
+
     public class ServiceDetailsDto : ServiceCardDto
     {
         public string Description { get; set; }
@@ -50,7 +50,7 @@ namespace Airbnb.API.DTOs.Services
         public string? CoveredAreas { get; set; }
         public string? City { get; set; }
 
-        
+
         public string HostId { get; set; }
         public DateTime HostJoinedDate { get; set; }
 
@@ -74,6 +74,26 @@ namespace Airbnb.API.DTOs.Services
         public decimal Price { get; set; }
         public string Duration { get; set; }
         public string ImageUrl { get; set; }
+
+    }
+
+    public class BookServiceDto
+    {
+        public int ServiceId { get; set; }
+        public int? PackageId { get; set; }
+        public DateTime Date { get; set; }
+    }
+
+    public class ApproveServiceDto
+    {
+        public bool IsApproved { get; set; }
+        public string? RejectionReason { get; set; }
+    }
+
+    public class HostServiceDto : ServiceCardDto
+    {
+        public string Status { get; set; }
+        public string? RejectionReason { get; set; }
 
     }
 }

@@ -164,6 +164,19 @@ export const routes: Routes = [
         loadComponent: () => import('./features/services/components/create-service/create-service').then(m => m.CreateServiceComponent).catch(() => NotFoundComponent), 
         title: 'Create Service - Host'
       },
+      {
+        path: 'services/title',
+        loadComponent: () => import('./features/services/components/create-service-title/create-service-title')
+          .then(m => m.CreateServiceTitleComponent),
+        title: 'Service Title - Host'
+      },
+      {
+      path: 'services/description',
+      loadComponent: () => import('./features/services/components/create-service-description/create-service-description')
+        .then(m => m.CreateServiceDescriptionComponent),
+      title: 'Service Description - Host'
+    },
+
       // {
       //   path: 'properties/:id',
       //   component: PropertyDetailsComponent

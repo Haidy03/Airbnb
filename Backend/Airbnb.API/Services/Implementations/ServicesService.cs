@@ -14,19 +14,21 @@ namespace Airbnb.API.Services.Implementations
             _serviceRepository = serviceRepository;
         }
 
+        // 1. Get Featured Services (Guest Home)
         public async Task<List<ServiceCardDto>> GetFeaturedServicesAsync()
         {
             var services = await _serviceRepository.GetFeaturedServicesAsync();
-            // التحويل لـ DTO يتم هنا وليس في الكنترولر
             return services.Select(MapToCardDto).ToList();
         }
 
+        // 2. Get Services by Category (Guest Filter)
         public async Task<List<ServiceCardDto>> GetServicesByCategoryAsync(string categoryName)
         {
             var services = await _serviceRepository.GetServicesByCategoryAsync(categoryName);
             return services.Select(MapToCardDto).ToList();
         }
 
+        // 3. Create Service (Host)
         public async Task<bool> CreateServiceAsync(string hostId, CreateServiceDto dto)
         {
             var service = new Service
@@ -48,26 +50,7 @@ namespace Airbnb.API.Services.Implementations
             return true;
         }
 
-        // Helper Method for Mapping
-        private ServiceCardDto MapToCardDto(Service s)
-        {
-            return new ServiceCardDto
-            {
-                Id = s.Id,
-                Title = s.Title,
-                HostName = $"{s.Host.FirstName} {s.Host.LastName}",
-                HostAvatar = s.Host.ProfileImageUrl,
-                // نأخذ صورة الغلاف، لو مش موجودة نأخذ أول صورة
-                ImageUrl = s.Images.FirstOrDefault(i => i.IsCover)?.Url ??
-                           s.Images.FirstOrDefault()?.Url ??
-                           "assets/placeholder.jpg",
-                PricePerUnit = s.PricePerUnit,
-                PricingUnit = s.PricingUnit.ToString(),
-                MinimumCost = s.MinimumCost > 0 ? s.MinimumCost : null,
-                Rating = s.AverageRating,
-                CategoryName = s.Category?.Name ?? "General"
-            };
-        }
+        // 4. Get Service Details (Guest/Host View)
         public async Task<ServiceDetailsDto> GetServiceByIdAsync(int id)
         {
             var service = await _serviceRepository.GetServiceByIdAsync(id);
@@ -75,7 +58,6 @@ namespace Airbnb.API.Services.Implementations
 
             return new ServiceDetailsDto
             {
-                // بيانات الكارت الأساسية
                 Id = service.Id,
                 Title = service.Title,
                 HostName = $"{service.Host.FirstName} {service.Host.LastName}",
@@ -85,22 +67,21 @@ namespace Airbnb.API.Services.Implementations
                 MinimumCost = service.MinimumCost > 0 ? service.MinimumCost : null,
                 Rating = service.AverageRating,
                 CategoryName = service.Category.Name,
-
-                // بيانات التفاصيل الإضافية
                 Description = service.Description,
-                LocationType = service.LocationType.ToString(), // Mobile or OnSite
+                LocationType = service.LocationType.ToString(),
                 City = service.City,
                 CoveredAreas = service.CoveredAreas,
                 Images = service.Images.Select(i => i.Url).ToList(),
                 HostId = service.HostId,
                 HostJoinedDate = service.Host.CreatedAt,
+                CancellationPolicy = service.CancellationPolicy,
+                GuestRequirements = service.GuestRequirements,
                 Qualifications = service.Qualifications.Select(q => new ServiceQualificationDto
                 {
                     Title = q.Title,
                     Description = q.Description,
                     Icon = q.Icon
                 }).ToList(),
-
                 Packages = service.Packages.Select(p => new ServicePackageDto
                 {
                     Title = p.Title,
@@ -112,9 +93,103 @@ namespace Airbnb.API.Services.Implementations
             };
         }
 
+        // 5. Get All Categories (Setup)
         public async Task<List<ServiceCategory>> GetAllCategoriesAsync()
         {
             return await _serviceRepository.GetAllCategoriesAsync();
+        }
+
+        // 6. Get Host Services (My Services Dashboard)
+        public async Task<List<HostServiceDto>> GetHostServicesAsync(string hostId)
+        {
+            var services = await _serviceRepository.GetServicesByHostIdAsync(hostId);
+
+            return services.Select(s => new HostServiceDto
+            {
+                Id = s.Id,
+                Title = s.Title,
+                HostName = $"{s.Host.FirstName} {s.Host.LastName}",
+                HostAvatar = s.Host.ProfileImageUrl,
+                ImageUrl = s.Images.FirstOrDefault(i => i.IsCover)?.Url ??
+                           s.Images.FirstOrDefault()?.Url ??
+                           "assets/placeholder.jpg",
+                PricePerUnit = s.PricePerUnit,
+                PricingUnit = s.PricingUnit.ToString(),
+                Status = s.Status.ToString(), // Active, Pending, Rejected
+                Rating = s.AverageRating,
+                CategoryName = s.Category?.Name
+            }).ToList();
+        }
+
+        // 7. Get Pending Services (Admin Dashboard)
+        public async Task<List<ServiceCardDto>> GetPendingServicesForAdminAsync()
+        {
+            var services = await _serviceRepository.GetPendingServicesAsync();
+            return services.Select(MapToCardDto).ToList();
+        }
+
+        // 8. Approve/Reject Service (Admin Action)
+        public async Task<bool> UpdateServiceStatusAsync(int serviceId, bool isApproved, string? reason)
+        {
+            var status = isApproved ? ServiceStatus.Active : ServiceStatus.Rejected;
+            return await _serviceRepository.UpdateServiceStatusAsync(serviceId, status, reason);
+        }
+
+        // 9. Book a Service (Guest Action)
+        public async Task<int> BookServiceAsync(string guestId, BookServiceDto dto)
+        {
+            // 1. Get Service from Repo
+            var service = await _serviceRepository.GetServiceByIdAsync(dto.ServiceId);
+            if (service == null) throw new Exception("Service not found");
+
+            decimal finalPrice = service.PricePerUnit;
+
+            // 2. If Package selected, get price from Repo
+            if (dto.PackageId.HasValue)
+            {
+                var package = await _serviceRepository.GetPackageByIdAsync(dto.PackageId.Value);
+                if (package != null)
+                {
+                    finalPrice = package.Price;
+                }
+            }
+
+            // 3. Create Booking Object
+            var booking = new ServiceBooking
+            {
+                ServiceId = dto.ServiceId,
+                PackageId = dto.PackageId,
+                GuestId = guestId,
+                BookingDate = dto.Date,
+                TotalPrice = finalPrice,
+                Status = "Confirmed", // Or "PendingPayment" based on your flow
+                CreatedAt = DateTime.UtcNow
+            };
+
+            // 4. Save via Repo
+            await _serviceRepository.AddServiceBookingAsync(booking);
+
+            return booking.Id;
+        }
+
+        // Helper Method for Mapping Service to Card DTO
+        private ServiceCardDto MapToCardDto(Service s)
+        {
+            return new ServiceCardDto
+            {
+                Id = s.Id,
+                Title = s.Title,
+                HostName = s.Host != null ? $"{s.Host.FirstName} {s.Host.LastName}" : "Unknown",
+                HostAvatar = s.Host?.ProfileImageUrl ?? "",
+                ImageUrl = s.Images.FirstOrDefault(i => i.IsCover)?.Url ??
+                           s.Images.FirstOrDefault()?.Url ??
+                           "assets/placeholder.jpg",
+                PricePerUnit = s.PricePerUnit,
+                PricingUnit = s.PricingUnit.ToString(),
+                MinimumCost = s.MinimumCost > 0 ? s.MinimumCost : null,
+                Rating = s.AverageRating,
+                CategoryName = s.Category?.Name ?? "General"
+            };
         }
     }
 }
