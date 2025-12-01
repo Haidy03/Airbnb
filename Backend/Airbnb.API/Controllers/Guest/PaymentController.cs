@@ -89,8 +89,43 @@ namespace Airbnb.API.Controllers.Guest
                 return BadRequest(new { error = ex.Message });
             }
         }
-    }
+        // ---------------------------------------------------------
+        // 3. ✅ خدمة الدفع للخدمات (Services)
+        // ---------------------------------------------------------
+        [HttpPost("create-service-checkout")]
+        public IActionResult CreateServiceCheckout([FromBody] ServiceCheckoutRequest request)
+        {
+            try
+            {
+                var successUrl = "http://localhost:4200/payment-success";
+                var cancelUrl = "http://localhost:4200/trips"; // أو صفحة الخدمة
 
+                // هنا نقوم بإنشاء جلسة Stripe مباشرة
+                // ملاحظة: في تطبيق حقيقي يفضل جلب السعر من الداتابيز باستخدام ServiceId و PackageId لضمان الأمان
+
+                var paymentUrl = _paymentService.CreateCheckoutSession(
+                    request.ServiceName,
+                    request.TotalPrice,
+                    successUrl,
+                    cancelUrl
+                );
+
+                return Ok(new { url = paymentUrl });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+    }
+    // DTO Helper
+    public class ServiceCheckoutRequest
+    {
+        public string ServiceName { get; set; }
+        public decimal TotalPrice { get; set; }
+        public int ServiceId { get; set; }
+    }
     public class CheckoutRequest
     {
         public string PropertyTitle { get; set; }

@@ -80,6 +80,12 @@ export const routes: Routes = [
       path: 'services/:id',
       loadComponent: () => import('./features/services/components/service-details/service-details').then(m => m.ServiceDetailsComponent)
     },
+    {
+      path: 'service-checkout/:id',
+      loadComponent: () => import('./features/services/components/service-checkout/service-checkout')
+        .then(m => m.ServiceCheckoutComponent),
+      title: 'Checkout - Service'
+    },
 
 
   {

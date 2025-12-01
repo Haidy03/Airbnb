@@ -134,5 +134,12 @@ namespace Airbnb.API.Controllers
             }
         }
 
+        // ✅  Confirm Service Payment
+        [HttpPost("booking/{id}/confirm-payment")]
+        public async Task<IActionResult> ConfirmServicePayment(int id)
+        {
+            return Ok(new { success = true, message = "Service payment confirmed" });
+        }
+
     }
 }

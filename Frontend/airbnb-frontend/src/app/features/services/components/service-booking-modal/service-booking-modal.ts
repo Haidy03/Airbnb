@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ServiceDetails, ServicePackage } from '../../models/service.model';
 import { ServicesService } from '../../services/service';
-
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-service-booking-modal',
   standalone: true,
@@ -17,7 +17,7 @@ export class ServiceBookingModalComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
 
   private servicesService = inject(ServicesService);
-
+  private router = inject(Router);
   // Form State
   guestCount = 1;
   selectedDate: Date = new Date();
@@ -73,25 +73,15 @@ export class ServiceBookingModalComponent implements OnInit {
   confirmReservation() {
     if (!this.selectedTime) return;
 
-    this.isSubmitting = true;
-
-    const bookingDto = {
-      serviceId: this.service.id,
-      packageId: this.selectedPackage?.id || null, 
-      date: this.getCombinedDateTime(),
-      numberOfGuests: this.guestCount
-    };
-
-    this.servicesService.bookService(bookingDto).subscribe({
-      next: (res) => {
-        alert('Booking Confirmed Successfully!');
-        this.close.emit();
-      },
-      error: (err) => {
-        console.error(err);
-        alert('Booking failed.');
-        this.isSubmitting = false;
+    this.router.navigate(['/service-checkout', this.service.id], {
+      queryParams: {
+        date: this.selectedDate.toISOString(), // التاريخ فقط (أو المدمج حسب الحاجة)
+        time: this.selectedTime,               // الوقت كنص (10:30 AM)
+        guests: this.guestCount,
+        packageId: this.selectedPackage?.id
       }
     });
+    
+    this.close.emit(); // إغلاق المودال
   }
 }
