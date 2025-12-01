@@ -35,7 +35,7 @@ export class CreateServiceLocationComponent {
       localStorage.setItem('draftServiceLocationType', this.locationType()!.toString());
       localStorage.setItem('draftServiceCity', this.city().trim());
      // alert(`Location saved! Type: ${this.locationType()}, City: ${this.city()}`);
-      this.router.navigate(['/host/services/photos']); 
+      this.router.navigate(['/host/services/availability']); 
       
     }
   }

@@ -34,12 +34,18 @@ export class ServiceBookingModalComponent implements OnInit {
 
   ngOnInit() {
     // التأكد من أن التاريخ يبدأ من اليوم
-    this.selectedDate.setHours(0,0,0,0);
+    //this.selectedDate.setHours(0,0,0,0);
   }
 
-  updateGuests(value: number) {
-    if (this.guestCount + value >= 1) {
-      this.guestCount += value;
+   get availableTimeSlots(): string[] {
+    return this.service.timeSlots || []; 
+  }
+  
+ updateGuests(value: number) {
+    const newVal = this.guestCount + value;
+  
+    if (newVal >= 1 && newVal <= this.service.maxGuests) {
+      this.guestCount = newVal;
     }
   }
 

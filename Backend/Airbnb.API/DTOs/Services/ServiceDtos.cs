@@ -41,6 +41,8 @@ namespace Airbnb.API.DTOs.Services
 
         public string? City { get; set; }
         public List<IFormFile>? Images { get; set; }
+        public int MaxGuests { get; set; }
+        public List<string>? TimeSlots { get; set; }
     }
 
 
@@ -61,6 +63,8 @@ namespace Airbnb.API.DTOs.Services
         public string GuestRequirements { get; set; }
         public List<ServiceQualificationDto> Qualifications { get; set; }
         public List<ServicePackageDto> Packages { get; set; }
+        public int MaxGuests { get; set; }
+        public List<string> TimeSlots { get; set; }
     }
 
     public class ServiceQualificationDto

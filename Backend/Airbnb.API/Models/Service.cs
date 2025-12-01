@@ -19,6 +19,9 @@ namespace Airbnb.API.Models
 
         [Required]
         public string Description { get; set; }
+        public int MaxGuests { get; set; } = 1;
+
+        public string? TimeSlots { get; set; }
 
         [Required]
         public int CategoryId { get; set; }

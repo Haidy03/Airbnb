@@ -73,7 +73,13 @@ export class CreateServiceReviewComponent implements OnInit {
     formData.append('LocationType', localStorage.getItem('draftServiceLocationType') || '1');
     formData.append('City', localStorage.getItem('draftServiceCity') || '');
     formData.append('MinimumCost', '0'); // Optional
+    formData.append('MaxGuests', localStorage.getItem('draftServiceMaxGuests') || '1');
 
+
+     const timeSlots = JSON.parse(localStorage.getItem('draftServiceTimeSlots') || '[]');
+    timeSlots.forEach((slot: string) => {
+      formData.append('TimeSlots', slot); 
+    });
     // 2. Append Photos
     const photos = this.store.getPhotos();
     photos.forEach((file) => {

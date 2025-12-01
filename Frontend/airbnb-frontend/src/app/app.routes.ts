@@ -189,6 +189,12 @@ export const routes: Routes = [
         title: 'Service Location - Host'
       },
       {
+      path: 'services/availability',
+      loadComponent: () => import('./features/services/components/create-service-availability/create-service-availability')
+        .then(m => m.CreateServiceAvailabilityComponent),
+      title: 'Service Availability - Host'
+    },
+      {
       path: 'services/photos',
       loadComponent: () => import('./features/services/components/create-service-photos/create-service-photos')
         .then(m => m.CreateServicePhotosComponent),
@@ -207,7 +213,7 @@ export const routes: Routes = [
       title: 'My Services - Host'
     },
     {
-      path: 'services/:id/details', // صفحة تفاصيل الهوست
+      path: 'services/:id/details', 
       loadComponent: () => import('./features/services/components/host-service-details/host-service-details')
         .then(m => m.HostServiceDetailsComponent),
       title: 'Service Details - Host'

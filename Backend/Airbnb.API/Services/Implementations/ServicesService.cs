@@ -47,7 +47,10 @@ namespace Airbnb.API.Services.Implementations
                 LocationType = dto.LocationType,
                 City = dto.City,
                 Status = ServiceStatus.PendingApproval,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                MaxGuests = dto.MaxGuests > 0 ? dto.MaxGuests : 1,
+                TimeSlots = dto.TimeSlots != null ? string.Join(",", dto.TimeSlots) : null,
+
             };
 
             
@@ -108,6 +111,10 @@ namespace Airbnb.API.Services.Implementations
                 Images = service.Images.Select(i => i.Url).ToList(),
                 HostId = service.HostId,
                 HostJoinedDate = service.Host.CreatedAt,
+                MaxGuests = service.MaxGuests,
+                TimeSlots = !string.IsNullOrEmpty(service.TimeSlots)
+                ? service.TimeSlots.Split(',').ToList()
+                : new List<string>(),
                 CancellationPolicy = service.CancellationPolicy,
                 GuestRequirements = service.GuestRequirements,
                 Qualifications = service.Qualifications.Select(q => new ServiceQualificationDto

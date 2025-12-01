@@ -59,6 +59,8 @@ export interface ServiceDetails {
   qualifications: ServiceQualification[];
   packages: ServicePackage[];
   categoryName: string;
+  maxGuests: number;
+  timeSlots: string[]; 
 }
 
 export interface ServiceCategory {

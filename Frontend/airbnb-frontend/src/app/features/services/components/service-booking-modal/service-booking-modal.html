@@ -18,7 +18,7 @@
           <div class="counter-wrapper">
             <button class="counter-btn" (click)="updateGuests(-1)" [disabled]="guestCount <= 1">−</button>
             <span class="counter-val">{{ guestCount }}</span>
-            <button class="counter-btn" (click)="updateGuests(1)">+</button>
+            <button class="counter-btn" (click)="updateGuests(1)" [disabled]="guestCount >= service.maxGuests">+</button>
           </div>
         </div>
       </div>
@@ -47,12 +47,15 @@
       <div class="section">
         <label class="section-label mb-3">Select Time</label>
         <div class="time-grid">
-          <button *ngFor="let time of timeSlots" 
+          <button *ngFor="let time of availableTimeSlots" 
                   class="time-btn" 
                   [class.selected]="selectedTime === time"
                   (click)="selectTime(time)">
             {{ time }}
           </button>
+          <p *ngIf="availableTimeSlots.length === 0" class="text-muted small">
+            No specific times available. Contact host.
+          </p>
         </div>
       </div>
 
