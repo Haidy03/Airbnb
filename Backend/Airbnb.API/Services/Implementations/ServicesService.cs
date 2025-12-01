@@ -302,18 +302,35 @@ namespace Airbnb.API.Services.Implementations
             var service = await _serviceRepository.GetServiceByIdForHostAsync(id);
             if (service == null || service.HostId != hostId) return false;
 
-            // ❌ لو الخدمة لسه "قيد المراجعة" أو "مرفوضة"، مينفعش الهوست يخليها Active بمزاجه
             if (service.Status == ServiceStatus.PendingApproval || service.Status == ServiceStatus.Rejected)
             {
                 throw new InvalidOperationException("Cannot toggle status for pending or rejected services.");
             }
 
-            // ✅ التبديل: لو Active خليها Inactive والعكس
             var newStatus = service.Status == ServiceStatus.Active
                             ? ServiceStatus.Inactive
                             : ServiceStatus.Active;
 
             await _serviceRepository.UpdateServiceStatusAsync(id, newStatus);
+            return true;
+        }
+
+        public async Task<bool> UpdateServiceAsync(int id, string hostId, UpdateServiceDto dto)
+        {
+            var service = await _serviceRepository.GetServiceByIdForHostAsync(id);
+
+            if (service == null || service.HostId != hostId) return false;
+
+            service.Title = dto.Title;
+            service.Description = dto.Description;
+            service.PricePerUnit = dto.PricePerUnit;
+            service.MaxGuests = dto.MaxGuests;
+            service.City = dto.City;
+            service.LocationType = dto.LocationType;
+
+            service.TimeSlots = dto.TimeSlots != null ? string.Join(",", dto.TimeSlots) : null;
+
+            await _serviceRepository.UpdateServiceAsync(service);
             return true;
         }
     }

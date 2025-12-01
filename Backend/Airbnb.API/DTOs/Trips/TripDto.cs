@@ -4,7 +4,8 @@
     {
         public int Id { get; set; } // BookingId
         public string Type { get; set; } // "Property" or "Experience"
-
+        public int? PropertyId { get; set; }
+        public int? ServiceId { get; set; }
         public string Title { get; set; }
         public string ImageUrl { get; set; }
         public string HostName { get; set; }
@@ -17,7 +18,7 @@
         public decimal TotalPrice { get; set; }
         public string Status { get; set; } // Confirmed, Completed, Cancelled, etc.
 
-        public bool CanReview { get; set; } // ✅ الحل السحري للتحكم في زر التقييم
+        public bool CanReview { get; set; } 
         public bool IsReviewed { get; set; }
     }
 }

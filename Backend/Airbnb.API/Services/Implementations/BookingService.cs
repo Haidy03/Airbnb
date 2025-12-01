@@ -11,6 +11,8 @@ namespace Airbnb.API.Services.Implementations
         private readonly IBookingRepository _bookingRepository;
         private readonly IPropertyRepository _propertyRepository;
         private readonly IExperienceRepository _experienceRepository;
+        // ✅ 1. Add IServiceRepository
+        private readonly IServiceRepository _serviceRepository;
         private readonly IReviewRepository _reviewRepository;
         private readonly ILogger<BookingService> _logger;
         private readonly IMapper _mapper;
@@ -20,6 +22,7 @@ namespace Airbnb.API.Services.Implementations
             IBookingRepository bookingRepository,
             IPropertyRepository propertyRepository,
             IExperienceRepository experienceRepository,
+            IServiceRepository serviceRepository, // ✅ Inject Here
             IReviewRepository reviewRepository,
             IEmailService emailService,
             IMapper mapper,
@@ -28,6 +31,7 @@ namespace Airbnb.API.Services.Implementations
             _bookingRepository = bookingRepository;
             _propertyRepository = propertyRepository;
             _experienceRepository = experienceRepository;
+            _serviceRepository = serviceRepository; // ✅ Assign Here
             _reviewRepository = reviewRepository;
             _emailService = emailService;
             _mapper = mapper;
@@ -35,7 +39,7 @@ namespace Airbnb.API.Services.Implementations
         }
 
         // ==========================================
-        // GUEST METHODS (NEW)
+        // GUEST METHODS
         // ==========================================
         public async Task<BookingResponseDto> CreateBookingAsync(string guestId, CreateBookingDto createDto)
         {
@@ -84,13 +88,9 @@ namespace Airbnb.API.Services.Implementations
 
             var savedBooking = await _bookingRepository.AddAsync(booking);
 
-            // Re-fetch to get included data (Guest/Property) for the DTO
             var completeBooking = await _bookingRepository.GetByIdAsync(savedBooking.Id);
 
-            // ============================================================
-            // SEND EMAIL TO HOST
-            // ============================================================
-
+            // Send Email
             try
             {
                 var hostEmail = completeBooking.Property.Host.Email;
@@ -106,10 +106,8 @@ namespace Airbnb.API.Services.Implementations
             }
             catch (Exception ex)
             {
-                // Don't crash the booking if email fails, just log it
                 _logger.LogWarning($"Failed to send email to host: {ex.Message}");
             }
-
 
             return MapToResponseDto(completeBooking);
         }
@@ -119,16 +117,13 @@ namespace Airbnb.API.Services.Implementations
             var allTrips = new List<TripDto>();
 
             // -------------------------------------------------------
-            // 1. جلب حجوزات الشقق (Properties)
+            // 1. Properties
             // -------------------------------------------------------
             var propertyBookings = await _bookingRepository.GetBookingsByGuestIdAsync(guestId);
 
             foreach (var b in propertyBookings)
             {
-                // ✅ التحقق: هل قام الضيف بتقييم هذا الحجز مسبقاً؟
                 bool hasReview = await _reviewRepository.ReviewExistsForBookingAsync(b.Id);
-
-                // ✅ الشرط: الحالة Completed + لم يتم التقييم من قبل
                 bool canReview = b.Status == BookingStatus.Completed && !hasReview;
 
                 allTrips.Add(new TripDto
@@ -137,8 +132,8 @@ namespace Airbnb.API.Services.Implementations
                     PropertyId = b.PropertyId, // ✅✅ 1. تم إضافة رقم الوحدة هنا
                     ExperienceId = null,
                     Type = "Property", // ✅ تحديد النوع
+                    Type = "Property",
                     Title = b.Property.Title,
-                    // التعامل الآمن مع الصور
                     ImageUrl = b.Property.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
                                ?? b.Property.Images.FirstOrDefault()?.ImageUrl,
                     HostName = $"{b.Property.Host.FirstName} {b.Property.Host.LastName}",
@@ -155,19 +150,13 @@ namespace Airbnb.API.Services.Implementations
             }
 
             // -------------------------------------------------------
-            // 2. جلب حجوزات التجارب (Experiences)
+            // 2. Experiences
             // -------------------------------------------------------
-            // تأكدي أن GetBookingsByGuestIdAsync موجودة في IExperienceRepository
             var experienceBookings = await _experienceRepository.GetBookingsByGuestIdAsync(guestId);
 
             foreach (var eb in experienceBookings)
             {
-                // ✅ التحقق: هل قام الضيف بتقييم هذه التجربة لهذا الحجز؟
-                // تأكدي أن ReviewExistsAsync في ExperienceRepository تأخذ bookingId أو experienceId+userId
-                // هنا نفترض أنها تأخذ bookingId
                 bool hasExpReview = await _experienceRepository.ReviewExistsAsync(eb.Id);
-
-                // ✅ الشرط: الحالة Completed + لم يتم التقييم
                 bool canExpReview = eb.Status == ExperienceBookingStatus.Completed && !hasExpReview;
 
                 allTrips.Add(new TripDto
@@ -176,33 +165,63 @@ namespace Airbnb.API.Services.Implementations
                     ExperienceId = eb.ExperienceId, // ✅✅ 2. تم إضافة رقم التجربة هنا
                     PropertyId = null,
                     Type = "Experience", // ✅ تحديد النوع
+                    Type = "Experience",
                     Title = eb.Experience.Title,
                     ImageUrl = eb.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
                                ?? eb.Experience.Images.FirstOrDefault()?.ImageUrl,
-                    HostName = "Experience Host", // يفضل جلب الاسم من Includes في الـ Repository
+                    HostName = "Experience Host",
                     CheckInDate = eb.Availability.Date,
-                    CheckOutDate = eb.Availability.Date, // التجارب يوم واحد عادةً
+                    CheckOutDate = eb.Availability.Date,
                     TotalPrice = eb.TotalPrice,
                     Status = eb.Status.ToString(),
-
-                    // ✅ إعدادات التقييم
                     IsReviewed = hasExpReview,
                     CanReview = canExpReview
                 });
             }
 
-            // 3. ترتيب الكل حسب التاريخ (الأحدث أولاً)
+            // -------------------------------------------------------
+            // ✅ 3. Services (NEW)
+            // -------------------------------------------------------
+            var serviceBookings = await _serviceRepository.GetServiceBookingsByGuestIdAsync(guestId);
+
+            foreach (var sb in serviceBookings)
+            {
+                // يمكن إضافة منطق الريفيو للخدمات مستقبلاً
+                bool canReviewService = sb.Status == "Completed";
+
+                allTrips.Add(new TripDto
+                {
+                    Id = sb.Id,
+                    ServiceId = sb.ServiceId, // مهم للفرونت
+                    Type = "Service",         // ✅ النوع الجديد
+                    Title = sb.Service.Title,
+
+                    // التعامل الآمن مع الصور
+                    ImageUrl = sb.Service.Images != null && sb.Service.Images.Any()
+                        ? (sb.Service.Images.FirstOrDefault(i => i.IsCover)?.Url ?? sb.Service.Images.FirstOrDefault()?.Url)
+                        : "assets/placeholder.jpg",
+
+                    HostName = sb.Service.Host != null
+                        ? $"{sb.Service.Host.FirstName} {sb.Service.Host.LastName}"
+                        : "Service Host",
+
+                    CheckInDate = sb.BookingDate, // تاريخ ووقت الحجز
+                    CheckOutDate = sb.BookingDate.AddHours(1), // وقت افتراضي للعرض
+
+                    TotalPrice = sb.TotalPrice,
+                    Status = sb.Status, // Confirmed, PendingPayment, etc.
+
+                    CanReview = canReviewService,
+                    IsReviewed = false
+                });
+            }
+
+            // 4. Sort all by date
             return allTrips.OrderByDescending(t => t.CheckInDate).ToList();
         }
 
-        //public async Task<IEnumerable<BookingResponseDto>> GetGuestBookingsAsync(string guestId)
-        //{
-        //    var bookings = await _bookingRepository.GetByGuestIdAsync(guestId);
-        //    return bookings.Select(MapToResponseDto).ToList();
-        //}
-
         // ==========================================
-        // HOST METHODS (EXISTING)
+        // HOST METHODS
         // ==========================================
         public async Task<IEnumerable<BookingResponseDto>> GetHostBookingsAsync(string hostId)
         {
@@ -224,7 +243,6 @@ namespace Airbnb.API.Services.Implementations
             var booking = await _bookingRepository.GetByIdAsync(id);
             if (booking == null) return null;
 
-            // Allow if user is Guest OR Host
             if (booking.GuestId != userId && booking.Property.HostId != userId)
                 throw new UnauthorizedAccessException("You are not authorized to view this booking");
 
@@ -239,20 +257,14 @@ namespace Airbnb.API.Services.Implementations
             if (booking.Property.HostId != hostId) throw new UnauthorizedAccessException();
             if (booking.Status != BookingStatus.Pending) throw new InvalidOperationException("Only pending bookings can be approved");
 
-            // ✅ التغيير هنا: بدلاً من Confirmed، نجعله AwaitingPayment
             booking.Status = BookingStatus.AwaitingPayment;
-
-            // لا نضع ConfirmedAt الآن، سنضعه بعد الدفع
-            // booking.ConfirmedAt = DateTime.UtcNow; 
-
             await _bookingRepository.UpdateAsync(booking);
 
-            // ✅ إرسال إيميل للزائر يطلب الدفع
             try
             {
                 var guestEmail = booking.Guest.Email;
                 var subject = "Booking Approved! Please complete payment";
-                var paymentLink = $"http://localhost:4200/trips"; // توجيه لصفحة رحلاته للدفع
+                var paymentLink = $"http://localhost:4200/trips";
                 var body = $@"
             <h3>Good news! {booking.Property.Host.FirstName} accepted your request.</h3>
             <p>To confirm your reservation at <strong>{booking.Property.Title}</strong>, please complete the payment.</p>
@@ -277,25 +289,15 @@ namespace Airbnb.API.Services.Implementations
             if (booking.Status != BookingStatus.Pending) throw new InvalidOperationException("Only pending bookings can be declined");
 
             booking.Status = BookingStatus.Rejected;
-            booking.CancelledAt = DateTime.UtcNow; // Or CompletedAt depending on logic, but CancelledAt fits rejected
+            booking.CancelledAt = DateTime.UtcNow;
 
             await _bookingRepository.UpdateAsync(booking);
 
-
-            // ============================================================
-            // SEND EMAIL TO GUEST
-            // ============================================================
             try
             {
                 var guestEmail = booking.Guest.Email;
-                var subject = "Booking Confirmed! 🏖️";
-                var body = $@"
-                    <h3>Your trip is confirmed!</h3>
-                    <p>You are going to <strong>{booking.Property.Title}</strong>.</p>
-                    <p><strong>Dates:</strong> {booking.CheckInDate.ToShortDateString()} to {booking.CheckOutDate.ToShortDateString()}</p>
-                    <p>Host contact: {booking.Property.Host.Email}</p>
-                    <p>Have a great trip!</p>";
-
+                var subject = "Booking Update";
+                var body = $"<p>Your booking request for <strong>{booking.Property.Title}</strong> was declined.</p>";
                 await _emailService.SendEmailAsync(guestEmail, subject, body);
             }
             catch (Exception ex)
@@ -303,21 +305,17 @@ namespace Airbnb.API.Services.Implementations
                 _logger.LogWarning($"Failed to send email to guest: {ex.Message}");
             }
 
-            _logger.LogInformation("Booking {Id} approved", id);
             return true;
         }
 
         public async Task<bool> ConfirmBookingAfterPaymentAsync(int id, string guestId)
         {
             var booking = await _bookingRepository.GetByIdAsync(id);
-
             if (booking == null) return false;
 
-            // التأكد من أن المستخدم هو صاحب الحجز
             if (booking.GuestId != guestId)
                 throw new UnauthorizedAccessException("Not authorized to confirm this booking");
 
-            // التأكد من أن الحالة تسمح بالتأكيد (يجب أن تكون بانتظار الدفع)
             if (booking.Status != BookingStatus.AwaitingPayment)
                 return false;
 
@@ -325,21 +323,14 @@ namespace Airbnb.API.Services.Implementations
             booking.ConfirmedAt = DateTime.UtcNow;
 
             await _bookingRepository.UpdateAsync(booking);
-
-            // (اختياري) إرسال إيميل تأكيد نهائي
-
             return true;
         }
 
-        // ==========================================
-        // SHARED METHODS (UPDATED)
-        // ==========================================
         public async Task<bool> CancelBookingAsync(int id, string userId)
         {
             var booking = await _bookingRepository.GetByIdAsync(id);
             if (booking == null) return false;
 
-            // Allow Guest OR Host to cancel
             if (booking.GuestId != userId && booking.Property.HostId != userId)
                 throw new UnauthorizedAccessException("You are not authorized to cancel this booking");
 
@@ -349,18 +340,12 @@ namespace Airbnb.API.Services.Implementations
             booking.Status = BookingStatus.Cancelled;
             booking.CancelledAt = DateTime.UtcNow;
 
-            // If cancelled by Host vs Guest, you might want to log who did it, but for MVP this is fine.
-
             await _bookingRepository.UpdateAsync(booking);
             return true;
         }
 
-        // ==========================================
-        // HELPER
-        // ==========================================
         private BookingResponseDto MapToResponseDto(Booking booking)
         {
-            // Safety check for nulls just in case
             if (booking == null) return null;
 
             return new BookingResponseDto

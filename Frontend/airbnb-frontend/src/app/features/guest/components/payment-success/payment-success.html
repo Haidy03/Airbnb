@@ -1,1 +1,35 @@
-<p>payment-success works!</p>
+<div class="success-container">
+      <!-- Success Card -->
+      <div class="success-card" *ngIf="!isProcessing && !hasError">
+        <div class="icon-wrapper">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h1>Payment Successful!</h1>
+        <p>{{ successMessage }}</p>
+        <p class="session-id">Session ID: {{ sessionId }}</p>
+        <button class="btn-primary" (click)="goToTrips()">
+          View My Trips
+        </button>
+      </div>
+
+      <!-- Processing Card -->
+      <div class="processing-card" *ngIf="isProcessing">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <p>Finalizing your booking...</p>
+      </div>
+
+      <!-- Error Card -->
+      <div class="error-card" *ngIf="hasError">
+        <div class="icon-wrapper error">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </div>
+        <h1>Action Failed</h1>
+        <p>{{ errorMessage }}</p>
+        <button class="btn-secondary" (click)="retry()">
+          Retry
+        </button>
+        <button class="btn-primary" (click)="goHome()">
+          Go Home
+        </button>
+      </div>
+    </div>

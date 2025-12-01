@@ -1,135 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GuestBookingService, CreateBookingDto } from '../../services/booking.service';
 import { CommonModule } from '@angular/common';
+import { ServicesService } from '../../../services/services/service'; // ✅ تأكدي من المسار الصحيح للسيرفس
 
 @Component({
   selector: 'app-payment-success',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="success-container">
-      <!-- Success Card -->
-      <div class="success-card" *ngIf="!isProcessing && !hasError">
-        <div class="icon-wrapper">
-          <i class="fa-solid fa-circle-check"></i>
-        </div>
-        <h1>Payment Successful!</h1>
-        <p>{{ successMessage }}</p>
-        <p class="session-id">Session ID: {{ sessionId }}</p>
-        <button class="btn-primary" (click)="goToTrips()">
-          View My Trips
-        </button>
-      </div>
-
-      <!-- Processing Card -->
-      <div class="processing-card" *ngIf="isProcessing">
-        <i class="fa-solid fa-spinner fa-spin"></i>
-        <p>Finalizing your booking...</p>
-      </div>
-
-      <!-- Error Card -->
-      <div class="error-card" *ngIf="hasError">
-        <div class="icon-wrapper error">
-          <i class="fa-solid fa-circle-xmark"></i>
-        </div>
-        <h1>Action Failed</h1>
-        <p>{{ errorMessage }}</p>
-        <button class="btn-secondary" (click)="retry()">
-          Retry
-        </button>
-        <button class="btn-primary" (click)="goHome()">
-          Go Home
-        </button>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .success-container {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 20px;
-    }
-
-    .success-card, .processing-card, .error-card {
-      background: white;
-      padding: 60px 40px;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      text-align: center;
-      max-width: 500px;
-      width: 100%;
-    }
-
-    .icon-wrapper {
-      font-size: 80px;
-      color: #10b981;
-      margin-bottom: 20px;
-    }
-
-    .icon-wrapper.error {
-      color: #ef4444;
-    }
-
-    h1 {
-      font-size: 32px;
-      color: #1f2937;
-      margin-bottom: 10px;
-    }
-
-    p {
-      color: #6b7280;
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-
-    .session-id {
-      font-family: monospace;
-      background: #f3f4f6;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      word-break: break-all;
-      margin: 20px 0;
-    }
-
-    .btn-primary, .btn-secondary {
-      margin-top: 15px;
-      background: #ff385c;
-      color: white;
-      border: none;
-      padding: 14px 40px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin-right: 10px;
-    }
-
-    .btn-secondary {
-      background: #6b7280;
-    }
-
-    .btn-primary:hover {
-      background: #e31c5f;
-      transform: translateY(-2px);
-    }
-
-    .btn-secondary:hover {
-      background: #4b5563;
-      transform: translateY(-2px);
-    }
-
-    .fa-spinner {
-      font-size: 50px;
-      color: #667eea;
-      margin-bottom: 20px;
-    }
-  `]
+  templateUrl: './payment-success.html',
+  styleUrls: ['./payment-success.css']
 })
 export class PaymentSuccessComponent implements OnInit {
   sessionId: string = '';
@@ -138,10 +18,12 @@ export class PaymentSuccessComponent implements OnInit {
   errorMessage: string = '';
   successMessage: string = 'Your booking has been confirmed.';
 
+  // ✅ Inject ServicesService here
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private guestBookingService: GuestBookingService
+    private guestBookingService: GuestBookingService,
+    private servicesService: ServicesService // ✅ Added
   ) {}
 
   ngOnInit() {
@@ -161,29 +43,53 @@ export class PaymentSuccessComponent implements OnInit {
       return;
     }
 
-    // 1. Check for Existing Booking Payment (From Trips Page)
-    // يتم تخزين هذا الـ ID عند الضغط على Pay Now في صفحة Trips
-    const payingBookingId = sessionStorage.getItem('payingBookingId');
+    // =========================================================
+    // ✅ 1. Check for Service Booking (NEW)
+    // =========================================================
+    const serviceBookingId = sessionStorage.getItem('pendingServiceBookingId');
+    if (serviceBookingId) {
+      this.confirmServiceBooking(Number(serviceBookingId));
+      return; // Stop here, don't check properties
+    }
 
-    // 2. Check for New Instant Booking (From Checkout Page)
+    // =========================================================
+    // 2. Check for Property Bookings (Existing Logic)
+    // =========================================================
+    const payingBookingId = sessionStorage.getItem('payingBookingId');
     const pendingBooking = sessionStorage.getItem('pendingBooking');
     
     if (payingBookingId) {
-      // ✅ السيناريو الأول: دفع لحجز موجود مسبقاً
+      // ✅ السيناريو الأول: دفع لحجز عقار موجود مسبقاً
       this.confirmExistingBooking(payingBookingId);
     } else if (pendingBooking) {
-      // ✅ السيناريو الثاني: إنشاء حجز جديد فوري
+      // ✅ السيناريو الثاني: إنشاء حجز عقار جديد فوري
       const bookingData = JSON.parse(pendingBooking);
       this.createBooking(bookingData);
     } else {
-      // خطأ: لا توجد بيانات حجز
+      // خطأ: لا توجد بيانات حجز (لا عقار ولا خدمة)
       this.hasError = true;
       this.errorMessage = 'No booking data found. Payment processed but booking details are missing.';
       this.isProcessing = false;
     }
   }
 
-  // --- السيناريو الأول: إنشاء حجز جديد ---
+  // ✅ New Method for Service Booking
+  confirmServiceBooking(id: number) {
+    console.log('🔄 Confirming Service Booking ID:', id);
+
+    this.servicesService.confirmPayment(id).subscribe({
+      next: (res) => {
+        console.log('✅ Service Booking confirmed:', res);
+        sessionStorage.removeItem('pendingServiceBookingId'); // تنظيف
+        this.successMessage = 'Your service has been successfully booked!';
+        this.isProcessing = false;
+        this.hasError = false;
+      },
+      error: (err) => this.handleError(err)
+    });
+  }
+
+  // --- السيناريو الأول: إنشاء حجز جديد (عقار) ---
   createBooking(data: any) {
     const payload: CreateBookingDto = {
       propertyId: Number(data.propertyId),
@@ -193,7 +99,7 @@ export class PaymentSuccessComponent implements OnInit {
       specialRequests: ''
     };
 
-    console.log('📤 Creating New Booking:', payload);
+    console.log('📤 Creating New Property Booking:', payload);
 
     this.guestBookingService.createBooking(payload).subscribe({
       next: (res) => {
@@ -207,7 +113,7 @@ export class PaymentSuccessComponent implements OnInit {
     });
   }
 
-  // --- السيناريو الثاني: تأكيد حجز موجود ---
+  // --- السيناريو الثاني: تأكيد حجز موجود (عقار) ---
   confirmExistingBooking(bookingId: string) {
     console.log('🔄 Confirming Existing Booking ID:', bookingId);
 

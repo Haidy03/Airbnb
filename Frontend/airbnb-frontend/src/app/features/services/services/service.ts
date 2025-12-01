@@ -52,4 +52,10 @@ export class ServicesService {
   bookService(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/book`, data);
   }
+  confirmPayment(bookingId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/booking/${bookingId}/confirm-payment`, {});
+  }
+  updateService(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, data);
+  }
 }
