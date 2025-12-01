@@ -29,13 +29,32 @@ export interface ProfileDetails {
 }
 
 export interface Trip {
-  id: string;
-  destination: string;
-  checkIn: Date;
-  checkOut: Date;
-  propertyName: string;
-  propertyImage: string;
-  status: 'completed' | 'upcoming' | 'cancelled';
+  id: string | number;
+  type?: 'Property' | 'Experience';
+  status: string;
+  totalPrice?: number;
+  
+  title?: string;
+  propertyName?: string;
+  propertyTitle?: string;
+  experienceTitle?: string;
+  destination?: string;
+  city?: string;
+
+  imageUrl?: string;
+  image?: string;
+  propertyImage?: string;
+  experienceImage?: string;
+
+  propertyId?: string | number;
+  experienceId?: string | number;
+
+  checkIn?: Date | string;
+  startDate?: Date | string;
+  date?: Date | string;
+  
+  checkOut?: Date | string;
+  endDate?: Date | string;
 }
 
 export interface Connection {

@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExperienceService } from '../../../../../../shared/Services/experience.service';
-import { ExperienceCategory, CreateExperienceDto, UpdateExperienceDto, Experience } from '../../../../../../shared/models/experience.model';
-
+import { ExperienceCategory, CreateExperienceDto, UpdateExperienceDto, Experience, ExperienceAvailability, CreateAvailabilityDto } from '../../../../../../shared/models/experience.model';
+import { environment } from '../../../../../../../environments/environment';
+import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-create-experience',
   standalone: true,
@@ -22,19 +23,19 @@ export class CreateExperienceComponent implements OnInit {
   isEditMode = false;
   experienceId: number | null = null;
   existingExperience = signal<Experience | null>(null);
+  tempSlots = signal<any[]>([]); // لتخزين المواعيد الجديدة
+  existingSlots = signal<ExperienceAvailability[]>([]); // لتخزين المواعيد القديمة (في حالة التعديل)
   
+  newSlotDate: string = '';
+  newSlotTime: string = '';
   experienceTypes = [
     { value: 'InPerson', label: 'In-Person', icon: '🏃' },
-    { value: 'Online', label: 'Online', icon: '💻' },
     { value: 'Adventure', label: 'Adventure', icon: '🏔️' }
   ];
   
   languages = [
     { code: 'en', name: 'English' },
-    { code: 'ar', name: 'Arabic' },
-    { code: 'fr', name: 'French' },
-    { code: 'es', name: 'Spanish' },
-    { code: 'de', name: 'German' }
+    { code: 'ar', name: 'Arabic' }
   ];
   
   selectedLanguages: string[] = ['en'];
@@ -70,7 +71,19 @@ export class CreateExperienceComponent implements OnInit {
       this.isEditMode = true;
       this.experienceId = parseInt(id);
       this.loadExperienceDetails(this.experienceId);
+      this.loadAvailabilities(this.experienceId);
     }
+  }
+  loadAvailabilities(id: number) {
+    const start = new Date();
+    const end = new Date();
+    end.setFullYear(end.getFullYear() + 1);
+
+    this.experienceService.getAvailabilities(id, start, end).subscribe({
+      next: (data) => {
+        this.existingSlots.set(data as any[]);
+      }
+    });
   }
 
   initializeForm(): void {
@@ -174,19 +187,81 @@ export class CreateExperienceComponent implements OnInit {
     }
   }
 
-  onSubmit(): void {
-    // ✅ 1. التحقق من صحة الفورم وطباعة الأخطاء في الكونسول
+  addSlot(): void {
+    if (this.tempSlots().length >= 6) {
+      alert('You can add up to 6 slots only.');
+      return;
+    }
+    if (!this.newSlotDate || !this.newSlotTime) {
+      alert('Please select date and start time.');
+      return;
+    }
+
+    // 1. التحقق من التكرار (Duplicate Check)
+    const targetDateStr = new Date(this.newSlotDate).toDateString(); // توحيد صيغة التاريخ للمقارنة
+    
+    // فحص في القائمة المؤقتة (Temp Slots)
+    const existsInTemp = this.tempSlots().some(slot => 
+      new Date(slot.date).toDateString() === targetDateStr && 
+      slot.startTime.startsWith(this.newSlotTime) // "14:00" starts with "14:00"
+    );
+
+    // فحص في القائمة المحفوظة (DB Slots)
+    const existsInDB = this.existingSlots().some(slot => 
+      new Date(slot.date).toDateString() === targetDateStr && 
+      slot.startTime.startsWith(this.newSlotTime)
+    );
+
+    if (existsInTemp || existsInDB) {
+      alert('⚠️ This date and time is already selected!');
+      return;
+    }
+
+    // حساب وقت الانتهاء
+    const hours = this.experienceForm.get('durationHours')?.value || 0;
+    const minutes = this.experienceForm.get('durationMinutes')?.value || 0;
+
+    const [startH, startM] = this.newSlotTime.split(':').map(Number);
+    const dateObj = new Date();
+    dateObj.setHours(startH, startM, 0);
+    dateObj.setHours(dateObj.getHours() + hours);
+    dateObj.setMinutes(dateObj.getMinutes() + minutes);
+
+    const endH = dateObj.getHours().toString().padStart(2, '0');
+    const endM = dateObj.getMinutes().toString().padStart(2, '0');
+    const endTimeStr = `${endH}:${endM}:00`;
+
+    const newSlot = {
+      date: this.newSlotDate,
+      startTime: `${this.newSlotTime}:00`,
+      endTime: endTimeStr,
+      availableSpots: this.experienceForm.get('maxGroupSize')?.value,
+      customPrice: this.experienceForm.get('pricePerPerson')?.value
+    };
+
+    this.tempSlots.update(slots => [...slots, newSlot]);
+    
+    this.newSlotDate = '';
+    this.newSlotTime = '';
+  }
+
+  // ✅ NEW: حذف موعد من القائمة المؤقتة
+  removeSlot(index: number): void {
+    this.tempSlots.update(slots => slots.filter((_, i) => i !== index));
+  }
+
+  deleteExistingSlot(slotId: number): void {
+    if(!confirm('Delete this schedule?')) return;
+    this.experienceService.deleteAvailability(slotId).subscribe({
+      next: () => {
+        this.existingSlots.update(slots => slots.filter(s => s.id !== slotId));
+      }
+    });
+  }
+
+  async onSubmit(): Promise<void> {
     if (this.experienceForm.invalid) {
       this.experienceForm.markAllAsTouched();
-      
-      // كود عشان نعرف إيه الحقل اللي فيه مشكلة
-      const controls = this.experienceForm.controls;
-      for (const name in controls) {
-        if (controls[name].invalid) {
-          console.error(`Invalid Field: ${name}`, controls[name].errors);
-        }
-      }
-      
       alert('Please fill in all required fields marked with *');
       return;
     }
@@ -195,52 +270,48 @@ export class CreateExperienceComponent implements OnInit {
     this.error.set(null);
 
     const formValues = this.experienceForm.value;
-    formValues.categoryId = Number(formValues.categoryId); 
+    formValues.categoryId = Number(formValues.categoryId);
 
-    if (this.isEditMode && this.experienceId) {
-      const dto: UpdateExperienceDto = {
-        ...formValues,
-        languageCodes: this.selectedLanguages
-      };
+    try {
+      let currentExpId = this.experienceId;
 
-      this.experienceService.updateExperience(this.experienceId, dto).subscribe({
-        next: (response) => {
-          if (response.success) {
-            alert('Experience updated successfully!');
-            this.loadExperienceDetails(this.experienceId!);
-          }
-          this.isSubmitting.set(false);
-        },
-        error: (error) => {
-          console.error('Update Error:', error);
-          this.error.set(error.error?.message || 'Failed to update');
-          this.isSubmitting.set(false);
+      if (this.isEditMode && this.experienceId) {
+        const dto: UpdateExperienceDto = { ...formValues, languageCodes: this.selectedLanguages };
+        await firstValueFrom(this.experienceService.updateExperience(this.experienceId, dto));
+      } else {
+        const dto: CreateExperienceDto = { ...formValues, languageCodes: this.selectedLanguages };
+        const response = await firstValueFrom(this.experienceService.createExperience(dto));
+        if (response.success) {
+          currentExpId = response.data.id;
+          this.experienceId = currentExpId;
         }
-      });
+      }
 
-    } else {
-      const dto: CreateExperienceDto = {
-        ...formValues,
-        languageCodes: this.selectedLanguages
-      };
-
-      this.experienceService.createExperience(dto).subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.isEditMode = true;
-            this.experienceId = response.data.id;
-            this.existingExperience.set(response.data);
-            alert('Experience created! You can now upload photos.');
-            window.history.replaceState({}, '', `/host/experiences/${this.experienceId}/edit`);
-          }
-          this.isSubmitting.set(false);
-        },
-        error: (error) => {
-          console.error('Create Error:', error);
-          this.error.set(error.error?.message || 'Failed to create');
-          this.isSubmitting.set(false);
+      if (currentExpId && this.tempSlots().length > 0) {
+        const slots = this.tempSlots();
+        for (const slot of slots) {
+          const availabilityDto: CreateAvailabilityDto = {
+            date: slot.date,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            availableSpots: slot.availableSpots,
+            customPrice: slot.customPrice
+          };
+          
+          await firstValueFrom(this.experienceService.addAvailability(currentExpId, availabilityDto));
         }
-      });
+      }
+
+      alert('Saved successfully!');
+      
+      // ✅ التوجيه لصفحة التجارب الخاصة بالهوست
+      this.router.navigate(['/host/experiences']);
+
+    } catch (err: any) {
+      console.error('Save Error:', err);
+      this.error.set(err.error?.message || 'Failed to save');
+    } finally {
+      this.isSubmitting.set(false);
     }
   }
 
@@ -280,12 +351,32 @@ export class CreateExperienceComponent implements OnInit {
     });
   }
 
-  getImageUrl(url: string): string {
-    if (url.startsWith('http')) return url;
-    return url; 
-  }
+  getImageUrl(imageUrl: string): string {
+  if (!imageUrl) return '';
+  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:image')) return imageUrl; // data:image عشان الـ Preview
+  
+  const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+  const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+  return `${baseUrl}${cleanPath}`;
+}
 
   cancel(): void {
     this.router.navigate(['/host/experiences']);
   }
+
+  formatTime(time: string): string {
+  if (!time) return '';
+  
+  const [h, m] = time.split(':');
+  
+  const date = new Date();
+  date.setHours(Number(h));
+  date.setMinutes(Number(m));
+  
+  return date.toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit', 
+    hour12: true 
+  });
+}
 }

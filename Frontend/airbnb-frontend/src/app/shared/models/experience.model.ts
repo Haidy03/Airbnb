@@ -267,3 +267,10 @@ export interface ExperienceReview {
   comment?: string;
   createdAt: string;
 }
+export interface CreateAvailabilityDto {
+  date: string;
+  startTime: string; // صيغة "HH:mm:ss"
+  endTime: string;   // صيغة "HH:mm:ss"
+  availableSpots: number;
+  customPrice?: number;
+}

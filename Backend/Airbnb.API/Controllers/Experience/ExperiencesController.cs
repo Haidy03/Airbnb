@@ -351,6 +351,31 @@ namespace Airbnb.API.Controllers
             }
         }
 
+        [HttpDelete("availability/{availabilityId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAvailability(int availabilityId)
+        {
+            try
+            {
+                var userId = GetCurrentUserId(); // تأكدي إن الدالة دي موجودة في الكنترولر
+                var result = await _experienceService.DeleteAvailabilityAsync(availabilityId, userId);
+
+                if (!result)
+                    return NotFound(new { success = false, message = "Availability slot not found" });
+
+                return Ok(new { success = true, message = "Availability deleted successfully" });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting availability {AvailabilityId}", availabilityId);
+                return StatusCode(500, new { success = false, message = "Internal server error" });
+            }
+        }
+
         /// <summary>
         /// Activate experience (after approval)
         /// POST: api/experiences/{id}/activate

@@ -9,6 +9,8 @@
         public string Title { get; set; }
         public string ImageUrl { get; set; }
         public string HostName { get; set; }
+        public int? ExperienceId { get; set; }
+        public int? PropertyId { get; set; }
 
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; } // For Experience, same as CheckIn or EndTime

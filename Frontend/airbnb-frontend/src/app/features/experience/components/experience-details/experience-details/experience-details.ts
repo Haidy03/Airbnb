@@ -5,7 +5,9 @@ import { ExperienceService } from '../../../../../shared/Services/experience.ser
 import { Experience, ExperienceReview } from '../../../../../shared/models/experience.model';
 import { environment } from '../../../../../../environments/environment.development';
 import { HeaderComponent } from "../../../../guest/components/header/header";
-
+import { AuthService } from '../../../../../core/services/auth.service';
+import { Conversation } from '../../../../messages/models/message.model';
+import { MessageService } from '../../../../guest/services/message.service';
 @Component({
   selector: 'app-experience-details',
   standalone: true,
@@ -18,10 +20,8 @@ export class ExperienceDetailsComponent implements OnInit {
   isLoading = signal(true);
   error = signal<string | null>(null);
   
-  // ✅ NEW: لتخزين حالة المفضلة
   isWishlisted = signal(false);
 
-  // ✅ NEW: لتخزين التقييمات
   reviews = signal<ExperienceReview[]>([]);
   
   selectedImageIndex = 0;
@@ -29,7 +29,9 @@ export class ExperienceDetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private experienceService: ExperienceService
+    private experienceService: ExperienceService,
+    private authService: AuthService,
+    private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
@@ -37,7 +39,6 @@ export class ExperienceDetailsComponent implements OnInit {
     if (id) {
       const expId = parseInt(id);
       this.loadExperience(expId);
-      // ✅ NEW: تحميل التقييمات
       this.loadReviews(expId);
     }
   }
@@ -51,7 +52,6 @@ export class ExperienceDetailsComponent implements OnInit {
         if (response.success) {
           this.experience.set(response.data);
           
-          // ✅ NEW: التحقق هل العنصر في المفضلة أم لا عند تحميل الصفحة
           this.checkWishlistStatus(id);
         }
         this.isLoading.set(false);
@@ -64,7 +64,6 @@ export class ExperienceDetailsComponent implements OnInit {
     });
   }
 
-  // ✅ NEW: دالة تحميل التقييمات
   loadReviews(id: number): void {
     this.experienceService.getReviews(id).subscribe({
         next: (res) => {
@@ -75,27 +74,23 @@ export class ExperienceDetailsComponent implements OnInit {
     });
   }
 
-  // ✅ NEW: دالة للتحقق من حالة الـ Wishlist
   checkWishlistStatus(id: number): void {
     this.experienceService.checkIsWishlisted(id).subscribe({
       next: (isListed) => {
         this.isWishlisted.set(isListed);
       },
-      error: () => this.isWishlisted.set(false) // لو حصل خطأ نفترض أنه مش موجود
+      error: () => this.isWishlisted.set(false) 
     });
   }
 
-  // ✅ NEW: دالة التبديل (إضافة/حذف من المفضلة) عند الضغط على القلب
   toggleWishlist(): void {
     const exp = this.experience();
     if (!exp) return;
 
-    // تغيير الحالة فوراً في الواجهة (Optimistic UI)
     this.isWishlisted.update(v => !v);
 
     this.experienceService.toggleWishlist(exp.id).subscribe({
       next: (res) => {
-        // تأكيد الحالة من السيرفر
         this.isWishlisted.set(res.isWishlisted);
       },
       error: (err) => {
@@ -119,14 +114,31 @@ export class ExperienceDetailsComponent implements OnInit {
 
   // ✅ UPDATE: تعديل دالة مراسلة المضيف
   contactHost(): void {
+    // 1. التحقق من تسجيل الدخول (نفس منطق الشقة)
+    // تأكدي أن اسم السيرفس عندك (AuthService أو authService)
+    if (!this.authService.isAuthenticated()) { // أو this.AuthService.isAuthenticated حسب تسميتك
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
     const exp = this.experience();
     if (exp) {
-      // التوجيه لصفحة الرسائل مع تمرير البيانات اللازمة لبدء المحادثة
+      
+      // 2. استخراج الصورة (نفس منطق الشقة)
+      let experienceImage = '';
+      if (exp.images && exp.images.length > 0) {
+         // نأخذ أول صورة
+         experienceImage = exp.images[0].imageUrl;
+      }
+
+      // 3. التوجيه مع تمرير البيانات
       this.router.navigate(['/messages'], {
         queryParams: { 
-            hostId: exp.hostId,      // عشان نعرف هنكلم مين
-            contextId: exp.id,       // عشان نعرف بنتكلم عن أنهي تجربة
-            type: 'experience'       // نوع السياق
+            hostId: exp.hostId,      
+            hostName: exp.hostName,   // ✅ تمرير اسم الهوست
+            contextId: exp.id,       
+            type: 'experience',
+            title: exp.title        // ✅ تمرير عنوان التجربة,
         }
       });
     }
@@ -143,17 +155,14 @@ export class ExperienceDetailsComponent implements OnInit {
   }
 
   getImageUrl(imageUrl: string | undefined | null): string {
-    // 1. لو مفيش رابط خالص، رجع صورة افتراضية
     if (!imageUrl) {
       return 'assets/images/default-avatar.png'; // تأكدي من مسار صورة الـ Avatar الافتراضية
     }
 
-    // 2. لو الرابط خارجي أو Assets داخلية
     if (imageUrl.startsWith('http') || imageUrl.includes('assets/')) {
       return imageUrl;
     }
 
-    // 3. لو صورة مرفوعة على السيرفر
     const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
     let cleanPath = imageUrl;
     

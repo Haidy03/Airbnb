@@ -373,3 +373,115 @@
     flex-direction: column;
   }
 }
+
+/* Availability Section Styles */
+.availability-form-row {
+  display: flex;
+  align-items: flex-end; /* عشان الزرار يبقى محاذي للـ Inputs من تحت */
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.add-slot-btn {
+  height: 48px; /* نفس ارتفاع الـ input */
+  padding: 0 24px;
+  background: #222;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 24px; /* لتعويض الـ margin بتاع الـ form-group */
+}
+
+.add-slot-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.mini-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #717171;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.slot-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #EBEBEB;
+  background: white;
+}
+
+.new-slot {
+  border-left: 4px solid #00A699; /* أخضر للمواعيد الجديدة */
+  background: #F0FBFA;
+}
+
+.existing-slot {
+  border-left: 4px solid #222; /* أسود للمواعيد القديمة */
+}
+
+.slot-info {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  font-size: 16px;
+  color: #222;
+}
+
+.slot-date {
+  font-weight: 600;
+}
+
+.slot-spots {
+  font-size: 14px;
+  color: #717171;
+  background: #F7F7F7;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.remove-slot-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #717171;
+  transition: color 0.2s;
+}
+
+.remove-slot-btn:hover {
+  color: #D93900;
+}
+
+.mb-4 {
+  margin-bottom: 24px;
+}
+
+@media (max-width: 600px) {
+  .availability-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .add-slot-btn {
+    margin-bottom: 0;
+  }
+
+  .slot-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}

@@ -125,6 +125,14 @@
 .review-title {
   font-size: 16px; font-weight: 600; margin: 0 0 8px;
 }
+.context-title {
+  color: #717171;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px; /* عشان الاسم مياخدش مساحة كبيرة */
+}
 
 .review-text {
   font-size: 16px;

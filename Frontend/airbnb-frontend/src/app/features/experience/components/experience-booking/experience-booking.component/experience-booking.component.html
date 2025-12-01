@@ -27,9 +27,9 @@
     <!-- Left: Experience Summary -->
     <div class="experience-summary">
       <img 
-        [src]="experience()!.images[0]?.imageUrl || 'https://via.placeholder.com/400x300'" 
-        [alt]="experience()!.title"
-        class="summary-image">
+  [src]="getImageUrl(experience()?.images?.[0]?.imageUrl)" 
+  [alt]="experience()?.title"
+  class="summary-image">
       
       <div class="summary-info">
         <h2>{{ experience()!.title }}</h2>

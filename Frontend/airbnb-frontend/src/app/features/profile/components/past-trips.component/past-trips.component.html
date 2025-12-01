@@ -1,33 +1,81 @@
 <div class="trips-container">
+  
   <div class="header">
-    <h2 class="title">Your trips</h2>
+    <h2 class="title">Past Trips</h2>
   </div>
 
   <div *ngIf="isLoading" class="loading">
     <div class="spinner"></div>
-    <p>Loading trips...</p>
+    <p>Loading...</p>
   </div>
 
-  <div *ngIf="!isLoading && trips.length === 0" class="empty-state">
-    <p>You don't have any trips yet.</p>
-    <p>Once you book or complete a stay, it will appear here.</p>
+  <div *ngIf="!isLoading && completedStays.length === 0 && completedExperiences.length === 0" class="empty-state">
+    <p>No completed trips yet.</p>
   </div>
 
-  <div *ngIf="!isLoading && trips.length > 0" class="trips-grid">
-    <div *ngFor="let trip of trips" class="trip-card" (click)="openTrip(trip)">
-      <div class="trip-image-wrap">
-        <img [src]="trip.propertyImage" [alt]="trip.propertyName" class="trip-image">
-      </div>
-      <div class="trip-info">
-        <h3 class="trip-destination">{{ trip.destination }}</h3>
-        <p class="trip-property">{{ trip.propertyName }}</p>
-        <p class="trip-dates">{{ formatDate(trip.checkIn) }} — {{ formatDate(trip.checkOut) }}</p>
-        <span class="trip-status" [class.completed]="trip.status === 'completed'"
-                              [class.upcoming]="trip.status === 'upcoming'"
-                              [class.cancelled]="trip.status === 'cancelled'">
-          {{ trip.status | titlecase }}
-        </span>
+  <!-- ✅ STAYS SECTION -->
+  <div *ngIf="!isLoading && completedStays.length > 0" class="section-wrapper">
+    <h3 class="section-title">Stays</h3>
+    <div class="trips-grid">
+      <div *ngFor="let trip of completedStays" class="trip-card" (click)="openDetails(trip)">
+        
+        <div class="trip-image-wrap">
+          <img [src]="getImageUrl(trip)" [alt]="getTitle(trip)" class="trip-image">
+          <div class="status-badge">COMPLETED</div>
+        </div>
+
+        <div class="trip-info">
+          <h3 class="trip-destination">{{ getTitle(trip) }}</h3>
+          <p class="trip-host">Hosted by {{ trip.hostName || 'Host' }}</p>
+
+          <div class="date-row">
+            <i class="fa-regular fa-calendar"></i>
+            <!-- ✅ التعديل هنا: إضافة checkInDate و checkOutDate -->
+            <span>
+              {{ formatDate(trip.checkIn || trip.checkInDate || trip.startDate) }} - 
+              {{ formatDate(trip.checkOut || trip.checkOutDate || trip.endDate) }}
+            </span>
+          </div>
+
+          <div class="trip-price">
+            <strong>{{ trip.totalPrice | currency:'EGP':'symbol':'1.0-0' }}</strong> total
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
+
+  <!-- ✅ EXPERIENCES SECTION -->
+  <div *ngIf="!isLoading && completedExperiences.length > 0" class="section-wrapper">
+    <h3 class="section-title">Experiences</h3>
+    <div class="trips-grid">
+      <div *ngFor="let trip of completedExperiences" class="trip-card" (click)="openDetails(trip)">
+        
+        <div class="trip-image-wrap">
+          <img [src]="getImageUrl(trip)" [alt]="getTitle(trip)" class="trip-image">
+          <div class="status-badge">COMPLETED</div>
+        </div>
+
+        <div class="trip-info">
+          <h3 class="trip-destination">{{ getTitle(trip) }}</h3>
+          <p class="trip-host">Hosted by {{ trip.hostName || 'Host' }}</p>
+
+          <div class="date-row">
+            <i class="fa-regular fa-calendar"></i>
+            <!-- ✅ التعديل هنا: إضافة date و experienceDate -->
+            <span>
+                {{ formatDate(trip.date || trip.experienceDate || trip.startDate || trip.checkInDate || trip.checkIn) }}
+            </span>
+          </div>
+
+          <div class="trip-price">
+            <strong>{{ trip.totalPrice | currency:'EGP':'symbol':'1.0-0' }}</strong> total
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </div>
