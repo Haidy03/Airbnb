@@ -76,6 +76,16 @@
   background: #f8f9fa;
   border-radius: 12px;
 }
+.btn-edit {
+  background: #fff;
+  border: 1px solid #222;
+  color: #222;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 8px;
+}
 
 .detail-card {
   border: 1px solid #ddd;

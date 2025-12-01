@@ -224,6 +224,12 @@ export const routes: Routes = [
         .then(m => m.HostServiceDetailsComponent),
       title: 'Service Details - Host'
     },
+    {
+      path: 'services/:id/edit',
+      loadComponent: () => import('./features/services/components/edit-service/edit-service')
+        .then(m => m.EditServiceComponent),
+      title: 'Edit Service - Host'
+    },
 
       { path: 'earnings', component: HostEarningsComponent },
       { path: 'reviews', component: HostReviewsComponent },

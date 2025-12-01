@@ -141,5 +141,17 @@ namespace Airbnb.API.Controllers
             return Ok(new { success = true, message = "Service payment confirmed" });
         }
 
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Host")]
+        public async Task<IActionResult> UpdateService(int id, [FromBody] UpdateServiceDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var success = await _servicesService.UpdateServiceAsync(id, userId, dto);
+
+            if (!success) return NotFound(new { message = "Service not found or unauthorized" });
+
+            return Ok(new { success = true, message = "Service updated successfully" });
+        }
+
     }
 }

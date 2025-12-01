@@ -1,4 +1,5 @@
-﻿using Airbnb.API.Models;
+﻿using Airbnb.API.DTOs.Services;
+using Airbnb.API.Models;
 
 namespace Airbnb.API.Repositories.Interfaces
 {
@@ -18,7 +19,9 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<ServicePackage?> GetPackageByIdAsync(int packageId);
         Task AddServiceBookingAsync(ServiceBooking booking);
         Task DeleteServiceAsync(Service service);
+        Task UpdateServiceAsync(Service service);
         Task<Service?> GetServiceByIdForHostAsync(int id);
         Task<List<ServiceBooking>> GetServiceBookingsByGuestIdAsync(string guestId);
+        
     }
 }

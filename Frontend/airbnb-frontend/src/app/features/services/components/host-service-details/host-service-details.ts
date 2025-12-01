@@ -1,13 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router,RouterModule  } from '@angular/router';
 import { ServicesService } from '../../services/service';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-host-service-details',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,RouterModule],
   templateUrl: './host-service-details.html',
   styleUrls: ['./host-service-details.css']
 })

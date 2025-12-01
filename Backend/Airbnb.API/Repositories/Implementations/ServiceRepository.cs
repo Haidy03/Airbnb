@@ -122,5 +122,10 @@ namespace Airbnb.API.Repositories.Implementations
                 .OrderByDescending(b => b.BookingDate)
                 .ToListAsync();
         }
+        public async Task UpdateServiceAsync(Service service)
+        {
+            _context.Services.Update(service);
+            await _context.SaveChangesAsync();
+        }
     }
 }

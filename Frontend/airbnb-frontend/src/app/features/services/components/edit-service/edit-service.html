@@ -1,0 +1,80 @@
+<div class="page-container">
+  <div class="form-card">
+    
+    <div class="form-header">
+      <h2>Edit Service</h2>
+      <button class="btn-close" (click)="goBack()">×</button>
+    </div>
+
+    <div *ngIf="isLoading()" class="text-center py-5">
+      <div class="spinner-border text-dark"></div>
+    </div>
+
+    <form *ngIf="!isLoading()" [formGroup]="editForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Title -->
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" formControlName="title" class="form-control">
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label>Description</label>
+        <textarea formControlName="description" rows="5" class="form-control"></textarea>
+      </div>
+
+      <!-- Grid for Price & Guests -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price (EGP)</label>
+          <input type="number" formControlName="pricePerUnit" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Max Guests</label>
+          <input type="number" formControlName="maxGuests" class="form-control">
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" formControlName="city" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Location Type</label>
+          <select formControlName="locationType" class="form-select">
+            <option [value]="0">Mobile (I travel)</option>
+            <option [value]="1">On-Site (Guests come)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Time Slots -->
+      <div class="form-group">
+        <label>Time Slots</label>
+        <div class="d-flex gap-2 mb-2">
+          <input type="time" class="form-control w-auto" (change)="addTimeSlot($event)">
+          <small class="text-muted align-self-center">Select to add</small>
+        </div>
+        
+        <div class="slots-container">
+          <div *ngFor="let time of timeSlots; let i = index" class="slot-chip">
+            {{ time }}
+            <span (click)="removeTimeSlot(i)" class="remove-btn">×</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="goBack()">Cancel</button>
+        <button type="submit" class="btn btn-dark" [disabled]="editForm.invalid || isSaving()">
+          {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

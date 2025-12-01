@@ -1,0 +1,85 @@
+.page-container {
+  background: #f7f7f7;
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.form-card {
+  background: white;
+  max-width: 700px;
+  width: 100%;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.form-header h2 { margin: 0; font-weight: 700; }
+
+.btn-close {
+  background: none; border: none; font-size: 28px; cursor: pointer; color: #717171;
+}
+
+.form-group { margin-bottom: 20px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+label {
+  display: block; font-weight: 600; margin-bottom: 8px; color: #222; font-size: 14px;
+}
+
+.form-control, .form-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+}
+.form-control:focus { border-color: #222; outline: none; }
+
+/* Slots */
+.slots-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.slot-chip {
+  background: #f0f0f0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remove-btn {
+  cursor: pointer; color: #717171; font-weight: bold;
+}
+.remove-btn:hover { color: #dc3545; }
+
+/* Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.btn {
+  padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none;
+}
+.btn-secondary { background: #fff; border: 1px solid #222; color: #222; }
+.btn-dark { background: #222; color: #fff; }
+.btn-dark:disabled { opacity: 0.7; }
