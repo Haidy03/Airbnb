@@ -188,6 +188,18 @@ export const routes: Routes = [
           .then(m => m.CreateServiceLocationComponent),
         title: 'Service Location - Host'
       },
+      {
+      path: 'services/photos',
+      loadComponent: () => import('./features/services/components/create-service-photos/create-service-photos')
+        .then(m => m.CreateServicePhotosComponent),
+      title: 'Service Photos - Host'
+    },
+    {
+    path: 'services/review',
+    loadComponent: () => import('./features/services/components/create-service-review/create-service-review')
+      .then(m => m.CreateServiceReviewComponent),
+    title: 'Review Service - Host'
+  },
 
       // {
       //   path: 'properties/:id',

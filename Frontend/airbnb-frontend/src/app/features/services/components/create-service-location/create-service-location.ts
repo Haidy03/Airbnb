@@ -34,7 +34,9 @@ export class CreateServiceLocationComponent {
     if (this.locationType() !== null && this.city().trim()) {
       localStorage.setItem('draftServiceLocationType', this.locationType()!.toString());
       localStorage.setItem('draftServiceCity', this.city().trim());
-      alert(`Location saved! Type: ${this.locationType()}, City: ${this.city()}`);
+     // alert(`Location saved! Type: ${this.locationType()}, City: ${this.city()}`);
+      this.router.navigate(['/host/services/photos']); 
+      
     }
   }
 }

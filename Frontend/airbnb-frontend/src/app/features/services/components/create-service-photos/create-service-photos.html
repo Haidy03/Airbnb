@@ -1,0 +1,98 @@
+<div class="page-container">
+  
+  <!-- Header -->
+  <header class="step-header">
+    <button class="btn-icon" (click)="goBack()">
+      <i class="bi bi-chevron-left"></i> Back
+    </button>
+    <button class="btn-save">Save & exit</button>
+  </header>
+
+  <!-- Main Content -->
+  <main class="content-area">
+    <div class="content-wrapper">
+      
+      <h1 class="step-title">Add some photos of your service</h1>
+      <p class="step-subtitle">You'll need 5 photos to get started. You can add more or make changes later.</p>
+
+      <!-- 1. Empty State (No photos) -->
+      <div *ngIf="photos().length === 0" class="upload-box">
+        <div class="upload-content">
+          <i class="bi bi-images upload-icon"></i>
+          <h3 class="upload-title">Drag your photos here</h3>
+          <p class="upload-desc">Choose at least 1 photo</p>
+          
+          <label class="upload-btn">
+            Upload from your device
+            <input type="file" multiple accept="image/*" (change)="onFileSelected($event)" hidden>
+          </label>
+        </div>
+      </div>
+
+      <!-- 2. Photos Grid (If photos exist) -->
+      <div *ngIf="photos().length > 0" class="photos-container">
+        
+        <!-- Header Actions -->
+        <div class="photos-header">
+          <label class="btn-add-more">
+            <i class="bi bi-plus-lg"></i> Add more
+            <input type="file" multiple accept="image/*" (change)="onFileSelected($event)" hidden>
+          </label>
+        </div>
+
+        <div class="photos-grid">
+          <!-- Loop through photos -->
+          <div 
+            *ngFor="let photo of photos(); let i = index" 
+            class="photo-card"
+            [class.cover-photo]="i === 0"
+          >
+            <img [src]="photo.url" class="img-preview">
+            
+            <!-- Actions Overlay -->
+            <div class="photo-actions">
+              <button class="action-btn" (click)="removePhoto(i)">
+                <i class="bi bi-trash3"></i>
+              </button>
+              <button *ngIf="i !== 0" class="action-btn" (click)="makeCover(i)" title="Make cover photo">
+                <i class="bi bi-star"></i>
+              </button>
+            </div>
+
+            <!-- Cover Badge -->
+            <div *ngIf="i === 0" class="cover-badge">Cover photo</div>
+          </div>
+
+          <!-- Add More Card (Optional, grid filler) -->
+          <label class="photo-card add-card">
+            <i class="bi bi-plus-lg add-icon"></i>
+            <span>Add more</span>
+            <input type="file" multiple accept="image/*" (change)="onFileSelected($event)" hidden>
+          </label>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="step-footer">
+    <!-- Progress Bar (90%) -->
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width: 90%;"></div>
+    </div>
+    
+    <div class="footer-actions">
+      <button class="btn btn-link text-dark fw-bold text-decoration-underline" (click)="goBack()">Back</button>
+      
+      <button 
+        class="btn btn-dark px-4 py-2 fw-bold rounded-3" 
+        [disabled]="photos().length === 0"
+        (click)="onNext()">
+        Next
+      </button>
+    </div>
+  </footer>
+
+</div>

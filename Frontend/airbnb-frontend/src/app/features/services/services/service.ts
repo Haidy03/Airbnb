@@ -26,7 +26,10 @@ export class ServicesService {
   return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${id}`);
 }
 
-getAllCategories(): Observable<ApiResponse<ServiceCategory[]>> {
-    return this.http.get<ApiResponse<ServiceCategory[]>>(`${this.apiUrl}/categories`);
+  getAllCategories(): Observable<ApiResponse<ServiceCategory[]>> {
+        return this.http.get<ApiResponse<ServiceCategory[]>>(`${this.apiUrl}/categories`);
+      }
+  createService(data: FormData): Observable<any> {
+  return this.http.post(`${this.apiUrl}`, data);
   }
 }
