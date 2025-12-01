@@ -164,13 +164,61 @@ export const routes: Routes = [
         loadComponent: () => import('./features/services/components/create-service/create-service').then(m => m.CreateServiceComponent).catch(() => NotFoundComponent), 
         title: 'Create Service - Host'
       },
-      // {
-      //   path: 'properties/:id',
-      //   component: PropertyDetailsComponent
-      // }
-      // { path: 'messages', component: HostMessages },
-      // { path: 'properties/addd', component: AddProperty },
-      // { path: 'properties/edit/:id', component: EditProperty },
+      {
+        path: 'services/title',
+        loadComponent: () => import('./features/services/components/create-service-title/create-service-title')
+          .then(m => m.CreateServiceTitleComponent),
+        title: 'Service Title - Host'
+      },
+      {
+      path: 'services/description',
+      loadComponent: () => import('./features/services/components/create-service-description/create-service-description')
+        .then(m => m.CreateServiceDescriptionComponent),
+      title: 'Service Description - Host'
+    },
+    {
+        path: 'services/price',
+        loadComponent: () => import('./features/services/components/create-service-price/create-service-price')
+          .then(m => m.CreateServicePriceComponent),
+        title: 'Service Price - Host'
+      },
+      {
+        path: 'services/location',
+        loadComponent: () => import('./features/services/components/create-service-location/create-service-location')
+          .then(m => m.CreateServiceLocationComponent),
+        title: 'Service Location - Host'
+      },
+      {
+      path: 'services/availability',
+      loadComponent: () => import('./features/services/components/create-service-availability/create-service-availability')
+        .then(m => m.CreateServiceAvailabilityComponent),
+      title: 'Service Availability - Host'
+    },
+      {
+      path: 'services/photos',
+      loadComponent: () => import('./features/services/components/create-service-photos/create-service-photos')
+        .then(m => m.CreateServicePhotosComponent),
+      title: 'Service Photos - Host'
+    },
+    {
+    path: 'services/review',
+    loadComponent: () => import('./features/services/components/create-service-review/create-service-review')
+      .then(m => m.CreateServiceReviewComponent),
+    title: 'Review Service - Host'
+    },
+    {
+      path: 'services',
+      loadComponent: () => import('./features/services/components/host-services/host-services')
+        .then(m => m.HostServicesComponent),
+      title: 'My Services - Host'
+    },
+    {
+      path: 'services/:id/details', 
+      loadComponent: () => import('./features/services/components/host-service-details/host-service-details')
+        .then(m => m.HostServiceDetailsComponent),
+      title: 'Service Details - Host'
+    },
+
       { path: 'earnings', component: HostEarningsComponent },
       { path: 'reviews', component: HostReviewsComponent },
       {

@@ -18,13 +18,14 @@ namespace Airbnb.API.Controllers
         private readonly IAdminService _adminService;
         private readonly ILogger<AdminController> _logger;
         private readonly IExperienceService _experienceService;
+        private readonly IServicesService _servicesService;
 
-        public AdminController(IAdminService adminService, ILogger<AdminController> logger, IExperienceService experienceService)
+        public AdminController(IAdminService adminService, ILogger<AdminController> logger, IExperienceService experienceService, IServicesService servicesService)
         {
             _adminService = adminService;
             _experienceService = experienceService;
             _logger = logger;
-
+            _servicesService = servicesService;
         }
 
         #region Dashboard & Analytics
@@ -238,6 +239,70 @@ namespace Airbnb.API.Controllers
 
         #endregion
 
+        #region  Services Management
+        /// <summary>
+        /// Get services pending approval
+        /// </summary>
+        [HttpGet("services/pending")]
+        public async Task<IActionResult> GetPendingServices()
+        {
+            try
+            {
+                var result = await _servicesService.GetPendingServicesForAdminAsync();
+                return Ok(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting pending services");
+                return StatusCode(500, "Error retrieving pending services");
+            }
+        }
+
+        /// <summary>
+        /// Approve a service
+        /// </summary>
+        [HttpPost("services/{id}/approve")]
+        public async Task<IActionResult> ApproveService(int id)
+        {
+            try
+            {
+                var result = await _servicesService.UpdateServiceStatusAsync(id, true, null);
+
+                if (!result)
+                    return NotFound(new { success = false, message = "Service not found" });
+
+                return Ok(new { success = true, message = "Service approved successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error approving service {id}");
+                return StatusCode(500, "Error approving service");
+            }
+        }
+
+        /// <summary>
+        /// Reject a service
+        /// </summary>
+        [HttpPost("services/{id}/reject")]
+        public async Task<IActionResult> RejectService(int id, [FromBody] RejectServiceDto dto)
+        {
+            try
+            {
+                var result = await _servicesService.UpdateServiceStatusAsync(id, false, dto.Reason);
+
+                if (!result)
+                    return NotFound(new { success = false, message = "Service not found" });
+
+                return Ok(new { success = true, message = "Service rejected successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error rejecting service {id}");
+                return StatusCode(500, "Error rejecting service");
+            }
+        }
+
+        #endregion
         
 
         #region Property Management
@@ -626,5 +691,11 @@ namespace Airbnb.API.Controllers
     public class UpdateStatusDto
     {
         public string Status { get; set; }
+    }
+
+    // ✅ Helper DTO for Rejection (Add inside namespace or DTOs folder)
+    public class RejectServiceDto
+    {
+        public string Reason { get; set; }
     }
 }

@@ -1,0 +1,63 @@
+<div class="page-container">
+  
+  <!-- Header -->
+  <header class="step-header">
+    <button class="btn-icon" (click)="goBack()">
+      <i class="bi bi-chevron-left"></i> Back
+    </button>
+    <button class="btn-save">Save & exit</button>
+  </header>
+
+  <!-- Main Content -->
+  <main class="content-area">
+    <div class="content-wrapper">
+      
+      <!-- Headings -->
+      <h1 class="step-title">Now, let's give your service a title</h1>
+      <p class="step-subtitle">Short titles work best. Have fun with it—you can always change it later.</p>
+
+      <!-- Input Area -->
+      <div class="input-container">
+        <textarea 
+          [ngModel]="title()"
+          (ngModelChange)="onTitleChange($event)"
+          [maxlength]="maxLength"
+          rows="4"
+          placeholder="e.g. Authentic Roman Pasta Making"
+          class="title-input"
+        ></textarea>
+        
+        <!-- Character Counter -->
+        <div class="char-counter" [class.limit-reached]="title().length >= maxLength">
+          {{ title().length }}/{{ maxLength }}
+        </div>
+
+        <!-- Warning Icon (Optional) -->
+        <div *ngIf="title().length >= maxLength" class="warning-msg">
+          <i class="bi bi-exclamation-circle-fill"></i> Character limit reached
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Sticky Footer -->
+  <footer class="step-footer">
+    <!-- Progress Bar (20% for Step 2) -->
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width: 20%;"></div>
+    </div>
+    
+    <div class="footer-actions">
+      <button class="btn btn-link text-dark fw-bold text-decoration-underline" (click)="goBack()">Back</button>
+      
+      <button 
+        class="btn btn-dark px-4 py-2 fw-bold rounded-3" 
+        [disabled]="!title().trim()"
+        (click)="onNext()">
+        Next
+      </button>
+    </div>
+  </footer>
+
+</div>

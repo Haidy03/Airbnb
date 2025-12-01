@@ -56,5 +56,62 @@ namespace Airbnb.API.Repositories.Implementations
                 .OrderBy(c => c.DisplayOrder)
                 .ToListAsync();
         }
+
+        public async Task<List<Service>> GetServicesByHostIdAsync(string hostId)
+        {
+            return await _context.Services
+                .Include(s => s.Category)
+                .Include(s => s.Images)
+                .Include(s => s.Host)
+                .Where(s => s.HostId == hostId)
+                .OrderByDescending(s => s.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<Service>> GetPendingServicesAsync()
+        {
+            return await _context.Services
+                .Include(s => s.Category)
+                .Include(s => s.Host)
+                .Include(s => s.Images)
+                .Where(s => s.Status == ServiceStatus.PendingApproval)
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateServiceStatusAsync(int serviceId, ServiceStatus status, string? rejectionReason = null)
+        {
+            var service = await _context.Services.FindAsync(serviceId);
+            if (service == null) return false;
+
+            service.Status = status;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task AddServiceBookingAsync(ServiceBooking booking)
+        {
+            await _context.ServiceBookings.AddAsync(booking);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<ServicePackage?> GetPackageByIdAsync(int packageId)
+        {
+            return await _context.ServicePackages.FindAsync(packageId);
+        }
+
+        public async Task<Service?> GetServiceByIdForHostAsync(int id)
+        {
+            return await _context.Services
+                .Include(s => s.Category)
+                .Include(s => s.Images)
+                .Include(s => s.Host) // مهم للتحقق من الملكية
+                .FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        public async Task DeleteServiceAsync(Service service)
+        {
+            _context.Services.Remove(service);
+            await _context.SaveChangesAsync();
+        }
     }
 }

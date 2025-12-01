@@ -176,3 +176,18 @@ export interface PropertyOccupancy {
   totalBookings: number;
   revenue: number;
 }
+
+export interface AdminServiceItem {
+  id: number;
+  title: string;
+  hostName: string;
+  hostAvatar?: string;
+  categoryName: string;
+  pricePerUnit: number;
+  pricingUnit: string;
+  status: string; 
+  rating: number;
+  imageUrl?: string;
+  createdAt: Date;
+  rejectionReason?: string;
+}

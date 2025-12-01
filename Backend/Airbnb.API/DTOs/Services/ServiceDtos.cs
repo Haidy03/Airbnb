@@ -1,9 +1,10 @@
 ﻿using Airbnb.API.Models;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http; 
 
 namespace Airbnb.API.DTOs.Services
 {
-    // للعرض في القوائم (Home Page)
+
     public class ServiceCardDto
     {
         public int Id { get; set; }
@@ -18,7 +19,7 @@ namespace Airbnb.API.DTOs.Services
         public string CategoryName { get; set; }
     }
 
-    // لإنشاء خدمة جديدة (Host Flow)
+
     public class CreateServiceDto
     {
         [Required]
@@ -39,9 +40,12 @@ namespace Airbnb.API.DTOs.Services
         public ServiceLocationType LocationType { get; set; }
 
         public string? City { get; set; }
+        public List<IFormFile>? Images { get; set; }
+        public int MaxGuests { get; set; }
+        public List<string>? TimeSlots { get; set; }
     }
 
-    
+
     public class ServiceDetailsDto : ServiceCardDto
     {
         public string Description { get; set; }
@@ -50,7 +54,8 @@ namespace Airbnb.API.DTOs.Services
         public string? CoveredAreas { get; set; }
         public string? City { get; set; }
 
-        
+        public string Status { get; set; }
+        public string? RejectionReason { get; set; }
         public string HostId { get; set; }
         public DateTime HostJoinedDate { get; set; }
 
@@ -58,6 +63,8 @@ namespace Airbnb.API.DTOs.Services
         public string GuestRequirements { get; set; }
         public List<ServiceQualificationDto> Qualifications { get; set; }
         public List<ServicePackageDto> Packages { get; set; }
+        public int MaxGuests { get; set; }
+        public List<string> TimeSlots { get; set; }
     }
 
     public class ServiceQualificationDto
@@ -69,11 +76,34 @@ namespace Airbnb.API.DTOs.Services
 
     public class ServicePackageDto
     {
+        public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
         public string Duration { get; set; }
         public string ImageUrl { get; set; }
+
+    }
+
+    public class BookServiceDto
+    {
+        public int ServiceId { get; set; }
+        public int? PackageId { get; set; }
+        public DateTime Date { get; set; }
+        [Range(1, 50)]
+        public int NumberOfGuests { get; set; }
+    }
+
+    public class ApproveServiceDto
+    {
+        public bool IsApproved { get; set; }
+        public string? RejectionReason { get; set; }
+    }
+
+    public class HostServiceDto : ServiceCardDto
+    {
+        public string Status { get; set; }
+        public string? RejectionReason { get; set; }
 
     }
 }

@@ -1,0 +1,109 @@
+<div class="admin-properties"> <!-- Reuse Properties Styles -->
+  <div class="page-header">
+    <div>
+      <h1>Services Management</h1>
+      <p class="subtitle">Review and approve host services</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading pending services...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error()" class="error-state">
+    <p>{{ error() }}</p>
+    <button class="retry-btn" (click)="loadPendingServices()">Retry</button>
+  </div>
+
+  <!-- Services Grid -->
+  <div *ngIf="!loading() && !error()" class="properties-grid">
+    <div *ngFor="let service of services()" class="property-card">
+      
+      <!-- Status Badge -->
+      <div class="card-status pendingapproval">Pending</div>
+
+      <!-- Image & Title -->
+      <div class="property-header">
+        <div style="height: 160px; overflow: hidden; border-radius: 8px; margin-bottom: 12px; background: #f0f0f0;">
+          <img [src]="getImageUrl(service.imageUrl)" 
+               style="width: 100%; height: 100%; object-fit: cover;"
+               alt="Service Image">
+        </div>
+        <h3 class="property-title">{{ service.title }}</h3>
+        <p class="property-location">{{ service.categoryName }}</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="property-stats">
+        <div class="stat-item">
+          <span class="stat-label">Price:</span>
+          <span class="stat-value price">{{ service.pricePerUnit | currency:'EGP ' }} / {{ service.pricingUnit }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Host:</span>
+          <span class="stat-value">{{ service.hostName }}</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="card-actions">
+        <div class="action-row">
+          <button class="btn btn-approve" (click)="openApproveModal(service)">
+            <i class="bi bi-check-lg"></i> Approve
+          </button>
+          <button class="btn btn-reject" (click)="openRejectModal(service)">
+            <i class="bi bi-x-lg"></i> Reject
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="services().length === 0" class="empty-state">
+      <h3>No pending services</h3>
+      <p>Everything is up to date!</p>
+    </div>
+  </div>
+
+  <!-- Approve Modal -->
+  <div class="modal-overlay" *ngIf="showApproveModal()" (click)="closeApproveModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Approve Service</h2>
+        <button class="close-btn" (click)="closeApproveModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Approve <strong>{{ selectedService()?.title }}</strong>?</p>
+        <p>This service will become visible to guests immediately.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeApproveModal()">Cancel</button>
+        <button class="btn btn-success" (click)="approveService()">Confirm Approve</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div class="modal-overlay" *ngIf="showRejectModal()" (click)="closeRejectModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Reject Service</h2>
+        <button class="close-btn" (click)="closeRejectModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Reject <strong>{{ selectedService()?.title }}</strong>?</p>
+        <label>Reason (Required):</label>
+        <textarea [(ngModel)]="rejectionReason" class="modal-textarea" rows="4" placeholder="Why is this service rejected?"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeRejectModal()">Cancel</button>
+        <button class="btn btn-danger" (click)="rejectService()">Reject Service</button>
+      </div>
+    </div>
+  </div>
+
+</div>

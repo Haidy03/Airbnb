@@ -1495,6 +1495,9 @@ namespace Airbnb.API.Migrations
                     b.Property<double?>("Longitude")
                         .HasColumnType("float");
 
+                    b.Property<int>("MaxGuests")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("MinimumCost")
                         .HasColumnType("decimal(18,2)");
 
@@ -1510,6 +1513,9 @@ namespace Airbnb.API.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<string>("TimeSlots")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -1522,6 +1528,55 @@ namespace Airbnb.API.Migrations
                     b.HasIndex("HostId");
 
                     b.ToTable("Services");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ServiceBooking", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("BookingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GuestId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("NumberOfGuests")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PackageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GuestId");
+
+                    b.HasIndex("PackageId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("ServiceBookings");
                 });
 
             modelBuilder.Entity("Airbnb.API.Models.ServiceCategory", b =>
@@ -2203,6 +2258,32 @@ namespace Airbnb.API.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("Host");
+                });
+
+            modelBuilder.Entity("Airbnb.API.Models.ServiceBooking", b =>
+                {
+                    b.HasOne("Airbnb.API.Models.ApplicationUser", "Guest")
+                        .WithMany()
+                        .HasForeignKey("GuestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Airbnb.API.Models.ServicePackage", "Package")
+                        .WithMany()
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Airbnb.API.Models.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Guest");
+
+                    b.Navigation("Package");
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("Airbnb.API.Models.ServiceImage", b =>

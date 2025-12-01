@@ -7,7 +7,7 @@ import { AdminBookingsComponent } from './components/bookings/bookings.component
 import { AdminAnalyticsComponent } from './components/analytics/analytics.component/analytics.component';
 import { AdminSettingsComponent } from './components/settings/settings.component/settings.component';
 import { AdminExperiencesComponent } from './/components/experiences/admin-experiences.component/admin-experiences.component';
-
+import { AdminServicesComponent } from './components/admin-services/admin-services';
 import { AdminGuard } from '../../core/guards/admin.guard';
 
 
@@ -25,6 +25,7 @@ export const adminRoutes: Routes = [
       { path: 'bookings', component: AdminBookingsComponent },
       { path: 'analytics', component: AdminAnalyticsComponent },
       { path: 'settings', component: AdminSettingsComponent },
+      { path: 'services', component: AdminServicesComponent },
     ]
   }
 ];

@@ -1,14 +1,14 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common'; // ✅ DatePipe Added
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ServicesService } from '../../services/service';
 import { ServiceDetails, ServicePackage } from '../../models/service.model';
 import { environment } from '../../../../../environments/environment';
-
+import { ServiceBookingModalComponent } from '../service-booking-modal/service-booking-modal';
 @Component({
   selector: 'app-service-details',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, DatePipe, ServiceBookingModalComponent], // ✅ DatePipe Imported
   templateUrl: './service-details.html',
   styleUrls: ['./service-details.css']
 })
@@ -16,15 +16,14 @@ export class ServiceDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private servicesService = inject(ServicesService);
   
-  service: ServiceDetails | null = null; 
-  isLoading = true;
-  selectedPackage: ServicePackage | null = null;
-
-  // رابط الباك إند للصور المحلية
-  private backendUrl = environment.apiUrl.replace('/api', ''); 
+  service = signal<ServiceDetails | null>(null);
+  isLoading = signal(true);
+  selectedPackage = signal<ServicePackage | null>(null);
+  showBookingModal = false;
+  private baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
 
   ngOnInit() {
-    window.scrollTo(0, 0); // البدء من أعلى الصفحة
+    window.scrollTo(0, 0);
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadService(Number(id));
@@ -35,28 +34,53 @@ export class ServiceDetailsComponent implements OnInit {
     this.servicesService.getServiceDetails(id).subscribe({
       next: (res) => {
         if (res.success) {
-          this.service = res.data;
+          this.service.set(res.data);
         }
-        this.isLoading = false;
+        this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('Error fetching service details:', err);
-        this.isLoading = false;
-      }
+      error: () => this.isLoading.set(false)
     });
   }
 
   selectPackage(pkg: ServicePackage) {
-    this.selectedPackage = pkg;
+    if (this.selectedPackage() === pkg) {
+      this.selectedPackage.set(null);
+    } else {
+      this.selectedPackage.set(pkg);
+    }
   }
 
-  // دالة ذكية لمعالجة الصور (محلية أو خارجية)
   getImageUrl(url: string | undefined | null): string {
     if (!url) return 'assets/images/placeholder.jpg';
     if (url.startsWith('http')) return url;
-    
-    // إزالة السلاش في البداية لتجنب الازدواج
-    const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-    return `${this.backendUrl}/${cleanUrl}`;
+    const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+    return `${this.baseUrl}/${cleanPath}`;
+  }
+
+  // ✅ 1. تنسيق وحدة السعر
+  formatUnit(unit: string): string {
+    const map: any = { 
+      'PerPerson': 'guest', 
+      'PerHour': 'hour', 
+      'PerSession': 'session', 
+      'FlatFee': 'service' 
+    };
+    return map[unit] || unit.toLowerCase();
+  }
+
+  // ✅ 2. نص الموقع (مهم جداً)
+  getLocationText(s: ServiceDetails): string {
+    if (s.locationType === 'Mobile') {
+      return `Mobile Service • Host travels to you in ${s.city}`;
+    }
+    return `On-Site Service • Located in ${s.city}`;
+  }
+
+  openBookingModal() {
+    this.showBookingModal = true;
+  }
+
+  closeBookingModal() {
+    this.showBookingModal = false;
   }
 }

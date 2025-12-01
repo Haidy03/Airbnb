@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, ServiceCard ,ServiceCategory} from '../models/service.model';
-
+import { HostService } from '../models/service.model'; 
 
 @Injectable({
   providedIn: 'root'
@@ -26,7 +26,30 @@ export class ServicesService {
   return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${id}`);
 }
 
-getAllCategories(): Observable<ApiResponse<ServiceCategory[]>> {
-    return this.http.get<ApiResponse<ServiceCategory[]>>(`${this.apiUrl}/categories`);
+  getAllCategories(): Observable<ApiResponse<ServiceCategory[]>> {
+        return this.http.get<ApiResponse<ServiceCategory[]>>(`${this.apiUrl}/categories`);
+      }
+  createService(data: FormData): Observable<any> {
+  return this.http.post(`${this.apiUrl}`, data);
+  }
+
+  getHostServices(): Observable<ApiResponse<HostService[]>> {
+    return this.http.get<ApiResponse<HostService[]>>(`${this.apiUrl}/my-services`);
+  }
+
+  // Get Details for Host (Edit View)
+  getHostServiceDetails(id: number): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/host/${id}`);
+  }
+
+  deleteService(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  toggleServiceStatus(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${id}/toggle-status`, {});
+  }
+  bookService(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/book`, data);
   }
 }

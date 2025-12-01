@@ -1,0 +1,80 @@
+<div class="host-services-container">
+  
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Your Services</h1>
+      <p class="page-subtitle">Manage your services and track their status</p>
+    </div>
+    <button class="create-btn" (click)="createService()">
+      <i class="bi bi-plus-lg"></i> Create Service
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading()" class="loading-state">
+    <div class="spinner-border text-dark" role="status"></div>
+    <p class="mt-3 text-muted">Loading your services...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading() && services().length === 0" class="empty-state">
+    <div class="empty-icon">
+      <i class="bi bi-briefcase"></i>
+    </div>
+    <h2>No services yet</h2>
+    <p>Start sharing your skills with the world</p>
+    <button class="create-btn-large" (click)="createService()">
+      Create Your First Service
+    </button>
+  </div>
+
+  <!-- Services Grid -->
+  <div *ngIf="!isLoading() && services().length > 0" class="services-grid">
+    
+    <div *ngFor="let service of services()" class="service-card">
+      
+      <!-- Image & Status -->
+      <div class="card-image">
+        <img [src]="getImageUrl(service.imageUrl)" [alt]="service.title">
+        
+        <!-- Status Badge -->
+        <span class="status-badge" [ngClass]="getStatusBadgeClass(service.status)">
+          {{ service.status === 'PendingApproval' ? 'Pending' : service.status }}
+        </span>
+      </div>
+
+      <!-- Content -->
+      <div class="card-content">
+        <div class="card-header">
+          <h3 class="card-title">{{ service.title }}</h3>
+          <p class="card-cat">{{ service.categoryName }}</p>
+        </div>
+
+        <div class="card-stats">
+          <div class="stat-item">
+            <i class="bi bi-star-fill text-warning"></i>
+            <span>{{ service.rating | number:'1.1-1' }}</span>
+          </div>
+          <div class="stat-item">
+            <i class="bi bi-cash"></i>
+            <span>{{ service.pricePerUnit | currency:'EGP ':'symbol':'1.0-0' }} / {{ service.pricingUnit }}</span>
+          </div>
+        </div>
+
+        <!-- Rejected Reason Box -->
+        <div *ngIf="service.status === 'Rejected' && service.rejectionReason" class="alert alert-danger mt-3 p-2 small">
+          <strong>Reason:</strong> {{ service.rejectionReason }}
+        </div>
+
+        <!-- Actions (Future Work: Edit/Delete) -->
+        <div class="card-actions mt-3">
+          <button class="btn btn-outline-secondary btn-sm w-100" [routerLink]="['/host/services', service.id, 'details']">View Details</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>

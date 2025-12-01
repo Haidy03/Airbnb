@@ -1,0 +1,83 @@
+<div class="page-container" *ngIf="!isLoading() && service">
+  
+  <!-- Header -->
+  <header class="details-header">
+    <button class="btn-back" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i> Back
+    </button>
+    
+    <div class="header-actions">
+      <!-- Status Badge -->
+      <span class="status-badge" 
+            [class.active]="service.status === 'Active'"
+            [class.pending]="service.status === 'PendingApproval'"
+            [class.inactive]="service.status === 'Inactive'">
+        {{ service.status === 'PendingApproval' ? 'Pending' : service.status }}
+      </span>
+
+      <!-- Delete Button -->
+      <button class="btn-delete" (click)="deleteService()">
+        <i class="bi bi-trash3"></i> Delete
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="content-grid">
+    
+    <!-- Left: Image & Info -->
+    <div class="main-info">
+      <div class="image-wrapper">
+        <img [src]="getImageUrl(service.images[0])" class="service-img">
+      </div>
+      
+      <h1 class="service-title">{{ service.title }}</h1>
+      <p class="service-cat text-muted">{{ service.categoryName }}</p>
+      
+      <div class="price-box">
+        <span class="price">{{ service.pricePerUnit | currency:'EGP ' }}</span>
+        <span class="unit">/ {{ service.pricingUnit }}</span>
+      </div>
+
+      <hr>
+
+      <!-- Visibility Toggle Section -->
+      <div class="visibility-section">
+        <div class="vis-text">
+          <h3>Listing Visibility</h3>
+          <p class="text-muted small" *ngIf="service.status === 'Active'">Your service is live and visible to guests.</p>
+          <p class="text-muted small" *ngIf="service.status === 'Inactive'">Your service is hidden from search.</p>
+          <p class="text-danger small" *ngIf="service.status === 'PendingApproval'">Waiting for admin approval.</p>
+        </div>
+
+        <!-- Toggle Switch -->
+        <label class="switch" *ngIf="service.status !== 'PendingApproval' && service.status !== 'Rejected'">
+          <input type="checkbox" 
+                 [checked]="service.status === 'Active'"
+                 (change)="toggleStatus()"
+                 [disabled]="isToggling()">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- Right: Additional Details -->
+    <div class="side-details">
+      <div class="detail-card">
+        <h3>Description</h3>
+        <p>{{ service.description }}</p>
+      </div>
+
+      <div class="detail-card">
+        <h3>Location</h3>
+        <p><i class="bi bi-geo-alt"></i> {{ service.city }}</p>
+        <p class="text-muted small">
+          {{ service.locationType === 'Mobile' ? 'You travel to guests' : 'Guests come to you' }}
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+</div>

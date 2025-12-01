@@ -11,7 +11,8 @@ import {
   AdminDispute,
   RevenueReport,
   UserActivityReport,
-  OccupancyReport
+  OccupancyReport,
+  AdminServiceItem 
 } from '../models/admin.models';
 
 @Injectable({
@@ -203,5 +204,23 @@ export class AdminService {
   // دالة حذف التجربة
   deleteExperience(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/experiences/${id}`);
+  }
+   // ==========================================
+  // ✅ SERVICES MANAGEMENT (NEW)
+  // ==========================================
+
+  // جلب الخدمات المعلقة (للموافقة)
+  getPendingServices(): Observable<any> { // الباك إند بيرجع { success: true, data: [...] }
+    return this.http.get(`${this.apiUrl}/services/pending`);
+  }
+
+  // الموافقة على الخدمة
+  approveService(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/services/${id}/approve`, {});
+  }
+
+  // رفض الخدمة
+  rejectService(id: number, reason: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/services/${id}/reject`, { reason });
   }
 }
