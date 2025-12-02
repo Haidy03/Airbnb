@@ -49,12 +49,12 @@ import { ExperienceCardComponent } from '../../../experience/components/experien
 import { ExperienceService } from '../../../../shared/Services/experience.service';
 import { ListingService } from '../../services/Lisiting-Services';
 import { environment } from '../../../../../environments/environment.development';
-
+import { ServiceCardComponent } from '../../../services/components/service-card/service-card';
 
 @Component({
   selector: 'app-wishlists',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, ExperienceCardComponent],
+  imports: [CommonModule, RouterModule, HeaderComponent, ExperienceCardComponent, ServiceCardComponent],
   templateUrl: './wishlists.html',
   styleUrls: ['./wishlists.css']
 })
@@ -82,13 +82,23 @@ export class WishlistsComponent implements OnInit {
           const mappedItems = res.data.map((item: any) => ({
             id: item.id,
             title: item.title,
-            pricePerPerson: item.price, // السعر (سواء لليلة أو للفرد)
-            type: item.type,            // "Experience" or "Home"
-            primaryImage: item.image,   // الصورة
-            averageRating: item.rating || 0,
-            totalReviews: 0,
+            type: item.type, // "Experience", "Home", "Service"
+            imageUrl: this.getImageUrl(item.image || item.primaryImage), 
+            primaryImage: this.getImageUrl(item.image || item.primaryImage),
+            rating: item.rating || 0,
             city: item.city || '',
-            country: item.country || ''
+            country: item.country || '',
+            
+            // ✅ بيانات خاصة بالـ Experience/Home Card
+            pricePerPerson: item.price, 
+            totalReviews: 0,
+
+            // ✅ بيانات خاصة بالـ Service Card (عشان الكارت ميديناش ايرور)
+            pricePerUnit: item.price, 
+            pricingUnit: 'guest', // قيمة افتراضية للعرض في الويش ليست
+            hostName: 'Host',     // قيمة افتراضية لو الباك اند مبعتهاش
+            categoryName: item.type ,
+             isWishlisted: true 
           }));
           
           this.wishlistItems.set(mappedItems);

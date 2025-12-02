@@ -22,7 +22,9 @@ namespace Airbnb.API.Models
         public int? PropertyId { get; set; } // أو string حسب نوع الـ ID عندك
         [ForeignKey("PropertyId")]
         public virtual Property Property { get; set; }
-
+        public int? ServiceId { get; set; }
+        [ForeignKey("ServiceId")]
+        public virtual Service Service { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

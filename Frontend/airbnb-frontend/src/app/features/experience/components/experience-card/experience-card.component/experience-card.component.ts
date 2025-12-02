@@ -15,11 +15,11 @@ import { environment } from '../../../../../../environments/environment.developm
 
 export class ExperienceCardComponent {
   constructor(private experienceService: ExperienceService) {}
-  @Input() experience!: ExperienceSearchResult;
+  @Input() experience!: any;
   @Input() showBadge: boolean = false;
   @Input() badgeText: string = 'Popular';
 
-  isWishlisted = false;
+  @Input() isWishlisted: boolean = false; 
 
   getImageUrl(imageUrl?: string): string {
     // 1. لو مفيش رابط خالص، رجع صورة افتراضية
@@ -60,4 +60,11 @@ export class ExperienceCardComponent {
         error: (err) => console.error(err)
     });
 }
+
+get cardLink(): any[] {
+    if (this.experience.type === 'Home' || this.experience.type === 'Property') {
+      return ['/listing', this.experience.id]; // الرابط الصحيح للبيوت
+    }
+    return ['/experiences', this.experience.id];
+  }
 }

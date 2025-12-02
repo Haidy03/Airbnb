@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, ServiceCard ,ServiceCategory} from '../models/service.model';
 import { HostService } from '../models/service.model'; 
-
+import { map } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
@@ -57,5 +57,14 @@ export class ServicesService {
   }
   updateService(id: number, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, data);
+  }
+   toggleWishlist(serviceId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl.replace('/Services', '')}/Wishlist/toggle-service/${serviceId}`, {});
+  }
+
+  checkIsWishlisted(serviceId: number): Observable<boolean> {
+    return this.http.get<{ isWishlisted: boolean }>(
+      `${this.apiUrl.replace('/Services', '')}/Wishlist/check-service/${serviceId}`
+    ).pipe(map(res => res.isWishlisted));
   }
 }

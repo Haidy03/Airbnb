@@ -1,4 +1,106 @@
-/* تنسيق زرار Airbnb */
+/* =========================================
+   1. Grid Layout Fixes
+   ========================================= */
+.wishlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  /* ✅ التغيير الأهم: stretch يجبر كل الكروت في نفس الصف تأخذ نفس الارتفاع */
+  align-items: stretch; 
+}
+
+/* =========================================
+   2. Wrapper & Component Height
+   ========================================= */
+.card-wrapper {
+  position: relative;
+  display: block;
+  height: 100%; /* ✅ يأخذ ارتفاع الخلية بالكامل */
+}
+
+/* إجبار الكومبوننت نفسه ياخد الطول الكامل */
+app-service-card, 
+app-experience-card {
+  display: block;
+  height: 100%; 
+}
+
+/* =========================================
+   3. Internal Card Structure (Using ng-deep)
+   ========================================= */
+
+/* إجبار الحاوية الرئيسية للكارت (سواء service أو experience) إنها تكون Flex وتاخد الطول كله */
+::ng-deep app-service-card > .card,
+::ng-deep app-experience-card > .experience-card {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background-color: white;
+  border-radius: 12px;
+  /* لو فيه border في التصميم الأصلي نخليه هنا عشان يبان التساوي */
+}
+
+/* =========================================
+   4. Image Consistency
+   ========================================= */
+/* توحيد حاوية الصورة */
+::ng-deep app-service-card .aspect-ratio-1x1,
+::ng-deep app-experience-card .card-image-wrapper {
+  width: 100% !important;
+  /* ✅ توحيد النسبة (مربع 1:1 أو مستطيل Airbnb 20:19) */
+  aspect-ratio: 20 / 19 !important; 
+  /* إلغاء أي height ثابت قديم */
+  height: auto !important;
+  flex-shrink: 0 !important; /* يمنع انكماش الصورة */
+}
+
+/* توحيد الصورة نفسها */
+::ng-deep app-service-card img,
+::ng-deep app-experience-card img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* =========================================
+   5. Content Spacing (The Magic Part) 🎩
+   ========================================= */
+/* الجزء ده بيخلي النصوص تملأ المساحة المتبقية، فلو الكارت قصير يطول غصب عنه */
+
+::ng-deep app-service-card .card-body,
+::ng-deep app-experience-card .card-details {
+  flex-grow: 1 !important; /* ✅ يملأ الفراغ المتبقي */
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important; /* يوزع المحتوى فوق وتحت */
+  padding-bottom: 4px !important;
+}
+
+/* =========================================
+   6. Type Badges
+   ========================================= */
+.type-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 99;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  pointer-events: none;
+  letter-spacing: 0.5px;
+}
+
+/* الألوان المختلفة */
+.type-badge.home { background: rgba(34, 34, 34, 0.95); }
+.type-badge.experience { background: #FF9800; }
+.type-badge.service { background: #6f42c1; }
+
+/* تنسيق الزر الفارغ (Empty State) */
 .btn-airbnb {
   background-color: #FF385C;
   color: white;
@@ -6,23 +108,15 @@
   border-radius: 8px;
   transition: all 0.2s ease;
 }
-
 .btn-airbnb:hover {
   background-color: #E31C5F;
   color: white;
   transform: scale(1.02);
 }
-
-/* تحسين شكل الأيقونة */
 .empty-icon-wrapper {
   background-color: #f7f7f7;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.wishlist-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
 }

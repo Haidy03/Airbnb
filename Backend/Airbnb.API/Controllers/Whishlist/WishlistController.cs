@@ -95,6 +95,40 @@ namespace Airbnb.API.Controllers
         }
 
         // =================================================
+        // 3. Toggle & Check SERVICE (NEW)
+        // =================================================
+
+        [HttpPost("toggle-service/{serviceId}")]
+        public async Task<IActionResult> ToggleServiceWishlist(int serviceId)
+        {
+            var userId = GetCurrentUserId();
+            var existingItem = await _context.Wishlists
+                .FirstOrDefaultAsync(w => w.UserId == userId && w.ServiceId == serviceId);
+
+            if (existingItem != null)
+            {
+                _context.Wishlists.Remove(existingItem);
+                await _context.SaveChangesAsync();
+                return Ok(new { isWishlisted = false, message = "Service removed from wishlist" });
+            }
+            else
+            {
+                var newItem = new Wishlist { UserId = userId, ServiceId = serviceId };
+                _context.Wishlists.Add(newItem);
+                await _context.SaveChangesAsync();
+                return Ok(new { isWishlisted = true, message = "Service added to wishlist" });
+            }
+        }
+
+        [HttpGet("check-service/{serviceId}")]
+        public async Task<IActionResult> CheckServiceIsWishlisted(int serviceId)
+        {
+            var userId = GetCurrentUserId();
+            var exists = await _context.Wishlists.AnyAsync(w => w.UserId == userId && w.ServiceId == serviceId);
+            return Ok(new { isWishlisted = exists });
+        }
+
+        // =================================================
         // 3. GET ALL WISHLIST ITEMS (Merged) - الحل هنا
         // =================================================
 
@@ -144,9 +178,28 @@ namespace Airbnb.API.Controllers
                     Currency = "EGP"
                 })
                 .ToListAsync();
+                 // 3. ✅ Services
+            var services = await _context.Wishlists
+                .Include(w => w.Service).ThenInclude(s => s.Images)
+                .Where(w => w.UserId == userId && w.ServiceId != null)
+                .Select(w => new
+                {
+                    Id = w.Service.Id,
+                    Title = w.Service.Title,
+                    Price = w.Service.PricePerUnit,
+                    Type = "Service", // ✅ النوع
+                    Image = w.Service.Images.FirstOrDefault(i => i.IsCover).Url ?? w.Service.Images.FirstOrDefault().Url ?? "assets/placeholder.jpg",
+                    Rating = w.Service.AverageRating,
+                    City = w.Service.City ?? "",
+                    Country = "", // Services might only have City
+                    Currency = w.Service.Currency ?? "EGP"
+                }).ToListAsync();
+
 
             // دمج القائمتين في قائمة واحدة
-            var result = experiences.Concat(properties);
+            var result = experiences.Cast<object>()
+                .Concat(properties)
+                .Concat(services);
 
             return Ok(new { success = true, data = result });
         }
