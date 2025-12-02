@@ -74,7 +74,11 @@
       <!-- Host Info -->
       <div class="host-section">
         <div class="host-info">
-          <img [src]="experience()!.hostAvatar || '/assets/default-avatar.png'" [alt]="experience()!.hostName" class="host-avatar">
+          <img 
+            [src]="getImageUrl(experience()!.hostAvatar)" 
+            [alt]="experience()!.hostName" 
+            class="host-avatar"
+            onerror="this.src='assets/images/placeholder-user.png'">
           <div>
             <h3 class="host-name">Hosted by {{ experience()!.hostName }}</h3>
             <div class="host-badges">

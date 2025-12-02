@@ -20,6 +20,7 @@ namespace Airbnb.API.DTOs.Messages
         //[Required]
         public int? PropertyId { get; set; }
         public int? ServiceId { get; set; }
+        public int? ExperienceId { get; set; }
 
         [Required]
         public string GuestId { get; set; }

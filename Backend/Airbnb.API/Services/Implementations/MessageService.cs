@@ -1,5 +1,6 @@
 ﻿using Airbnb.API.DTOs.Messages;
 using Airbnb.API.Models;
+using Airbnb.API.Repositories.Implementations;
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ namespace Airbnb.API.Services.Implementations
     {
         private readonly IMessageRepository _messageRepository;
         private readonly IPropertyRepository _propertyRepository;
+        private readonly IExperienceRepository _experienceRepository;
         private readonly IServiceRepository _serviceRepository; // ✅ Service Repo Added
         private readonly ILogger<MessageService> _logger;
 
@@ -17,11 +19,13 @@ namespace Airbnb.API.Services.Implementations
             IMessageRepository messageRepository,
             IPropertyRepository propertyRepository,
             IServiceRepository serviceRepository, // ✅ Inject Here
-            ILogger<MessageService> logger)
+            IExperienceRepository experienceRepository,
+        ILogger<MessageService> logger)
         {
             _messageRepository = messageRepository;
             _propertyRepository = propertyRepository;
             _serviceRepository = serviceRepository; // ✅ Assign Here
+            _experienceRepository = experienceRepository;
             _logger = logger;
         }
 
@@ -73,6 +77,12 @@ namespace Airbnb.API.Services.Implementations
                 if (service == null) throw new KeyNotFoundException("Service not found");
                 hostId = service.HostId;
             }
+            else if (dto.ExperienceId.HasValue)
+            {
+                var experience = await _experienceRepository.GetByIdAsync(dto.ExperienceId.Value);
+                if (experience == null) throw new KeyNotFoundException("Experience not found");
+                hostId = experience.HostId;
+            }
             else
             {
                 throw new ArgumentException("Either PropertyId or ServiceId must be provided.");
@@ -97,6 +107,7 @@ namespace Airbnb.API.Services.Implementations
             {
                 PropertyId = dto.PropertyId,
                 ServiceId = dto.ServiceId, // ✅ Save ServiceId
+                ExperienceId = dto.ExperienceId,
                 HostId = hostId,
                 GuestId = guestId,
                 CreatedAt = DateTime.UtcNow
@@ -236,7 +247,14 @@ namespace Airbnb.API.Services.Implementations
                         .Select(i => i.Url)
                         .FirstOrDefault() ?? image;
             }
-
+            else if (conversation.Experience != null)
+            {
+                title = conversation.Experience.Title;
+                
+                image = conversation.Experience.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                        ?? conversation.Experience.Images?.FirstOrDefault()?.ImageUrl
+                        ?? image;
+            }
             return new ConversationDto
             {
                 Id = conversation.Id,

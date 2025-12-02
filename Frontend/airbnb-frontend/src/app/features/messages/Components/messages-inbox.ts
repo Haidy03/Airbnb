@@ -5,8 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from '../Services/message';
-// تأكدي من مسار الاستيراد الصحيح للموديل
-import { Conversation, ConversationParticipant, Message } from '../models/message.model'; 
+import { Conversation, ConversationParticipant, Message } from '../models/message.model';
 import { AuthService } from '../../auth/services/auth.service';
 import { AvatarComponent } from "../../../shared/components/avatar/avatar";
 
@@ -23,8 +22,9 @@ export class MessagesInboxComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   
-  // ✅ متغير لمعرفة هل المحادثة الجديدة تخص خدمة أم لا
-  private isServiceDraft = false; 
+  // ✅ متغيرات لتحديد نوع المحادثة الجديدة
+  private isServiceDraft = false;
+  private isExperienceDraft = false;
 
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
 
@@ -49,7 +49,7 @@ export class MessagesInboxComponent implements OnInit {
       all = all.filter(c => c.unreadCount > 0);
     }
 
-    // الترتيب
+    // الترتيب: المحادثات الجديدة (ID=0) في الأعلى، ثم الأحدث
     return all.sort((a, b) => {
       if (a.id === 0) return -1;
       if (b.id === 0) return 1;
@@ -62,13 +62,10 @@ export class MessagesInboxComponent implements OnInit {
     this.currentMode.set(url.includes('/host/') ? 'host' : 'guest');
     this.currentUserId = this.authService.currentUser?.id;
 
-    // ✅ التقاط نوع المحادثة من الرابط عند الفتح (service أو property)
+    // ✅ التقاط النوع من الرابط
     this.route.queryParams.subscribe(params => {
-       if (params['type'] === 'service') {
-         this.isServiceDraft = true;
-       } else {
-         this.isServiceDraft = false;
-       }
+       this.isServiceDraft = params['type'] === 'service';
+       this.isExperienceDraft = params['type'] === 'experience';
     });
 
     this.loadAndSelectConversation();
@@ -93,18 +90,21 @@ export class MessagesInboxComponent implements OnInit {
   checkAutoOpen(conversations: Conversation[]) {
     this.route.queryParams.subscribe(params => {
       const guestId = params['guestId'];
-      const propertyId = params['propertyId']; // يأتي كنص من الـ URL (قد يكون رقم عقار أو رقم خدمة)
+      const contextId = params['contextId'] || params['propertyId']; // قد يأتي باسم contextId للتجارب
       const hostId = params['hostId'];
 
-      if ((guestId || hostId) && propertyId) {
+      if ((guestId || hostId) && contextId) {
         
         // البحث عن محادثة موجودة
         const targetConv = conversations.find(c => {
-          const matchProperty = c.propertyId == propertyId;
+          // التحقق من الـ ID (سواء كان Property أو Service أو Experience)
+          // ملاحظة: في الموديل الحالي propertyId يحمل الـ ID العام
+          const matchId = c.propertyId == contextId; 
+          
           if (this.currentMode() === 'host') {
-             return c.guest.userId == guestId && matchProperty;
+             return c.guest.userId == guestId && matchId;
           } else {
-             return c.host.userId == hostId && matchProperty;
+             return c.host.userId == hostId && matchId;
           }
         });
 
@@ -112,7 +112,9 @@ export class MessagesInboxComponent implements OnInit {
           this.selectConversation(targetConv);
         } else {
           // إنشاء محادثة جديدة (Draft)
-          this.createDraftConversation(params);
+          // توحيد اسم الـ ID في الـ params
+          const draftParams = { ...params, propertyId: contextId };
+          this.createDraftConversation(draftParams);
         }
       }
     });
@@ -126,7 +128,7 @@ export class MessagesInboxComponent implements OnInit {
       userId: isHostMode ? params['guestId'] : params['hostId'],
       userType: isHostMode ? 'guest' : 'host',
       name: isHostMode ? (params['guestName'] || 'Guest') : (params['hostName'] || 'Host'),
-      avatar: passedAvatar || 'assets/images/placeholder-user.png',
+      avatar: params['guestImage'] || params['hostImage'] || 'https://placehold.co/100x100?text=User',
       isOnline: false
     };
 
@@ -140,8 +142,9 @@ export class MessagesInboxComponent implements OnInit {
 
     const draftConv: Conversation = {
       id: 0, 
+      // نخزن الـ ID هنا مؤقتاً للعرض، وعند الإرسال سنحدد نوعه
       propertyId: Number(params['propertyId']),
-      propertyTitle: params['propertyTitle'] || 'New Conversation',
+      propertyTitle: params['propertyTitle'] || params['title'] || 'New Conversation',
       propertyImage: params['propertyImage'] || 'assets/images/placeholder-property.jpg',
       bookingId: params['bookingId'] ? Number(params['bookingId']) : undefined,
       host: isHostMode ? currentUser : otherUser,
@@ -155,6 +158,7 @@ export class MessagesInboxComponent implements OnInit {
 
     // ✅ تخزين النوع داخل الكائن لاستخدامه عند الإرسال
     (draftConv as any).isService = this.isServiceDraft;
+    (draftConv as any).isExperience = this.isExperienceDraft;
 
     this.conversations.update(list => [draftConv, ...list]);
     this.selectConversation(draftConv);
@@ -190,21 +194,28 @@ export class MessagesInboxComponent implements OnInit {
     
     // حالة محادثة جديدة (Draft)
     if (selected.id === 0) {
-        // ✅ تحديد هل هي خدمة أم عقار
         const isService = (selected as any).isService || this.isServiceDraft;
+        const isExperience = (selected as any).isExperience || this.isExperienceDraft;
 
-        
         const createPayload: any = {
             guestId: selected.guest.userId,
             initialMessage: this.newMessageText()
         };
         
-         if (isService) {
-          createPayload.serviceId = Number(selected.propertyId); 
+        // ✅ تحديد الحقل الصحيح للإرسال
+        if (isService) {
+          createPayload.serviceId = Number(selected.propertyId);
+          createPayload.propertyId = null;
+        } else if (isExperience) {
+          createPayload.experienceId = Number(selected.propertyId);
+          createPayload.propertyId = null;
         } else {
+           // Property (Default)
            createPayload.propertyId = Number(selected.propertyId);
         }
+
         console.log('📤 Creating Conversation Payload:', createPayload); 
+        
         this.messageService.createConversation(createPayload).subscribe({
             next: (res) => {
                 const realConv = res.data; 
@@ -225,7 +236,7 @@ export class MessagesInboxComponent implements OnInit {
         });
 
     } else {
-        // حالة محادثة موجودة (لا نحتاج للتفريق هنا لأن الـ ConversationId كافي)
+        // حالة محادثة موجودة
         const payload = {
             conversationId: selected.id, 
             content: this.newMessageText(),
@@ -255,13 +266,9 @@ export class MessagesInboxComponent implements OnInit {
     const conv = this.selectedConversation();
     if (!conv) return false;
 
-    if (this.currentMode() === 'host') {
-      return msg.senderId === conv.host.userId;
-    } else if(this.currentMode() === 'guest'){
-      return msg.senderId === conv.guest.userId;
-    } else {
-      return msg.senderId === this.currentUserId;
-    }
+    // التحقق من المرسل (قد يكون أنا أو الطرف الآخر)
+    // الطريقة الأضمن هي مقارنة الـ SenderId بالـ CurrentUserId
+    return msg.senderId === this.currentUserId;
   }
 
   getOtherParticipant(conv: Conversation): ConversationParticipant {
