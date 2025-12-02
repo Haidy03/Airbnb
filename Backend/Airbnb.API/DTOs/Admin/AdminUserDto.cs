@@ -19,6 +19,7 @@
         // Stats
         public int TotalBookings { get; set; }
         public int TotalProperties { get; set; }
+        public int TotalExperiences { get; set; }
         public decimal TotalSpent { get; set; }
         public decimal TotalEarned { get; set; }
         public int ReviewsCount { get; set; }

@@ -132,7 +132,6 @@ namespace Airbnb.API.Services.Implementations
                     PropertyId = b.PropertyId, // ✅✅ 1. تم إضافة رقم الوحدة هنا
                     ExperienceId = null,
                     Type = "Property", // ✅ تحديد النوع
-                    Type = "Property",
                     Title = b.Property.Title,
                     ImageUrl = b.Property.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
                                ?? b.Property.Images.FirstOrDefault()?.ImageUrl,
@@ -165,7 +164,6 @@ namespace Airbnb.API.Services.Implementations
                     ExperienceId = eb.ExperienceId, // ✅✅ 2. تم إضافة رقم التجربة هنا
                     PropertyId = null,
                     Type = "Experience", // ✅ تحديد النوع
-                    Type = "Experience",
                     Title = eb.Experience.Title,
                     ImageUrl = eb.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
                                ?? eb.Experience.Images.FirstOrDefault()?.ImageUrl,

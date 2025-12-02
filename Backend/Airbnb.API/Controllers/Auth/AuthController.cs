@@ -42,7 +42,7 @@ namespace Airbnb.API.Controllers.Auth
 
                 if (authResponse == null)
                 {
-                    return Unauthorized("Invalid credentials.");
+                    return Unauthorized(new { message = "Invalid email or password" });
                 }
 
                 return Ok(authResponse);

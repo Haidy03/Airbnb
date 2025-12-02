@@ -115,6 +115,11 @@
                 <span class="stat-label">Properties:</span>
                 <span class="stat-value">{{ user.totalProperties }}</span>
               </div>
+
+              <div class="stat-item" *ngIf="user.role === 'Host' && user.totalExperiences > 0">
+      <span class="stat-label">Experiences:</span>
+      <span class="stat-value">{{ user.totalExperiences }}</span>
+    </div>
               <div class="stat-item" *ngIf="user.role === 'Guest'">
                 <span class="stat-label">Bookings:</span>
                 <span class="stat-value">{{ user.totalBookings }}</span>

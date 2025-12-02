@@ -61,7 +61,7 @@ export interface AdminUser {
   createdAt: Date;
   verifiedAt?: Date;
   lastLoginAt?: Date;
-  
+  totalExperiences: number;
   totalBookings: number;
   totalProperties: number;
   totalSpent: number;
@@ -103,7 +103,8 @@ export interface AdminProperty {
 
 export interface AdminBooking {
   id: number;
-  propertyId: number;
+  type: 'Property' | 'Experience';
+  propertyId?: number;
   propertyTitle: string;
   guestId: string;
   guestName: string;

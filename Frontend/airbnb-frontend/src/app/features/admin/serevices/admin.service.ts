@@ -223,4 +223,26 @@ export class AdminService {
   rejectService(id: number, reason: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/services/${id}/reject`, { reason });
   }
+
+  // Settings
+  getSettings(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/settings`);
+  }
+
+  updateSettings(settings: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/settings`, settings);
+  }
+
+  // Profile
+  getProfile(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/profile`);
+  }
+
+  updateProfile(profile: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/profile`, profile);
+  }
+
+  changePassword(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/change-password`, data);
+  }
 }

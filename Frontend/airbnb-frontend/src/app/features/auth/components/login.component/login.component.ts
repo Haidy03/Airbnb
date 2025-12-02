@@ -152,10 +152,14 @@ export class LoginComponent {
         this.isLoading.set(false);
         
         if (error.status === 401) {
-           this.errorMessage.set('Invalid phone number or password.');
-        } else {
-           this.errorMessage.set(this.getErrorMessage(error));
-        }
+     // ✅ عرضنا الرسالة الثابتة، أو ممكن نقرأها من الباك إند لو بعتها
+     const msg = error.error?.message || 'Invalid email or password';
+     this.errorMessage.set(msg);
+  } else {
+     // 2. أي خطأ تاني
+     this.errorMessage.set(this.getErrorMessage(error));
+     this.errorService.handleError(error); 
+  }
       }
     });
   }
@@ -255,11 +259,14 @@ export class LoginComponent {
         this.isLoading.set(false);
 
         if (error.status === 401) {
-           this.errorMessage.set('Invalid email or password.');
-        } else {
-           this.errorMessage.set(this.getErrorMessage(error));
-           this.errorService.handleError(error); 
-        }
+     // ✅ عرضنا الرسالة الثابتة، أو ممكن نقرأها من الباك إند لو بعتها
+     const msg = error.error?.message || 'Invalid email or password';
+     this.errorMessage.set(msg);
+  } else {
+     // 2. أي خطأ تاني
+     this.errorMessage.set(this.getErrorMessage(error));
+     this.errorService.handleError(error); 
+  }
       }
     });
   }

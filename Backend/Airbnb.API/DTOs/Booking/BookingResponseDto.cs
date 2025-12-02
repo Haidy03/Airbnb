@@ -4,8 +4,15 @@
     {
         public int Id { get; set; }
         public string Type { get; set; }
-        public int PropertyId { get; set; }
-        public int PropertyTitle { get; set; }
+        public int? PropertyId { get; set; }
+        public int? ExperienceId { get; set; }
+        public string ExperienceImage { get; set; } = string.Empty;
+        public string ItemTitle { get; set; }
+        public string PropertyTitle
+        {
+            get => ItemTitle;
+            set => ItemTitle = value;
+        }
         public string PropertyImage { get; set; } = string.Empty;
 
         public string GuestId { get; set; } = string.Empty;
@@ -22,7 +29,7 @@
         public decimal PricePerNight { get; set; }
         public decimal CleaningFee { get; set; }
         public decimal TotalPrice { get; set; }
-
+        public string Location { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? SpecialRequests { get; set; }
 

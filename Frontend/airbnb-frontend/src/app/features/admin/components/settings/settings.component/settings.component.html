@@ -19,7 +19,8 @@
       </svg>
       General
     </button>
-    <button 
+    
+    <!-- <button 
       class="tab-btn"
       [class.active]="activeTab() === 'profile'"
       (click)="selectTab('profile')">
@@ -28,7 +29,8 @@
         <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
       </svg>
       Profile
-    </button>
+    </button> -->
+
     <button 
       class="tab-btn"
       [class.active]="activeTab() === 'security'"
@@ -38,17 +40,6 @@
         <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
       </svg>
       Security
-    </button>
-    <button 
-      class="tab-btn"
-      [class.active]="activeTab() === 'system'"
-      (click)="selectTab('system')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
-        <line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2"/>
-        <line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2"/>
-      </svg>
-      System
     </button>
   </div>
 
@@ -96,8 +87,7 @@
     </div>
   </div>
 
-  <!-- Profile Settings -->
-  <div *ngIf="activeTab() === 'profile'" class="settings-section">
+  <!-- <div *ngIf="activeTab() === 'profile'" class="settings-section">
     <div class="section-card">
       <h2>Admin Profile</h2>
       <p class="section-description">Update your profile information</p>
@@ -151,7 +141,7 @@
         </button>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Security Settings -->
   <div *ngIf="activeTab() === 'security'" class="settings-section">
@@ -197,60 +187,6 @@
         </button>
       </div>
     </div>
-
-    
-
-  <!-- System Settings -->
-  <div *ngIf="activeTab() === 'system'" class="settings-section">
-    <div class="section-card">
-      <h2>System Maintenance</h2>
-      <p class="section-description">Manage system operations and maintenance</p>
-
-      <div class="action-card">
-        <div class="action-info">
-          <h3>Clear Cache</h3>
-          <p>Clear system cache to improve performance</p>
-        </div>
-        <button class="btn btn-secondary" (click)="clearCache()">Clear Cache</button>
-      </div>
-
-      <div class="action-card">
-        <div class="action-info">
-          <h3>Export Data</h3>
-          <p>Export all platform data for backup</p>
-        </div>
-        <button class="btn btn-secondary" (click)="exportData()">Export Data</button>
-      </div>
-
-      <div class="action-card danger">
-        <div class="action-info">
-          <h3>Database Backup</h3>
-          <p>Create a backup of the database</p>
-        </div>
-        <button class="btn btn-secondary">Create Backup</button>
-      </div>
-    </div>
-
-    <div class="section-card">
-      <h2>System Information</h2>
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="info-label">Version:</span>
-          <span class="info-value">1.0.0</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Environment:</span>
-          <span class="info-value">Production</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Database:</span>
-          <span class="info-value">SQL Server</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Last Backup:</span>
-          <span class="info-value">2 hours ago</span>
-        </div>
-      </div>
-    </div>
   </div>
+
 </div>
