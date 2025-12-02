@@ -664,7 +664,54 @@ namespace Airbnb.API.Controllers
         }
 
         #endregion
-        
+
+        #region Settings & Profile
+
+        [HttpGet("settings")]
+        public async Task<ActionResult<PlatformSettingsDto>> GetSettings()
+        {
+            var settings = await _adminService.GetPlatformSettingsAsync();
+            return Ok(settings);
+        }
+
+        [HttpPut("settings")]
+        public async Task<IActionResult> UpdateSettings([FromBody] PlatformSettingsDto dto)
+        {
+            var result = await _adminService.UpdatePlatformSettingsAsync(dto);
+            if (!result) return StatusCode(500, "Failed to save settings");
+            return Ok(new { message = "Settings saved successfully" });
+        }
+
+        [HttpGet("profile")]
+        public async Task<ActionResult<AdminUserDto>> GetProfile()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var profile = await _adminService.GetAdminProfileAsync(userId);
+            return Ok(profile);
+        }
+
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateAdminProfileDto dto)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var result = await _adminService.UpdateAdminProfileAsync(userId, dto);
+
+            if (!result) return BadRequest("Failed to update profile");
+            return Ok(new { message = "Profile updated successfully" });
+        }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var result = await _adminService.ChangeAdminPasswordAsync(userId, dto);
+
+            if (!result) return BadRequest(new { message = "Failed to change password. Check current password." });
+            return Ok(new { message = "Password changed successfully" });
+        }
+
+        #endregion
+
     }
 
 

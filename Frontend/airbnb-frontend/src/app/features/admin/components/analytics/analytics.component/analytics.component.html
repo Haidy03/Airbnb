@@ -6,19 +6,6 @@
       <p class="subtitle">View detailed insights and platform statistics</p>
     </div>
     <div class="header-actions">
-      <button class="action-btn" (click)="exportToCSV()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        Export
-      </button>
-      <button class="action-btn" (click)="printReport()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" stroke="currentColor" stroke-width="2"/>
-          <rect x="6" y="14" width="12" height="8" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        Print
-      </button>
     </div>
   </div>
 
@@ -57,12 +44,6 @@
         [class.active]="selectedReport() === 'activity'"
         (click)="selectReport('activity')">
         User Activity
-      </button>
-      <button 
-        class="report-tab"
-        [class.active]="selectedReport() === 'occupancy'"
-        (click)="selectReport('occupancy')">
-        Occupancy
       </button>
     </div>
   </div>
@@ -246,14 +227,14 @@
   </div>
 
   <!-- Occupancy Report -->
-  <div *ngIf="!loading() && selectedReport() === 'occupancy' && occupancyReport()" class="report-section">
+  <!-- <div *ngIf="!loading() && selectedReport() === 'occupancy' && occupancyReport()" class="report-section">
     <div class="report-header">
       <h2>Occupancy Report</h2>
       <p class="report-subtitle">Last 30 days</p>
-    </div>
+    </div> -->
 
     <!-- Overall Occupancy -->
-    <div class="occupancy-card">
+    <!-- <div class="occupancy-card">
       <h3>Overall Occupancy Rate</h3>
       <div class="occupancy-circle">
         <svg viewBox="0 0 100 100">
@@ -274,10 +255,10 @@
           <span class="label">Occupied</span>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Top Performing Properties -->
-    <div class="chart-section">
+    <!-- <div class="chart-section">
       <h3>Top Performing Properties</h3>
       <div class="property-list">
         <div *ngFor="let property of occupancyReport()!.topProperties.slice(0, 5)" class="property-item">
@@ -290,10 +271,10 @@
           <span class="occupancy-badge high">{{ formatPercent(property.occupancyRate) }}</span>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Low Performing Properties -->
-    <div class="chart-section">
+    <!-- <div class="chart-section">
       <h3>Low Performing Properties</h3>
       <div class="property-list">
         <div *ngFor="let property of occupancyReport()!.lowPerformingProperties.slice(0, 5)" class="property-item">
@@ -306,6 +287,5 @@
           <span class="occupancy-badge low">{{ formatPercent(property.occupancyRate) }}</span>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
-</div>

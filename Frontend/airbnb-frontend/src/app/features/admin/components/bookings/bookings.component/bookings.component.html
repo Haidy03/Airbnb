@@ -97,14 +97,17 @@
           <!-- Booking ID -->
           <td class="booking-id">
             <span class="id-badge">#{{ booking.id }}</span>
+            <span class="type-badge" [class.exp]="booking.type === 'Experience'">
+                {{ booking.type }}
+            </span>
             <span class="date-small">{{ formatDate(booking.createdAt) }}</span>
           </td>
 
           <!-- Property -->
           <td class="property-cell">
             <div class="property-info">
-              <div class="property-name">{{ booking.propertyTitle }}</div>
-              <div class="property-id">Property #{{ booking.propertyId }}</div>
+              <div class="property-name" title="{{ booking.propertyTitle }}">{{ booking.propertyTitle }}</div>
+              <div class="property-id" *ngIf="booking.propertyId">Property #{{ booking.propertyId }}</div>
             </div>
           </td>
 

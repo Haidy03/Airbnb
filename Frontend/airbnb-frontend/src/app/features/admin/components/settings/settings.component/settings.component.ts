@@ -1,16 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface PlatformSettings {
-  platformName: string;
-  platformFeePercentage: number;
-  currency: string;
-  allowGuestBooking: boolean;
-  requireVerification: boolean;
-  autoApproveProperties: boolean;
-  maintenanceMode: boolean;
-}
+import { AdminService } from '../../../serevices/admin.service';
 
 @Component({
   selector: 'app-admin-settings',
@@ -23,22 +14,17 @@ export class AdminSettingsComponent implements OnInit {
   loading = signal(false);
   saving = signal(false);
   
-  settings = signal<PlatformSettings>({
-    platformName: 'Airbnb Clone',
-    platformFeePercentage: 15,
-    currency: 'EGP',
-    allowGuestBooking: true,
-    requireVerification: true,
-    autoApproveProperties: false,
-    maintenanceMode: false
+  settings = signal<any>({
+    platformName: '',
+    platformFeePercentage: 0,
+    currency: ''
   });
-
   // Admin Profile
   adminProfile = signal({
-    email: 'admin@airbnb.com',
-    firstName: 'Admin',
-    lastName: 'User',
-    phone: '+1234567890'
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: ''
   });
 
   // Password Change
@@ -50,63 +36,96 @@ export class AdminSettingsComponent implements OnInit {
 
   activeTab = signal<string>('general');
 
+  constructor(private adminService: AdminService) {}
+
   ngOnInit(): void {
-    this.loadSettings();
+    this.loadData();
   }
 
-  loadSettings(): void {
+  loadData(): void {
     this.loading.set(true);
-    // Simulate API call
-    setTimeout(() => {
-      this.loading.set(false);
-    }, 500);
+    
+    // تحميل الإعدادات
+    this.adminService.getSettings().subscribe({
+      next: (res) => this.settings.set(res),
+      error: (err) => console.error(err)
+    });
+
+    // تحميل البروفايل
+    this.adminService.getProfile().subscribe({
+      next: (res) => {
+        this.adminProfile.set({
+          firstName: res.firstName,
+          lastName: res.lastName,
+          email: res.email,
+          phone: res.phoneNumber
+        });
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.loading.set(false);
+      }
+    });
   }
 
   saveSettings(): void {
     this.saving.set(true);
-    // Simulate API call
-    setTimeout(() => {
-      this.saving.set(false);
-      this.showNotification('Settings saved successfully');
-    }, 1000);
+    this.adminService.updateSettings(this.settings()).subscribe({
+      next: () => {
+        this.saving.set(false);
+        alert('Settings saved successfully');
+      },
+      error: () => {
+        this.saving.set(false);
+        alert('Failed to save settings');
+      }
+    });
   }
+
 
   updateProfile(): void {
     this.saving.set(true);
-    setTimeout(() => {
-      this.saving.set(false);
-      this.showNotification('Profile updated successfully');
-    }, 1000);
+    this.adminService.updateProfile(this.adminProfile()).subscribe({
+      next: () => {
+        this.saving.set(false);
+        alert('Profile updated successfully');
+      },
+      error: () => {
+        this.saving.set(false);
+        alert('Failed to update profile');
+      }
+    });
   }
 
   changePassword(): void {
     const form = this.passwordForm();
     
-    if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
-      this.showNotification('Please fill all password fields', 'error');
+    if (!form.currentPassword || !form.newPassword) {
+      alert('Please fill required fields');
       return;
     }
 
     if (form.newPassword !== form.confirmPassword) {
-      this.showNotification('Passwords do not match', 'error');
-      return;
-    }
-
-    if (form.newPassword.length < 8) {
-      this.showNotification('Password must be at least 8 characters', 'error');
+      alert('Passwords do not match');
       return;
     }
 
     this.saving.set(true);
-    setTimeout(() => {
-      this.saving.set(false);
-      this.passwordForm.set({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-      this.showNotification('Password changed successfully');
-    }, 1000);
+    this.adminService.changePassword({
+      currentPassword: form.currentPassword,
+      newPassword: form.newPassword
+    }).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.passwordForm.set({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        alert('Password changed successfully');
+      },
+      error: (err) => {
+        this.saving.set(false);
+        alert(err.error?.message || 'Failed to change password');
+      }
+    });
   }
 
   selectTab(tab: string): void {

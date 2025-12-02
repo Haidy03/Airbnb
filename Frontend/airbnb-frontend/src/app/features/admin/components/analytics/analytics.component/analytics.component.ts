@@ -33,12 +33,19 @@ export class AdminAnalyticsComponent implements OnInit {
   }
 
   setDefaultDates(): void {
-    const end = new Date();
     const start = new Date();
-    start.setMonth(start.getMonth() - 3); // Last 3 months
+    const end = new Date();
 
-    this.endDate.set(end.toISOString().split('T')[0]);
+    // اجعل البداية من أول السنة الحالية (عشان نجيب كل اللي فات)
+    start.setMonth(0); // شهر يناير
+    start.setDate(1);  // يوم 1
+    
+    // اجعل النهاية بعد سنة من الآن (عشان نجيب الحجوزات المستقبلية المؤكدة Confirmed)
+    end.setFullYear(end.getFullYear() + 1);
+
+    // تنسيق التاريخ YYYY-MM-DD للـ Input
     this.startDate.set(start.toISOString().split('T')[0]);
+    this.endDate.set(end.toISOString().split('T')[0]);
   }
 
   loadReports(): void {
