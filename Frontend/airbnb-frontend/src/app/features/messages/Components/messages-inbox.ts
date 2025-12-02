@@ -120,12 +120,13 @@ export class MessagesInboxComponent implements OnInit {
 
   createDraftConversation(params: any) {
     const isHostMode = this.currentMode() === 'host';
-    
+    const passedAvatar = isHostMode ? params['guestImage'] : params['hostImage'];
+
     const otherUser: ConversationParticipant = {
       userId: isHostMode ? params['guestId'] : params['hostId'],
       userType: isHostMode ? 'guest' : 'host',
       name: isHostMode ? (params['guestName'] || 'Guest') : (params['hostName'] || 'Host'),
-      avatar: 'assets/images/placeholder-user.png', // ✅ صورة افتراضية آمنة
+      avatar: passedAvatar || 'assets/images/placeholder-user.png',
       isOnline: false
     };
 
@@ -141,7 +142,7 @@ export class MessagesInboxComponent implements OnInit {
       id: 0, 
       propertyId: Number(params['propertyId']),
       propertyTitle: params['propertyTitle'] || 'New Conversation',
-      propertyImage: params['propertyImage'],
+      propertyImage: params['propertyImage'] || 'assets/images/placeholder-property.jpg',
       bookingId: params['bookingId'] ? Number(params['bookingId']) : undefined,
       host: isHostMode ? currentUser : otherUser,
       guest: isHostMode ? otherUser : currentUser,

@@ -90,7 +90,7 @@ export class ServiceDetailsComponent implements OnInit {
   }
 
    contactHost() {
-    // 1. التحقق من تسجيل الدخول
+    
     if (!this.authService.isAuthenticated) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
@@ -100,25 +100,25 @@ export class ServiceDetailsComponent implements OnInit {
       const hostId = s.hostId;
       const hostName = s.hostName;
       const propertyId = s.id; 
-      const propertyTitle = s.title; // اسم الخدمة
+      const propertyTitle = s.title; 
       
-      // صورة الخدمة
+     
       let propertyImage = '';
       if (s.images && s.images.length > 0) {
          propertyImage = s.images[0]; 
          
       }
 
-      // 3. التوجيه لصفحة الرسائل مع البيانات
       this.router.navigate(['/messages'], { 
         queryParams: { 
           hostId: hostId,
           hostName: hostName,
-          propertyId: propertyId,    // هنا بنبعت رقم الخدمة
+          propertyId: propertyId,    
           propertyTitle: propertyTitle,
+          hostImage: this.getImageUrl(s.hostAvatar), 
           propertyImage: propertyImage,
           autoOpen: 'true',
-          type: 'service' // ✅ إضافة نوع عشان نميز إن دي خدمة
+          type: 'service' 
         } 
       });
     }}
