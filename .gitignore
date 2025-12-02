@@ -33,3 +33,4 @@
 *.temp
 *.[Tt]mp
 /etc
+/Backend/Airbnb.API/wwwroot/uploads
