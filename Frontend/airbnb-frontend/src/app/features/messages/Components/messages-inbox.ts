@@ -23,6 +23,9 @@ export class MessagesInboxComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   
+  // ✅ متغير لمعرفة هل المحادثة الجديدة تخص خدمة أم لا
+  private isServiceDraft = false; 
+
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
 
   currentMode = signal<'host' | 'guest'>('guest');
@@ -46,12 +49,10 @@ export class MessagesInboxComponent implements OnInit {
       all = all.filter(c => c.unreadCount > 0);
     }
 
-    // الترتيب: المحادثات الجديدة (ID=0) تظهر في الأعلى دائماً
-    // بما أن ID أصبح number، المقارنة الآن صحيحة ولا تسبب خطأ TS2367
+    // الترتيب
     return all.sort((a, b) => {
       if (a.id === 0) return -1;
       if (b.id === 0) return 1;
-      // ترتيب تنازلي حسب التاريخ للمحادثات العادية
       return new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime();
     });
   });
@@ -60,6 +61,15 @@ export class MessagesInboxComponent implements OnInit {
     const url = this.router.url;
     this.currentMode.set(url.includes('/host/') ? 'host' : 'guest');
     this.currentUserId = this.authService.currentUser?.id;
+
+    // ✅ التقاط نوع المحادثة من الرابط عند الفتح (service أو property)
+    this.route.queryParams.subscribe(params => {
+       if (params['type'] === 'service') {
+         this.isServiceDraft = true;
+       } else {
+         this.isServiceDraft = false;
+       }
+    });
 
     this.loadAndSelectConversation();
   }
@@ -83,13 +93,12 @@ export class MessagesInboxComponent implements OnInit {
   checkAutoOpen(conversations: Conversation[]) {
     this.route.queryParams.subscribe(params => {
       const guestId = params['guestId'];
-      const propertyId = params['propertyId']; // يأتي كنص من الـ URL
+      const propertyId = params['propertyId']; // يأتي كنص من الـ URL (قد يكون رقم عقار أو رقم خدمة)
       const hostId = params['hostId'];
 
       if ((guestId || hostId) && propertyId) {
         
         // البحث عن محادثة موجودة
-        // نستخدم == للمقارنة بين رقم ونص (لأن propertyId في الرابط string وفي الموديل number)
         const targetConv = conversations.find(c => {
           const matchProperty = c.propertyId == propertyId;
           if (this.currentMode() === 'host') {
@@ -116,7 +125,7 @@ export class MessagesInboxComponent implements OnInit {
       userId: isHostMode ? params['guestId'] : params['hostId'],
       userType: isHostMode ? 'guest' : 'host',
       name: isHostMode ? (params['guestName'] || 'Guest') : (params['hostName'] || 'Host'),
-      avatar: 'assets/images/user-placeholder.png',
+      avatar: 'assets/images/placeholder-user.png', // ✅ صورة افتراضية آمنة
       isOnline: false
     };
 
@@ -128,21 +137,23 @@ export class MessagesInboxComponent implements OnInit {
       isOnline: true
     };
 
-    // ✅ إصلاح الأنواع هنا (TS2322 fix)
     const draftConv: Conversation = {
-      id: 0, // number
-      propertyId: Number(params['propertyId']), // تحويل النص إلى رقم
-      propertyTitle: params['propertyTitle'] || 'Property Listing',
+      id: 0, 
+      propertyId: Number(params['propertyId']),
+      propertyTitle: params['propertyTitle'] || 'New Conversation',
       propertyImage: params['propertyImage'],
-      bookingId: params['bookingId'] ? Number(params['bookingId']) : undefined, // تحويل أو undefined
+      bookingId: params['bookingId'] ? Number(params['bookingId']) : undefined,
       host: isHostMode ? currentUser : otherUser,
       guest: isHostMode ? otherUser : currentUser,
       participants: [currentUser, otherUser],
       unreadCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
-      lastMessage: undefined // ✅ استخدام undefined بدلاً من null
+      lastMessage: undefined 
     };
+
+    // ✅ تخزين النوع داخل الكائن لاستخدامه عند الإرسال
+    (draftConv as any).isService = this.isServiceDraft;
 
     this.conversations.update(list => [draftConv, ...list]);
     this.selectConversation(draftConv);
@@ -152,15 +163,12 @@ export class MessagesInboxComponent implements OnInit {
     this.selectedConversation.set(conv);
     this.messages.set([]); 
 
-    // ✅ مقارنة سليمة (number مع number)
     if (conv.id !== 0) {
       if (conv.unreadCount > 0) {
         this.messageService.decrementUnreadCount(conv.unreadCount);
         this.conversations.update(list => list.map(c => 
           c.id === conv.id ? { ...c, unreadCount: 0 } : c
         ));
-        // استدعاء الميثود كـ number ولكن الـ Service تتوقع string في بعض الأحيان
-        // يفضل توحيد الأنواع، هنا سنرسلها كما هي ونترك الـ Service تتعامل معها
         this.messageService.markConversationAsRead(conv.id.toString()).subscribe();
       }
 
@@ -179,16 +187,23 @@ export class MessagesInboxComponent implements OnInit {
 
     this.isSending.set(true);
     
-    // ✅ مقارنة سليمة (number مع number)
+    // حالة محادثة جديدة (Draft)
     if (selected.id === 0) {
-        // ✅ Payload صحيح
-        const createPayload = {
-            propertyId: selected.propertyId, // هذا أصبح رقم بالفعل من الـ draft
+        // ✅ تحديد هل هي خدمة أم عقار
+        const isService = (selected as any).isService || this.isServiceDraft;
+
+        
+        const createPayload: any = {
             guestId: selected.guest.userId,
             initialMessage: this.newMessageText()
         };
-
-        // الـ Service تتوقع كائن، والأنواع الآن متوافقة
+        
+         if (isService) {
+          createPayload.serviceId = Number(selected.propertyId); 
+        } else {
+           createPayload.propertyId = Number(selected.propertyId);
+        }
+        console.log('📤 Creating Conversation Payload:', createPayload); 
         this.messageService.createConversation(createPayload).subscribe({
             next: (res) => {
                 const realConv = res.data; 
@@ -202,15 +217,16 @@ export class MessagesInboxComponent implements OnInit {
                 this.isSending.set(false);
             },
             error: (err) => {
-                console.error(err);
-                alert('Failed to start conversation');
+                console.error('❌ Create Error:', err);
+                alert('Failed to start conversation: ' + (err.error?.title || 'Unknown error'));
                 this.isSending.set(false);
             }
         });
 
     } else {
+        // حالة محادثة موجودة (لا نحتاج للتفريق هنا لأن الـ ConversationId كافي)
         const payload = {
-            conversationId: selected.id, // number
+            conversationId: selected.id, 
             content: this.newMessageText(),
             messageType: 'text'
         };
@@ -218,7 +234,6 @@ export class MessagesInboxComponent implements OnInit {
         this.messageService.sendMessage(payload).subscribe({
             next: (res: any) => {
                 const newMsg = res.data;
-                // التأكد من الحقول الاختيارية
                 if (!newMsg.senderId) newMsg.senderId = this.currentUserId;
                 if (!newMsg.sentAt) newMsg.sentAt = new Date();
 

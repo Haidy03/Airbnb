@@ -76,13 +76,13 @@ export class MessageService {
     });
   }
 
-  createConversation(data: { propertyId: number, guestId: string, initialMessage: string }) {
+   createConversation(data: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/conversations`, data, {
       headers: this.getHeaders()
     }).pipe(
       map(response => {
-        // إصلاح الصور في الـ conversation الجديدة
         if (response.data) {
+          // ... (نفس كود إصلاح الصور القديم) ...
           response.data = {
             ...response.data,
             host: this.fixParticipant(response.data.host),

@@ -17,8 +17,9 @@ namespace Airbnb.API.DTOs.Messages
 
     public class CreateConversationDto
     {
-        [Required]
-        public int PropertyId { get; set; }
+        //[Required]
+        public int? PropertyId { get; set; }
+        public int? ServiceId { get; set; }
 
         [Required]
         public string GuestId { get; set; }
