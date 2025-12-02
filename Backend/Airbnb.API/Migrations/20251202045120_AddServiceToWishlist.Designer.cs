@@ -4,6 +4,7 @@ using Airbnb.API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Airbnb.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251202045120_AddServiceToWishlist")]
+    partial class AddServiceToWishlist
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -321,9 +324,6 @@ namespace Airbnb.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("ExperienceId")
-                        .HasColumnType("int");
-
                     b.Property<string>("GuestId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -335,9 +335,6 @@ namespace Airbnb.API.Migrations
                     b.Property<int?>("PropertyId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ServiceId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -347,15 +344,11 @@ namespace Airbnb.API.Migrations
 
                     b.HasIndex("CreatedAt");
 
-                    b.HasIndex("ExperienceId");
-
                     b.HasIndex("GuestId");
 
                     b.HasIndex("HostId");
 
                     b.HasIndex("PropertyId");
-
-                    b.HasIndex("ServiceId");
 
                     b.HasIndex("HostId", "GuestId", "PropertyId")
                         .IsUnique()
@@ -1991,10 +1984,6 @@ namespace Airbnb.API.Migrations
                         .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Airbnb.API.Models.Experience", "Experience")
-                        .WithMany()
-                        .HasForeignKey("ExperienceId");
-
                     b.HasOne("Airbnb.API.Models.ApplicationUser", "Guest")
                         .WithMany()
                         .HasForeignKey("GuestId")
@@ -2012,21 +2001,13 @@ namespace Airbnb.API.Migrations
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Airbnb.API.Models.Service", "Service")
-                        .WithMany()
-                        .HasForeignKey("ServiceId");
-
                     b.Navigation("Booking");
-
-                    b.Navigation("Experience");
 
                     b.Navigation("Guest");
 
                     b.Navigation("Host");
 
                     b.Navigation("Property");
-
-                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("Airbnb.API.Models.Experience", b =>

@@ -2,7 +2,7 @@
   <div class="spinner-border text-danger" role="status"></div>
 </div>
 
-<div *ngIf="!isLoading() && service() as s" class="container pt-4 pb-5">
+<div *ngIf="!isLoading() && service() as s" class="container pt-4 pb-5 fade-in">
 
   <!-- 1. HEADER & TITLE -->
   <div class="mb-4">
@@ -26,6 +26,10 @@
         <img [src]="getImageUrl(img)" class="w-100 h-100 object-fit-cover">
       </div>
     </div>
+    <!-- زر عرض الصور -->
+    <button class="btn btn-light btn-sm position-absolute bottom-0 end-0 m-4 shadow-sm border fw-bold">
+      <i class="bi bi-grid-3x3-gap me-2"></i> Show all photos
+    </button>
   </div>
 
   <div class="row">
@@ -45,7 +49,7 @@
         </div>
       </div>
 
-      <!-- 4. HIGHLIGHTS (Static for now, Dynamic based on data) -->
+      <!-- 4. HIGHLIGHTS -->
       <div class="highlights border-bottom pb-4 mb-4">
         
         <!-- Location Highlight -->
@@ -77,7 +81,7 @@
         <p class="text-muted lh-lg" style="white-space: pre-line;">{{ s.description }}</p>
       </div>
 
-      <!-- 6. HOST DETAILS (Joined Date) -->
+      <!-- 6. HOST DETAILS -->
       <div class="border-bottom pb-4 mb-4">
         <h3 class="h5 fw-bold mb-3">Meet your Host</h3>
         <div class="host-card bg-light rounded-4 p-4 d-flex align-items-center gap-3">
@@ -86,6 +90,14 @@
             <h4 class="h5 fw-bold mb-1">{{ s.hostName }}</h4>
             <p class="text-muted small mb-0">Joined in {{ s.hostJoinedDate | date:'MMMM yyyy' }}</p>
           </div>
+        </div>
+        
+        <!-- ✅ زر مراسلة الهوست -->
+        <div class="bg-light rounded-3 p-3 text-center my-4">
+          <button class="btn btn-link text-dark fw-bold text-decoration-none" 
+                  (click)="contactHost()">
+            Message {{ s.hostName }}
+          </button>
         </div>
       </div>
 
@@ -151,7 +163,8 @@
 
           <!-- Submit Button -->
           <button class="btn btn-danger w-100 py-3 fw-bold rounded-3 mt-2" 
-                  style="background: #E31C5F; font-size: 16px;" (click)="openBookingModal()">
+                  style="background: #E31C5F; font-size: 16px;" 
+                  (click)="openBookingModal()"> <!-- ✅ تم ربط الزر -->
             Reserve
           </button>
 
@@ -178,6 +191,7 @@
   </div>
 </div>
 
+<!-- ✅ Booking Modal -->
 <app-service-booking-modal
   *ngIf="showBookingModal"
   [service]="service()!"

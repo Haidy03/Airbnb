@@ -122,3 +122,43 @@ td {
 
 .text-right { text-align: right; }
 .font-bold { font-weight: 600; }
+
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Colors based on type */
+.type-badge.home {
+  background-color: #e3f2fd; /* أزرق فاتح */
+  color: #0d47a1;
+  border: 1px solid #bbdefb;
+}
+
+.type-badge.experience {
+  background-color: #fff3e0; /* برتقالي فاتح */
+  color: #e65100;
+  border: 1px solid #ffe0b2;
+}
+
+.type-badge.service {
+  background-color: #f3e5f5; /* بنفسجي فاتح */
+  color: #7b1fa2;
+  border: 1px solid #e1bee7;
+}
+/* أيقونات */
+.type-badge i {
+  font-size: 12px;
+}
+
+/* تحسين الجدول */
+td {
+  vertical-align: middle; /* محاذاة رأسية */
+}

@@ -1,5 +1,5 @@
 .aspect-ratio-1x1 {
-  aspect-ratio: 1 / 1; /* يخلي الصورة مربعة زي الديزاين */
+  aspect-ratio: 1 / 1;
 }
 
 /* تكبير الصورة عند الوقوف عليها */
@@ -10,4 +10,28 @@
 
 .service-card-hover img {
   transition: transform 0.4s ease;
+}
+
+/* Wishlist Button Styling */
+.wishlist-btn {
+  z-index: 10; /* عشان يبقى فوق الصورة */
+  transition: transform 0.2s ease;
+  outline: none;
+}
+
+.wishlist-btn:active {
+  transform: scale(0.9); /* تأثير ضغطة صغيرة */
+}
+
+.heart-icon {
+  font-size: 24px; /* حجم القلب */
+  display: block;
+  line-height: 1;
+}
+
+/* Stroke effect for empty heart to make it visible on any image */
+.shadow-icon {
+  /* ده بيعمل حدود سودة خفيفة حوالين القلب الأبيض عشان يبان لو الصورة فاتحة */
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); 
+  /* بديل آخر لو الـ icon font بيدعم stroke: -webkit-text-stroke: 1px rgba(0,0,0,0.3); */
 }

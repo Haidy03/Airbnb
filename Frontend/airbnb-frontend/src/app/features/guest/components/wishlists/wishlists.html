@@ -4,16 +4,16 @@
   <main class="container py-4">
     <div class="mb-5 border-bottom pb-4">
       <h1 class="fw-bold text-dark display-6">Wishlists</h1>
-      <p class="text-muted fs-5">Your saved experiences & homes</p>
+      <p class="text-muted fs-5">Your saved experiences & homes & services</p>
     </div>
 
     <div *ngIf="isLoading()" class="text-center py-5">
       <div class="spinner-border text-dark" role="status"></div>
     </div>
 
+    <!-- Empty State -->
     <div *ngIf="!isLoading() && wishlistItems().length === 0"
          class="d-flex flex-column align-items-center justify-content-center py-5 text-center">
-
       <div class="mb-4 p-4 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#dddddd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -28,13 +28,38 @@
       </a>
     </div>
 
+    <!-- Grid -->
     <div *ngIf="!isLoading() && wishlistItems().length > 0" class="wishlist-grid">
-      <!-- هنا التعديل المهم: تمرير الصورة للكارت بشكل صحيح -->
-      <app-experience-card 
-        *ngFor="let item of wishlistItems()" 
-        [experience]="item"
-        [showBadge]="false">
-      </app-experience-card>
+      
+      <ng-container *ngFor="let item of wishlistItems()">
+        <!-- ✅ 1. Wrapper Container for Positioning -->
+        <div class="card-wrapper position-relative">
+          
+          <!-- ✅ 2. Type Badge (Overlay) -->
+          <span class="type-badge" 
+                [class.home]="item.type === 'Home'"
+                [class.experience]="item.type === 'Experience'"
+                [class.service]="item.type === 'Service'">
+            {{ item.type }}
+          </span>
+        
+        <!-- Service Card -->
+        <app-service-card 
+          *ngIf="item.type === 'Service'"
+          [service]="item"
+          [wishlisted]="true">
+        </app-service-card>
+
+        <!-- Experience/Home Card -->
+        <app-experience-card 
+          *ngIf="item.type !== 'Service'"
+          [experience]="item"
+          [showBadge]="false"
+          [isWishlisted]="true">
+        </app-experience-card>
+    </div>
+      </ng-container>
+
     </div>
 
   </main>

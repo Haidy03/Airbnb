@@ -19,4 +19,5 @@ export interface Transaction {
   date: Date;
   amount: number;
   status: 'Paid' | 'Pending';
+  type: string;
 }

@@ -112,11 +112,8 @@ export class ExperienceDetailsComponent implements OnInit {
     }
   }
 
-  // ✅ UPDATE: تعديل دالة مراسلة المضيف
-  contactHost(): void {
-    // 1. التحقق من تسجيل الدخول (نفس منطق الشقة)
-    // تأكدي أن اسم السيرفس عندك (AuthService أو authService)
-    if (!this.authService.isAuthenticated()) { // أو this.AuthService.isAuthenticated حسب تسميتك
+ contactHost(): void {
+    if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
     }
@@ -124,21 +121,25 @@ export class ExperienceDetailsComponent implements OnInit {
     const exp = this.experience();
     if (exp) {
       
-      // 2. استخراج الصورة (نفس منطق الشقة)
+      // استخراج صورة التجربة
       let experienceImage = '';
       if (exp.images && exp.images.length > 0) {
-         // نأخذ أول صورة
          experienceImage = exp.images[0].imageUrl;
       }
 
-      // 3. التوجيه مع تمرير البيانات
+      // ✅ تجهيز صورة الهوست (كاملة)
+      const fullHostImage = this.getImageUrl(exp.hostAvatar);
+
       this.router.navigate(['/messages'], {
         queryParams: { 
             hostId: exp.hostId,      
-            hostName: exp.hostName,   // ✅ تمرير اسم الهوست
+            hostName: exp.hostName,
+            hostImage: fullHostImage, // ✅✅ الإضافة هنا: إرسال صورة الهوست
+            
             contextId: exp.id,       
             type: 'experience',
-            title: exp.title        // ✅ تمرير عنوان التجربة,
+            title: exp.title,
+            propertyImage: experienceImage // صورة التجربة نفسها
         }
       });
     }
