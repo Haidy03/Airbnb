@@ -1,10 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common'; // ✅ DatePipe Added
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule ,Router } from '@angular/router';
 import { ServicesService } from '../../services/service';
 import { ServiceDetails, ServicePackage } from '../../models/service.model';
 import { environment } from '../../../../../environments/environment';
 import { ServiceBookingModalComponent } from '../service-booking-modal/service-booking-modal';
+import { AuthService } from '../../../auth/services/auth.service';
+
+
 @Component({
   selector: 'app-service-details',
   standalone: true,
@@ -15,6 +18,8 @@ import { ServiceBookingModalComponent } from '../service-booking-modal/service-b
 export class ServiceDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private servicesService = inject(ServicesService);
+  private authService = inject(AuthService);
+  private router = inject(Router);  
   
   service = signal<ServiceDetails | null>(null);
   isLoading = signal(true);
@@ -83,4 +88,38 @@ export class ServiceDetailsComponent implements OnInit {
   closeBookingModal() {
     this.showBookingModal = false;
   }
+
+   contactHost() {
+    
+    if (!this.authService.isAuthenticated) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+    const s = this.service();
+    if (s) {
+      const hostId = s.hostId;
+      const hostName = s.hostName;
+      const propertyId = s.id; 
+      const propertyTitle = s.title; 
+      
+     
+      let propertyImage = '';
+      if (s.images && s.images.length > 0) {
+         propertyImage = s.images[0]; 
+         
+      }
+
+      this.router.navigate(['/messages'], { 
+        queryParams: { 
+          hostId: hostId,
+          hostName: hostName,
+          propertyId: propertyId,    
+          propertyTitle: propertyTitle,
+          hostImage: this.getImageUrl(s.hostAvatar), 
+          propertyImage: propertyImage,
+          autoOpen: 'true',
+          type: 'service' 
+        } 
+      });
+    }}
 }
