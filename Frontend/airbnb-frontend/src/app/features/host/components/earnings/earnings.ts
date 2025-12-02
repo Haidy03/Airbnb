@@ -26,6 +26,7 @@ export class HostEarningsComponent implements OnInit {
   ngOnInit() {
     this.earningsService.getEarnings().subscribe({
       next: (res) => {
+        console.log('Data from Backend:', res); 
         this.data.set(res);
         this.isLoading.set(false);
       },

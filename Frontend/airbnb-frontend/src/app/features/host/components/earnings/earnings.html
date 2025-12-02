@@ -39,6 +39,7 @@
         <thead>
           <tr>
             <th>Date</th>
+            <th>Type</th>
             <th>Status</th>
             <th>Guest</th>
             <th>Listing / Experience</th>
@@ -48,11 +49,26 @@
         <tbody>
           <tr *ngFor="let trans of data()?.recentTransactions">
             <td>{{ trans.date | date:'mediumDate' }}</td>
+            
+            <!-- ✅ التعديل هنا: إضافة ( || '' ) لمنع الخطأ لو القيمة غير موجودة -->
             <td>
-              <span class="status-badge" [class]="trans.status.toLowerCase()">
+              <span class="type-badge" [class]="(trans.type || '').toLowerCase()">
+                <i class="bi" 
+                   [class.bi-house-door-fill]="trans.type === 'Home'"
+                   [class.bi-balloon-heart-fill]="trans.type === 'Experience'"
+                   [class.bi-bell-fill]="trans.type === 'Service'">
+                </i>
+                {{ trans.type || 'Unknown' }}
+              </span>
+            </td>
+
+            <!-- ✅ ونفس الشيء هنا للحالة -->
+            <td>
+              <span class="status-badge" [class]="(trans.status || '').toLowerCase()">
                 {{ trans.status }}
               </span>
             </td>
+
             <td>{{ trans.guestName }}</td>
             <td>{{ trans.propertyTitle }}</td>
             <td class="text-right font-bold">EGP{{ trans.amount | number:'1.0-2' }}</td>
