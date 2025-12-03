@@ -31,12 +31,12 @@ export interface CalendarAvailability {
   settings: CalendarSettings;
 }
 
-// 2. تحديث CalendarSettings ليشمل CleaningFee
+
 export interface CalendarSettings {
   propertyId: number;
   basePrice: number;
   weekendPrice?: number; 
-  cleaningFee?: number; // ✅ إضافة Cleaning Fee
+  cleaningFee?: number; 
   minimumNights: number;
   maximumNights: number;
   advanceNotice: number;
@@ -44,14 +44,12 @@ export interface CalendarSettings {
   checkInTime?: string;
   checkOutTime?: string;
 }
-
-// 3. تحديث UpdateAvailabilityDto لإرسال الوقت
 export interface UpdateAvailabilityDto {
   propertyId: number;
   date: Date;
   isAvailable: boolean;
   notes?: string | null;
-  // ✅ إضافة الوقت
+ 
   checkInTime?: string | null; 
   checkOutTime?: string | null;
 }
@@ -134,8 +132,8 @@ export class CalendarService {
             ...day,
             date: new Date(day.date),
            
-            checkInTime: day.specificCheckInTime, 
-            checkOutTime: day.specificCheckOutTime
+            checkInTime: day.specificCheckInTime ? day.specificCheckInTime.substring(0, 5) : null,
+            checkOutTime: day.specificCheckOutTime ? day.specificCheckOutTime.substring(0, 5) : null
           }))
         };
       }),
