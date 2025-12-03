@@ -27,7 +27,9 @@ export class PropertyService {
     });
   }
 
+  // ==========================================
   // GET REQUESTS
+  // ==========================================
   getAllDrafts(): Observable<Property[]> { 
     this.loadingSignal.set(true);
     return this.http.get<{ success: boolean; data: any[] }>(
@@ -66,7 +68,9 @@ export class PropertyService {
     return this.getDraftById(id);
   }
 
+  // ==========================================
   // ACTIONS
+  // ==========================================
   createPropertyDraft(): Observable<Property> {
     this.loadingSignal.set(true);
     return this.http.post<{ success: boolean; data: any }>(
@@ -120,7 +124,9 @@ export class PropertyService {
     ).pipe(map(r => r.success));
   }
 
+  // ==========================================
   // IMAGE HANDLING
+  // ==========================================
   uploadPropertyImages(propertyId: string, files: File[]): Observable<any[]> {
     const uploadObservables = files.map(file => this.uploadSingleImage(propertyId, file));
     return forkJoin(uploadObservables);
@@ -155,17 +161,16 @@ export class PropertyService {
   }
 
   // ==========================================
-  // 🔄 THE MAPPER (Crucial Fix)
+  // 🔄 THE MAPPER (FIXED)
   // ==========================================
   private mapApiToProperty(apiData: any): Property {
-    // Status Logic
-
-    console.log('Raw API Data:', apiData); 
+    // console.log('Raw API Data:', apiData); 
     
+    // 1. Handle Status
     let computedStatus = apiData.status;
     const hasCurrentStep = !!apiData.currentStep;
     const isActive = apiData.isActive === true;
-    const isApproved = apiData.isApproved === true;
+    // const isApproved = apiData.isApproved === true;
 
     if (typeof computedStatus === 'string') {
         const lower = computedStatus.toLowerCase();
@@ -180,22 +185,34 @@ export class PropertyService {
        else computedStatus = PropertyStatus.PENDING_APPROVAL;
     }
 
-    // Images Logic
-    let cover = '/assets/images/placeholder-property.jpg';
-    const mappedImages = (apiData.images || []).map((img: any) => ({
+    // 2. ✅ Handle Images & Fix Primary Duplicate Issue
+    const rawImages = apiData.images || [];
+    
+    // البحث عن الصورة الأساسية الحقيقية
+    let primaryIndex = rawImages.findIndex((img: any) => img.isPrimary);
+    
+    // إذا لم توجد صورة أساسية، أو إذا كانت القائمة تحتوي على صور ولكن لا يوجد primary محدد، نعتبر الأولى هي الأساسية
+    if (primaryIndex === -1 && rawImages.length > 0) {
+        primaryIndex = 0;
+    }
+
+    const mappedImages = rawImages.map((img: any, index: number) => ({
         id: img.id.toString(),
         url: img.imageUrl?.startsWith('http') ? img.imageUrl : `${environment.apiUrl.replace('/api', '')}${img.imageUrl}`,
         imageUrl: img.imageUrl,
-        isMain: img.isPrimary,
-        isPrimary: img.isPrimary,
+        
+        // ✅ إجبار صورة واحدة فقط لتكون Primary
+        isPrimary: index === primaryIndex, 
+        isMain: index === primaryIndex,
+        
         order: img.displayOrder,
         displayOrder: img.displayOrder
     }));
-    const primary = mappedImages.find((i: any) => i.isPrimary) || mappedImages[0];
-    if (primary) cover = primary.url;
 
-    // Amenities Logic
-    // Accept both flat array of IDs or array of objects
+    // تحديد صورة الغلاف
+    const cover = mappedImages.find((i: any) => i.isPrimary)?.url || '/assets/images/placeholder-property.jpg';
+
+    // 3. Handle Amenities
     const amenityIds = Array.isArray(apiData.amenityIds) 
         ? apiData.amenityIds 
         : (apiData.amenities?.map((a: any) => typeof a === 'object' ? a.id : a) || []);
@@ -209,7 +226,7 @@ export class PropertyService {
       propertyTypeId: apiData.propertyTypeId,
       roomType: apiData.roomType,
       
-      // ✅ Flat Fields (Population)
+      // Flat Fields
       address: apiData.address,
       city: apiData.city,
       state: apiData.state,
@@ -220,7 +237,7 @@ export class PropertyService {
       currentStep: apiData.currentStep,
       pricePerNight: apiData.pricePerNight,
       
-      // ✅ Nested Objects (Population)
+      // Nested Objects
       location: {
          address: apiData.address || '',
          city: apiData.city || '',
@@ -270,11 +287,11 @@ export class PropertyService {
 
       status: computedStatus,
       isInstantBook: apiData.isInstantBook ?? apiData.IsInstantBook ?? false,
-      isActive: isActive,
-      isApproved: isApproved,
+      isActive: apiData.isActive === true,
+      isApproved: apiData.isApproved === true,
       
       amenities: amenityIds,
-      amenityIds: amenityIds, // Alias
+      amenityIds: amenityIds,
       
       images: mappedImages,
       coverImage: cover,
