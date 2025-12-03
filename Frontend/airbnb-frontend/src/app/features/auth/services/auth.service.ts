@@ -186,46 +186,40 @@ export class AuthService {
 
   // ================= fetch full profile and merge =================
  
- fetchAndSetFullProfile(): void {
-  this.getCurrentUser().subscribe({
-    next: (profile) => {
-      // ✅ 1. استخراج رابط الصورة الصحيح بناءً على الـ JSON Response
-      const rawProfilePic = 
-        (profile as any).profileImageUrl || // هذا هو الاسم الصحيح من الباك اند
-        (profile as any).profilePicture || 
-        (profile as any).avatar;
+fetchAndSetFullProfile(): void {
+    this.getCurrentUser().subscribe({
+      next: (profile) => {
+        const rawProfilePic = 
+          (profile as any).profileImage || 
+          (profile as any).profilePicture || 
+          (profile as any).avatar;
 
-      // ✅ 2. تحويل الرابط لرابط كامل (Full URL)
-      const fullProfilePicUrl = this.getFullImageUrl(rawProfilePic);
-
-      const userPartial: Partial<AuthUser> = {
-        id: profile.id,
-        email: profile.email,
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        fullName: profile.firstName && profile.lastName
-          ? `${profile.firstName} ${profile.lastName}`
-          : undefined,
+        const userPartial: Partial<AuthUser> = {
+          id: profile.id,
+          email: profile.email,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          fullName: profile.firstName && profile.lastName
+            ? `${profile.firstName} ${profile.lastName}`
+            : undefined,
+          profilePicture: this.getFullImageUrl(rawProfilePic),
+          isEmailVerified: profile.isEmailVerified
+        };
+        this.setUser(userPartial as Partial<AuthUser>);
+      },
+      // ✅ THE FIX IS HERE:
+      error: (err) => {
+        console.warn('Could not fetch full profile, token might be invalid.', err);
         
-        // ✅ 3. حفظ الرابط الكامل
-        profilePicture: fullProfilePicUrl,
-        
-        isEmailVerified: profile.isEmailVerified
-      };
-      
-      // ✅ 4. تحديث الـ User Signal والـ LocalStorage
-      this.setUser(userPartial as Partial<AuthUser>);
-      
-      // ✅ 5. حفظ الصورة في LocalStorage لضمان ظهورها عند عمل Refresh
-      if (fullProfilePicUrl) {
-        localStorage.setItem('profilePicture', fullProfilePicUrl);
+        // If the server says "401 Unauthorized" or "404 User Not Found"
+        // We must clear the local storage immediately.
+        if (err.status === 401 || err.status === 403 || err.status === 404) {
+            console.log('Session expired or invalid. Logging out...');
+            this.logout(); 
+        }
       }
-    },
-    error: (err) => {
-      console.warn('Could not fetch full profile', err);
-    }
-  });
-}
+    });
+  }
 
   // ================= Change Password (LOGGED IN) =================
   changePassword(currentPassword: string, newPassword: string): Observable<ChangePasswordResponse> {

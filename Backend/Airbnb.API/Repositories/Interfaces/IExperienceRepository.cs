@@ -45,6 +45,5 @@ namespace Airbnb.API.Repositories.Interfaces
         Task UpdateReviewAsync(ExperienceReview review);
         Task DeleteReviewAsync(int reviewId);
         Task<List<ExperienceReview>> GetReviewsByHostIdAsync(string hostId);
-
     }
 }
