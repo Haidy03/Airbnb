@@ -1,4 +1,5 @@
-﻿using Airbnb.API.DTOs.Booking;
+﻿using Airbnb.API.Dtos;
+using Airbnb.API.DTOs.Booking;
 using Airbnb.API.Models;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +14,7 @@ namespace Airbnb.API.Controllers.Guest
     [Authorize]
     public class BookingController : ControllerBase
     {
+        
         private readonly IBookingService _bookingService;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -20,6 +22,7 @@ namespace Airbnb.API.Controllers.Guest
         {
             _bookingService = bookingService;
             _userManager = userManager;
+            
         }
 
         [HttpPost]
@@ -135,6 +138,8 @@ namespace Airbnb.API.Controllers.Guest
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        
 
     }
 }
