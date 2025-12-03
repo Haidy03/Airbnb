@@ -23,7 +23,7 @@
 <main class="main-content">
   <div class="content-container">
     <h1 class="main-title">Now, set a weekday base price</h1>
-    <p class="subtitle">Tip: ${{ pricingForm.get('pricePerNight')?.value || 46 }}. You'll set a weekend price next.</p>
+    <!-- <p class="subtitle">Tip: EGP {{ pricingForm.get('pricePerNight')?.value || 46 }}. You'll set a weekend price next.</p> -->
 
     <form [formGroup]="pricingForm" class="price-form">
       <!-- Price Input Slider -->
@@ -39,8 +39,8 @@
 
       <!-- Price Display -->
       <div class="price-display">
-        <div class="price-amount">${{ pricingForm.get('pricePerNight')?.value || 46 }}</div>
-        <p class="guest-price">Guest price before taxes ${{ getGuestPrice() }} <span class="chevron">▼</span></p>
+        <div class="price-amount">EGP {{ pricingForm.get('pricePerNight')?.value || 46 }}</div>
+        <!-- <p class="guest-price">Guest price before taxes ${{ getGuestPrice() }} <span class="chevron">▼</span></p> -->
       </div>
 
        <!-- Cleaning Fee Section -->
@@ -55,7 +55,7 @@
 
       <div class="input-container" *ngIf="showCleaningFee()">
         <div class="number-input-wrapper">
-          <span class="currency">$</span>
+          <span class="currency">EGP </span>
           <input
             type="number"
             formControlName="cleaningFee"
@@ -69,16 +69,16 @@
 
       <!-- Direct Number Input -->
       <div class="input-container">
-        <label>Set price</label>
+        <label>Set price /night</label>
         <div class="number-input-wrapper">
-          <span class="currency">$</span>
+          <span class="currency">EGP</span>
           <input
             type="number"
             formControlName="pricePerNight"
             min="10"
             max="1000"
             class="number-input">
-          <span class="per-night">/night</span>
+          <!-- <span class="per-night">/night</span> -->
         </div>
       </div>
     </form>
@@ -111,7 +111,7 @@
       <div class="divider"></div>
       
       <h4>Booked listings</h4>
-      <p class="booking-info">Most listings with reservations during these dates were an average of $15 - $100 per night.</p>
+      <p class="booking-info">Most listings with reservations during these dates were an average of EGP 15 - EGP 100 per night.</p>
       
       <a href="#" class="learn-more-link">Learn more</a>
     </div>
