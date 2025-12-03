@@ -96,4 +96,8 @@ export class ServicesService {
   updateReview(reviewId: number, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/reviews/${reviewId}`, data);
   }
+  cancelBooking(bookingId: number): Observable<any> {
+    // نفترض أن المسار في الباك إند هو: api/Services/bookings/{id}/cancel
+    return this.http.post(`${this.apiUrl}/bookings/${bookingId}/cancel`, {});
+  }
 }

@@ -570,31 +570,27 @@ namespace Airbnb.API.Controllers
         }
 
         /// <summary>
-        /// Cancel booking
-        /// DELETE: api/experiences/bookings/{bookingId}
-        /// </summary>
-        [HttpDelete("bookings/{bookingId}")]
+        [HttpPost("bookings/{bookingId}/cancel")]
         [Authorize]
         public async Task<IActionResult> CancelBooking(int bookingId)
         {
             try
             {
-                var userId = GetCurrentUserId();
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                // تأكدي أن دالة CancelBookingAsync موجودة في IExperienceService وتم تنفيذها
                 var result = await _experienceService.CancelBookingAsync(bookingId, userId);
 
-                if (!result)
-                    return NotFound(new { success = false, message = "Booking not found" });
+                if (!result) return NotFound(new { message = "Booking not found" });
 
                 return Ok(new { success = true, message = "Booking cancelled successfully" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (UnauthorizedAccessException)
             {
                 return Forbid();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error cancelling booking {BookingId}", bookingId);
-                return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
 
@@ -625,6 +621,8 @@ namespace Airbnb.API.Controllers
             // ✅ Data wrapper consistency
             return Ok(new { success = true, data = reviews });
         }
+
+
 
         // ✅ 1. جلب ريفيو واحد (لصفحة التعديل)
         [HttpGet("reviews/{reviewId}")]
@@ -666,6 +664,8 @@ namespace Airbnb.API.Controllers
             catch (UnauthorizedAccessException) { return Forbid(); }
             catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
         }
+
+
     }
     #endregion
 }

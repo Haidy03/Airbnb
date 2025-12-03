@@ -244,4 +244,8 @@ deleteAvailability(availabilityId: number): Observable<any> {
     headers: this.getHeaders()
   });
 }
+cancelBooking(bookingId: number): Observable<any> {
+    // نفترض أن المسار في الباك إند هو: api/Experiences/bookings/{id}/cancel
+    return this.http.post(`${this.apiUrl}/bookings/${bookingId}/cancel`, {});
+  }
 }

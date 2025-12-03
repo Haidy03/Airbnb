@@ -495,5 +495,27 @@ namespace Airbnb.API.Services.Implementations
 
             return await GetServiceReviewDtoByIdAsync(reviewId);
         }
+
+        public async Task<bool> CancelBookingAsync(int bookingId, string userId)
+        {
+            // تأكدي أنك ضفتي دالة GetServiceBookingByIdAsync في ServiceRepository
+            var booking = await _serviceRepository.GetServiceBookingByIdAsync(bookingId);
+            if (booking == null) return false;
+
+            if (booking.GuestId != userId) // و Host لو عايزة
+                throw new UnauthorizedAccessException("Not authorized");
+
+            // ✅ شرط الـ 24 ساعة
+            if (booking.BookingDate < DateTime.UtcNow.AddHours(24))
+            {
+                throw new InvalidOperationException("Cannot cancel less than 24 hours before service time.");
+            }
+
+            booking.Status = "Cancelled";
+
+            await _serviceRepository.UpdateServiceBookingAsync(booking);
+
+            return true;
+        }
     }
 }

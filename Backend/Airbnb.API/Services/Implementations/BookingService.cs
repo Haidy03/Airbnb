@@ -330,13 +330,16 @@ namespace Airbnb.API.Services.Implementations
             if (booking == null) return false;
 
             if (booking.GuestId != userId && booking.Property.HostId != userId)
-                throw new UnauthorizedAccessException("You are not authorized to cancel this booking");
+                throw new UnauthorizedAccessException("Not authorized");
 
-            if (booking.Status == BookingStatus.Cancelled || booking.Status == BookingStatus.Completed)
-                throw new InvalidOperationException("Cannot cancel finished/cancelled booking");
+            // ✅ التحقق من شرط الـ 24 ساعة (للجيست فقط)
+            // إذا كان المستخدم هو الجيست، وتاريخ الحجز باقي عليه أقل من 24 ساعة
+            if (booking.GuestId == userId && booking.CheckInDate < DateTime.UtcNow.AddHours(24))
+            {
+                throw new InvalidOperationException("Cannot cancel less than 24 hours before check-in.");
+            }
 
             booking.Status = BookingStatus.Cancelled;
-            booking.CancelledAt = DateTime.UtcNow;
 
             await _bookingRepository.UpdateAsync(booking);
             return true;
