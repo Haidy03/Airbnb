@@ -57,6 +57,8 @@
         public DateTime Date { get; set; }
         public bool IsAvailable { get; set; }
         public string? Notes { get; set; }
+        public TimeSpan? CheckInTime { get; set; }
+        public TimeSpan? CheckOutTime { get; set; }
     }
 
     /// <summary>

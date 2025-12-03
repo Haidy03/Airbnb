@@ -145,6 +145,8 @@ namespace Airbnb.API.Services.Implementations
                     Date = dto.Date.Date,
                     IsAvailable = dto.IsAvailable,
                     Notes = dto.Notes,
+                    SpecificCheckInTime = dto.CheckInTime,
+                    SpecificCheckOutTime = dto.CheckOutTime,
                     CreatedAt = DateTime.UtcNow
                 };
                 _context.PropertyAvailabilities.Add(availability);
@@ -153,6 +155,8 @@ namespace Airbnb.API.Services.Implementations
             {
                 availability.IsAvailable = dto.IsAvailable;
                 availability.Notes = dto.Notes;
+                availability.SpecificCheckInTime = dto.CheckInTime;
+                availability.SpecificCheckOutTime = dto.CheckOutTime;
             }
 
             await _context.SaveChangesAsync();

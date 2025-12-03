@@ -74,7 +74,6 @@
       
       <!-- Calendar Header -->
       <div class="calendar-header">
-        <!-- Month Selector with Dropdown -->
         <div class="month-selector-wrapper">
           <button class="month-selector" (click)="toggleMonthPicker()">
             <h1 class="month-title">{{ currentMonthYear() }}</h1>
@@ -91,17 +90,13 @@
           
           <!-- Month Picker Dropdown -->
           <div class="month-picker-dropdown" *ngIf="showMonthPicker()" [@expandCollapse]>
-            
-            <!-- Year Navigation -->
             <div class="year-selector">
               <button class="year-nav-btn" (click)="previousYear()">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M10 12L6 8l4-4"/>
                 </svg>
               </button>
-              
               <span class="current-year">{{ selectedYear() }}</span>
-              
               <button class="year-nav-btn" (click)="nextYear()">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M6 4l4 4-4 4"/>
@@ -109,7 +104,6 @@
               </button>
             </div>
             
-            <!-- Months Grid -->
             <div class="months-grid">
               <button
                 *ngFor="let month of months; let i = index"
@@ -122,7 +116,6 @@
               </button>
             </div>
             
-            <!-- Quick Actions -->
             <div class="month-picker-footer">
               <button class="quick-action-btn" (click)="goToThisMonth()">
                 This Month
@@ -134,18 +127,13 @@
           </div>
         </div>
 
-        <!-- Calendar Controls -->
         <div class="calendar-controls">
           <button class="nav-btn" (click)="previousMonth()" title="Previous month">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M10 12L6 8l4-4"/>
             </svg>
           </button>
-          
-          <button class="today-btn" (click)="goToToday()">
-            Today
-          </button>
-          
+          <button class="today-btn" (click)="goToToday()">Today</button>
           <button class="nav-btn" (click)="nextMonth()" title="Next month">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M6 4l4 4-4 4"/>
@@ -168,7 +156,6 @@
             </svg>
             Edit price
           </button>
-          
           <button class="action-btn" (click)="openAvailabilityModal()">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M2 10h16M10 2v16"/>
@@ -192,23 +179,15 @@
           [class]="getDayClasses(day)"
           (click)="onDayClick(day, $event)">
           
-          <!-- Day Number -->
           <div class="day-number">{{ day.dayNumber }}</div>
           
-          <!-- Booking Badge -->
           <div class="booking-badge" *ngIf="day.hasBooking">
             <span class="badge-label">{{ day.guestName }}</span>
           </div>
           
-          <!-- Check-in/out Indicators -->
-          <div class="check-indicator check-in" *ngIf="day.isCheckIn">
-            Check-in
-          </div>
-          <div class="check-indicator check-out" *ngIf="day.isCheckOut">
-            Check-out
-          </div>
+          <div class="check-indicator check-in" *ngIf="day.isCheckIn">Check-in</div>
+          <div class="check-indicator check-out" *ngIf="day.isCheckOut">Check-out</div>
           
-          <!-- Price -->
           <div class="day-price" *ngIf="day.isCurrentMonth && !day.hasBooking">
             <span [class.custom-price]="day.originalPrice">
               {{ formatPrice(day.price) }}
@@ -218,7 +197,6 @@
             </span>
           </div>
           
-          <!-- Blocked Indicator -->
           <div class="blocked-indicator" *ngIf="day.isBlocked">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 14c-3.3 0-6-2.7-6-6 0-1.3.4-2.5 1.1-3.5l8.4 8.4C10.5 13.6 9.3 14 8 14zm4.9-2.5L4.5 3.1C5.5 2.4 6.7 2 8 2c3.3 0 6 2.7 6 6 0 1.3-.4 2.5-1.1 3.5z"/>
@@ -236,9 +214,7 @@
       <div class="settings-section">
         <div class="settings-header">
           <h3 class="settings-title">Price settings</h3>
-          <button class="edit-btn" (click)="openSettingsModal()">
-            Edit
-          </button>
+          <button class="edit-btn" (click)="openSettingsModal()">Edit</button>
         </div>
         <div class="settings-items">
           <div class="settings-item">
@@ -247,43 +223,10 @@
           </div>
           <div class="settings-item" *ngIf="settings().cleaningFee ">
             <span class="item-label">Cleaning fee</span>
-            <span class="item-value">EGP {{ settings().cleaningFee  }}</span>
+            <span class="item-value">EGP {{ settings().cleaningFee }}</span>
           </div>
         </div>
       </div>
-
-      <!-- <div class="settings-divider"></div>
-
-      
-      <div class="settings-section">
-        <div class="settings-header">
-          <h3 class="settings-title">Availability settings</h3>
-          <button class="edit-btn" (click)="openSettingsModal()">
-            Edit
-          </button>
-        </div>
-        <div class="settings-items">
-          <div class="settings-item">
-            <span class="item-label">Length of stay</span>
-            <span class="item-value">
-              {{ settings().minimumNights }}–{{ settings().maximumNights }} nights
-            </span>
-          </div>
-          <div class="settings-item">
-            <span class="item-label">Advance notice</span>
-            <span class="item-value">
-              {{ settings().advanceNotice }} day{{ settings().advanceNotice !== 1 ? 's' : '' }}
-            </span>
-          </div>
-          <div class="settings-item">
-            <span class="item-label">Preparation time</span>
-            <span class="item-value">
-              {{ settings().preparationTime }} day{{ settings().preparationTime !== 1 ? 's' : '' }}
-            </span>
-          </div>
-        </div>
-      </div> -->
-
     </div>
 
   </div>
@@ -301,33 +244,18 @@
           <p class="modal-description">
             Set a custom price for {{ selectedDates().length }} selected date(s)
           </p>
-          
           <div class="form-group">
             <label>Price per night (EGP)</label>
-            <input 
-              type="number" 
-              formControlName="price"
-              min="1"
-              placeholder="Enter price">
+            <input type="number" formControlName="price" min="1" placeholder="Enter price">
           </div>
-          
          <div class="form-group">
           <label>Cleaning fee (EGP)</label>
-          <input 
-            type="number" 
-            formControlName="cleaningFee" 
-            min="0"
-            placeholder="e.g. 20">
+          <input type="number" formControlName="cleaningFee" min="0" placeholder="e.g. 20">
         </div>
         </div>
-        
         <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="closePriceModal()">
-            Cancel
-          </button>
-          <button type="submit" class="btn-primary" [disabled]="priceForm.invalid">
-            Save
-          </button>
+          <button type="button" class="btn-secondary" (click)="closePriceModal()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="priceForm.invalid">Save</button>
         </div>
       </form>
     </div>
@@ -346,7 +274,6 @@
           <p class="modal-description">
             Update availability for {{ selectedDates().length }} selected date(s)
           </p>
-          
           <div class="form-group">
             <label>Status</label>
             <select formControlName="isAvailable">
@@ -354,23 +281,14 @@
               <option [value]="false">Blocked</option>
             </select>
           </div>
-          
           <div class="form-group">
             <label>Notes (optional)</label>
-            <textarea 
-              formControlName="notes"
-              rows="3"
-              placeholder="Add notes about this date..."></textarea>
+            <textarea formControlName="notes" rows="3" placeholder="Add notes about this date..."></textarea>
           </div>
         </div>
-        
         <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="closeAvailabilityModal()">
-            Cancel
-          </button>
-          <button type="submit" class="btn-primary">
-            Save
-          </button>
+          <button type="button" class="btn-secondary" (click)="closeAvailabilityModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Save</button>
         </div>
       </form>
     </div>
@@ -383,91 +301,36 @@
         <h2>Calendar Settings</h2>
         <button class="close-btn" (click)="closeSettingsModal()">×</button>
       </div>
-      
       <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
         <div class="modal-body">
           <h3 class="section-title">Pricing</h3>
-          
           <div class="form-row">
             <div class="form-group">
               <label>Base price per night (EGP)</label>
-              <input 
-                type="number" 
-                formControlName="basePrice"
-                min="1"
-                placeholder="50">
+              <input type="number" formControlName="basePrice" min="1" placeholder="50">
             </div>
-            
             <div class="form-group">
-            <label>Cleaning fee (EGP)</label>
-            <input 
-              type="number" 
-              formControlName="cleaningFee"
-              min="0"
-              placeholder="e.g. 20">
-          </div>
-          </div>
-          
-          <!-- <h3 class="section-title">Availability</h3>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>Minimum nights</label>
-              <input 
-                type="number" 
-                formControlName="minimumNights"
-                min="1">
-            </div>
-            
-            <div class="form-group">
-              <label>Maximum nights</label>
-              <input 
-                type="number" 
-                formControlName="maximumNights"
-                min="1">
+              <label>Cleaning fee (EGP)</label>
+              <input type="number" formControlName="cleaningFee" min="0" placeholder="e.g. 20">
             </div>
           </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>Advance notice (days)</label>
-              <input 
-                type="number" 
-                formControlName="advanceNotice"
-                min="0">
-            </div>
-            
-            <div class="form-group">
-              <label>Preparation time (days)</label>
-              <input 
-                type="number" 
-                formControlName="preparationTime"
-                min="0">
-            </div>
-          </div> -->
         </div>
-        
         <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="closeSettingsModal()">
-            Cancel
-          </button>
-          <button type="submit" class="btn-primary" [disabled]="settingsForm.invalid">
-            Save Settings
-          </button>
+          <button type="button" class="btn-secondary" (click)="closeSettingsModal()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="settingsForm.invalid">Save Settings</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Day Details Sidebar (Right Side) -->
+  <!-- Day Details Sidebar (Right Side Panel) -->
   <div class="day-details-sidebar" *ngIf="selectedDay()" [@slideIn]>
     
     <!-- Header -->
     <div class="sidebar-header">
       <button class="close-sidebar-btn" (click)="closeDaySidebar()">
-        <svg width="16" height="16" viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentcolor;stroke-width:3;overflow:visible" aria-hidden="true" role="presentation" focusable="false"><path d="m6 6 20 20M26 6 6 26"></path></svg>
+        <svg width="16" height="16" viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentcolor;stroke-width:3;overflow:visible"><path d="m6 6 20 20M26 6 6 26"></path></svg>
       </button>
-      
       <div class="sidebar-date">
         <h3>{{ formatSelectedDate() }}</h3>
         <p class="day-name" style="color: #717171; margin: 0;">{{ getSelectedDayName() }}</p>
@@ -478,106 +341,46 @@
     <div class="sidebar-section availability-section">
       <div class="section-header">
         <div class="section-icon available" *ngIf="dayDetailsForm.value.isAvailable">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="8" fill="currentColor"/>
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" fill="currentColor"/></svg>
         </div>
         <div class="section-icon unavailable" *ngIf="!dayDetailsForm.value.isAvailable">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
-            <path d="M5 5l10 10" stroke="currentColor" stroke-width="2"/>
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/><path d="M5 5l10 10" stroke="currentColor" stroke-width="2"/></svg>
         </div>
         <span class="section-title">Available</span>
       </div>
-      
       <div class="availability-toggle">
         <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [formControl]="getControl('isAvailable')"
-            (change)="onAvailabilityToggle()">
+          <input type="checkbox" [formControl]="getControl('isAvailable')" (change)="onAvailabilityToggle()">
           <span class="toggle-slider"></span>
         </label>
-         <span class="toggle-label" *ngIf="dayDetailsForm.get('isAvailable')?.value">
-          Available
-        </span>
-        <span class="toggle-label blocked" *ngIf="!dayDetailsForm.get('isAvailable')?.value">
-          Blocked
-        </span>
+         <span class="toggle-label" *ngIf="dayDetailsForm.get('isAvailable')?.value">Available</span>
+         <span class="toggle-label blocked" *ngIf="!dayDetailsForm.get('isAvailable')?.value">Blocked</span>
       </div>
     </div>
 
-    <!-- Price Section -->
-    <div class="sidebar-section price-section" *ngIf="dayDetailsForm.get('isAvailable')?.value">
+    <!-- ✅ قسم الإعدادات (Check-in / Check-out) ظاهر دائماً -->
+    <div class="sidebar-section settings-section" *ngIf="dayDetailsForm.get('isAvailable')?.value">
       <div class="section-header">
-        <span class="section-title">Last-minute price</span>
+        <span class="section-title">Availability settings</span>
       </div>
-      
-      <div class="price-input-group">
-        <div class="price-input-wrapper">
-          <span class="currency-symbol">EGP</span>
-          <input 
-            type="number" 
-            class="price-input"
-            [formControl]="getControl('customPrice')"
-            placeholder="{{ settings().basePrice }}"
-            min="0">
-        </div>
-        
-        <div class="price-comparison" *ngIf="dayDetailsForm.value.customPrice">
-          <span class="original-price">EGP {{ settings().basePrice }}</span>
-          <span class="discount-badge" *ngIf="getPriceDiscount() > 0">
-            -{{ getPriceDiscount() }}%
-          </span>
-        </div>
-      </div>
-      
-      <p class="price-note">
-        Base price: EGP {{ settings().basePrice }} per night
-      </p>
-    </div>
 
-    <!-- Custom Settings Accordion -->
-    <div class="sidebar-section custom-settings-section">
-      <button 
-        class="accordion-header"
-        (click)="toggleCustomSettings()"
-        [class.expanded]="showCustomSettings()">
-        <span>Custom settings</span>
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="accordion-icon">
-          <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
-      
-      <div class="accordion-content" *ngIf="showCustomSettings()" [@expandCollapse]>
-        
+      <div class="settings-content">
         <!-- Check-in Time -->
         <div class="setting-item">
           <label>Check-in time</label>
-          <input 
-            type="time" 
-            class="time-input"
-            [formControl]="getControl('checkInTime')">
+          <input type="time" class="time-input" [formControl]="getControl('checkInTime')">
         </div>
         
         <!-- Check-out Time -->
-        <div class="setting-item">
+        <div class="setting-item" style="margin-top: 16px;">
           <label>Check-out time</label>
-          <input 
-            type="time" 
-            class="time-input"
-            [formControl]="getControl('checkOutTime')">
+          <input type="time" class="time-input" [formControl]="getControl('checkOutTime')">
         </div>
         
         <!-- Notes -->
-        <div class="setting-item">
+        <div class="setting-item" style="margin-top: 16px;">
           <label>Notes (optional)</label>
-          <textarea 
-            class="notes-input"
-            [formControl]="getControl('notes')"
-            placeholder="Add notes about this date..."
-            rows="3"></textarea>
+          <textarea class="notes-input" [formControl]="getControl('notes')" placeholder="Add notes about this date..." rows="3"></textarea>
         </div>
       </div>
     </div>
@@ -587,12 +390,9 @@
       <div class="section-header">
         <span class="section-title">Booking Details</span>
       </div>
-      
       <div class="booking-card">
         <div class="guest-info">
-          <div class="guest-avatar">
-            {{ selectedDay()?.guestName?.charAt(0) }}
-          </div>
+          <div class="guest-avatar">{{ selectedDay()?.guestName?.charAt(0) }}</div>
           <div class="guest-details">
             <h4>{{ selectedDay()?.guestName }}</h4>
             <p class="booking-status" [class]="'status-' + selectedDay()?.bookingStatus?.toLowerCase()">
@@ -600,52 +400,26 @@
             </p>
           </div>
         </div>
-        
         <div class="booking-dates">
-          <div class="date-item" *ngIf="selectedDay()?.isCheckIn">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span>Check-in</span>
-          </div>
-          <div class="date-item" *ngIf="selectedDay()?.isCheckOut">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 8h12M8 2l6 6-6 6" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span>Check-out</span>
-          </div>
+          <div class="date-item" *ngIf="selectedDay()?.isCheckIn"><span>Check-in</span></div>
+          <div class="date-item" *ngIf="selectedDay()?.isCheckOut"><span>Check-out</span></div>
         </div>
-        
-        <button class="view-booking-btn" (click)="viewBookingDetails()">
-          View full booking
-        </button>
+        <button class="view-booking-btn" (click)="viewBookingDetails()">View full booking</button>
       </div>
     </div>
 
-    <!-- Action Buttons -->
+    <!-- Footer Actions -->
     <div class="sidebar-footer">
-      <button 
-        class="btn-secondary" 
-        (click)="resetDayDetails()"
-        [disabled]="!isDayModified()">
-        Reset
-      </button>
-      <button 
-        class="btn-primary" 
-        (click)="saveDayDetails()"
-        [disabled]="!isDayModified() || savingDay()">
+      <button class="btn-secondary" (click)="resetDayDetails()" [disabled]="!isDayModified()">Reset</button>
+      <button class="btn-primary" (click)="saveDayDetails()" [disabled]="!isDayModified() || savingDay()">
         <span *ngIf="!savingDay()">Save</span>
         <span *ngIf="savingDay()">Saving...</span>
       </button>
     </div>
+
   </div>
 
   <!-- Overlay when sidebar is open -->
-  <div 
-    class="sidebar-overlay" 
-    *ngIf="selectedDay()"
-    (click)="closeDaySidebar()"
-    [@fadeIn]>
-  </div>
+  <div class="sidebar-overlay" *ngIf="selectedDay()" (click)="closeDaySidebar()" [@fadeIn]></div>
 
 </div>

@@ -1130,10 +1130,27 @@ input:checked + .toggle-slider:before {
   gap: 8px;
 }
 
+.settings-content {
+  display: flex;
+  flex-direction: column;
+}
+
 .setting-item label {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600; 
   color: #222;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.time-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #B0B0B0;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #222;
+  font-family: inherit;
 }
 
 .time-input,
@@ -1153,8 +1170,12 @@ input:checked + .toggle-slider:before {
 }
 
 .notes-input {
-  resize: vertical;
-  min-height: 80px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #B0B0B0;
+  border-radius: 8px;
+  resize: none;
+  font-family: inherit;
 }
 
 /* Booking Info */
