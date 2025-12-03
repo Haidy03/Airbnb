@@ -24,8 +24,8 @@ namespace Airbnb.API.DTOs.Properties
         public decimal? CleaningFee { get; set; }
 
         public string? HouseRules { get; set; }
-        public TimeSpan? CheckInTime { get; set; }
-        public TimeSpan? CheckOutTime { get; set; }
+        public string? CheckInTime { get; set; }
+        public string? CheckOutTime { get; set; }
         public int? MinimumStay { get; set; }
 
         public List<int>? AmenityIds { get; set; }

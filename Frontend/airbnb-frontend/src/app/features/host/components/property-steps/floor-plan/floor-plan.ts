@@ -78,8 +78,8 @@ export class PropertyFloorPlanComponent implements OnInit {
   }
   
   canDecrement(field: keyof FloorPlanData): boolean {
-      const val = this.floorPlan()[field];
-      return field === 'bathrooms' ? val > 0.5 : val > 1; // مثال
+  const val = this.floorPlan()[field];
+  return val > 1;
   }
   
   canIncrement(field: keyof FloorPlanData): boolean { return true; }

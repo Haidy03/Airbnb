@@ -162,7 +162,7 @@ export class legalandcreateComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/host/properties/pricing']);
+    this.router.navigate(['/host/properties/house-rules']);
   }
 
   createListing(): void {

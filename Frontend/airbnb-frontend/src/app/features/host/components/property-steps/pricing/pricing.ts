@@ -119,7 +119,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
     // 3. أيقونة منزلك (You)
     const homeIcon = L.divIcon({
       className: 'custom-marker home',
-      html: `<div style="background:#222;color:white;padding:6px 12px;border-radius:20px;font-weight:bold;box-shadow:0 2px 5px rgba(0,0,0,0.3); white-space:nowrap;">You ($${this.pricingForm.get('pricePerNight')?.value})</div>`
+      html: `<div style="background:#222;color:white;padding:6px 12px;border-radius:20px;font-weight:bold;box-shadow:0 2px 5px rgba(0,0,0,0.3); white-space:nowrap;">You (EGP${this.pricingForm.get('pricePerNight')?.value})</div>`
     });
 
     L.marker([lat, lng], { icon: homeIcon, zIndexOffset: 1000 }).addTo(this.map);
@@ -142,13 +142,13 @@ export class PricingComponent implements OnInit, AfterViewInit {
           
           const priceIcon = L.divIcon({
             className: 'custom-marker',
-            html: `<div style="background:white;padding:4px 8px;border-radius:12px;font-weight:bold;border:1px solid #ddd;box-shadow:0 2px 4px rgba(0,0,0,0.1); font-size:12px; white-space:nowrap;">$${price}</div>`
+            html: `<div style="background:white;padding:4px 8px;border-radius:12px;font-weight:bold;border:1px solid #ddd;box-shadow:0 2px 4px rgba(0,0,0,0.1); font-size:12px; white-space:nowrap;">EGP${price}</div>`
           });
 
           L.marker([pLat, pLng], { icon: priceIcon })
             .bindPopup(`
               <strong>${prop.title}</strong><br>
-              $${price} / night
+              EGP${price} / night
             `)
             .addTo(this.map);
         });
@@ -175,7 +175,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
 
   saveAndExit(): void {
     if (!confirm('Save your progress and exit?')) return;
-    // ✅ استخدام الدالة الموحدة للحفظ
+ 
     this.saveData(() => this.router.navigate(['/host/properties']));
   }
 
@@ -184,16 +184,16 @@ export class PricingComponent implements OnInit, AfterViewInit {
       alert('Please enter valid pricing information');
       return;
     }
-    // ✅ استخدام الدالة الموحدة للحفظ
-    this.saveData(() => this.router.navigate(['/host/properties/legal-and-create']));
+   
+    this.saveData(() => this.router.navigate(['/host/properties/house-rules']));
   }
 
-  // ✅✅✅ الدالة المساعدة للحفظ (Added Here) ✅✅✅
+
   private saveData(onSuccess: () => void): void {
     this.isLoading.set(true);
 
     if (this.currentDraftId) {
-      // تجهيز البيانات (التأكد من إرسال cleaningFee حتى لو null)
+  
       const feeValue = this.showCleaningFee() ? this.pricingForm.get('cleaningFee')?.value : null;
       
       const payload = {
