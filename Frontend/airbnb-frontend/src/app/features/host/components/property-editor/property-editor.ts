@@ -39,6 +39,7 @@ export class PropertyEditorComponent implements OnInit {
   tempTitle = signal('');
   tempDescription = signal('');
   tempPrice = signal(0);
+  tempCleaningFee = signal<number | null>(null); 
   tempPropertyType = signal<number | null>(null); 
   tempRoomType = signal('');
   tempCapacity = signal({ guests: 1, bedrooms: 1, beds: 1, bathrooms: 1 });
@@ -131,7 +132,7 @@ export class PropertyEditorComponent implements OnInit {
     this.tempTitle.set(prop.title);
     this.tempDescription.set(prop.description);
     this.tempPrice.set(prop.pricing?.basePrice || 0);
-    
+    this.tempCleaningFee.set(prop.pricing?.cleaningFee || null);
     // Property Type Logic
     if ((prop as any).propertyTypeId) {
       this.tempPropertyType.set((prop as any).propertyTypeId);
@@ -346,7 +347,10 @@ export class PropertyEditorComponent implements OnInit {
     switch (section) {
       case 'title': updates.title = this.tempTitle(); break;
       case 'description': updates.description = this.tempDescription(); break;
-      case 'pricing': updates.pricePerNight = this.tempPrice(); break;
+      case 'pricing': 
+      updates.pricePerNight = this.tempPrice();
+      updates.cleaningFee = this.tempCleaningFee();
+       break;
       case 'propertyType': 
         updates.propertyTypeId = this.tempPropertyType(); 
         updates.roomType = this.tempRoomType(); 

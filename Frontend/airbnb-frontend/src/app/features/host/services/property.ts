@@ -185,13 +185,12 @@ export class PropertyService {
        else computedStatus = PropertyStatus.PENDING_APPROVAL;
     }
 
-    // 2. ✅ Handle Images & Fix Primary Duplicate Issue
     const rawImages = apiData.images || [];
     
-    // البحث عن الصورة الأساسية الحقيقية
+
     let primaryIndex = rawImages.findIndex((img: any) => img.isPrimary);
     
-    // إذا لم توجد صورة أساسية، أو إذا كانت القائمة تحتوي على صور ولكن لا يوجد primary محدد، نعتبر الأولى هي الأساسية
+
     if (primaryIndex === -1 && rawImages.length > 0) {
         primaryIndex = 0;
     }
@@ -201,7 +200,7 @@ export class PropertyService {
         url: img.imageUrl?.startsWith('http') ? img.imageUrl : `${environment.apiUrl.replace('/api', '')}${img.imageUrl}`,
         imageUrl: img.imageUrl,
         
-        // ✅ إجبار صورة واحدة فقط لتكون Primary
+  
         isPrimary: index === primaryIndex, 
         isMain: index === primaryIndex,
         
@@ -209,10 +208,9 @@ export class PropertyService {
         displayOrder: img.displayOrder
     }));
 
-    // تحديد صورة الغلاف
     const cover = mappedImages.find((i: any) => i.isPrimary)?.url || '/assets/images/placeholder-property.jpg';
 
-    // 3. Handle Amenities
+
     const amenityIds = Array.isArray(apiData.amenityIds) 
         ? apiData.amenityIds 
         : (apiData.amenities?.map((a: any) => typeof a === 'object' ? a.id : a) || []);

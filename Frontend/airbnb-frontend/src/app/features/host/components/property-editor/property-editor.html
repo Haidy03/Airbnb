@@ -63,7 +63,7 @@
 
       <div class="nav-card" [class.active]="activeSection() === 'pricing'" (click)="setActiveSection('pricing')">
         <div class="nav-header"> <span class="nav-label">Pricing</span> </div>
-        <div class="nav-content">${{ property()?.pricing?.basePrice }}</div>
+        <div class="nav-content">EGP {{ property()?.pricing?.basePrice }}</div>
       </div>
 
       <div class="nav-card" [class.active]="activeSection() === 'capacity'" (click)="setActiveSection('capacity')">
@@ -192,7 +192,7 @@
         <div class="form-group">
           <label>Which is most like your place?</label>
           <div class="select-wrapper">
-            <!-- التصحيح: ربط ngModel بالـ Signal والتعامل مع value كـ ID وعرض الاسم -->
+            
             <select [ngModel]="tempPropertyType()" (ngModelChange)="tempPropertyType.set(+$event)">
               <option [ngValue]="null" disabled>Select property type</option>
               <option *ngFor="let type of propertyTypesList" [value]="type.id">
@@ -220,9 +220,21 @@
         <div class="form-group">
           <label>Base price</label>
           <div class="price-input-wrapper">
-            <span class="currency">$</span>
+            <span class="currency">EGP</span>
             <input type="number" class="airbnb-input price" [(ngModel)]="tempPrice">
           </div>
+        </div>
+        <div class="form-group">
+          <label>Cleaning fee</label>
+          <div class="price-input-wrapper">
+            <span class="currency">EGP</span>
+            <input type="number" 
+                   class="airbnb-input price" 
+                   [ngModel]="tempCleaningFee()"
+                   (ngModelChange)="tempCleaningFee.set($event)"
+                   placeholder="0">
+          </div>
+          <p class="input-hint">This fee applies to every reservation, regardless of length.</p>
         </div>
       </section>
 
