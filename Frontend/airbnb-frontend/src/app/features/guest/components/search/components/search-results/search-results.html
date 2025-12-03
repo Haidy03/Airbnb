@@ -18,15 +18,14 @@
 
     <!-- List Section -->
     <div class="results-list-section" [class.with-map]="showMap">
-      <div class="container-fluid px-3"> <!-- px-3 مسافة مناسبة -->
+      <div class="container-fluid px-3"> 
 
-        <!-- 1. Info Header (التايتل اللي كان مختفي) -->
+       
         <div class="d-flex justify-content-between align-items-center mb-4 mt-2" *ngIf="properties.length > 0">
           <h1 class="h5 fw-bold text-dark mb-0">
             {{ totalResults }} homes found
           </h1>
-          <!-- Sort Dropdown (اختياري) -->
-          <!-- <div class="sort-wrapper"> ... </div> -->
+        
         </div>
 
         <!-- Mobile Map Toggle -->
@@ -38,12 +37,7 @@
         <!-- 2. Grid (3 cards per row) -->
         <div *ngIf="properties.length > 0">
            <div class="row g-4">
-             <!--
-                التعديل هنا:
-                col-md-6 (2 في الصف للتابلت)
-                col-lg-4 (3 في الصف للشاشات الكبيرة) - ده اللي أنت عايزه
-                col-xl-4 (3 في الصف للشاشات الأكبر)
-             -->
+            
              <div [class]="showMap ? 'col-12 col-sm-6 col-lg-4 col-xl-4' : 'col-12 col-sm-6 col-md-4 col-lg-3'"
                   *ngFor="let property of properties">
 
@@ -76,6 +70,7 @@
         [selectedPropertyId]="selectedProperty?.id || null"
         (propertySelect)="onMapPropertySelect($event)"
         (mapBoundsChange)="onMapBoundsChange($event)"
+        (mapBackgroundClick)="onMapBackgroundClick()"
       ></app-search-map>
 
       <button class="close-map-btn d-lg-none" (click)="toggleMap()" type="button">
