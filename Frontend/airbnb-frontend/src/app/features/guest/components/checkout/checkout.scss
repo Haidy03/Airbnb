@@ -1,7 +1,7 @@
 // ================= VARIABLES =================
 $border-color: #DDDDDD;
 $text-color: #222222;
-$primary-color: #FF385C; // Airbnb Red for primary actions
+$primary-color: #FF385C; 
 $hover-color: #E31C5F;
 
 // ================= GLOBAL LAYOUT =================
@@ -27,7 +27,7 @@ $hover-color: #E31C5F;
   // Main Grid System
   .main-grid {
     display: grid;
-    grid-template-columns: 1.2fr 1fr; // Left column slightly larger
+    grid-template-columns: 1.2fr 1fr; 
     gap: 80px;
 
     // ================= LEFT COLUMN =================

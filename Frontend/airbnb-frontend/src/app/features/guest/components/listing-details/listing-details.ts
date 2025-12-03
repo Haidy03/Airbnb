@@ -78,7 +78,7 @@ export class ListingDetails implements OnInit {
                 this.reviews = res;
             }
             if (this.listing) {
-                // لو الباك اند مش باعت التفاصيل، نحسبها إحنا
+               
                 if (!this.listing.ratingBreakdown) {
                     this.listing.ratingBreakdown = this.calculateRatingBreakdown(this.reviews);
                 }

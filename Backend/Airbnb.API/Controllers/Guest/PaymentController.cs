@@ -1,4 +1,4 @@
-﻿using Airbnb.API.DTOs.Booking; // تأكدي من الـ Namespace
+﻿using Airbnb.API.DTOs.Booking; 
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +12,7 @@ namespace Airbnb.API.Controllers.Guest
     public class PaymentController : ControllerBase
     {
         private readonly PaymentService _paymentService;
-        private readonly IBookingService _bookingService; 
+        private readonly IBookingService _bookingService;
 
         public PaymentController(PaymentService paymentService, IBookingService bookingService)
         {
@@ -20,7 +20,9 @@ namespace Airbnb.API.Controllers.Guest
             _bookingService = bookingService;
         }
 
-        
+        // ---------------------------------------------------------
+        // 1. (Instant Book) 
+        // ---------------------------------------------------------
         [HttpPost("create-checkout")]
         public IActionResult CreateCheckoutSession([FromBody] CheckoutRequest request)
         {
@@ -44,14 +46,19 @@ namespace Airbnb.API.Controllers.Guest
             }
         }
 
+        // ---------------------------------------------------------
+        // 2. (Request -> Approved -> Pay)
+        // ---------------------------------------------------------
         
         [HttpPost("pay-booking/{bookingId}")]
         public async Task<IActionResult> PayForBooking(int bookingId)
         {
             try
             {
+              
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+              
                 var booking = await _bookingService.GetBookingByIdAsync(bookingId, userId);
 
                 if (booking == null)
@@ -67,7 +74,7 @@ namespace Airbnb.API.Controllers.Guest
 
                 var paymentUrl = _paymentService.CreateCheckoutSession(
                     booking.PropertyTitle,
-                    booking.TotalPrice, 
+                    booking.TotalPrice,
                     successUrl,
                     cancelUrl
                 );
@@ -79,16 +86,16 @@ namespace Airbnb.API.Controllers.Guest
                 return BadRequest(new { error = ex.Message });
             }
         }
-        
+        // ---------------------------------------------------------
+        // 3.(Services)
+        // ---------------------------------------------------------
         [HttpPost("create-service-checkout")]
         public IActionResult CreateServiceCheckout([FromBody] ServiceCheckoutRequest request)
         {
             try
             {
                 var successUrl = "http://localhost:4200/payment-success";
-                var cancelUrl = "http://localhost:4200/trips"; 
-
-
+                var cancelUrl = "http://localhost:4200/trips";
                 var paymentUrl = _paymentService.CreateCheckoutSession(
                     request.ServiceName,
                     request.TotalPrice,

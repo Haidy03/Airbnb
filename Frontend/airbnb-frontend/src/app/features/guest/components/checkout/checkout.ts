@@ -2,17 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location, CommonModule } from '@angular/common';
 import { ListingService } from '../../services/Lisiting-Services';
-import { GuestBookingService, CreateBookingDto } from '../../services/booking.service'; // ✅ تأكدي من المسار الصحيح
+import { GuestBookingService, CreateBookingDto } from '../../services/booking.service';
 import { Listing } from '../../models/listing-model';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxPayPalModule, IPayPalConfig, ICreateOrderRequest } from 'ngx-paypal';
 import { environment } from '../../../../../environments/environment'; 
 import { StripeService } from '../../../../core/services/stripe.service';
+
 @Component({
   selector: 'app-checkout',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NgxPayPalModule, FormsModule],
-  templateUrl: './checkout.html', // تأكدي من تعديل الـ HTML كما سأوضح بالأسفل
+  templateUrl: './checkout.html', 
   styleUrls: ['./checkout.scss'],
 })
 export class Checkout implements OnInit {
@@ -24,8 +25,7 @@ export class Checkout implements OnInit {
   totalPrice: number = 0;
   serviceFee: number = 150;
   guestMessage: string = ''; 
-
-  // ✅ متغير لتحديد نوع الحجز
+ 
   bookingType: 'instant' | 'request' = 'request'; 
   isLoading: boolean = false;
   paymentMethod: 'stripe' | 'paypal' = 'stripe'; 
@@ -42,13 +42,13 @@ export class Checkout implements OnInit {
   tempGuests: number = 1;
 
   constructor(
-  private route: ActivatedRoute,
-  private router: Router,
-  private listingService: ListingService,
-  private guestBookingService: GuestBookingService,
-  private stripeService: StripeService, // 🆕
-  private location: Location,
-  private fb: FormBuilder
+    private route: ActivatedRoute,
+    private router: Router,
+    private listingService: ListingService,
+    private guestBookingService: GuestBookingService,
+    private stripeService: StripeService,
+    private location: Location,
+    private fb: FormBuilder
   ) {
     this.paymentForm = this.fb.group({
       street: ['', Validators.required],
@@ -71,8 +71,6 @@ export class Checkout implements OnInit {
       this.tempCheckIn = this.checkIn;
       this.tempCheckOut = this.checkOut;
       this.tempGuests = this.guests;
-
-      
     });
 
     if (id) {
@@ -90,7 +88,6 @@ export class Checkout implements OnInit {
       const diff = end.getTime() - start.getTime();
       this.nights = Math.ceil(diff / (1000 * 3600 * 24));
       
-      // معادلة السعر
       const baseTotal = (this.listing.pricePerNight || 0) * this.nights;
       const cleaning = this.listing.cleaningFee || 0;
       const service = this.serviceFee || 0;
@@ -103,58 +100,53 @@ export class Checkout implements OnInit {
     }
   }
 
- // 🆕 الدفع بـ Stripe
-payWithStripe() {
-  if (!this.listing) {
-    alert('Listing data not loaded');
-    return;
-  }
-
-  // ✅ Check if user is logged in
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert('Please log in to complete your booking.');
-    this.router.navigate(['/login'], { 
-      queryParams: { 
-        returnUrl: `/checkout/${this.listing.id}`,
-        checkIn: this.checkIn,
-        checkOut: this.checkOut,
-        guests: this.guests,
-        type: this.bookingType
-      } 
-    });
-    return;
-  }
-
-  this.isLoading = true;
-
-  // تحويل EGP إلى USD
-  const amountUSD = this.totalPrice / 50;
-
-  this.stripeService.createCheckoutSession(amountUSD, this.listing.title).subscribe({
-    next: (response) => {
-      console.log('✅ Stripe Checkout URL:', response.url);
-      
-      // حفظ بيانات الحجز
-      sessionStorage.setItem('pendingBooking', JSON.stringify({
-        propertyId: this.listing!.id,
-        checkIn: this.checkIn,
-        checkOut: this.checkOut,
-        guests: this.guests
-      }));
-
-      // التوجيه لـ Stripe
-      window.location.href = response.url;
-    },
-    error: (err) => {
-      this.isLoading = false;
-      console.error('❌ Stripe Error:', err);
-      alert('Failed to create payment session: ' + (err.error?.error || err.message));
+  payWithStripe() {
+    if (!this.listing) {
+      alert('Listing data not loaded');
+      return;
     }
-  });
-}
 
-  // ✅ الدالة الأساسية لإنشاء الحجز (تستدعى من PayPal أو زر الطلب)
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to complete your booking.');
+      this.router.navigate(['/login'], { 
+        queryParams: { 
+          returnUrl: `/checkout/${this.listing.id}`,
+          checkIn: this.checkIn,
+          checkOut: this.checkOut,
+          guests: this.guests,
+          type: this.bookingType
+        } 
+      });
+      return;
+    }
+
+    this.isLoading = true;
+
+    // إرسال المبلغ بالجنيه المصري (الباك إند يعالجه كـ EGP)
+    const amountEGP = this.totalPrice;
+
+    this.stripeService.createCheckoutSession(amountEGP , this.listing.title).subscribe({
+      next: (response) => {
+        console.log('✅ Stripe Checkout URL:', response.url);
+        
+        sessionStorage.setItem('pendingBooking', JSON.stringify({
+          propertyId: this.listing!.id,
+          checkIn: this.checkIn,
+          checkOut: this.checkOut,
+          guests: this.guests
+        }));
+
+        window.location.href = response.url;
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('❌ Stripe Error:', err);
+        alert('Failed to create payment session: ' + (err.error?.error || err.message));
+      }
+    });
+  }
+
   finalizeBooking() {
     if (!this.listing) return;
     
@@ -165,7 +157,7 @@ payWithStripe() {
       checkInDate: new Date(this.checkIn).toISOString(),
       checkOutDate: new Date(this.checkOut).toISOString(),
       numberOfGuests: this.guests,
-      specialRequests:this.guestMessage 
+      specialRequests: this.guestMessage 
     };
 
     this.guestBookingService.createBooking(bookingPayload).subscribe({
@@ -186,20 +178,20 @@ payWithStripe() {
     });
   }
 
-  // إعدادات PayPal
+  // ✅ تصحيح إعدادات PayPal
   private initConfig(): void {
-    // PayPal expects string for value
-    // converting EGP to USD roughly for sandbox (or keep same value if account supports it)
-    const amountUSD = (this.totalPrice / 50).toFixed(2); // مثال: التحويل للدولار تقريباً
+    // تحويل السعر للدولار (للـ Sandbox)
+    const amountUSD = (this.totalPrice / 50).toFixed(2); 
 
     this.payPalConfig = {
-      currency: 'USD',
-      clientId: 'sb', // استبدلي بـ Client ID الخاص بك
+      currency: 'USD', // ✅ يجب أن تكون USD لتتطابق مع purchase_units
+      clientId: 'sb', // ⚠️ استبدلي sb بالـ Client ID الحقيقي من PayPal Developer Dashboard
+      
       createOrderOnClient: (data) => <ICreateOrderRequest>{
         intent: 'CAPTURE',
         purchase_units: [{
           amount: {
-            currency_code: 'USD',
+            currency_code: 'USD', // ✅ موحدة
             value: amountUSD,
             breakdown: {
               item_total: { currency_code: 'USD', value: amountUSD }
@@ -215,51 +207,41 @@ payWithStripe() {
       onClientAuthorization: (data) => {
         console.log('Payment Success', data);
         this.showSuccess = true;
-        // ✅ الدفع نجح -> ننشئ الحجز في الباك إند
+     
         this.finalizeBooking();
       },
       onCancel: (data, actions) => console.log('OnCancel', data, actions),
       onError: err => console.log('OnError', err),
     };
   }
+
   getPrimaryImage(): string {
-  if (!this.listing || !this.listing.images || this.listing.images.length === 0) {
-    return 'assets/images/placeholder.jpg';
+    if (!this.listing || !this.listing.images || this.listing.images.length === 0) {
+      return 'assets/images/placeholder.jpg';
+    }
+
+    let rawUrl = '';
+    
+    if (typeof this.listing.images[0] === 'string') {
+       rawUrl = this.listing.images[0];
+    } else {
+       const imagesList = this.listing.images as any[];
+       const primary = imagesList.find(img => img.isPrimary);
+       const target = primary || imagesList[0];
+       rawUrl = target.url || target.imageUrl || '';
+    }
+
+    if (!rawUrl) return 'assets/images/placeholder.jpg';
+    
+    if (rawUrl.startsWith('http') || rawUrl.includes('assets/')) {
+      return rawUrl;
+    }
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    
+    const cleanPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+
+    return `${baseUrl}${cleanPath}`;
   }
-
-  // 1. العثور على رابط الصورة (سواء كانت object أو string)
-  let rawUrl = '';
-  
-  if (typeof this.listing.images[0] === 'string') {
-     // لو المصفوفة عبارة عن strings
-     rawUrl = this.listing.images[0];
-  } else {
-     // لو المصفوفة objects (حاولي إيجاد الصورة الأساسية)
-     const imagesList = this.listing.images as any[];
-     const primary = imagesList.find(img => img.isPrimary);
-     const target = primary || imagesList[0];
-     
-     rawUrl = target.url || target.imageUrl || '';
-  }
-
-  // 2. معالجة الرابط (Fix URL Logic)
-  if (!rawUrl) return 'assets/images/placeholder.jpg';
-  
-  // لو الرابط خارجي (https) أو assets داخلية، رجعيه زي ما هو
-  if (rawUrl.startsWith('http') || rawUrl.includes('assets/')) {
-    return rawUrl;
-  }
-
-  // 3. إضافة رابط الباك إند (Base URL)
-  // نفترض أن apiUrl هو http://localhost:5000/api
-  // احنا محتاجين http://localhost:5000 بس
-  const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
-  
-  // التأكد من وجود / في البداية
-  const cleanPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
-
-  return `${baseUrl}${cleanPath}`;
-}
 
   // --- Modal Helpers ---
   openDateModal() { this.isEditDateOpen = true; this.tempCheckIn = this.checkIn; this.tempCheckOut = this.checkOut; }
