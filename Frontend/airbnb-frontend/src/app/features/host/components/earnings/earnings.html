@@ -49,8 +49,7 @@
         <tbody>
           <tr *ngFor="let trans of data()?.recentTransactions">
             <td>{{ trans.date | date:'mediumDate' }}</td>
-            
-            <!-- ✅ التعديل هنا: إضافة ( || '' ) لمنع الخطأ لو القيمة غير موجودة -->
+     
             <td>
               <span class="type-badge" [class]="(trans.type || '').toLowerCase()">
                 <i class="bi" 
@@ -62,7 +61,6 @@
               </span>
             </td>
 
-            <!-- ✅ ونفس الشيء هنا للحالة -->
             <td>
               <span class="status-badge" [class]="(trans.status || '').toLowerCase()">
                 {{ trans.status }}

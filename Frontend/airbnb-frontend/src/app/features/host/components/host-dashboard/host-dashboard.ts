@@ -83,10 +83,10 @@ export class HostDashboardComponent implements OnInit {
       this.router.navigate(['/host/messages'], {
         queryParams: {
           guestId: booking.guestId,
-          guestName: booking.guestName, // مهم: الاسم للعرض
+          guestName: booking.guestName, 
           propertyId: booking.propertyId,
-          propertyTitle: booking.propertyTitle, // مهم: العنوان للعرض
-          propertyImage: booking.propertyImage, // اختياري: الصورة
+          propertyTitle: booking.propertyTitle, 
+          propertyImage: booking.propertyImage, 
           autoOpen: 'true'
         }
       });
