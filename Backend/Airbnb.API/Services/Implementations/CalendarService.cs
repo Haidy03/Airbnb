@@ -140,6 +140,11 @@ namespace Airbnb.API.Services.Implementations
                 .FirstOrDefaultAsync(pa =>
                     pa.PropertyId == dto.PropertyId &&
                     pa.Date.Date == dto.Date.Date);
+            TimeSpan? ParseTime(string? timeStr)
+            {
+                if (string.IsNullOrEmpty(timeStr)) return null;
+                return TimeSpan.TryParse(timeStr, out var ts) ? ts : null;
+            }
 
             if (availability == null)
             {
@@ -149,8 +154,8 @@ namespace Airbnb.API.Services.Implementations
                     Date = dto.Date.Date,
                     IsAvailable = dto.IsAvailable,
                     Notes = dto.Notes,
-                    SpecificCheckInTime = dto.CheckInTime,
-                    SpecificCheckOutTime = dto.CheckOutTime,
+                    SpecificCheckInTime = ParseTime(dto.CheckInTime),
+                    SpecificCheckOutTime = ParseTime(dto.CheckOutTime),
                     CreatedAt = DateTime.UtcNow
                 };
                 _context.PropertyAvailabilities.Add(availability);
@@ -159,8 +164,8 @@ namespace Airbnb.API.Services.Implementations
             {
                 availability.IsAvailable = dto.IsAvailable;
                 availability.Notes = dto.Notes;
-                availability.SpecificCheckInTime = dto.CheckInTime;
-                availability.SpecificCheckOutTime = dto.CheckOutTime;
+                availability.SpecificCheckInTime = ParseTime(dto.CheckInTime);
+                availability.SpecificCheckOutTime = ParseTime(dto.CheckOutTime);
             }
 
             await _context.SaveChangesAsync();
