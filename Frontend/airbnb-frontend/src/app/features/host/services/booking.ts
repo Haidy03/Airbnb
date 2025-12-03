@@ -10,7 +10,7 @@ export interface Booking {
   propertyId: number;
   propertyTitle: string;
   propertyImage: string;
-  
+  type: 'Property' | 'Experience' | 'Service';
   // Guest Information
   guestId: string;
   guestName: string;
@@ -71,13 +71,28 @@ export class BookingService {
    * Map API response to Booking model
    */
   private mapApiToBooking(apiData: any): Booking {
+    let imageUrl = apiData.propertyImage || apiData.imageUrl;
+    if (imageUrl) {
+        // لو الرابط مش كامل (نسبي)، نضيف رابط الباك إند
+        if (!imageUrl.startsWith('http') && !imageUrl.includes('assets/')) {
+            const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+            // تأكد من وجود / في البداية
+            if (!imageUrl.startsWith('/')) imageUrl = `/${imageUrl}`;
+            imageUrl = `${baseUrl}${imageUrl}`;
+        }
+    } else {
+        // صورة افتراضية لو مفيش صورة
+        imageUrl = 'assets/images/placeholder.jpg'; // تأكدي أن هذا الملف موجود
+    }
     return {
       id: apiData.id,
       propertyId: apiData.propertyId,
-      propertyTitle: apiData.propertyTitle || '',
-      propertyImage: apiData.propertyImage 
-        ? `${environment.apiUrl.replace('/api', '')}${apiData.propertyImage}`
-        : '/assets/images/placeholder-property.jpg',
+      type: apiData.type || 'Property',
+      propertyTitle: apiData.itemTitle || apiData.propertyTitle,
+      // propertyImage: apiData.propertyImage 
+      //   ? `${environment.apiUrl.replace('/api', '')}${apiData.propertyImage}`
+      //   : '/assets/images/placeholder-property.jpg',
+      propertyImage: imageUrl, 
       guestId: apiData.guestId,
       guestName: apiData.guestName || 'Guest',
       guestEmail: apiData.guestEmail || '',

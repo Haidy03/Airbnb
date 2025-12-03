@@ -223,8 +223,46 @@ namespace Airbnb.API.Services.Implementations
         // ==========================================
         public async Task<IEnumerable<BookingResponseDto>> GetHostBookingsAsync(string hostId)
         {
-            var bookings = await _bookingRepository.GetByHostIdAsync(hostId);
-            return bookings.Select(MapToResponseDto).ToList();
+            var allBookings = new List<BookingResponseDto>();
+
+            // 1. Properties (الكود القديم)
+            var propBookings = await _bookingRepository.GetByHostIdAsync(hostId);
+            allBookings.AddRange(propBookings.Select(MapToResponseDto));
+
+            // 2. Experiences (الجديد)
+            // (تأكدي من وجود دالة GetBookingsByHostIdAsync في ExperienceRepo)
+            var expBookings = await _experienceRepository.GetBookingsByHostIdAsync(hostId);
+            allBookings.AddRange(expBookings.Select(b => new BookingResponseDto
+            {
+                Id = b.Id,
+                Type = "Experience", // ✅ إضافة النوع
+                ItemTitle = b.Experience.Title, // استخدمي خاصية موحدة
+                PropertyImage = b.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? "",
+                GuestName = $"{b.Guest.FirstName} {b.Guest.LastName}",
+                CheckInDate = b.Availability.Date, // وقت التجربة
+                CheckOutDate = b.Availability.Date.AddHours(b.Experience.DurationHours),
+                Status = b.Status.ToString(),
+                TotalPrice = b.TotalPrice,
+                NumberOfGuests = b.NumberOfGuests
+            }));
+
+            var serviceBookings = await _serviceRepository.GetServiceBookingsByHostIdAsync(hostId);
+
+            allBookings.AddRange(serviceBookings.Select(b => new BookingResponseDto
+            {
+                Id = b.Id,
+                Type = "Service", // ✅ إضافة النوع
+                ItemTitle = b.Service.Title,
+                PropertyImage = b.Service.Images.FirstOrDefault(i => i.IsCover)?.Url ?? "",
+                GuestName = $"{b.Guest.FirstName} {b.Guest.LastName}",
+                CheckInDate = b.BookingDate,
+                CheckOutDate = b.BookingDate.AddHours(1), // افتراضي
+                Status = b.Status,
+                TotalPrice = b.TotalPrice,
+                NumberOfGuests = b.NumberOfGuests
+            }));
+
+            return allBookings.OrderBy(b => b.CheckInDate).ToList();
         }
 
         public async Task<IEnumerable<BookingResponseDto>> GetPropertyBookingsAsync(int propertyId, string hostId)
