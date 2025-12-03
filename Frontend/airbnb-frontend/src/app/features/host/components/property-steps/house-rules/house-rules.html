@@ -1,10 +1,16 @@
-
 <div class="page-container">
   <header class="header">
-    <!-- ... Logo & Actions same as other steps ... -->
+    <div class="logo" [routerLink]="['/']">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 1c-5.5 0-10 4.5-10 10 0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z"/>
+      </svg>
+    </div>
     <div class="header-actions">
        <button class="btn-secondary" (click)="showQuestionsModal()">Questions?</button>
-       <button class="btn-primary" (click)="saveAndExit()">Save & exit</button>
+       <button class="btn-primary" (click)="saveAndExit()" [disabled]="isLoading()">
+         <span *ngIf="!isLoading()">Save & exit</span>
+         <span *ngIf="isLoading()">Saving...</span>
+       </button>
     </div>
   </header>
 
@@ -15,7 +21,7 @@
 
       <form [formGroup]="rulesForm" class="rules-form">
         
-        <!-- Time Settings -->
+        <!-- Time Settings ONLY -->
         <div class="time-section">
           <div class="form-group">
             <label>Check-in time</label>
@@ -30,19 +36,6 @@
           </div>
         </div>
 
-        <hr class="divider">
-
-        <!-- Additional Rules -->
-        <!-- <div class="form-group">
-          <label>Additional rules (Optional)</label>
-          <p class="hint">Quiet hours, no parties, pet policy, etc.</p>
-          <textarea 
-            formControlName="houseRules" 
-            rows="6" 
-            placeholder="e.g. Please take off shoes, quiet hours after 10 PM..."
-            class="text-area"></textarea>
-        </div> -->
-
       </form>
     </div>
   </main>
@@ -50,6 +43,6 @@
   <footer class="footer">
     <div class="progress-bar" style="width: 95%"></div>
     <button class="btn-back" (click)="goBack()">Back</button>
-    <button class="btn-next" [disabled]="isLoading()" (click)="goNext()">Next</button>
+    <button class="btn-next" [disabled]="isLoading() || rulesForm.invalid" (click)="goNext()">Next</button>
   </footer>
 </div>

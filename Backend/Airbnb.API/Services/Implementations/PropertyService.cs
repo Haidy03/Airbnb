@@ -132,8 +132,14 @@ namespace Airbnb.API.Services.Implementations
 
             // --- Rules & Booking ---
             if (dto.HouseRules != null) property.HouseRules = dto.HouseRules;
-            if (dto.CheckInTime.HasValue) property.CheckInTime = dto.CheckInTime;
-            if (dto.CheckOutTime.HasValue) property.CheckOutTime = dto.CheckOutTime;
+            if (!string.IsNullOrEmpty(dto.CheckInTime) && TimeSpan.TryParse(dto.CheckInTime, out var inTime))
+            {
+                property.CheckInTime = inTime;
+            }
+            if (!string.IsNullOrEmpty(dto.CheckOutTime) && TimeSpan.TryParse(dto.CheckOutTime, out var outTime))
+            {
+                property.CheckOutTime = outTime;
+            }
             if (dto.MinimumStay.HasValue) property.MinimumStay = dto.MinimumStay.Value;
             if (dto.RoomType != null) property.RoomType = dto.RoomType;
             if (dto.IsInstantBook.HasValue) property.IsInstantBook = dto.IsInstantBook.Value;
