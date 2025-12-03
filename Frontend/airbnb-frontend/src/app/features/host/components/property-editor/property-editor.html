@@ -205,8 +205,9 @@
         <div class="form-group">
           <label>Listing type</label>
           <div class="select-wrapper">
-            <select [(ngModel)]="tempRoomType">
-              <option *ngFor="let room of roomTypesList" [value]="room">{{ room }}</option>
+            <select [(ngModel)]="tempRoomType" (ngModelChange)="tempRoomType.set($event)">
+              <option [ngValue]="null" disabled>Select listing type</option>
+              <option *ngFor="let room of roomTypesList" [value]="room.value">{{ room.label }}</option>
             </select>
             <span class="chevron">▼</span>
           </div>

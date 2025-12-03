@@ -69,7 +69,11 @@ export class PropertyEditorComponent implements OnInit {
     { id: 12, name: 'Cycladic home' }
   ];
 
-  roomTypesList = ['Entire place', 'Private room', 'Shared room'];
+  roomTypesList = [
+    { value: 'entire_place', label: 'Entire place' },
+    { value: 'private_room', label: 'Private room' },
+    { value: 'shared_room', label: 'Shared room' }
+  ];
   
   // Full Amenities List
   availableAmenities = [
