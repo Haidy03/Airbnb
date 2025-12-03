@@ -22,8 +22,8 @@ public class PaymentService
                 {
                     PriceData = new SessionLineItemPriceDataOptions
                     {
-                        UnitAmount = (long)(amount * 100), // USD cents
-                        Currency = "usd",
+                        UnitAmount = (long)(amount * 100), 
+                        Currency = "egp",
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
                             Name = propertyTitle,
