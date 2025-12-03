@@ -49,6 +49,7 @@ namespace Airbnb.API.Controllers.Guest
         // ---------------------------------------------------------
         // 2. (Request -> Approved -> Pay)
         // ---------------------------------------------------------
+        
         [HttpPost("pay-booking/{bookingId}")]
         public async Task<IActionResult> PayForBooking(int bookingId)
         {
@@ -63,7 +64,6 @@ namespace Airbnb.API.Controllers.Guest
                 if (booking == null)
                     return NotFound(new { message = "Booking not found" });
 
-              
                 if (booking.Status != "AwaitingPayment")
                 {
                     return BadRequest(new { message = "This booking is not awaiting payment." });

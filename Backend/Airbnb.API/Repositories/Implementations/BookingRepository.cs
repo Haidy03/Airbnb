@@ -16,22 +16,22 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task<Booking?> GetByIdAsync(int id)
         {
             return await _context.Bookings
-                .Include(b => b.Guest) // Load Guest
-                .Include(b => b.Property) // Load Property
-                    .ThenInclude(p => p.Images) // Load Images
+                .Include(b => b.Guest) 
+                .Include(b => b.Property) 
+                    .ThenInclude(p => p.Images) 
                 .Include(b => b.Property)
-                    .ThenInclude(p => p.Host) // ✅ ADD THIS: Load the Host details!
+                    .ThenInclude(p => p.Host)
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
         public async Task<List<Booking>> GetBookingsByGuestIdAsync(string guestId)
         {
             return await _context.Bookings
                 .Include(b => b.Property)
-                .ThenInclude(p => p.Images) // عشان الصورة تظهر في الـ Trips
+                .ThenInclude(p => p.Images) 
                 .Include(b => b.Property)
-                .ThenInclude(p => p.Host)   // عشان اسم المضيف يظهر
+                .ThenInclude(p => p.Host)   
                 .Where(b => b.GuestId == guestId)
-                .OrderByDescending(b => b.CreatedAt) // الأحدث أولاً
+                .OrderByDescending(b => b.CreatedAt) 
                 .ToListAsync();
         }
         public async Task<IEnumerable<Booking>> GetAllAsync()

@@ -25,7 +25,6 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<List<ServiceBooking>> GetServiceBookingsByHostIdAsync(string hostId);
 
 
-        //reviews rahma
 
         Task<ServiceBooking?> GetServiceBookingByIdAsync(int bookingId);
 

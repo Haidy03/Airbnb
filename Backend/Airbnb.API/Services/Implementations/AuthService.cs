@@ -81,30 +81,23 @@ namespace Airbnb.API.Services.Implementations
         //}
         public async Task<AuthResponseDto> LoginUserAsync(LoginDto loginDto)
         {
-            // 1. محاولة البحث بالإيميل
             var user = await _userManager.FindByEmailAsync(loginDto.Identifier);
 
-            // 2. لو ملقناش بالإيميل، نحاول باسم المستخدم (Username)
             if (user == null)
             {
                 user = await _userManager.FindByNameAsync(loginDto.Identifier);
             }
 
-            // 3. (التعديل الجديد) لو لسه ملقناش، نحاول برقم الهاتف
             if (user == null)
             {
-                // بنبحث في قاعدة البيانات عن مستخدم عنده نفس رقم الهاتف
-                // (تأكدي إن الرقم متسجل بنفس التنسيق +2010...)
                 user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == loginDto.Identifier);
             }
 
-            // لو بعد كل ده ملقناش مستخدم، يبقى البيانات غلط
             if (user == null)
             {
-                return null; // Controller will handle this as 401
+                return null; 
             }
 
-            // 4. التحقق من كلمة المرور
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
             if (!result.Succeeded)
@@ -112,7 +105,16 @@ namespace Airbnb.API.Services.Implementations
                 return null;
             }
 
-            // 5. إنشاء التوكن
+            if (user.IsBlocked)
+            {
+                throw new UnauthorizedAccessException($"Your account is blocked. Reason: {user.BlockReason ?? "Contact support"}");
+            }
+
+            if (!user.IsActive)
+            {
+                throw new UnauthorizedAccessException("Your account is deactivated.");
+            }
+
             var token = await GenerateJwtToken(user);
 
             return new AuthResponseDto
@@ -122,7 +124,6 @@ namespace Airbnb.API.Services.Implementations
                 Email = user.Email
             };
         }
-        // ==========================================
 
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
@@ -174,7 +175,6 @@ namespace Airbnb.API.Services.Implementations
                 IsVerified = user.IsVerified,
                 VerificationStatus = user.VerificationStatus,
 
-                // ✅ Map the new fields back to the DTO
                 AboutMe = user.AboutMe,
                 WhereToGo = user.WhereToGo,
                 MyWork = user.MyWork,
@@ -200,7 +200,6 @@ namespace Airbnb.API.Services.Implementations
                 return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "User not found." });
             }
 
-            // 1. Basic Info
             user.FirstName = updateDto.FirstName;
             user.LastName = updateDto.LastName;
 
@@ -244,12 +243,9 @@ namespace Airbnb.API.Services.Implementations
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                // Don't reveal that the user does not exist.
-                // Return null, and the controller will handle sending a generic success message.
                 return null;
             }
 
-            // Generate the password reset token using the UserManager
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
             return token;
@@ -263,7 +259,6 @@ namespace Airbnb.API.Services.Implementations
                 return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "User not found." });
             }
 
-            // --- This is the "Soft Delete" ---
             // We deactivate the user instead of permanently deleting them.
             user.IsActive = false;
             user.UpdatedAt = DateTime.UtcNow;
@@ -314,13 +309,11 @@ namespace Airbnb.API.Services.Implementations
             var user = await _userManager.FindByEmailAsync(resetDto.Email);
             if (user == null)
             {
-                // Don't reveal that the user does not exist.
                 return IdentityResult.Failed(new IdentityError { Code = "UserNotFound", Description = "Invalid password reset request." });
             }
 
             string decodedToken = Uri.UnescapeDataString(resetDto.Token);
 
-            // ✅ 2. Extra Safety: Sometimes web browsers turn '+' into ' ' (space).
             if (decodedToken.Contains(" "))
             {
                 decodedToken = decodedToken.Replace(" ", "+");

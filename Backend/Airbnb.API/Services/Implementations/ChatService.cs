@@ -11,23 +11,23 @@ namespace Airbnb.API.Services.Implementations
     public class ChatService : IChatService
     {
         private readonly IPropertyRepository _propertyRepository;
-        private readonly IExperienceRepository _experienceRepository; // <--- NEW: Inject this
-        private readonly IServiceRepository _serviceRepository;       // <--- NEW: Inject this
+        private readonly IExperienceRepository _experienceRepository; 
+        private readonly IServiceRepository _serviceRepository;       
         private readonly IConfiguration _config;
         private readonly HttpClient _httpClient;
         private readonly IMemoryCache _cache;
 
         public ChatService(
             IPropertyRepository propertyRepository,
-            IExperienceRepository experienceRepository, // <--- Add parameter
-            IServiceRepository serviceRepository,       // <--- Add parameter
+            IExperienceRepository experienceRepository, 
+            IServiceRepository serviceRepository,      
             IConfiguration config,
             HttpClient httpClient,
             IMemoryCache cache)
         {
             _propertyRepository = propertyRepository;
-            _experienceRepository = experienceRepository; // <--- Assign
-            _serviceRepository = serviceRepository;       // <--- Assign
+            _experienceRepository = experienceRepository; 
+            _serviceRepository = serviceRepository;       
             _config = config;
             _httpClient = httpClient;
             _cache = cache;
@@ -35,7 +35,6 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<ChatResponseDto> GetResponseAsync(string userMessage, string userId)
         {
-            // 1. RETRIEVE HISTORY
             string cacheKey = $"ChatHistory_{userId}";
             if (!_cache.TryGetValue(cacheKey, out List<string> conversationHistory))
             {
@@ -44,8 +43,8 @@ namespace Airbnb.API.Services.Implementations
 
             // 2. FETCH DATA (The Missing Part)
             var properties = await _propertyRepository.GetFeaturedPropertiesAsync(10);
-            var experiences = await _experienceRepository.GetFeaturedExperiencesAsync(10); // <--- Get Experiences
-            var services = await _serviceRepository.GetFeaturedServicesAsync();            // <--- Get Services
+            var experiences = await _experienceRepository.GetFeaturedExperiencesAsync(10); 
+            var services = await _serviceRepository.GetFeaturedServicesAsync();            
 
             // 3. BUILD CONTEXT
             var contextBuilder = new StringBuilder();

@@ -201,10 +201,8 @@ export class AdminPropertiesComponent implements OnInit {
       return url;
     }
     const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
-    let cleanPath = url;
-    if (!cleanPath.startsWith('/')) {
-        cleanPath = `/${cleanPath}`;
-    }
+    let cleanPath = url.startsWith('/') ? url : `/${url}`;
+    
     return `${baseUrl}${cleanPath}`;
   }
 

@@ -13,7 +13,6 @@ namespace Airbnb.API.DTOs.Review
         [MaxLength(1000, ErrorMessage = "Comment cannot exceed 1000 characters")]
         public string? Comment { get; set; }
 
-        // Optional detailed ratings (for property reviews)
         [Range(1, 5, ErrorMessage = "Cleanliness rating must be between 1 and 5")]
         public int? CleanlinessRating { get; set; }
 

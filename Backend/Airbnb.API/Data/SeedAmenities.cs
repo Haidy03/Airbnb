@@ -25,7 +25,6 @@ namespace Airbnb.API.Data
                     new Amenity { Name = "EV charger", Category = "Parking", Icon = "zap", IsActive = true },
                     new Amenity { Name = "Smoke alarm", Category = "Safety", Icon = "alert-triangle", IsActive = true },
                     new Amenity { Name = "Carbon monoxide alarm", Category = "Safety", Icon = "alert-circle", IsActive = true },
-                    // Add more as needed...
                 };
 
                 context.Amenities.AddRange(amenities);

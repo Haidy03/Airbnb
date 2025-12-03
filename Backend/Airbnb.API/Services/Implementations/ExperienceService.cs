@@ -230,18 +230,14 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<bool> DeleteAvailabilityAsync(int availabilityId, string hostId)
         {
-            // 1. جلب الموعد
             var availability = await _experienceRepository.GetAvailabilityByIdAsync(availabilityId);
 
             if (availability == null)
                 return false;
 
-            // 2. التأكد من أن الهوست هو صاحب التجربة
-            // (نحتاج نتأكد ان الـ Experience loaded، الدالة GetAvailabilityByIdAsync في الريبوزيتوري بتعمل Include للـ Experience)
             if (availability.Experience.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to delete this schedule");
 
-            // 3. الحذف
             await _experienceRepository.DeleteAvailabilityAsync(availabilityId);
             return true;
         }
@@ -276,17 +272,14 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<ExperienceBookingDto> BookExperienceAsync(int experienceId, string guestId, BookExperienceDto dto)
         {
-            // 1. التأكد من وجود التجربة
             var experience = await _experienceRepository.GetByIdWithDetailsAsync(experienceId);
             if (experience == null)
                 throw new KeyNotFoundException("Experience not found");
 
-            // 2. التأكد من وجود الموعد (Availability)
             var availability = await _experienceRepository.GetAvailabilityByIdAsync(dto.AvailabilityId);
             if (availability == null)
                 throw new KeyNotFoundException("Availability slot not found");
 
-            // 3. التحقق من صلاحية الموعد
             if (!availability.IsAvailable)
                 throw new InvalidOperationException("This time slot is no longer available");
 
@@ -296,7 +289,6 @@ namespace Airbnb.API.Services.Implementations
             if (dto.NumberOfGuests < experience.MinGroupSize || dto.NumberOfGuests > experience.MaxGroupSize)
                 throw new InvalidOperationException($"Group size must be between {experience.MinGroupSize} and {experience.MaxGroupSize}");
 
-            // منع الحجز المكرر
             var userBookings = await _experienceRepository.GetBookingsByGuestIdAsync(guestId);
             var existingBooking = userBookings.FirstOrDefault(b =>
                 b.AvailabilityId == dto.AvailabilityId &&
@@ -307,7 +299,6 @@ namespace Airbnb.API.Services.Implementations
                 throw new InvalidOperationException("You have already booked this time slot.");
             }
 
-            // 4. الحجز
             var totalPrice = experience.PricePerPerson * dto.NumberOfGuests;
 
             var booking = new ExperienceBooking
@@ -326,7 +317,6 @@ namespace Airbnb.API.Services.Implementations
 
             var createdBooking = await _experienceRepository.AddBookingAsync(booking);
 
-            // تحديث الأماكن المتاحة
             availability.AvailableSpots -= dto.NumberOfGuests;
             if (availability.AvailableSpots <= 0)
             {
@@ -334,7 +324,6 @@ namespace Airbnb.API.Services.Implementations
             }
             await _experienceRepository.UpdateAvailabilityAsync(availability);
 
-            // جلب الحجز المحفوظ مع كافة العلاقات
             var savedBooking = await _experienceRepository.GetBookingByIdAsync(createdBooking.Id);
 
             return await MapBookingToDto(savedBooking);
@@ -360,8 +349,6 @@ namespace Airbnb.API.Services.Implementations
             if (booking.GuestId != userId && booking.Experience.HostId != userId)
                 throw new UnauthorizedAccessException("Not authorized");
 
-            // ✅ شرط الـ 24 ساعة
-            // booking.Availability.Date هو تاريخ التجربة
             if (booking.GuestId == userId && booking.Availability.Date < DateTime.UtcNow.AddHours(24))
             {
                 throw new InvalidOperationException("Cannot cancel less than 24 hours before experience starts.");
@@ -369,7 +356,6 @@ namespace Airbnb.API.Services.Implementations
 
             booking.Status = ExperienceBookingStatus.Cancelled;
 
-            // إرجاع المقاعد المتاحة
             var availability = booking.Availability;
             availability.AvailableSpots += booking.NumberOfGuests;
             await _experienceRepository.UpdateAvailabilityAsync(availability);
@@ -481,7 +467,6 @@ namespace Airbnb.API.Services.Implementations
             return availability;
         }
 
-        // Helper Methods
         private async Task<ExperienceDto> MapToDto(Experience experience)
         {
             if (experience == null) return null;
@@ -560,16 +545,14 @@ namespace Airbnb.API.Services.Implementations
 
                 ExperienceImage = booking.Experience?.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
                                   ?? booking.Experience?.Images?.FirstOrDefault()?.ImageUrl
-                                  ?? "assets/default-experience.jpg", // صورة افتراضية
+                                  ?? "assets/default-experience.jpg", 
 
                 GuestId = booking.GuestId,
 
-                // التحقق من أن Guest ليس Null
                 GuestName = booking.Guest != null
                             ? $"{booking.Guest.FirstName} {booking.Guest.LastName}"
                             : "Unknown Guest",
 
-                // التحقق من أن Availability ليست Null
                 Date = booking.Availability?.Date ?? DateTime.MinValue,
                 StartTime = booking.Availability?.StartTime ?? TimeSpan.Zero,
                 EndTime = booking.Availability?.EndTime ?? TimeSpan.Zero,
@@ -677,23 +660,20 @@ namespace Airbnb.API.Services.Implementations
         
         public async Task<List<ExperienceDto>> GetAllExperiencesAsync(string? status, string? searchTerm, int pageNumber, int pageSize)
         {
-            // نبدأ الاستعلام
-            var query = _experienceRepository.GetQueryable(); // سنحتاج إضافة دالة GetQueryable في الريبوزيتوري أو استخدام Context مباشرة لو متاح
+            var query = _experienceRepository.GetQueryable();
 
-            // ✅ فلترة حسب الحالة
             if (!string.IsNullOrEmpty(status) && status != "All")
             {
                 if (Enum.TryParse<ExperienceStatus>(status, true, out var parsedStatus))
                 {
                     query = query.Where(e => e.Status == parsedStatus);
                 }
-                else if (status == "PendingApproval") // Frontend sends "PendingApproval"
+                else if (status == "PendingApproval")
                 {
                     query = query.Where(e => e.Status == ExperienceStatus.PendingApproval);
                 }
             }
 
-            // ✅ بحث بالنص
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 searchTerm = searchTerm.ToLower();
@@ -705,7 +685,6 @@ namespace Airbnb.API.Services.Implementations
                 );
             }
 
-            // ✅ ترتيب وتقسيم الصفحات
             var experiences = await query
                 .Include(e => e.Host)
                 .Include(e => e.Category)
@@ -715,7 +694,6 @@ namespace Airbnb.API.Services.Implementations
                 .Take(pageSize)
                 .ToListAsync();
 
-            // تحويل لـ DTO
             var dtos = new List<ExperienceDto>();
             foreach (var exp in experiences)
             {
@@ -730,7 +708,6 @@ namespace Airbnb.API.Services.Implementations
 
             experience.Status = status;
 
-            // لو رجعناها Pending، ممكن نمسح سبب الرفض عشان ينظف
             if (status == ExperienceStatus.PendingApproval)
             {
                 experience.RejectionReason = null;
@@ -756,7 +733,6 @@ namespace Airbnb.API.Services.Implementations
             return true;
         }
 
-        // ✅ دوال جديدة للتحكم في ريفيوهات التجارب
 
         public async Task<ExperienceReviewDto?> GetReviewByIdAsync(int reviewId)
         {

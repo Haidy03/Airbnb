@@ -131,12 +131,10 @@ namespace Airbnb.API.Repositories.Implementations
 
         public async Task<int> GetUnreadCountAsync(string userId)
         {
-            // التعديل: نتأكد أن الرسالة تابعة لمحادثة موجودة فعلياً في الجدول
             return await _context.Messages
                 .Where(m => m.ReceiverId == userId
                             && !m.IsRead
                             && m.DeletedAt == null
-                            // ✅ الشرط الجديد: التأكد أن المحادثة موجودة ولم تحذف
                             && _context.Conversations.Any(c => c.Id == m.ConversationId))
                 .CountAsync();
         }

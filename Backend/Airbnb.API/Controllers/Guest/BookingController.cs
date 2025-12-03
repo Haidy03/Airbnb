@@ -78,7 +78,6 @@ namespace Airbnb.API.Controllers.Guest
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // السيرفس الآن بترجع List<TripDto> فيها الشقق والتجارب معاً
             var result = await _bookingService.GetGuestBookingsAsync(userId);
 
             return Ok(result);
@@ -124,7 +123,6 @@ namespace Airbnb.API.Controllers.Guest
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                // هذه الدالة ستقوم بتحويل الحالة من AwaitingPayment إلى Confirmed
                 var success = await _bookingService.ConfirmBookingAfterPaymentAsync(id, userId);
 
                 if (!success)

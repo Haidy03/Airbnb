@@ -12,19 +12,19 @@ namespace Airbnb.API.Services.Implementations
         private readonly IMessageRepository _messageRepository;
         private readonly IPropertyRepository _propertyRepository;
         private readonly IExperienceRepository _experienceRepository;
-        private readonly IServiceRepository _serviceRepository; // ✅ Service Repo Added
+        private readonly IServiceRepository _serviceRepository;
         private readonly ILogger<MessageService> _logger;
 
         public MessageService(
             IMessageRepository messageRepository,
             IPropertyRepository propertyRepository,
-            IServiceRepository serviceRepository, // ✅ Inject Here
+            IServiceRepository serviceRepository,
             IExperienceRepository experienceRepository,
         ILogger<MessageService> logger)
         {
             _messageRepository = messageRepository;
             _propertyRepository = propertyRepository;
-            _serviceRepository = serviceRepository; // ✅ Assign Here
+            _serviceRepository = serviceRepository;
             _experienceRepository = experienceRepository;
             _logger = logger;
         }
@@ -58,7 +58,6 @@ namespace Airbnb.API.Services.Implementations
             return MapToConversationDto(conversation, userId);
         }
 
-        // ✅ Updated Create Logic
         public async Task<ConversationDto> CreateConversationAsync(string senderId, CreateConversationDto dto)
         {
             string hostId;
@@ -106,7 +105,7 @@ namespace Airbnb.API.Services.Implementations
             var conversation = new Conversation
             {
                 PropertyId = dto.PropertyId,
-                ServiceId = dto.ServiceId, // ✅ Save ServiceId
+                ServiceId = dto.ServiceId, 
                 ExperienceId = dto.ExperienceId,
                 HostId = hostId,
                 GuestId = guestId,
@@ -210,7 +209,7 @@ namespace Airbnb.API.Services.Implementations
         }
 
         // ==========================================
-        // ✅ Updated Helper to Support Services
+        // Helper to Support Services
         // ==========================================
         private ConversationDto MapToConversationDto(Conversation conversation, string currentUserId)
         {
@@ -220,7 +219,7 @@ namespace Airbnb.API.Services.Implementations
             var unreadCount = conversation.Messages?
                 .Count(m => m.ReceiverId == currentUserId && !m.IsRead && m.DeletedAt == null) ?? 0;
 
-            // ✅ Determine Title & Image (Property OR Service)
+            // Determine Title & Image (Property OR Service)
             string title = "Unknown";
             string image = "https://via.placeholder.com/150";
 
@@ -236,7 +235,7 @@ namespace Airbnb.API.Services.Implementations
                         .Select(i => i.ImageUrl)
                         .FirstOrDefault() ?? image;
             }
-            else if (conversation.Service != null) // ✅ Service Logic
+            else if (conversation.Service != null) 
             {
                 title = conversation.Service.Title;
                 image = conversation.Service.Images?
@@ -259,10 +258,10 @@ namespace Airbnb.API.Services.Implementations
             {
                 Id = conversation.Id,
                 PropertyId = conversation.PropertyId,
-                ServiceId = conversation.ServiceId, // ✅
+                ServiceId = conversation.ServiceId,
 
-                PropertyTitle = title, // ✅ Unified Title
-                PropertyImage = image, // ✅ Unified Image
+                PropertyTitle = title, 
+                PropertyImage = image, 
 
                 BookingId = conversation.BookingId,
 

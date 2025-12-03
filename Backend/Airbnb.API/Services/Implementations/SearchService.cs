@@ -8,7 +8,7 @@ namespace Airbnb.API.Services.Implementations
     public class SearchService : ISearchService
     {
         private readonly IPropertyRepository _propertyRepository;
-        private readonly IMapper _mapper; // Inject Mapper
+        private readonly IMapper _mapper; 
 
         public SearchService(IPropertyRepository propertyRepository, IMapper mapper)
         {

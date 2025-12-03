@@ -47,7 +47,7 @@ namespace Airbnb.API.Models
         public string? Address { get; set; }
         public string? City { get; set; }
         public string? Country { get; set; }
-        public string? AboutMe { get; set; } // Maps to Frontend 'aboutMe'
+        public string? AboutMe { get; set; } 
         public string? WhereToGo { get; set; }
         public string? MyWork { get; set; }
         public string? SpendTime { get; set; }

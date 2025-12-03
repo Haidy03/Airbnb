@@ -188,7 +188,6 @@ namespace Airbnb.API.Controllers.Review
         /// <summary>
         /// Get aggregated reviews for the current host
         /// </summary>
-        // تأكدي أن [HttpGet("host")] مكتوبة هكذا
         [Authorize]
         [HttpGet("host")]
         public async Task<ActionResult<HostReviewsResponseDto>> GetHostReviews()
@@ -196,7 +195,6 @@ namespace Airbnb.API.Controllers.Review
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                // ... باقي الكود
                 var result = await _reviewService.GetHostReviewsAsync(userId);
                 return Ok(new { success = true, data = result });
             }

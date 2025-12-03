@@ -15,7 +15,7 @@ namespace Airbnb.API.Models
 
         [Required]
         [MaxLength(200)]
-        public string Title { get; set; } // e.g., "Authentic Roman Meal"
+        public string Title { get; set; } 
 
         [Required]
         public string Description { get; set; }
@@ -31,13 +31,13 @@ namespace Airbnb.API.Models
         // --- Pricing Logic ---
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        public decimal PricePerUnit { get; set; } // e.g., 3000 EGP
+        public decimal PricePerUnit { get; set; } 
 
         [Required]
-        public ServicePricingUnit PricingUnit { get; set; } // e.g., PerGuest
+        public ServicePricingUnit PricingUnit { get; set; } 
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal MinimumCost { get; set; } = 0; // e.g., 9000 EGP (The minimum spend required)
+        public decimal MinimumCost { get; set; } = 0; 
 
         [Required]
         [MaxLength(10)]
@@ -66,7 +66,7 @@ namespace Airbnb.API.Models
 
         public string? RejectionReason { get; set; }
         public bool IsActive { get; set; } = true;
-        public double AverageRating { get; set; } // Cached rating
+        public double AverageRating { get; set; } 
         public int ReviewCount { get; set; }
 
         public string? CancellationPolicy { get; set; }
