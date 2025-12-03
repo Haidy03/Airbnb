@@ -252,9 +252,9 @@
         </div>
       </div>
 
-      <div class="settings-divider"></div>
+      <!-- <div class="settings-divider"></div>
 
-      <!-- Availability Settings -->
+      
       <div class="settings-section">
         <div class="settings-header">
           <h3 class="settings-title">Availability settings</h3>
@@ -282,7 +282,7 @@
             </span>
           </div>
         </div>
-      </div>
+      </div> -->
 
     </div>
 
@@ -408,7 +408,7 @@
           </div>
           </div>
           
-          <h3 class="section-title">Availability</h3>
+          <!-- <h3 class="section-title">Availability</h3>
           
           <div class="form-row">
             <div class="form-group">
@@ -444,7 +444,7 @@
                 formControlName="preparationTime"
                 min="0">
             </div>
-          </div>
+          </div> -->
         </div>
         
         <div class="modal-footer">
@@ -465,14 +465,12 @@
     <!-- Header -->
     <div class="sidebar-header">
       <button class="close-sidebar-btn" (click)="closeDaySidebar()">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+        <svg width="16" height="16" viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentcolor;stroke-width:3;overflow:visible" aria-hidden="true" role="presentation" focusable="false"><path d="m6 6 20 20M26 6 6 26"></path></svg>
       </button>
       
       <div class="sidebar-date">
         <h3>{{ formatSelectedDate() }}</h3>
-        <p class="day-name">{{ getSelectedDayName() }}</p>
+        <p class="day-name" style="color: #717171; margin: 0;">{{ getSelectedDayName() }}</p>
       </div>
     </div>
 
@@ -528,7 +526,7 @@
         </div>
         
         <div class="price-comparison" *ngIf="dayDetailsForm.value.customPrice">
-          <span class="original-price">${{ settings().basePrice }}</span>
+          <span class="original-price">EGP {{ settings().basePrice }}</span>
           <span class="discount-badge" *ngIf="getPriceDiscount() > 0">
             -{{ getPriceDiscount() }}%
           </span>
@@ -536,7 +534,7 @@
       </div>
       
       <p class="price-note">
-        Base price: ${{ settings().basePrice }} per night
+        Base price: EGP {{ settings().basePrice }} per night
       </p>
     </div>
 
