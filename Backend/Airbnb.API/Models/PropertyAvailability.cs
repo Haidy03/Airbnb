@@ -26,6 +26,8 @@ namespace Airbnb.API.Models
 
         [MaxLength(200)]
         public string? Notes { get; set; }
+        public TimeSpan? SpecificCheckInTime { get; set; }
+        public TimeSpan? SpecificCheckOutTime { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

@@ -128,6 +128,19 @@ namespace Airbnb.API.Repositories.Implementations
             await _context.SaveChangesAsync();
         }
 
+        public async Task<List<ServiceBooking>> GetServiceBookingsByHostIdAsync(string hostId)
+        {
+            return await _context.ServiceBookings
+                .Include(b => b.Service).ThenInclude(s => s.Images)
+                .Include(b => b.Guest)
+                .Where(b => b.Service.HostId == hostId)
+                .OrderByDescending(b => b.BookingDate)
+                .ToListAsync();
+        }
+
+
+        //reviews rahma
+
         public async Task<ServiceBooking?> GetServiceBookingByIdAsync(int bookingId)
         {
             return await _context.ServiceBookings

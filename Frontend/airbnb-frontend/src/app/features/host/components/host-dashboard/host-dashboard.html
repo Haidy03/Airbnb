@@ -49,7 +49,9 @@
 
         <div class="booking-info">
           <div class="booking-header">
-            <!-- ✅ الحالة الديناميكية -->
+             <span class="type-badge" [class]="booking.type?.toLowerCase()">
+              {{ booking.type }}
+            </span>
             <span class="event-badge" 
                   [class.status-confirmed]="booking.status === 'Confirmed'"
                   [class.status-pending]="booking.status === 'Pending'"
@@ -105,6 +107,9 @@
 
         <div class="booking-info">
           <div class="booking-header">
+             <span class="type-badge" [class]="booking.type?.toLowerCase()">
+              {{ booking.type }}
+            </span>
             <!-- ✅ تم التعديل هنا أيضاً لإزالة كلمة Confirmed الثابتة -->
             <span class="event-badge" 
                   [class.status-confirmed]="booking.status === 'Confirmed'"

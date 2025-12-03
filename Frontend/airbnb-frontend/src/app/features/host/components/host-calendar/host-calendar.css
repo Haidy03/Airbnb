@@ -84,9 +84,12 @@
 
 /* ===== CENTER: CALENDAR ===== */
 .calendar-section {
-  padding: 32px 40px;
+  padding: 24px; 
   overflow-y: auto;
+  overflow-x: hidden; 
   background: white;
+  width: 100%; 
+  box-sizing: border-box;
 }
 
 /* Calendar Header */
@@ -236,23 +239,24 @@
 /* Calendar Grid */
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, 1fr); 
   gap: 8px;
+  width: 100%;
 }
 
 /* Calendar Day */
 .calendar-day {
   position: relative;
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 0.8; 
   background: white;
   border: 1px solid #EBEBEB;
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 8px; 
+  padding: 8px; 
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   flex-direction: column;
-  min-height: 100px;
+  min-height: 80px; 
 }
 
 .calendar-day:hover:not(.past-date):not(.other-month) {
@@ -347,7 +351,7 @@
 
 /* Day Number */
 .day-number {
-  font-size: 14px;
+  font-size: 13px; 
   font-weight: 600;
   color: #222;
   margin-bottom: 4px;
@@ -355,14 +359,13 @@
 
 /* Booking Badge */
 .booking-badge {
-  padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 6px;
   border-radius: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .badge-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   color: #222;
   overflow: hidden;
@@ -373,9 +376,9 @@
 
 /* Check Indicators */
 .check-indicator {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  padding: 2px 6px;
+  padding: 2px 4px;
   border-radius: 3px;
   margin-bottom: 2px;
   text-align: center;
@@ -843,11 +846,11 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 420px;
+  width: 400px;
   height: 100vh;
   background: white;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
-  z-index: 1001;
+  z-index: 3000;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -871,12 +874,15 @@
   padding: 24px;
   border-bottom: 1px solid #EBEBEB;
   z-index: 10;
+  display: flex; 
+  flex-direction: column; 
+  align-items: flex-start;
 }
 
 .close-sidebar-btn {
-  position: absolute;
-  top: 16px;
-  left: 16px;
+  position: absolute; 
+  top: 20px;
+  left: 20px;
   width: 32px;
   height: 32px;
   display: flex;
@@ -894,7 +900,9 @@
 }
 
 .sidebar-date {
-  margin-top: 32px;
+  margin-top: 40px; 
+  width: 100%;
+  text-align: center; 
 }
 
 .sidebar-date h3 {
@@ -1017,25 +1025,34 @@ input:checked + .toggle-slider:before {
   position: relative;
   display: flex;
   align-items: center;
+  border: 1px solid #B0B0B0;
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 56px;
 }
 
 .currency-symbol {
-  position: absolute;
-  left: 16px;
-  font-size: 24px;
+  font-size: 16px;
   font-weight: 600;
   color: #222;
-  pointer-events: none;
+  margin-right: 8px;
+  pointer-events: none; 
 }
 
 .price-input {
-  width: 100%;
-  padding: 16px 16px 16px 40px;
-  font-size: 24px;
+  border: none; 
+  outline: none;
+  font-size: 16px;
   font-weight: 600;
-  border: 2px solid #DDDDDD;
-  border-radius: 12px;
-  transition: border-color 0.2s;
+  color: #222;
+  width: 100%;
+  background: transparent;
+  height: 100%;
+}
+.price-input::-webkit-outer-spin-button,
+.price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .price-input:focus {
@@ -1113,10 +1130,27 @@ input:checked + .toggle-slider:before {
   gap: 8px;
 }
 
+.settings-content {
+  display: flex;
+  flex-direction: column;
+}
+
 .setting-item label {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600; 
   color: #222;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.time-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #B0B0B0;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #222;
+  font-family: inherit;
 }
 
 .time-input,
@@ -1136,8 +1170,12 @@ input:checked + .toggle-slider:before {
 }
 
 .notes-input {
-  resize: vertical;
-  min-height: 80px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #B0B0B0;
+  border-radius: 8px;
+  resize: none;
+  font-family: inherit;
 }
 
 /* Booking Info */

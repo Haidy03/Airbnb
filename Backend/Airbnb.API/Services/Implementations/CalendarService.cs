@@ -82,11 +82,13 @@ namespace Airbnb.API.Services.Implementations
 
                 var basePrice = property.PricePerNight;
                 var price = dayAvailability?.CustomPrice ?? basePrice;
-
+                var isActuallyAvailable = dayAvailability != null
+                                        ? dayAvailability.IsAvailable
+                                        : (dayBooking == null);
                 days.Add(new CalendarDayDto
                 {
                     Date = currentDate,
-                    IsAvailable = dayAvailability?.IsAvailable ?? (dayBooking == null),
+                    IsAvailable = isActuallyAvailable,
                     Price = price,
                     OriginalPrice = dayAvailability?.CustomPrice.HasValue == true ? basePrice : null,
                     HasBooking = dayBooking != null,
@@ -95,8 +97,10 @@ namespace Airbnb.API.Services.Implementations
                     GuestName = dayBooking?.Guest?.FirstName + " " + dayBooking?.Guest?.LastName,
                     IsCheckIn = isCheckIn,
                     IsCheckOut = isCheckOut,
-                    IsBlocked = dayAvailability?.IsAvailable == false,
-                    Notes = dayAvailability?.Notes
+                    IsBlocked = !isActuallyAvailable,
+                    Notes = dayAvailability?.Notes,
+                    SpecificCheckInTime = dayAvailability?.SpecificCheckInTime,
+                    SpecificCheckOutTime = dayAvailability?.SpecificCheckOutTime
                 });
 
                 currentDate = currentDate.AddDays(1);
@@ -113,7 +117,7 @@ namespace Airbnb.API.Services.Implementations
                 {
                     PropertyId = propertyId,
                     BasePrice = property.PricePerNight,
-                    WeekendPrice = property.CleaningFee, // You might want a separate weekend price field
+                    CleaningFee = property.CleaningFee, // You might want a separate weekend price field
                     MinimumNights = property.MinimumStay,
                     MaximumNights = 365,
                     AdvanceNotice = 0,
@@ -145,6 +149,8 @@ namespace Airbnb.API.Services.Implementations
                     Date = dto.Date.Date,
                     IsAvailable = dto.IsAvailable,
                     Notes = dto.Notes,
+                    SpecificCheckInTime = dto.CheckInTime,
+                    SpecificCheckOutTime = dto.CheckOutTime,
                     CreatedAt = DateTime.UtcNow
                 };
                 _context.PropertyAvailabilities.Add(availability);
@@ -153,6 +159,8 @@ namespace Airbnb.API.Services.Implementations
             {
                 availability.IsAvailable = dto.IsAvailable;
                 availability.Notes = dto.Notes;
+                availability.SpecificCheckInTime = dto.CheckInTime;
+                availability.SpecificCheckOutTime = dto.CheckOutTime;
             }
 
             await _context.SaveChangesAsync();
@@ -297,7 +305,7 @@ namespace Airbnb.API.Services.Implementations
             {
                 PropertyId = propertyId,
                 BasePrice = property.PricePerNight,
-                WeekendPrice = property.CleaningFee,
+                CleaningFee = property.CleaningFee,
                 MinimumNights = property.MinimumStay,
                 MaximumNights = 365,
                 AdvanceNotice = 0,
@@ -319,6 +327,8 @@ namespace Airbnb.API.Services.Implementations
             // Update settings
             if (dto.BasePrice.HasValue)
                 property.PricePerNight = dto.BasePrice.Value;
+            if (dto.CleaningFee.HasValue)
+                property.CleaningFee = dto.CleaningFee.Value;
 
             if (dto.MinimumNights.HasValue)
                 property.MinimumStay = dto.MinimumNights.Value;

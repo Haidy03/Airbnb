@@ -17,6 +17,8 @@
         public bool IsCheckOut { get; set; }
         public bool IsBlocked { get; set; }
         public string? Notes { get; set; }
+        public TimeSpan? SpecificCheckInTime { get; set; }
+        public TimeSpan? SpecificCheckOutTime { get; set; }
     }
 
     /// <summary>
@@ -39,7 +41,7 @@
     {
         public int PropertyId { get; set; }
         public decimal BasePrice { get; set; }
-        public decimal? WeekendPrice { get; set; }
+        public decimal? CleaningFee { get; set; }
         public int MinimumNights { get; set; }
         public int MaximumNights { get; set; }
         public int AdvanceNotice { get; set; } // Days
@@ -57,6 +59,8 @@
         public DateTime Date { get; set; }
         public bool IsAvailable { get; set; }
         public string? Notes { get; set; }
+        public TimeSpan? CheckInTime { get; set; }
+        public TimeSpan? CheckOutTime { get; set; }
     }
 
     /// <summary>
@@ -90,7 +94,7 @@
     {
         public int PropertyId { get; set; }
         public decimal? BasePrice { get; set; }
-        public decimal? WeekendPrice { get; set; }
+        public decimal? CleaningFee { get; set; }
         public int? MinimumNights { get; set; }
         public int? MaximumNights { get; set; }
         public int? AdvanceNotice { get; set; }
