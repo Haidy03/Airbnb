@@ -607,12 +607,12 @@ export class HostCalendar implements OnInit {
   clearError(): void { this.errorSignal.set(null); }
   
   updatePricing(): void {
-    // ... (Old bulk update logic - can keep for multi-select)
+
     this.closePriceModal();
   }
   
   updateAvailability(): void {
-    // ... (Old bulk update logic)
+
     this.closeAvailabilityModal();
   }
   
@@ -626,9 +626,10 @@ export class HostCalendar implements OnInit {
       ...this.settingsForm.value
     }).subscribe({
       next: () => {
-        alert('Settings updated successfully');
+       // alert('Settings updated successfully');
         this.closeSettingsModal();
         this.loadSettings();
+        this.loadCalendarData();
       },
       error: (err) => alert('Failed to update settings')
     });
