@@ -1,4 +1,5 @@
 ﻿using Airbnb.API.DTOs.Booking;
+using Airbnb.API.Models;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,7 @@ namespace Airbnb.API.Controllers.Host
             var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return string.IsNullOrEmpty(hostId) ? "test-host-12345" : hostId;
         }
+
 
         /// <summary>
         /// Get ALL bookings for host's properties
@@ -398,5 +400,8 @@ namespace Airbnb.API.Controllers.Host
                 return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
+
+
+        
     }
 }
