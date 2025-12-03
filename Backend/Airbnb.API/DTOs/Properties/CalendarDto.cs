@@ -17,6 +17,8 @@
         public bool IsCheckOut { get; set; }
         public bool IsBlocked { get; set; }
         public string? Notes { get; set; }
+        public TimeSpan? SpecificCheckInTime { get; set; }
+        public TimeSpan? SpecificCheckOutTime { get; set; }
     }
 
     /// <summary>
