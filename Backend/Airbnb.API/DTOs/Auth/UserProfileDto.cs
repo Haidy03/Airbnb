@@ -9,9 +9,6 @@
         public string ProfileImageUrl { get; set; }
         public bool IsVerified { get; set; }
 
-        // ==========================================
-        // ضيف دول عشان البيانات ترجع للفرونت
-        // ==========================================
         public string? PhoneNumber { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? Address { get; set; }

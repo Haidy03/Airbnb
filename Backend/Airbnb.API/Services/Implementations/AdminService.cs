@@ -36,10 +36,8 @@ namespace Airbnb.API.Services.Implementations
                 var now = DateTime.UtcNow;
                 var startOfMonth = new DateTime(now.Year, now.Month, 1);
 
-                // 1. حساب الإيرادات المجمعة (شقق + تجارب)
                 var totalRevenue = await _adminRepository.GetTotalCombinedRevenueAsync();
 
-                // 2. حساب عمولة المنصة (15% من الإجمالي)
                 var platformFees = totalRevenue * 0.15m;
 
                 var stats = new DashboardStatsDto
@@ -66,7 +64,7 @@ namespace Airbnb.API.Services.Implementations
 
                     TotalRevenue = totalRevenue,
                     MonthlyRevenue = await _adminRepository.GetCombinedRevenueByDateRangeAsync(startOfMonth, now),
-                    PlatformFees = platformFees, // ✅ المكسب الفعلي للأدمن
+                    PlatformFees = platformFees, 
 
                     TotalReviews = await _adminRepository.GetTotalReviewsCountAsync(),
                     AverageRating = await _adminRepository.GetAverageRatingAsync(),
@@ -155,11 +153,10 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<RevenueReportDto> GetRevenueReportAsync(DateTime startDate, DateTime endDate)
         {
-            // جلب كل الحجوزات المكتملة (شقق وتجارب)
             var bookings = await _adminRepository.GetUnifiedBookingsAsync(null, startDate, endDate, 1, 100000);
 
             var revenueBookings = bookings
-                .Where(b => b.Status == "Completed" || b.Status == "Confirmed") // ✅ شمول الـ Confirmed
+                .Where(b => b.Status == "Completed" || b.Status == "Confirmed")
                 .ToList();
 
 
@@ -168,7 +165,6 @@ namespace Airbnb.API.Services.Implementations
             var platformFees = totalRevenue * 0.15m;
             var hostPayouts = totalRevenue - platformFees;
 
-            // التجميع حسب الموقع (المدينة)
             var revenueByLocation = bookings
                 .GroupBy(b => b.Location ?? "Unknown")
                 .Select(g => new RevenueByLocationDto
@@ -197,7 +193,6 @@ namespace Airbnb.API.Services.Implementations
             var allUsers = await _adminRepository.GetAllUsersAsync(null, null, 1, 10000);
             var users = allUsers.Where(u => u.CreatedAt >= startDate && u.CreatedAt <= endDate).ToList();
 
-            // استخدام الحجوزات الموحدة للإحصائيات
             var bookings = await _adminRepository.GetUnifiedBookingsAsync(null, startDate, endDate, 1, 10000);
 
             var dailyActivity = users
@@ -272,7 +267,6 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<List<BookingResponseDto>> GetAllBookingsAsync(string? status = null, DateTime? startDate = null, DateTime? endDate = null, int pageNumber = 1, int pageSize = 10)
         {
-            // ✅ استخدام الدالة الموحدة
             return await _adminRepository.GetUnifiedBookingsAsync(status, startDate, endDate, pageNumber, pageSize);
         }
 
@@ -304,7 +298,6 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<List<ReviewResponseDto>> GetAllReviewsAsync(int pageNumber = 1, int pageSize = 10)
         {
-            // 1. جلب ريفيوهات الشقق
             var propReviews = await _adminRepository.GetAllReviewsAsync();
             var propDtos = propReviews.Select(r => new ReviewResponseDto
             {
@@ -320,7 +313,6 @@ namespace Airbnb.API.Services.Implementations
                 CreatedAt = r.CreatedAt
             });
 
-            // 2. جلب ريفيوهات التجارب
             var expReviews = await _adminRepository.GetAllExperienceReviewsAsync();
             var expDtos = expReviews.Select(r => new ReviewResponseDto
             {
@@ -348,8 +340,7 @@ namespace Airbnb.API.Services.Implementations
                 CreatedAt = r.CreatedAt
             });
 
-            // 3. الدمج والترتيب
-            var allReviews = propDtos.Concat(expDtos).Concat(svcDtos) // ✅
+            var allReviews = propDtos.Concat(expDtos).Concat(svcDtos)
                                      .OrderByDescending(r => r.CreatedAt)
                                      .Skip((pageNumber - 1) * pageSize)
                                      .Take(pageSize)
@@ -469,7 +460,6 @@ namespace Airbnb.API.Services.Implementations
         #endregion
 
         #region Verification & Property Management (Standard)
-        // ... (هذه الدوال لم تتغير ويمكنك نسخها كما هي من الملف السابق أو استخدام الـ Implementation القياسي) ...
         public async Task<List<VerificationRequestDto>> GetPendingVerificationsAsync() { var verifications = await _adminRepository.GetAllVerificationsAsync(VerificationStatus.Pending); return verifications.Select(MapVerificationToDto).ToList(); }
         public async Task<List<VerificationRequestDto>> GetAllVerificationsAsync(string? status = null) { VerificationStatus? vs = null; if (!string.IsNullOrEmpty(status) && Enum.TryParse(status, out VerificationStatus p)) vs = p; var v = await _adminRepository.GetAllVerificationsAsync(vs); return v.Select(MapVerificationToDto).ToList(); }
         public async Task<VerificationRequestDto> GetVerificationByIdAsync(int id) { var v = await _adminRepository.GetVerificationByIdAsync(id); return v != null ? MapVerificationToDto(v) : null; }
@@ -489,14 +479,13 @@ namespace Airbnb.API.Services.Implementations
 
         #region Settings & Profile Implementation
 
-        // مسار ملف الإعدادات
         private readonly string _settingsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "platform-settings.json");
 
         public async Task<PlatformSettingsDto> GetPlatformSettingsAsync()
         {
             if (!File.Exists(_settingsFilePath))
             {
-                return new PlatformSettingsDto(); // Return defaults
+                return new PlatformSettingsDto();
             }
 
             var json = await File.ReadAllTextAsync(_settingsFilePath);
@@ -520,7 +509,7 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<AdminUserDto> GetAdminProfileAsync(string adminId)
         {
-            return await GetUserByIdAsync(adminId); // نستخدم الدالة الموجودة مسبقاً
+            return await GetUserByIdAsync(adminId); 
         }
 
         public async Task<bool> UpdateAdminProfileAsync(string adminId, UpdateAdminProfileDto dto)
@@ -532,12 +521,10 @@ namespace Airbnb.API.Services.Implementations
                 return false;
             }
 
-            // تحديث البيانات الأساسية
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
             user.PhoneNumber = dto.PhoneNumber;
 
-            // تحديث الإيميل فقط لو تغير (لتجنب الأخطاء)
             if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
             {
                 var emailResult = await _userManager.SetEmailAsync(user, dto.Email);
@@ -546,14 +533,13 @@ namespace Airbnb.API.Services.Implementations
                     foreach (var error in emailResult.Errors) _logger.LogError($"Email Update Error: {error.Description}");
                     return false;
                 }
-                user.UserName = dto.Email; // تحديث اسم المستخدم ليطابق الإيميل
+                user.UserName = dto.Email;
             }
 
             var result = await _userManager.UpdateAsync(user);
 
             if (!result.Succeeded)
             {
-                // طباعة سبب الخطأ في الكونسول (مهم جداً للـ Debugging)
                 foreach (var error in result.Errors)
                 {
                     _logger.LogError($"Update Profile Error: {error.Code} - {error.Description}");
@@ -574,12 +560,6 @@ namespace Airbnb.API.Services.Implementations
         #endregion
 
 
-
-
-
-        // داخل AdminService
-        //last one
-
         public async Task<List<AdminServiceDto>> GetAllServicesAsync(string? status = null, string? searchTerm = null, int pageNumber = 1, int pageSize = 10)
         {
             ServiceStatus? serviceStatus = null;
@@ -589,10 +569,9 @@ namespace Airbnb.API.Services.Implementations
             }
 
             var services = await _adminRepository.GetAllServicesAsync(serviceStatus, searchTerm, pageNumber, pageSize);
-            var bookings = await _adminRepository.GetUnifiedBookingsAsync(null, null, null, 1, 100000); // لجلب إحصائيات الحجز
+            var bookings = await _adminRepository.GetUnifiedBookingsAsync(null, null, null, 1, 100000);
 
             return services.Select(s => {
-                // حساب إحصائيات الخدمة
                 var serviceBookings = bookings.Where(b => b.ItemTitle == s.Title && b.Type == "Service").ToList();
 
                 return new AdminServiceDto

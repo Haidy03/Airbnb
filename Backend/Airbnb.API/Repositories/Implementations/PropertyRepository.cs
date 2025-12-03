@@ -23,7 +23,7 @@ namespace Airbnb.API.Repositories.Implementations
         {
             return await _context.Properties
                 .Include(p => p.Host)
-                .Include(p => p.PropertyType) // ✅ ADDED: Include PropertyType
+                .Include(p => p.PropertyType)
                 .Include(p => p.Images)
                 .Include(p => p.PropertyAmenities)
                     .ThenInclude(pa => pa.Amenity)
@@ -35,7 +35,7 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task<IEnumerable<Property>> GetAllAsync()
         {
             return await _context.Properties
-                .Include(p => p.PropertyType) // ✅ ADDED
+                .Include(p => p.PropertyType)
                 .Include(p => p.Images)
                 .Include(p => p.PropertyAmenities)
                     .ThenInclude(pa => pa.Amenity)
@@ -45,7 +45,7 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task<IEnumerable<Property>> GetByHostIdAsync(string hostId)
         {
             return await _context.Properties
-                .Include(p => p.PropertyType) // ✅ ADDED
+                .Include(p => p.PropertyType)
                 .Include(p => p.Images)
                 .Include(p => p.PropertyAmenities)
                     .ThenInclude(pa => pa.Amenity)
@@ -93,15 +93,13 @@ namespace Airbnb.API.Repositories.Implementations
 
         public async Task<PagedResult<PropertySearchResultDto>> SearchPropertiesAsync(SearchRequestDto searchDto)
         {
-            // 1. Start with a base query of Active and Approved properties
             var query = _context.Properties
-                .Include(p => p.PropertyType) // ✅ ADDED
+                .Include(p => p.PropertyType) 
                 .Include(p => p.Images)
                 .Include(p => p.Reviews)
                 .AsQueryable()
                 .Where(p => p.IsActive && p.IsApproved);
 
-            // 2. Apply Filters
 
             // Location (Case insensitive search in City or Country)
             if (!string.IsNullOrEmpty(searchDto.Location))
@@ -126,7 +124,6 @@ namespace Airbnb.API.Repositories.Implementations
                 query = query.Where(p => p.PricePerNight <= searchDto.MaxPrice.Value);
             }
 
-            // Property Type - ✅ CHANGED: Compare with PropertyType.Name or Code
             if (!string.IsNullOrEmpty(searchDto.PropertyType))
             {
                 var propertyType = searchDto.PropertyType.ToUpper();
@@ -135,7 +132,6 @@ namespace Airbnb.API.Repositories.Implementations
                     p.PropertyType.Name.ToLower().Contains(searchDto.PropertyType.ToLower()));
             }
 
-            // Amenities (This is a bit complex: Property must have ALL selected amenities)
             if (searchDto.AmenityIds != null && searchDto.AmenityIds.Any())
             {
                 foreach (var amenityId in searchDto.AmenityIds)
@@ -157,12 +153,10 @@ namespace Airbnb.API.Repositories.Implementations
                     (checkIn < b.CheckOutDate && checkOut > b.CheckInDate)
                 ));
 
-                // ✅ 2. Check Manual Blocks (Calendar Availability)
-                // نستبعد العقار إذا كان الـ Host قد أغلق أي يوم في نطاق البحث
                 query = query.Where(p => !p.Availabilities.Any(pa =>
                     pa.Date >= checkIn &&
                     pa.Date < checkOut && // Check-out day doesn't need to be available for sleeping
-                    pa.IsAvailable == false // إذا كان اليوم "غير متاح"
+                    pa.IsAvailable == false 
                 ));
             }
 
@@ -211,7 +205,7 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task<List<PropertySearchResultDto>> GetFeaturedPropertiesAsync(int count)
         {
             return await _context.Properties
-                .Include(p => p.PropertyType) // ✅ ADDED
+                .Include(p => p.PropertyType)
                 .Include(p => p.Images)
                 .Include(p => p.Reviews)
                 .Where(p => p.IsActive && p.IsApproved)
@@ -341,7 +335,6 @@ namespace Airbnb.API.Repositories.Implementations
             await _context.SaveChangesAsync();
         }
 
-        // دالة إضافية لجلب كل الـ Amenities عشان الـ Frontend يعرضهم
         public async Task<IEnumerable<Amenity>> GetAllAmenitiesAsync()
         {
             return await _context.Amenities

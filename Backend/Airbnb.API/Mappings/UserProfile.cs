@@ -3,7 +3,6 @@ using Airbnb.API.Models;
 using AutoMapper;
 namespace Airbnb.API.Mappings
 {
-    // UserProfile should inherit from AutoMapper.Profile to use CreateMap
     public class UserProfile : Profile
     {
         public UserProfile()

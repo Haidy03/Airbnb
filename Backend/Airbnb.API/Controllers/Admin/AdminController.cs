@@ -460,7 +460,6 @@ namespace Airbnb.API.Controllers
         {
             try
             {
-                // ✅ التعديل هنا: استدعاء دالة تقبل الفلاتر مثل Properties
                 var experiences = await _experienceService.GetAllExperiencesAsync(status, searchTerm, pageNumber, pageSize);
                 return Ok(experiences);
             }
@@ -478,7 +477,6 @@ namespace Airbnb.API.Controllers
             {
                 if (dto.Status == "PendingApproval")
                 {
-                    // الآن الدالة دي هتكون موجودة في السيرفس
                     var result = await _experienceService.UpdateStatusAsync(id, ExperienceStatus.PendingApproval);
                     if (result) return Ok(new { message = "Status updated successfully" });
                 }
@@ -516,7 +514,6 @@ namespace Airbnb.API.Controllers
         {
             try
             {
-                // ✅ التعديل: إضافة دالة الرفض
                 var result = await _experienceService.RejectExperienceAsync(id, dto.RejectionReason);
 
                 if (!result)
@@ -713,10 +710,6 @@ namespace Airbnb.API.Controllers
         #endregion
 
 
-
-        // داخل AdminController region Services Management
-        //last one
-
         [HttpGet("services")]
         public async Task<ActionResult<List<AdminServiceDto>>> GetAllServices(
             [FromQuery] string? status = null,
@@ -795,7 +788,6 @@ namespace Airbnb.API.Controllers
         public string Status { get; set; }
     }
 
-    // ✅ Helper DTO for Rejection (Add inside namespace or DTOs folder)
     public class RejectServiceDto
     {
         public string Reason { get; set; }

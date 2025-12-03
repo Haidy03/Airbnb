@@ -79,7 +79,7 @@ namespace Airbnb.API.Services.Implementations
 
                         service.Images.Add(new ServiceImage
                         {
-                            Url = $"uploads/services/{uniqueFileName}", // الرابط النسبي
+                            Url = $"uploads/services/{uniqueFileName}",
                             IsCover = isCover
                         });
                     }
@@ -212,7 +212,7 @@ namespace Airbnb.API.Services.Implementations
                 GuestId = guestId,
                 BookingDate = dto.Date,
                 TotalPrice = finalPrice,
-                Status = "Confirmed", // Or "PendingPayment" based on your flow
+                Status = "Confirmed", 
                 CreatedAt = DateTime.UtcNow,
                 NumberOfGuests = dto.NumberOfGuests
             };
@@ -223,7 +223,6 @@ namespace Airbnb.API.Services.Implementations
             return booking.Id;
         }
 
-        // Helper Method for Mapping Service to Card DTO
         private ServiceCardDto MapToCardDto(Service s)
         {
             return new ServiceCardDto
@@ -338,23 +337,17 @@ namespace Airbnb.API.Services.Implementations
             return true;
         }
 
-
-        //reviews rahma
-
         public async Task<ReviewResponseDto> AddReviewAsync(string userId, CreateReviewDto dto)
         {
-            // 1. التأكد من وجود الحجز
             var booking = await _serviceRepository.GetServiceBookingByIdAsync(dto.BookingId);
 
             if (booking == null) throw new Exception("Booking not found");
             if (booking.GuestId != userId) throw new UnauthorizedAccessException("Not your booking");
             if (booking.Status != "Completed") throw new InvalidOperationException("Can only review completed services");
 
-            // 2. التأكد من عدم وجود ريفيو سابق
             if (await _serviceRepository.ServiceReviewExistsAsync(dto.BookingId))
                 throw new InvalidOperationException("You already reviewed this service");
 
-            // 3. إنشاء الريفيو
             var review = new ServiceReview
             {
                 ServiceId = booking.ServiceId,
@@ -371,13 +364,11 @@ namespace Airbnb.API.Services.Implementations
 
             await _serviceRepository.AddServiceReviewAsync(review);
 
-            // تحديث متوسط التقييم للخدمة (اختياري)
             await UpdateServiceRating(booking.ServiceId);
 
             return MapToReviewDto(review);
         }
 
-        // Helper
         private ReviewResponseDto MapToReviewDto(ServiceReview r)
         {
             return new ReviewResponseDto
@@ -389,7 +380,7 @@ namespace Airbnb.API.Services.Implementations
                 ReviewerProfileImage = r.Reviewer.ProfileImageUrl,
                 CreatedAt = r.CreatedAt,
                 ReviewType = "Service",
-                PropertyTitle = r.Service?.Title // عشان تظهر في قوايم الريفيو العامة
+                PropertyTitle = r.Service?.Title 
             };
         }
         public async Task<ReviewResponseDto?> GetServiceReviewDtoByIdAsync(int reviewId)
@@ -429,7 +420,7 @@ namespace Airbnb.API.Services.Implementations
                 ValueRating = r.ValueRating,
                 CreatedAt = r.CreatedAt,
                 ReviewType = "Service",
-                PropertyTitle = r.Service?.Title ?? "" // عشان الاسم يظهر
+                PropertyTitle = r.Service?.Title ?? "" 
             }).ToList();
         }
 
@@ -438,18 +429,15 @@ namespace Airbnb.API.Services.Implementations
             var review = await _serviceRepository.GetServiceReviewByIdAsync(reviewId);
             if (review == null) throw new Exception("Review not found");
 
-            // السماح للمستخدم نفسه بحذف الريفيو
             if (review.ReviewerId != userId)
                 throw new UnauthorizedAccessException("Not authorized to delete this review");
 
             await _serviceRepository.DeleteServiceReviewAsync(review);
 
-            // تحديث التقييم بعد الحذف
             await UpdateServiceRating(review.ServiceId);
         }
 
 
-        // دالة مساعدة لتحديث التقييم
         private async Task UpdateServiceRating(int serviceId)
         {
             var reviews = await _serviceRepository.GetReviewsByServiceIdAsync(serviceId);
@@ -482,7 +470,6 @@ namespace Airbnb.API.Services.Implementations
             review.Comment = dto.Comment;
             review.UpdatedAt = DateTime.UtcNow;
 
-            // تحديث التفاصيل
             review.CleanlinessRating = dto.CleanlinessRating;
             review.CommunicationRating = dto.CommunicationRating;
             review.LocationRating = dto.LocationRating;
@@ -490,22 +477,18 @@ namespace Airbnb.API.Services.Implementations
 
             await _serviceRepository.UpdateServiceReviewAsync(review);
 
-            // تحديث متوسط الخدمة
-            // (Optional: call UpdateServiceRating(review.ServiceId))
-
+           
             return await GetServiceReviewDtoByIdAsync(reviewId);
         }
 
         public async Task<bool> CancelBookingAsync(int bookingId, string userId)
         {
-            // تأكدي أنك ضفتي دالة GetServiceBookingByIdAsync في ServiceRepository
             var booking = await _serviceRepository.GetServiceBookingByIdAsync(bookingId);
             if (booking == null) return false;
 
-            if (booking.GuestId != userId) // و Host لو عايزة
+            if (booking.GuestId != userId) 
                 throw new UnauthorizedAccessException("Not authorized");
 
-            // ✅ شرط الـ 24 ساعة
             if (booking.BookingDate < DateTime.UtcNow.AddHours(24))
             {
                 throw new InvalidOperationException("Cannot cancel less than 24 hours before service time.");

@@ -22,7 +22,6 @@ namespace Airbnb.API.Controllers
             _logger = logger;
         }
 
-        // Helper method to get current user ID
         private string GetCurrentUserId()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -40,7 +39,6 @@ namespace Airbnb.API.Controllers
             {
                 var userId = GetCurrentUserId();
 
-                // ✅ تمرير الـ mode للسيرفس
                 var conversations = await _messageService.GetUserConversationsAsync(userId, mode);
 
                 return Ok(new

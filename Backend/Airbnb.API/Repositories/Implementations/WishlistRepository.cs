@@ -19,7 +19,7 @@ namespace Airbnb.API.Repositories.Implementations
             return await _context.Wishlists
                 .Where(w => w.UserId == userId)
                 .Include(w => w.Property)
-                .ThenInclude(p => p.Images) // الصور مهمة ولازم تفضل موجودة
+                .ThenInclude(p => p.Images)
                 .Select(w => w.Property)
                 .ToListAsync();
         }

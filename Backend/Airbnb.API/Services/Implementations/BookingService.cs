@@ -21,7 +21,7 @@ namespace Airbnb.API.Services.Implementations
             IBookingRepository bookingRepository,
             IPropertyRepository propertyRepository,
             IExperienceRepository experienceRepository,
-            IServiceRepository serviceRepository, // ✅ Inject Here
+            IServiceRepository serviceRepository,
             IReviewRepository reviewRepository,
             IEmailService emailService,
             IMapper mapper,
@@ -30,7 +30,7 @@ namespace Airbnb.API.Services.Implementations
             _bookingRepository = bookingRepository;
             _propertyRepository = propertyRepository;
             _experienceRepository = experienceRepository;
-            _serviceRepository = serviceRepository; // ✅ Assign Here
+            _serviceRepository = serviceRepository;
             _reviewRepository = reviewRepository;
             _emailService = emailService;
             _mapper = mapper;
@@ -128,9 +128,9 @@ namespace Airbnb.API.Services.Implementations
                 allTrips.Add(new TripDto
                 {
                     Id = b.Id,
-                    PropertyId = b.PropertyId, // ✅✅ 1. تم إضافة رقم الوحدة هنا
+                    PropertyId = b.PropertyId,
                     ExperienceId = null,
-                    Type = "Property", // ✅ تحديد النوع
+                    Type = "Property",
                     Title = b.Property.Title,
                     ImageUrl = b.Property.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
                                ?? b.Property.Images.FirstOrDefault()?.ImageUrl,
@@ -139,9 +139,6 @@ namespace Airbnb.API.Services.Implementations
                     CheckOutDate = b.CheckOutDate,
                     TotalPrice = b.TotalPrice,
                     Status = b.Status.ToString(),
-
-
-                    // ✅ إعدادات التقييم
                     IsReviewed = hasReview,
                     CanReview = canReview
                 });
@@ -160,9 +157,9 @@ namespace Airbnb.API.Services.Implementations
                 allTrips.Add(new TripDto
                 {
                     Id = eb.Id,
-                    ExperienceId = eb.ExperienceId, // ✅✅ 2. تم إضافة رقم التجربة هنا
+                    ExperienceId = eb.ExperienceId,
                     PropertyId = null,
-                    Type = "Experience", // ✅ تحديد النوع
+                    Type = "Experience",
                     Title = eb.Experience.Title,
                     ImageUrl = eb.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
                                ?? eb.Experience.Images.FirstOrDefault()?.ImageUrl,
@@ -177,24 +174,22 @@ namespace Airbnb.API.Services.Implementations
             }
 
             // -------------------------------------------------------
-            // ✅ 3. Services (NEW)
+            // Services 
             // -------------------------------------------------------
             var serviceBookings = await _serviceRepository.GetServiceBookingsByGuestIdAsync(guestId);
 
             foreach (var sb in serviceBookings)
             {
-                // يمكن إضافة منطق الريفيو للخدمات مستقبلاً
                 bool hasReview = await _serviceRepository.ServiceReviewExistsAsync(sb.Id);
                 bool canReviewService = sb.Status == "Completed" && !hasReview;
 
                 allTrips.Add(new TripDto
                 {
                     Id = sb.Id,
-                    ServiceId = sb.ServiceId, // مهم للفرونت
-                    Type = "Service",         // ✅ النوع الجديد
+                    ServiceId = sb.ServiceId, 
+                    Type = "Service",         
                     Title = sb.Service.Title,
 
-                    // التعامل الآمن مع الصور
                     ImageUrl = sb.Service.Images != null && sb.Service.Images.Any()
                         ? (sb.Service.Images.FirstOrDefault(i => i.IsCover)?.Url ?? sb.Service.Images.FirstOrDefault()?.Url)
                         : "assets/placeholder.jpg",
@@ -203,8 +198,8 @@ namespace Airbnb.API.Services.Implementations
                         ? $"{sb.Service.Host.FirstName} {sb.Service.Host.LastName}"
                         : "Service Host",
 
-                    CheckInDate = sb.BookingDate, // تاريخ ووقت الحجز
-                    CheckOutDate = sb.BookingDate.AddHours(1), // وقت افتراضي للعرض
+                    CheckInDate = sb.BookingDate, 
+                    CheckOutDate = sb.BookingDate.AddHours(1),
 
                     TotalPrice = sb.TotalPrice,
                     Status = sb.Status, // Confirmed, PendingPayment, etc.
@@ -370,8 +365,6 @@ namespace Airbnb.API.Services.Implementations
             if (booking.GuestId != userId && booking.Property.HostId != userId)
                 throw new UnauthorizedAccessException("Not authorized");
 
-            // ✅ التحقق من شرط الـ 24 ساعة (للجيست فقط)
-            // إذا كان المستخدم هو الجيست، وتاريخ الحجز باقي عليه أقل من 24 ساعة
             if (booking.GuestId == userId && booking.CheckInDate < DateTime.UtcNow.AddHours(24))
             {
                 throw new InvalidOperationException("Cannot cancel less than 24 hours before check-in.");

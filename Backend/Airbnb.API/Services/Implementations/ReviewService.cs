@@ -314,8 +314,8 @@ namespace Airbnb.API.Services.Implementations
                 allReviewsDto.Add(new ReviewResponseDto
                 {
                     Id = r.Id,
-                    PropertyTitle = r.Service.Title, // اسم الخدمة
-                    ReviewType = "Service",         // نوع الخدمة
+                    PropertyTitle = r.Service.Title, 
+                    ReviewType = "Service",       
                     Rating = r.Rating,
                     Comment = r.Comment,
                     CleanlinessRating = r.CleanlinessRating,

@@ -22,7 +22,6 @@ namespace Airbnb.API.Controllers.Host
             _logger = logger;
         }
 
-        // Helper للحصول على Host ID
         private string GetHostId()
         {
             var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -30,7 +29,7 @@ namespace Airbnb.API.Controllers.Host
         }
 
         /// <summary>
-        /// ✅ Get ALL bookings for host's properties
+        /// Get ALL bookings for host's properties
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAllBookings()
@@ -55,7 +54,7 @@ namespace Airbnb.API.Controllers.Host
         }
 
         /// <summary>
-        /// ✅ Get TODAY's bookings - FINAL FIX
+        /// Get TODAY's bookings
         /// </summary>
         [HttpGet("today")]
         public async Task<IActionResult> GetTodayBookings()
@@ -65,14 +64,12 @@ namespace Airbnb.API.Controllers.Host
                 var hostId = GetHostId();
                 var allBookings = await _bookingService.GetHostBookingsAsync(hostId);
 
-                // Get today in LOCAL timezone (not UTC)
                 var today = DateTime.Now.Date;
 
-                _logger.LogInformation("🔍 Checking for TODAY: {Today}", today.ToString("yyyy-MM-dd"));
+                _logger.LogInformation("Checking for TODAY: {Today}", today.ToString("yyyy-MM-dd"));
 
                 var todayBookings = allBookings.Where(b =>
                 {
-                    // Parse dates properly
                     var checkIn = b.CheckInDate.Date;
                     var checkOut = b.CheckOutDate.Date;
 
@@ -82,7 +79,7 @@ namespace Airbnb.API.Controllers.Host
                     if (isToday)
                     {
                         _logger.LogInformation(
-                            "✅ Found TODAY booking: ID={Id}, CheckIn={CheckIn}, CheckOut={CheckOut}, Status={Status}",
+                            "Found TODAY booking: ID={Id}, CheckIn={CheckIn}, CheckOut={CheckOut}, Status={Status}",
                             b.Id, checkIn.ToString("yyyy-MM-dd"), checkOut.ToString("yyyy-MM-dd"), b.Status
                         );
                     }
@@ -90,7 +87,7 @@ namespace Airbnb.API.Controllers.Host
                     return isToday && isValidStatus;
                 }).ToList();
 
-                _logger.LogInformation("📊 Total TODAY bookings: {Count}", todayBookings.Count);
+                _logger.LogInformation("Total TODAY bookings: {Count}", todayBookings.Count);
 
                 return Ok(new
                 {
@@ -107,13 +104,13 @@ namespace Airbnb.API.Controllers.Host
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Error getting today's bookings");
+                _logger.LogError(ex, "Error getting today's bookings");
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
         /// <summary>
-        /// ✅ Get UPCOMING bookings - FINAL FIX
+        /// Get UPCOMING bookings - FINAL FIX
         /// </summary>
         [HttpGet("upcoming")]
         public async Task<IActionResult> GetUpcomingBookings()
@@ -126,7 +123,7 @@ namespace Airbnb.API.Controllers.Host
                 var today = DateTime.Now.Date;
                 var next30Days = today.AddDays(30);
 
-                _logger.LogInformation("🔍 Checking UPCOMING: {Today} to {End}",
+                _logger.LogInformation("Checking UPCOMING: {Today} to {End}",
                     today.ToString("yyyy-MM-dd"),
                     next30Days.ToString("yyyy-MM-dd"));
 
@@ -134,14 +131,13 @@ namespace Airbnb.API.Controllers.Host
                 {
                     var checkIn = b.CheckInDate.Date;
 
-                    // Upcoming = check-in is AFTER today AND within 30 days
                     bool isUpcoming = checkIn > today && checkIn <= next30Days;
                     bool isValidStatus = b.Status == "Confirmed" || b.Status == "Pending";
 
                     if (isUpcoming && isValidStatus)
                     {
                         _logger.LogInformation(
-                            "✅ Found UPCOMING booking: ID={Id}, CheckIn={CheckIn}, Status={Status}",
+                            "Found UPCOMING booking: ID={Id}, CheckIn={CheckIn}, Status={Status}",
                             b.Id, checkIn.ToString("yyyy-MM-dd"), b.Status
                         );
                     }
@@ -151,7 +147,7 @@ namespace Airbnb.API.Controllers.Host
                 .OrderBy(b => b.CheckInDate)
                 .ToList();
 
-                _logger.LogInformation("📊 Total UPCOMING bookings: {Count}", upcomingBookings.Count);
+                _logger.LogInformation("Total UPCOMING bookings: {Count}", upcomingBookings.Count);
 
                 return Ok(new
                 {
@@ -169,13 +165,13 @@ namespace Airbnb.API.Controllers.Host
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Error getting upcoming bookings");
+                _logger.LogError(ex, "Error getting upcoming bookings");
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
         /// <summary>
-        /// ✅ Get PENDING bookings (awaiting approval)
+        /// Get PENDING bookings (awaiting approval)
         /// </summary>
         [HttpGet("pending")]
         public async Task<IActionResult> GetPendingBookings()
@@ -205,7 +201,7 @@ namespace Airbnb.API.Controllers.Host
         }
 
         /// <summary>
-        /// ✅ Get booking details by ID
+        /// Get booking details by ID
         /// </summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBookingById(int id)
@@ -232,7 +228,7 @@ namespace Airbnb.API.Controllers.Host
         }
 
         /// <summary>
-        /// ✅ Approve a pending booking
+        /// Approve a pending booking
         /// </summary>
         [HttpPost("{id}/approve")]
         public async Task<IActionResult> ApproveBooking(int id)
@@ -267,7 +263,7 @@ namespace Airbnb.API.Controllers.Host
         }
 
         /// <summary>
-        /// ✅ Decline a pending booking
+        /// Decline a pending booking
         /// </summary>
         [HttpPost("{id}/decline")]
         public async Task<IActionResult> DeclineBooking(int id)
@@ -302,7 +298,7 @@ namespace Airbnb.API.Controllers.Host
         }
 
         /// <summary>
-        /// ✅ Cancel a booking (by host)
+        /// Cancel a booking (by host)
         /// </summary>
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> CancelBooking(int id)
@@ -337,7 +333,7 @@ namespace Airbnb.API.Controllers.Host
         }
 
         /// <summary>
-        /// ✅ Get bookings for specific property
+        /// Get bookings for specific property
         /// </summary>
         [HttpGet("property/{propertyId}")]
         public async Task<IActionResult> GetPropertyBookings(int propertyId)

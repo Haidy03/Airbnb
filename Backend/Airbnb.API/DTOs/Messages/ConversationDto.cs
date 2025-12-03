@@ -45,16 +45,13 @@ namespace Airbnb.API.DTOs.Messages
         public string? PropertyImage { get; set; }
         public int? BookingId { get; set; }
 
-        // ✅ Both Host and Guest info included
         public ConversationParticipantDto Host { get; set; }
         public ConversationParticipantDto Guest { get; set; }
 
-        // ✅ Additional property to easily get participants as array
         public List<ConversationParticipantDto> Participants => new List<ConversationParticipantDto> { Host, Guest };
 
         public MessageDto? LastMessage { get; set; }
 
-        // ✅ UnreadCount is now based on current user (calculated in service)
         public int UnreadCount { get; set; }
 
         public DateTime CreatedAt { get; set; }

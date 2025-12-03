@@ -25,7 +25,6 @@ namespace Airbnb.API.Controllers
             _logger = logger;
         }
 
-        // Helper method to get current user ID
         private string GetCurrentUserId()
         {
             return User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
@@ -89,8 +88,6 @@ namespace Airbnb.API.Controllers
                 return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
-
-        // أضف هذه الدالة داخل الكلاس
 
         /// <summary>
         /// Add availability slot (Host only)
@@ -357,7 +354,7 @@ namespace Airbnb.API.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId(); // تأكدي إن الدالة دي موجودة في الكنترولر
+                var userId = GetCurrentUserId();
                 var result = await _experienceService.DeleteAvailabilityAsync(availabilityId, userId);
 
                 if (!result)
@@ -577,7 +574,6 @@ namespace Airbnb.API.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                // تأكدي أن دالة CancelBookingAsync موجودة في IExperienceService وتم تنفيذها
                 var result = await _experienceService.CancelBookingAsync(bookingId, userId);
 
                 if (!result) return NotFound(new { message = "Booking not found" });
@@ -618,13 +614,11 @@ namespace Airbnb.API.Controllers
         public async Task<IActionResult> GetReviews(int id)
         {
             var reviews = await _experienceService.GetReviewsByExperienceIdAsync(id);
-            // ✅ Data wrapper consistency
             return Ok(new { success = true, data = reviews });
         }
 
 
 
-        // ✅ 1. جلب ريفيو واحد (لصفحة التعديل)
         [HttpGet("reviews/{reviewId}")]
         public async Task<ActionResult<ExperienceReviewDto>> GetReview(int reviewId)
         {
@@ -633,7 +627,6 @@ namespace Airbnb.API.Controllers
             return Ok(review);
         }
 
-        // ✅ 2. تحديث الريفيو
         [Authorize]
         [HttpPut("reviews/{reviewId}")]
         public async Task<IActionResult> UpdateReview(int reviewId, [FromBody] UpdateReviewDto dto)
@@ -649,7 +642,6 @@ namespace Airbnb.API.Controllers
             catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
         }
 
-        // ✅ 3. حذف الريفيو
         [Authorize]
         [HttpDelete("reviews/{reviewId}")]
         public async Task<IActionResult> DeleteReview(int reviewId)

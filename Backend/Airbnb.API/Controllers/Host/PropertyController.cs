@@ -31,19 +31,15 @@ namespace Airbnb.API.Controllers.Host
             _userManager = userManager;
         }
 
-        // Helper method for testing only
         private string GetHostId()
         {
-            // 1. Try to get ID from standard ClaimTypes
-            var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier) // Usually maps to 'nameid'
-                         ?? User.FindFirstValue("sub")                  // Standard JWT subject
-                         ?? User.FindFirstValue("id")                   // Common custom claim
-                         ?? User.FindFirstValue("uid");                 // Another common custom claim
+            var hostId = User.FindFirstValue(ClaimTypes.NameIdentifier) 
+                         ?? User.FindFirstValue("sub")                  
+                         ?? User.FindFirstValue("id")                   
+                         ?? User.FindFirstValue("uid");                 
 
-            // 2. Security Check: If no ID found, throw error (Don't return "test-host" anymore!)
             if (string.IsNullOrEmpty(hostId))
             {
-                // This ensures the code fails safely if the user isn't logged in properly
                 throw new UnauthorizedAccessException("User ID not found in token.");
             }
 
@@ -242,22 +238,18 @@ namespace Airbnb.API.Controllers.Host
         {
             try
             {
-                // ✅ Validate file
                 if (file == null || file.Length == 0)
                     return BadRequest(new { success = false, message = "No file uploaded" });
 
-                // ✅ Validate file size (5MB)
                 if (file.Length > 5 * 1024 * 1024)
                     return BadRequest(new { success = false, message = "File size exceeds 5MB limit" });
 
-                // ✅ Validate file type
                 var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp" };
                 if (!allowedTypes.Contains(file.ContentType.ToLower()))
                     return BadRequest(new { success = false, message = "Invalid file type" });
 
                 var hostId = GetHostId();
 
-                // ✅ Upload image
                 var image = await _propertyService.UploadPropertyImageAsync(id, hostId, file);
 
                 return Ok(new
@@ -295,7 +287,6 @@ namespace Airbnb.API.Controllers.Host
             {
                 var hostId = GetHostId();
 
-                // ✅ Controller delegates to service
                 var result = await _propertyService.DeletePropertyImageAsync(imageId, hostId);
 
                 if (!result)
@@ -324,7 +315,6 @@ namespace Airbnb.API.Controllers.Host
             {
                 var hostId = GetHostId();
 
-                // ✅ Controller delegates to service
                 var result = await _propertyService.SetPrimaryImageAsync(imageId, hostId);
 
                 if (!result)
@@ -458,7 +448,7 @@ namespace Airbnb.API.Controllers.Host
         }
 
         // ----------------------------------------------------------------------
-        // ✅ NEW: CREATE DRAFT (Matches CreatePropertyDto)
+        // CREATE DRAFT (Matches CreatePropertyDto)
         // ----------------------------------------------------------------------
         [HttpPost("draft")]
         public async Task<IActionResult> CreateDraft()
@@ -467,17 +457,13 @@ namespace Airbnb.API.Controllers.Host
             {
                 var hostId = GetHostId();
 
-                // We create the DTO with placeholder values to satisfy database constraints.
                 var draftDto = new CreatePropertyDto
                 {
                     Title = "Untitled Listing",
                     Description = "Draft description...",
 
-                    // ⚠️ IMPORTANT: This ID must exist in your PropertyTypes table!
-                    // If your DB uses IDs starting at 1, use 1.
                     PropertyTypeId = 1,
 
-                    // Location Defaults (Strings are required in your DTO)
                     Address = "Draft Address",
                     City = "Draft City",
                     Country = "Draft Country",
@@ -492,18 +478,16 @@ namespace Airbnb.API.Controllers.Host
                     MaxGuests = 1,
 
                     // Pricing Defaults
-                    PricePerNight = 0, // 0 is fine for a draft
+                    PricePerNight = 0, 
                     CleaningFee = 0,
 
                     // Amenities
-                    AmenityIds = new List<int>(), // Empty list is fine
+                    AmenityIds = new List<int>(), 
 
                     // Rules
                     MinimumStay = 1
                 };
 
-                // Save to DB
-                // Ensure your Service sets property.Status = PropertyStatus.Draft
                 var property = await _propertyService.CreatePropertyAsync(hostId, draftDto);
 
                 // Map back to response DTO
@@ -525,7 +509,7 @@ namespace Airbnb.API.Controllers.Host
         }
 
         // ----------------------------------------------------------------------
-        // SUBMIT FOR APPROVAL (بدلاً من Publish مباشرة)
+        // SUBMIT FOR APPROVAL
         // ----------------------------------------------------------------------
         [HttpPost("{id}/submit-for-approval")]
         public async Task<IActionResult> SubmitForApproval(int id)
@@ -571,7 +555,7 @@ namespace Airbnb.API.Controllers.Host
             }
         }
         // ----------------------------------------------------------------------
-        // ACTIVATE PROPERTY (بعد موافقة Admin)
+        // ACTIVATE PROPERTY 
         // ----------------------------------------------------------------------
         [HttpPost("{id}/activate")]
         public async Task<IActionResult> ActivateProperty(int id)

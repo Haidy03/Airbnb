@@ -54,8 +54,8 @@ namespace Airbnb.API.Services.Implementations
                 IsInstantBook = dto.IsInstantBook,
                 IsActive = false,
                 IsApproved = false,
-                Status = PropertyStatus.Draft, // ✅ Set as Draft
-                CurrentStep = "intro", // ✅ Initialize CurrentStep
+                Status = PropertyStatus.Draft, 
+                CurrentStep = "intro", 
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -92,7 +92,6 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to update this property");
 
-            // ✅ Update CurrentStep if provided
             if (!string.IsNullOrEmpty(dto.CurrentStep))
             {
                 property.CurrentStep = dto.CurrentStep;
@@ -120,12 +119,11 @@ namespace Airbnb.API.Services.Implementations
             // --- Pricing & Cleaning Fee (Fixed Logic) ---
             if (dto.PricePerNight.HasValue) property.PricePerNight = dto.PricePerNight.Value;
 
-            // ✅ تصحيح: فصل منطق Cleaning Fee ليعمل بشكل مستقل
             if (dto.CleaningFee.HasValue)
             {
                 property.CleaningFee = dto.CleaningFee.Value;
             }
-            else if (dto.CurrentStep == "pricing") // لو المستخدم مسح القيمة في صفحة التسعير
+            else if (dto.CurrentStep == "pricing") 
             {
                 property.CleaningFee = null;
             }
@@ -141,7 +139,6 @@ namespace Airbnb.API.Services.Implementations
             _logger.LogInformation("📥 Recieved Safety Update -> Camera: {Cam}, Noise: {Noise}, Weapon: {Wep}",
               dto.HasExteriorCamera, dto.HasNoiseMonitor, dto.HasWeapons);
             // --- Safety Details (Fixed Mapping) ---
-            // ✅ تصحيح: ربط الحقول المسطحة القادمة من الـ DTO
             if (dto.HasExteriorCamera.HasValue) property.HasExteriorCamera = dto.HasExteriorCamera.Value;
             if (dto.HasNoiseMonitor.HasValue) property.HasNoiseMonitor = dto.HasNoiseMonitor.Value;
             if (dto.HasWeapons.HasValue) property.HasWeapons = dto.HasWeapons.Value;
@@ -251,11 +248,11 @@ namespace Airbnb.API.Services.Implementations
                 {
                     await file.CopyToAsync(stream);
                 }
-                _logger.LogInformation("✅ Image saved to: {Path}", filePath);
+                _logger.LogInformation("Image saved to: {Path}", filePath);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Failed to save image to: {Path}", filePath);
+                _logger.LogError(ex, "Failed to save image to: {Path}", filePath);
                 throw new Exception($"Failed to save image: {ex.Message}");
             }
 
@@ -273,14 +270,14 @@ namespace Airbnb.API.Services.Implementations
             try
             {
                 await _propertyRepository.UpdateAsync(property);
-                _logger.LogInformation("✅ Image record saved to database");
+                _logger.LogInformation("Image record saved to database");
             }
             catch (Exception ex)
             {
                 if (File.Exists(filePath))
                 {
                     File.Delete(filePath);
-                    _logger.LogWarning("🗑️ Deleted uploaded file due to database error");
+                    _logger.LogWarning("Deleted uploaded file due to database error");
                 }
                 throw new Exception($"Failed to save image record: {ex.Message}");
             }
@@ -308,7 +305,7 @@ namespace Airbnb.API.Services.Implementations
 
                 await _propertyRepository.DeleteImageAsync(imageId);
 
-                _logger.LogInformation("✅ Image {ImageId} deleted by host {HostId}", imageId, hostId);
+                _logger.LogInformation("Image {ImageId} deleted by host {HostId}", imageId, hostId);
                 return true;
             }
             catch (UnauthorizedAccessException)
@@ -336,7 +333,7 @@ namespace Airbnb.API.Services.Implementations
 
                 await _propertyRepository.SetPrimaryImageAsync(imageId, image.PropertyId);
 
-                _logger.LogInformation("✅ Primary image set: {ImageId} for property {PropertyId}",
+                _logger.LogInformation("Primary image set: {ImageId} for property {PropertyId}",
                     imageId, image.PropertyId);
                 return true;
             }
@@ -361,7 +358,6 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to submit this property");
 
-            // ✅ Validate أن الـ property مكتملة
             var validationErrors = new List<string>();
 
             if (string.IsNullOrEmpty(property.Title) || property.Title == "Untitled Listing")
@@ -382,16 +378,15 @@ namespace Airbnb.API.Services.Implementations
                     $"Property is not ready to submit: {string.Join(", ", validationErrors)}");
             }
 
-            // ✅ تغيير الـ Status
             property.Status = PropertyStatus.PendingApproval;
             property.IsActive = false;
             property.IsApproved = false;
-            property.CurrentStep = null; // مسح الـ step لأنها اكتملت
+            property.CurrentStep = null;
             property.UpdatedAt = DateTime.UtcNow;
 
             await _propertyRepository.UpdateAsync(property);
 
-            _logger.LogInformation("✅ Property {PropertyId} submitted for approval by host {HostId}", id, hostId);
+            _logger.LogInformation("Property {PropertyId} submitted for approval by host {HostId}", id, hostId);
 
             return true;
         }
@@ -436,8 +431,8 @@ namespace Airbnb.API.Services.Implementations
                 TotalReviews = property.TotalReviews,
                 TotalBookings = totalBookings,
                 IsInstantBook = property.IsInstantBook,
-                CurrentStep = property.CurrentStep, // ✅ Include CurrentStep
-                Status = property.Status, // ✅ Include Status
+                CurrentStep = property.CurrentStep, 
+                Status = property.Status, 
                 Images = property.Images.Select(img => new PropertyImageDto
                 {
                     Id = img.Id,
@@ -467,7 +462,6 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to publish this property");
 
-            // ✅ Validate property is complete before publishing
             var validationErrors = new List<string>();
 
             if (string.IsNullOrEmpty(property.Title) || property.Title == "Untitled Listing")
@@ -487,21 +481,19 @@ namespace Airbnb.API.Services.Implementations
                     $"Property is not ready to publish: {string.Join(", ", validationErrors)}");
             }
 
-            // ✅ تغيير الحالة إلى PendingApproval بدلاً من Active مباشرة
             property.Status = PropertyStatus.PendingApproval;
-            property.IsActive = false; // لن تكون مفعلة حتى موافقة Admin
+            property.IsActive = false; 
             property.IsApproved = false;
-            property.CurrentStep = null; // مسح الـ step لأنها اكتملت
+            property.CurrentStep = null; 
             property.UpdatedAt = DateTime.UtcNow;
 
             await _propertyRepository.UpdateAsync(property);
 
-            _logger.LogInformation("✅ Property {PropertyId} published by host {HostId}", id, hostId);
+            _logger.LogInformation("Property {PropertyId} published by host {HostId}", id, hostId);
 
             return true;
         }
 
-        // في ملف PropertyService.cs
 
         public async Task<bool> UnpublishPropertyAsync(int id, string hostId)
         {
@@ -513,8 +505,6 @@ namespace Airbnb.API.Services.Implementations
             if (property.HostId != hostId)
                 throw new UnauthorizedAccessException("You are not authorized to unpublish this property");
 
-            // ✅ التصحيح: التحقق من IsActive بدلاً من Status فقط
-            // إذا كان العقار غير مفعل أصلاً، لا داعي لإلغاء تفعيله
             if (!property.IsActive)
             {
                 throw new InvalidOperationException("Property is already inactive");
@@ -531,7 +521,6 @@ namespace Airbnb.API.Services.Implementations
             return true;
         }
 
-        // ✅ دالة جديدة لتفعيل property بعد موافقة Admin
         public async Task<bool> ActivatePropertyAsync(int id, string hostId)
         {
             var property = await _propertyRepository.GetByIdAsync(id);
@@ -554,7 +543,7 @@ namespace Airbnb.API.Services.Implementations
 
             await _propertyRepository.UpdateAsync(property);
 
-            _logger.LogInformation("✅ Property {PropertyId} activated by host {HostId}", id, hostId);
+            _logger.LogInformation("Property {PropertyId} activated by host {HostId}", id, hostId);
 
             return true;
         }
