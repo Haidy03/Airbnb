@@ -281,88 +281,73 @@ export class LoginComponent {
     
     const formValue = this.registerForm.value;
     const fullPhoneNumber = `${formValue.countryCode}${formValue.phoneNumber}`;
+    
     const request = {
       firstName: formValue.firstName!,
-    lastName: formValue.lastName!,
-    email: formValue.email!,
-    phoneNumber: fullPhoneNumber,
-    password: formValue.password!
-      // firstName: this.registerForm.value.firstName!,
-      // lastName: this.registerForm.value.lastName!,
-      // email: this.registerForm.value.email!,
-      // phoneNumber: `${this.registerForm.value.countryCode}${this.registerForm.value.phoneNumber}`,
-      // password: this.registerForm.value.password!
+      lastName: formValue.lastName!,
+      email: formValue.email!,
+      phoneNumber: fullPhoneNumber,
+      password: formValue.password!
     };
 
-    console.log('📝 Attempting registration:', { email: request.email });
-
+    // 1. طلب التسجيل
     this.authService.register(request).subscribe({
-      next: (response) => {
-       // this.isLoading.set(false);
-        console.log('✅ Registration successful!');
+      next: () => {
+        console.log('✅ Registration successful, attempting auto-login...');
         
-        // After successful registration, automatically log in
+        // 2. محاولة تسجيل الدخول تلقائياً
         const loginRequest = {
-          identifier: request.email || request.phoneNumber,
+          identifier: request.email, // نستخدم الإيميل لأنه أضمن
           password: request.password
         };
         
         this.authService.loginWithEmail(loginRequest).subscribe({
-          next: (response:any) => {
+          next: (loginResponse: any) => {
             this.isLoading.set(false);
-            console.log('✅ Auto-login successful after registration');
-             
-            //this.authService.setToken(response.token);
-            // Fetch role from token and redirect
-           const token = response?.token || response?.data?.token;
-            //const token = this.authService.getToken();
-          if (token) {
-            // const userRole = this.tokenService.getUserRole(token);
-            // this.redirectBasedOnRole(userRole);
-            this.authService.setToken(token);
-            console.log('✅ Token stored:', localStorage.getItem('token'));
+            
+            // ✅ إصلاح المشكلة: التأكد من قراءة التوكن بأي شكل (Capital أو Small)
+            const token = loginResponse?.token || loginResponse?.Token || loginResponse?.data?.token;
 
-            const userRole = this.tokenService.getUserRole(token);
-            const userId = this.tokenService.getUserId(token);
+            if (token) {
+              // 1. تخزين التوكن والبيانات
+              this.authService.setToken(token);
+              
+              const userRole = this.tokenService.getUserRole(token);
+              const userId = this.tokenService.getUserId(token);
 
-            console.log('👤 User Role:', userRole, '🆔 User ID:', userId);
-             localStorage.setItem('userId', userId);
-            localStorage.setItem('email', request.email);
-            localStorage.setItem('userRole', userRole);
-            localStorage.setItem('firstName', request.firstName);
-            localStorage.setItem('lastName', request.lastName);
-            localStorage.setItem('phoneNumber', fullPhoneNumber);
+              localStorage.setItem('userId', userId);
+              localStorage.setItem('userRole', userRole);
+              localStorage.setItem('email', request.email);
+              localStorage.setItem('firstName', request.firstName);
+              localStorage.setItem('lastName', request.lastName);
 
-            this.authService.setUserFromToken(token);
-            this.authService.fetchAndSetFullProfile();
-            this.closeModal();
-            this.redirectBasedOnRole(userRole);
-          } else {
-            this.errorMessage.set('Login failed - no token received');
-            //this.switchMode('email');
-          }
-            // this.router.navigate(['/login']); 
-            this.closeModal();
+              // 2. تحديث حالة المستخدم في التطبيق
+              this.authService.setUserFromToken(token);
+
+              // 3. إغلاق المودال والتوجيه للصفحة الرئيسية
+              this.closeModal();
+              this.router.navigate(['/']); 
+              
+            } else {
+              // لو التسجيل نجح بس التوكن مرجعش لسبب ما
+              this.errorMessage.set('Account created! Please log in manually.');
+              this.switchMode('email');
+            }
           },
           error: (loginError) => {
             this.isLoading.set(false);
             console.error('❌ Auto-login failed:', loginError);
-            // If auto-login fails, switch to login mode
+            // في حالة فشل اللوجن التلقائي، نوجه المستخدم لصفحة اللوجن العادية
             this.switchMode('email');
             this.errorMessage.set('Registration successful! Please log in.');
-            this.errorService.handleError(loginError); 
           }
         });
       },
       error: (error) => {
         this.isLoading.set(false);
         console.error('❌ Registration failed:', error);
-        
-        const errorMsg = error?.error?.message || 
-                        error?.message || 
-                        'Registration failed';
+        const errorMsg = error?.error?.message ||  error?.message || 'Registration failed';
         this.errorMessage.set(errorMsg);
-        this.errorService.handleError(error);
       }
     });
   }

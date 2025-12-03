@@ -467,8 +467,40 @@ namespace Airbnb.API.Services.Implementations
         public async Task<bool> RejectVerificationAsync(int id, string adminId, RejectVerificationDto dto) { var v = await _adminRepository.GetVerificationByIdAsync(id); if (v == null) return false; v.Status = VerificationStatus.Rejected; v.RejectionReason = dto.RejectionReason; v.AdminNotes = dto.AdminNotes; v.ReviewedAt = DateTime.UtcNow; v.ReviewedByAdminId = adminId; await _adminRepository.UpdateVerificationAsync(v); return true; }
         private VerificationRequestDto MapVerificationToDto(UserVerification v) => new VerificationRequestDto { Id = v.Id, UserId = v.UserId, UserName = v.User.FirstName + " " + v.User.LastName, UserEmail = v.User.Email, IdType = v.IdType, IdNumber = v.IdNumber, IdImageUrl = v.IdImageUrl, Status = v.Status.ToString(), SubmittedAt = v.SubmittedAt, AdminNotes = v.AdminNotes };
 
-        public async Task<List<AdminPropertyDto>> GetAllPropertiesAsync(string? status = null, string? searchTerm = null, int pageNumber = 1, int pageSize = 10) { PropertyStatus? ps = null; if (!string.IsNullOrEmpty(status) && Enum.TryParse(status, out PropertyStatus p)) ps = p; var props = await _adminRepository.GetAllPropertiesAsync(ps, searchTerm, pageNumber, pageSize); return props.Select(MapPropertyToDto).ToList(); }
-        public async Task<AdminPropertyDto> GetPropertyByIdAsync(int id) { var p = await _adminRepository.GetPropertyByIdAsync(id); return p != null ? MapPropertyToDto(p) : null; }
+        public async Task<List<AdminPropertyDto>> GetAllPropertiesAsync(string? status = null, string? searchTerm = null, int pageNumber = 1, int pageSize = 10) {
+            PropertyStatus? propertyStatus = null;
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<PropertyStatus>(status, out var parsedStatus))
+            {
+                propertyStatus = parsedStatus;
+            }
+
+            var properties = await _adminRepository.GetAllPropertiesAsync(propertyStatus, searchTerm, pageNumber, pageSize);
+
+            return properties.Select(p => new AdminPropertyDto
+            {
+                Id = p.Id,
+                Title = p.Title,
+
+                ImageUrl = p.Images.FirstOrDefault()?.ImageUrl ?? "",
+
+                HostId = p.HostId,
+                HostName = p.Host.FirstName + " " + p.Host.LastName,
+                Status = p.Status.ToString(),
+                PricePerNight = p.PricePerNight,
+                Location = p.City + ", " + p.Country,
+                TotalBookings = p.Bookings.Count,
+                TotalRevenue = p.Bookings.Where(b => b.Status == BookingStatus.Completed).Sum(b => b.TotalPrice),
+                AverageRating = p.Reviews.Any() ? p.Reviews.Average(r => (double?)r.Rating) : null,
+                ReviewsCount = p.Reviews.Count,
+                CreatedAt = p.CreatedAt,
+                ApprovedAt = p.ApprovedAt,
+                RejectionReason = p.RejectionReason
+            }).ToList();
+        }
+        public async Task<AdminPropertyDto> GetPropertyByIdAsync(int id) 
+        { var p = await _adminRepository.GetPropertyByIdAsync(id); 
+            return p != null ? MapPropertyToDto(p) : null; 
+        }
         public async Task<bool> ApprovePropertyAsync(int id, string adminId, ApprovePropertyDto dto) { var p = await _adminRepository.GetPropertyByIdAsync(id); if (p == null) return false; p.Status = PropertyStatus.Approved; p.ApprovedAt = DateTime.UtcNow; p.ApprovedByAdminId = adminId; p.IsApproved = true; p.IsActive = true; return await _adminRepository.UpdatePropertyAsync(p); }
         public async Task<bool> RejectPropertyAsync(int id, string adminId, RejectPropertyDto dto) { var p = await _adminRepository.GetPropertyByIdAsync(id); if (p == null) return false; p.Status = PropertyStatus.Rejected; p.IsApproved = false; p.RejectionReason = dto.RejectionReason; p.UpdatedAt = DateTime.UtcNow; return await _adminRepository.UpdatePropertyAsync(p); }
         public async Task<bool> UpdatePropertyStatusAsync(int id, UpdatePropertyStatusDto dto) { var p = await _adminRepository.GetPropertyByIdAsync(id); if (p == null) return false; if (Enum.TryParse<PropertyStatus>(dto.Status, out var s)) { p.Status = s; return await _adminRepository.UpdatePropertyAsync(p); } return false; }

@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public string Title { get; set; }
+        public string ImageUrl { get; set; }
         public string HostId { get; set; }
         public string HostName { get; set; }
         public string Status { get; set; }

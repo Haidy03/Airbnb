@@ -94,7 +94,7 @@
       <div class="property-stats">
         <div class="stat-item">
           <span class="stat-label">Price:</span>
-          <span class="stat-value price">{{ formatCurrency(exp.pricePerPerson) }}</span>
+          <span class="stat-value price"><span>EGP</span>{{ exp.pricePerPerson }}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Bookings:</span>
@@ -127,7 +127,6 @@
         </div>
       </div>
 
-      <!-- ✅ NEW: Rejection Reason Box (تم إضافته هنا) -->
       <div *ngIf="exp.rejectionReason" class="rejection-box">
         <strong>Rejection Reason:</strong>
         <p>{{ exp.rejectionReason || 'No reason provided.' }}</p>
