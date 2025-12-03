@@ -175,7 +175,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
 
   saveAndExit(): void {
     if (!confirm('Save your progress and exit?')) return;
-    // ✅ استخدام الدالة الموحدة للحفظ
+ 
     this.saveData(() => this.router.navigate(['/host/properties']));
   }
 
@@ -184,16 +184,16 @@ export class PricingComponent implements OnInit, AfterViewInit {
       alert('Please enter valid pricing information');
       return;
     }
-    // ✅ استخدام الدالة الموحدة للحفظ
-    this.saveData(() => this.router.navigate(['/host/properties/legal-and-create']));
+   
+    this.saveData(() => this.router.navigate(['/host/properties/house-rules']));
   }
 
-  // ✅✅✅ الدالة المساعدة للحفظ (Added Here) ✅✅✅
+
   private saveData(onSuccess: () => void): void {
     this.isLoading.set(true);
 
     if (this.currentDraftId) {
-      // تجهيز البيانات (التأكد من إرسال cleaningFee حتى لو null)
+  
       const feeValue = this.showCleaningFee() ? this.pricingForm.get('cleaningFee')?.value : null;
       
       const payload = {
