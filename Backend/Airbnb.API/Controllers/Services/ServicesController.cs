@@ -236,5 +236,29 @@ namespace Airbnb.API.Controllers
             }
         }
 
+        [HttpPost("bookings/{bookingId}/cancel")]
+        [Authorize]
+        public async Task<IActionResult> CancelBooking(int bookingId)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var result = await _servicesService.CancelBookingAsync(bookingId, userId);
+
+                if (!result) return NotFound(new { message = "Booking not found" });
+
+                return Ok(new { success = true, message = "Booking cancelled successfully" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // هذا عشان رسالة الـ 24 ساعة تظهر لليوزر
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+        }
+
     }
 }

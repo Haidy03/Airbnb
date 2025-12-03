@@ -1,0 +1,106 @@
+<div class="container py-5" style="margin-top: 80px;">
+  <h1 class="mb-4 page-title">My Bookings</h1>
+  <p class="text-muted mb-5">Manage your upcoming and past reservations.</p>
+
+  <div *ngIf="loading()" class="text-center py-5">
+    <div class="spinner-border text-dark" role="status"></div>
+  </div>
+
+  <div *ngIf="!loading()">
+
+    <!-- 1. Stays Section -->
+    <section *ngIf="propertyBookings().length > 0" class="mb-5 section-group">
+      <h3 class="section-header">🏠 Stays</h3>
+      <div class="bookings-grid">
+        <div *ngFor="let trip of propertyBookings()" class="booking-card">
+          <img [src]="getImageUrl(trip.imageUrl)" class="card-img">
+          <div class="card-body">
+            <div class="card-info">
+              <h5>{{ trip.propertyTitle }}</h5>
+              <p class="host-text">Hosted by {{ trip.hostName }}</p>
+              <p class="date-text">
+                <i class="bi bi-calendar"></i> 
+                {{ trip.checkInDate | date:'mediumDate' }} - {{ trip.checkOutDate | date:'mediumDate' }}
+              </p>
+              <p class="price-text">EGP {{ trip.totalPrice }}</p>
+              
+              <!-- الحالة -->
+              <span class="status-badge" [class]="trip.status.toLowerCase()">{{ trip.status }}</span>
+            </div>
+
+            <button class="btn-cancel"
+                    [disabled]="!canCancel(trip.checkInDate) || trip.status === 'Cancelled' || trip.status === 'Completed'"
+                    (click)="cancelBooking(trip)">
+              {{ trip.status === 'Cancelled' ? 'Cancelled' : 'Cancel Booking' }}
+            </button>
+            
+            <small *ngIf="!canCancel(trip.checkInDate) && trip.status !== 'Cancelled' && trip.status !== 'Completed'" class="warning-text">
+              Cancellation unavailable (less than 24h)
+            </small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Experiences Section -->
+    <section *ngIf="experienceBookings().length > 0" class="mb-5 section-group">
+      <h3 class="section-header">🎒 Experiences</h3>
+      <div class="bookings-grid">
+        <div *ngFor="let trip of experienceBookings()" class="booking-card">
+          <img [src]="getImageUrl(trip.imageUrl || trip.experienceImage)" class="card-img">
+          <div class="card-body">
+            <div class="card-info">
+              <h5>{{ trip.title || trip.experienceTitle }}</h5>
+              <p class="host-text">Hosted by {{ trip.hostName }}</p>
+              <p class="date-text">
+                <i class="bi bi-clock"></i> {{ trip.checkInDate | date:'medium' }}
+              </p>
+              <p class="price-text">EGP {{ trip.totalPrice }}</p>
+              <span class="status-badge" [class]="trip.status.toLowerCase()">{{ trip.status }}</span>
+            </div>
+
+            <button class="btn-cancel"
+                    [disabled]="!canCancel(trip.checkInDate) || trip.status === 'Cancelled' || trip.status === 'Completed'"
+                    (click)="cancelBooking(trip)">
+              {{ trip.status === 'Cancelled' ? 'Cancelled' : 'Cancel Booking' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Services Section -->
+    <section *ngIf="serviceBookings().length > 0" class="mb-5 section-group">
+      <h3 class="section-header">🛠️ Services</h3>
+      <div class="bookings-grid">
+        <div *ngFor="let trip of serviceBookings()" class="booking-card">
+          <img [src]="getImageUrl(trip.imageUrl)" class="card-img">
+          <div class="card-body">
+            <div class="card-info">
+              <h5>{{ trip.title }}</h5>
+              <p class="host-text">Provider: {{ trip.hostName }}</p>
+              <p class="date-text">
+                <i class="bi bi-calendar-check"></i> {{ trip.checkInDate | date:'medium' }}
+              </p>
+              <p class="price-text">EGP {{ trip.totalPrice }}</p>
+              <span class="status-badge" [class]="trip.status.toLowerCase()">{{ trip.status }}</span>
+            </div>
+
+            <button class="btn-cancel"
+                    [disabled]="!canCancel(trip.checkInDate) || trip.status === 'Cancelled' || trip.status === 'Completed'"
+                    (click)="cancelBooking(trip)">
+              {{ trip.status === 'Cancelled' ? 'Cancelled' : 'Cancel Booking' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Empty State -->
+    <div *ngIf="propertyBookings().length === 0 && experienceBookings().length === 0 && serviceBookings().length === 0" class="text-center mt-5">
+      <h3>No bookings found</h3>
+      <a routerLink="/" class="btn btn-dark mt-3">Start Exploring</a>
+    </div>
+
+  </div>
+</div>

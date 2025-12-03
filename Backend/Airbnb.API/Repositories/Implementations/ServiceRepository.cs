@@ -178,5 +178,10 @@ namespace Airbnb.API.Repositories.Implementations
             _context.ServiceReviews.Update(review);
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateServiceBookingAsync(ServiceBooking booking)
+        {
+            _context.ServiceBookings.Update(booking);
+            await _context.SaveChangesAsync();
+        }
     }
 }

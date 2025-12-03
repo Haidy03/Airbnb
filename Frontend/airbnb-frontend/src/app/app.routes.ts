@@ -63,6 +63,12 @@ export const routes: Routes = [
       .then(m => m.WishlistsComponent)
   },
   {
+  path: 'my-bookings',
+  loadComponent: () => import('./features/guest/components/my-bookings/my-bookings.component/my-bookings.component')
+    .then(m => m.MyBookingsComponent),
+  canActivate: [authGuard] // حماية الصفحة
+},
+  {
     path: 'trips',
     loadComponent: () => import('./features/guest/components/trips/trips')
       .then(m => m.TripsComponent)

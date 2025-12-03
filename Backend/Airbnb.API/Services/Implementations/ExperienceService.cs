@@ -355,20 +355,23 @@ namespace Airbnb.API.Services.Implementations
         public async Task<bool> CancelBookingAsync(int bookingId, string userId)
         {
             var booking = await _experienceRepository.GetBookingByIdAsync(bookingId);
-
-            if (booking == null)
-                return false;
+            if (booking == null) return false;
 
             if (booking.GuestId != userId && booking.Experience.HostId != userId)
-                throw new UnauthorizedAccessException("You are not authorized to cancel this booking");
+                throw new UnauthorizedAccessException("Not authorized");
+
+            // ✅ شرط الـ 24 ساعة
+            // booking.Availability.Date هو تاريخ التجربة
+            if (booking.GuestId == userId && booking.Availability.Date < DateTime.UtcNow.AddHours(24))
+            {
+                throw new InvalidOperationException("Cannot cancel less than 24 hours before experience starts.");
+            }
 
             booking.Status = ExperienceBookingStatus.Cancelled;
-            booking.CancelledAt = DateTime.UtcNow;
-            booking.CancellationReason = "Cancelled by user";
 
+            // إرجاع المقاعد المتاحة
             var availability = booking.Availability;
             availability.AvailableSpots += booking.NumberOfGuests;
-            availability.IsAvailable = true;
             await _experienceRepository.UpdateAvailabilityAsync(availability);
 
             await _experienceRepository.UpdateBookingAsync(booking);
