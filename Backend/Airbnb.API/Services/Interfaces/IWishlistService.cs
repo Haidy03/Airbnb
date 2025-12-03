@@ -1,4 +1,4 @@
-﻿using Airbnb.API.DTOs.Search; // هنستخدم نفس DTO البحث للعرض
+﻿using Airbnb.API.DTOs.Search; 
 
 namespace Airbnb.API.Services.Interfaces
 {

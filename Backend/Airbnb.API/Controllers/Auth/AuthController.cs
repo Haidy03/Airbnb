@@ -79,19 +79,16 @@ namespace Airbnb.API.Controllers.Auth
         [Authorize] // This endpoint is protected and requires a valid token
         public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateProfileDto updateDto)
         {
-            // Get the user's ID from the claims in their token
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
-            // Call the service to perform the update logic
             var result = await _authService.UpdateUserProfileAsync(userId, updateDto);
 
             if (!result.Succeeded)
             {
-                // If the service returned errors (e.g., user not found), return a BadRequest
                 return BadRequest(result.Errors);
             }
 
@@ -105,13 +102,9 @@ namespace Airbnb.API.Controllers.Auth
 
             if (token == null)
             {
-                // Security: Don't reveal if user exists
                 return Ok(new { Message = "If an account with this email exists, a password reset link has been sent." });
             }
 
-            // Construct the Email
-            // This link points to your Angular Frontend (localhost:4200)
-            // The frontend will read the token from the URL and send it back to your API
             var encodedToken = Uri.EscapeDataString(token);
             var resetLink = $"http://localhost:4200/reset-password?token={encodedToken}&email={forgotPasswordDto.Email}";
 
@@ -156,9 +149,7 @@ namespace Airbnb.API.Controllers.Auth
 
             if (!result.Succeeded)
             {
-                // The errors could include "Invalid token", password complexity issues, etc.
-                // For security, you might want to return a generic message in production,
-                // but for development, returning the errors is helpful.
+                
                 return BadRequest(result.Errors);
             }
 
@@ -209,15 +200,12 @@ namespace Airbnb.API.Controllers.Auth
         [Authorize] // <--- Critical: User must be logged in
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
-            // 1. Get the ID of the currently logged-in user
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // 2. Call the service
             var result = await _authService.ChangePasswordAsync(userId, changePasswordDto);
 
             if (!result.Succeeded)
             {
-                // This will return errors like "Incorrect password" or "Password requires a digit"
                 return BadRequest(result.Errors);
             }
 

@@ -6,12 +6,9 @@ namespace Airbnb.API.Data
     {
         public static void Seed(ApplicationDbContext context)
         {
-            // هام: لو الجدول مليان داتا قديمة (Icon text)، لازم نمسحها أو نعمل تحديث
-            // للتسهيل: اعملي Delete للداتا من الداتابيز أو استخدمي الكود ده عشان يحدث الداتا لو الاسم موجود
 
             var categories = new List<ServiceCategory>
 {
-   // Option 2: Modern Colored Icons
 new ServiceCategory { Name = "Catering", Icon = "https://cdn-icons-png.flaticon.com/512/3480/3480822.png" },
 new ServiceCategory { Name = "Chef", Icon = "https://cdn-icons-png.flaticon.com/512/1831/1831251.png" },
 new ServiceCategory { Name = "Hair styling", Icon = "https://cdn-icons-png.flaticon.com/512/3037/3037316.png" },
@@ -23,13 +20,12 @@ new ServiceCategory { Name = "Photography", Icon = "https://cdn-icons-png.flatic
 new ServiceCategory { Name = "Prepared meals", Icon = "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" },
 new ServiceCategory { Name = "Spa treatments", Icon = "https://cdn-icons-png.flaticon.com/512/2647/2647880.png" } };
 
-            // منطق بسيط: لو التصنيف موجود حدثه، لو مش موجود ضيفه
             foreach (var cat in categories)
             {
                 var existingCat = context.ServiceCategories.FirstOrDefault(c => c.Name == cat.Name);
                 if (existingCat != null)
                 {
-                    existingCat.Icon = cat.Icon; // تحديث الأيقونة
+                    existingCat.Icon = cat.Icon;
                     existingCat.DisplayOrder = cat.DisplayOrder;
                 }
                 else

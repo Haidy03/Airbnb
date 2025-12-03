@@ -218,21 +218,20 @@ using (var scope = app.Services.CreateScope())
     var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
-        logger.LogInformation("🚀 Starting database seeding...");
+        logger.LogInformation("Starting database seeding...");
         await SeedRolesAndAdmin(services);
-        logger.LogInformation("✅ Roles and Admin seeded successfully");
+        logger.LogInformation("Roles and Admin seeded successfully");
 
         var context = services.GetRequiredService<ApplicationDbContext>();
         SeedAmenities.SeedData(context);
-        logger.LogInformation("✅ Amenities seeded successfully");
+        logger.LogInformation("Amenities seeded successfully");
 
         await SeedServices.SeedDataAsync(context);
         SeedServiceCategories.Seed(context);
-        // ⭐ أضيفي الـ Seed Data للـ Reviews
         await SeedReviewData(services);
-        logger.LogInformation("✅ Review test data seeded successfully");
+        logger.LogInformation("Review test data seeded successfully");
 
-        logger.LogInformation("🎉 All seeding completed successfully!");
+        logger.LogInformation("All seeding completed successfully!");
     }
     catch (Exception ex)
     {
@@ -302,7 +301,7 @@ async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
         if (!await roleManager.RoleExistsAsync(roleName))
         {
             await roleManager.CreateAsync(new IdentityRole(roleName));
-            logger.LogInformation($"   ✓ Created role: {roleName}");
+            logger.LogInformation($"   Created role: {roleName}");
         }
     }
 
@@ -328,15 +327,14 @@ async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
-            logger.LogInformation($"   ✓ Created Admin user: {adminEmail}");
+            logger.LogInformation($"   Created Admin user: {adminEmail}");
         }
         else
         {
-            logger.LogError($"   ✗ Failed to create Admin: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            logger.LogError($"   Failed to create Admin: {string.Join(", ", result.Errors.Select(e => e.Description))}");
         }
     }
 }
-// Replace your SeedReviewData function with this updated version:
 
 async Task SeedReviewData(IServiceProvider serviceProvider)
 {
@@ -370,11 +368,11 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
             if (guestResult.Succeeded)
             {
                 await userManager.AddToRoleAsync(guest, "Guest");
-                logger.LogInformation($"   ✓ Guest created: {guestEmail}");
+                logger.LogInformation($"   Guest created: {guestEmail}");
             }
             else
             {
-                logger.LogError($"   ✗ Failed to create Guest");
+                logger.LogError($"   Failed to create Guest");
                 return;
             }
         }
@@ -385,7 +383,7 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
 
         if (host == null)
         {
-            logger.LogInformation("   → Creating Host user...");
+            logger.LogInformation("   Creating Host user...");
             host = new ApplicationUser
             {
                 UserName = hostEmail,
@@ -403,16 +401,15 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
             if (hostResult.Succeeded)
             {
                 await userManager.AddToRoleAsync(host, "Host");
-                logger.LogInformation($"   ✓ Host created: {hostEmail}");
+                logger.LogInformation($"   Host created: {hostEmail}");
             }
             else
             {
-                logger.LogError($"   ✗ Failed to create Host");
+                logger.LogError($"   Failed to create Host");
                 return;
             }
         }
 
-        // Reload users from DB to get IDs
         guest = await userManager.FindByEmailAsync(guestEmail);
         host = await userManager.FindByEmailAsync(hostEmail);
 
@@ -422,10 +419,9 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
             return;
         }
 
-        // Create Property - ✅ USING PropertyTypeId now!
         if (!await context.Properties.AnyAsync())
         {
-            logger.LogInformation("   → Creating test property...");
+            logger.LogInformation("   Creating test property...");
 
             var property = new Property
             {
@@ -436,7 +432,7 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
                 MaxGuests = 6,
                 NumberOfBedrooms = 3,
                 NumberOfBathrooms = 2,
-                PropertyTypeId = 1, // ✅ CHANGED: Use PropertyTypeId (1 = House)
+                PropertyTypeId = 1,
                 Country = "Egypt",
                 City = "Cairo",
                 Address = "Zamalek, Cairo",
@@ -454,14 +450,13 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
         var testProperty = await context.Properties.FirstOrDefaultAsync();
         if (testProperty == null)
         {
-            logger.LogError("   ✗ Property not found after creation");
+            logger.LogError("   Property not found after creation");
             return;
         }
 
-        // Create Completed Booking
         if (!await context.Bookings.AnyAsync())
         {
-            logger.LogInformation("   → Creating completed booking...");
+            logger.LogInformation("   Creating completed booking...");
 
             var booking = new Booking
             {
@@ -488,14 +483,14 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
 
         if (completedBooking == null)
         {
-            logger.LogError("   ✗ No completed booking found");
+            logger.LogError("   No completed booking found");
             return;
         }
 
         // Create Sample Review
         if (!await context.Reviews.AnyAsync())
         {
-            logger.LogInformation("   → Creating sample review...");
+            logger.LogInformation("   Creating sample review...");
 
             var review = new Review
             {
@@ -516,11 +511,11 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
 
             context.Reviews.Add(review);
             await context.SaveChangesAsync();
-            logger.LogInformation($"   ✓ Review created (ID: {review.Id})");
+            logger.LogInformation($"   Review created (ID: {review.Id})");
         }
 
         logger.LogInformation("");
-        logger.LogInformation("📊 DATABASE SUMMARY:");
+        logger.LogInformation("DATABASE SUMMARY:");
         logger.LogInformation($"   • Users: {await context.Users.CountAsync()}");
         logger.LogInformation($"   • Properties: {await context.Properties.CountAsync()}");
         logger.LogInformation($"   • Bookings: {await context.Bookings.CountAsync()}");
@@ -529,7 +524,7 @@ async Task SeedReviewData(IServiceProvider serviceProvider)
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "❌ Error in SeedReviewData");
+        logger.LogError(ex, "Error in SeedReviewData");
         throw;
     }
 }

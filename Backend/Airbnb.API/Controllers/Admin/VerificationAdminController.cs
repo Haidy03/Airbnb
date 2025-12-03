@@ -56,7 +56,6 @@ public class VerificationAdminController : ControllerBase
 
         user.IsVerified = false;
         user.VerificationStatus = "Rejected";
-        // Optional: Delete the image to respect privacy
         await _userManager.UpdateAsync(user);
 
         await _emailService.SendEmailAsync(user.Email, "Verification Failed", "Your ID was not accepted. Please try again.");

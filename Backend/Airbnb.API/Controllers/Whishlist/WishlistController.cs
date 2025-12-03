@@ -64,10 +64,6 @@ namespace Airbnb.API.Controllers
         {
             var userId = GetCurrentUserId();
 
-            // ملاحظة: تأكدي أن نوع PropertyId في جدول Wishlist هو (int?) ليتوافق مع هذا الكود
-            // لو كان string في Property Table، لازم تغيري الباراميتر هنا لـ string
-            // لكن بناءً على الكود السابق افترضنا انه int
-
             var existingItem = await _context.Wishlists
                 .FirstOrDefaultAsync(w => w.UserId == userId && w.PropertyId == propertyId);
 
@@ -129,7 +125,7 @@ namespace Airbnb.API.Controllers
         }
 
         // =================================================
-        // 3. GET ALL WISHLIST ITEMS (Merged) - الحل هنا
+        // 3. GET ALL WISHLIST
         // =================================================
 
         [HttpGet]
@@ -137,7 +133,6 @@ namespace Airbnb.API.Controllers
         {
             var userId = GetCurrentUserId();
 
-            // 1. جلب التجارب (Experiences)
             var experiences = await _context.Wishlists
                 .Include(w => w.Experience).ThenInclude(e => e.Images)
                 .Where(w => w.UserId == userId && w.ExperienceId != null)
@@ -147,7 +142,6 @@ namespace Airbnb.API.Controllers
                     Title = w.Experience.Title,
                     Price = w.Experience.PricePerPerson,
                     Type = "Experience",
-                    // صورة التجربة
                     Image = w.Experience.Images.FirstOrDefault(i => i.IsPrimary).ImageUrl
                             ?? w.Experience.Images.FirstOrDefault().ImageUrl
                             ?? "assets/images/placeholder.jpg",
@@ -158,10 +152,9 @@ namespace Airbnb.API.Controllers
                 })
                 .ToListAsync();
 
-            // 2. جلب البيوت (Properties)
             var properties = await _context.Wishlists
-                .Include(w => w.Property).ThenInclude(p => p.Images) // تأكدي ان العلاقة Images موجودة في Property
-                .Include(w => w.Property) // للوصول لبيانات الموقع لو موجودة مباشرة
+                .Include(w => w.Property).ThenInclude(p => p.Images) 
+                .Include(w => w.Property) 
                 .Where(w => w.UserId == userId && w.PropertyId != null)
                 .Select(w => new
                 {
@@ -169,7 +162,6 @@ namespace Airbnb.API.Controllers
                     Title = w.Property.Title,
                     Price = w.Property.PricePerNight,
                     Type = "Home",
-                    // صورة البيت (تأكدي من أسماء الحقول في جدول PropertyImages عندك)
                     Image = w.Property.Images.FirstOrDefault(i => i.IsPrimary).ImageUrl
                             ?? "assets/images/placeholder-property.jpg",
                     Rating = 0.0,
@@ -178,7 +170,7 @@ namespace Airbnb.API.Controllers
                     Currency = "EGP"
                 })
                 .ToListAsync();
-                 // 3. ✅ Services
+
             var services = await _context.Wishlists
                 .Include(w => w.Service).ThenInclude(s => s.Images)
                 .Where(w => w.UserId == userId && w.ServiceId != null)
@@ -187,16 +179,15 @@ namespace Airbnb.API.Controllers
                     Id = w.Service.Id,
                     Title = w.Service.Title,
                     Price = w.Service.PricePerUnit,
-                    Type = "Service", // ✅ النوع
+                    Type = "Service", 
                     Image = w.Service.Images.FirstOrDefault(i => i.IsCover).Url ?? w.Service.Images.FirstOrDefault().Url ?? "assets/placeholder.jpg",
                     Rating = w.Service.AverageRating,
                     City = w.Service.City ?? "",
-                    Country = "", // Services might only have City
+                    Country = "", 
                     Currency = w.Service.Currency ?? "EGP"
                 }).ToListAsync();
 
 
-            // دمج القائمتين في قائمة واحدة
             var result = experiences.Cast<object>()
                 .Concat(properties)
                 .Concat(services);

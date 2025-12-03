@@ -128,14 +128,11 @@ namespace Airbnb.API.Repositories.Implementations
             await _context.SaveChangesAsync();
         }
 
-
-        //reviews rahma
-
         public async Task<ServiceBooking?> GetServiceBookingByIdAsync(int bookingId)
         {
             return await _context.ServiceBookings
-                .Include(b => b.Service) // نحتاج الخدمة عشان نعرف الـ ID بتاعها
-                .Include(b => b.Guest)   // نحتاج الجيست عشان نتأكد من الهوية
+                .Include(b => b.Service)
+                .Include(b => b.Guest) 
                 .FirstOrDefaultAsync(b => b.Id == bookingId);
         }
 
@@ -153,7 +150,7 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task<List<ServiceReview>> GetReviewsByServiceIdAsync(int serviceId)
         {
             return await _context.ServiceReviews
-                .Include(r => r.Reviewer) // عشان نعرض اسم وصورة اللي عمل ريفيو
+                .Include(r => r.Reviewer)
                 .Where(r => r.ServiceId == serviceId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();

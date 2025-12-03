@@ -71,9 +71,8 @@ public class EarningsService : IEarningsService
         }).ToList();
 
         // =========================================================
-        // ✅ 3. Services Bookings (NEW)
+        // Services Bookings
         // =========================================================
-        // تأكدي أنكِ أضفتِ DbSet<ServiceBooking> في ApplicationDbContext
         var serviceBookings = await _context.ServiceBookings
                 .Include(b => b.Service)
                 .Include(b => b.Guest)
@@ -81,7 +80,6 @@ public class EarningsService : IEarningsService
                             b.Status != "Cancelled" && b.Status != "Rejected")
                 .ToListAsync();
 
-        // تحديد المدفوع والمعلق (للتبسيط: نعتبر ما قبل اليوم مدفوع)
         var paidServiceBookings = serviceBookings
             .Where(b => b.Status == "Completed" || b.BookingDate.Date <= today);
 
@@ -92,7 +90,7 @@ public class EarningsService : IEarningsService
         {
             BookingId = b.Id,
             GuestName = $"{b.Guest.FirstName} {b.Guest.LastName}",
-            PropertyTitle = b.Service.Title, // اسم الخدمة
+            PropertyTitle = b.Service.Title,
             Date = b.BookingDate,
             Amount = b.TotalPrice,
             Type = "Service",
@@ -103,30 +101,26 @@ public class EarningsService : IEarningsService
         // 4. Aggregation & Chart
         // =========================================================
 
-        // دمج المعاملات (Properties + Experiences + Services)
         var finalRecentTransactions = propTransactions
             .Concat(expTransactions)
-            .Concat(serviceTransactions) // ✅ Add Services
+            .Concat(serviceTransactions) 
             .OrderByDescending(t => t.Date)
             .Take(10)
             .ToList();
 
-        // حساب المجاميع الكلية
         var grandTotalEarnings = paidBookings.Sum(b => b.TotalPrice)
                                + paidExpBookings.Sum(b => b.TotalPrice)
-                               + paidServiceBookings.Sum(b => b.TotalPrice); // ✅ Add Services
+                               + paidServiceBookings.Sum(b => b.TotalPrice); 
 
         var grandPendingPayouts = pendingBookings.Sum(b => b.TotalPrice)
                                 + pendingExpBookings.Sum(b => b.TotalPrice)
-                                + pendingServiceBookings.Sum(b => b.TotalPrice); // ✅ Add Services
+                                + pendingServiceBookings.Sum(b => b.TotalPrice); 
 
-        // حساب أرباح الشهر الحالي
         var thisMonthTotal =
               paidBookings.Where(b => b.CheckInDate.Month == today.Month && b.CheckInDate.Year == today.Year).Sum(b => b.TotalPrice)
             + paidExpBookings.Where(b => b.Availability.Date.Month == today.Month && b.Availability.Date.Year == today.Year).Sum(b => b.TotalPrice)
-            + paidServiceBookings.Where(b => b.BookingDate.Month == today.Month && b.BookingDate.Year == today.Year).Sum(b => b.TotalPrice); // ✅ Add Services
+            + paidServiceBookings.Where(b => b.BookingDate.Month == today.Month && b.BookingDate.Year == today.Year).Sum(b => b.TotalPrice); 
 
-        // بيانات الرسم البياني
         var chartData = new List<MonthlyChartDataDto>();
         for (int i = 5; i >= 0; i--)
         {
@@ -140,7 +134,7 @@ public class EarningsService : IEarningsService
                 .Where(b => b.Availability.Date.Month == date.Month && b.Availability.Date.Year == date.Year)
                 .Sum(b => b.TotalPrice);
 
-            var monthSvc = paidServiceBookings // ✅ Add Services
+            var monthSvc = paidServiceBookings 
                 .Where(b => b.BookingDate.Month == date.Month && b.BookingDate.Year == date.Year)
                 .Sum(b => b.TotalPrice);
 

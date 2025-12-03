@@ -191,7 +191,7 @@ namespace Airbnb.API.Repositories.Implementations
             return await _context.Reviews
                 .Include(r => r.Booking)
                 .Include(r => r.Property)
-                .Include(r => r.Reviewer) // مهم عشان الصورة والاسم
+                .Include(r => r.Reviewer)
                 .Where(r => r.Property.HostId == hostId && r.ReviewType == ReviewType.GuestToProperty)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();

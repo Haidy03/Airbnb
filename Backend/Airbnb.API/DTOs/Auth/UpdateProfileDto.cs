@@ -16,10 +16,6 @@ namespace Airbnb.API.DTOs.Auth
         public string? Bio { get; set; }
         public string? ProfileImageUrl { get; set; }
 
-        // ==========================================
-        // الإضافات الجديدة 
-        // ==========================================
-
         [Phone]
         public string? PhoneNumber { get; set; }
 

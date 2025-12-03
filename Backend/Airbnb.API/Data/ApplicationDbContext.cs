@@ -526,7 +526,6 @@ namespace Airbnb.API.Models
                     .HasForeignKey(r => r.ReviewerId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // منع تكرار الريفيو لنفس الحجز
                 entity.HasIndex(r => r.ServiceBookingId).IsUnique();
             });
         }

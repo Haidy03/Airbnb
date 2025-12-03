@@ -26,10 +26,8 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<bool> DeletePropertyAsync(Property property);
 
         // Bookings (Unified)
-        // ✅ الدالة الموحدة لجلب الشقق والتجارب معاً
         Task<List<BookingResponseDto>> GetUnifiedBookingsAsync(string? status = null, DateTime? startDate = null, DateTime? endDate = null, int pageNumber = 1, int pageSize = 10);
 
-        // دوال الحجوزات الفردية (للعمليات مثل الإلغاء)
         Task<Booking?> GetBookingByIdAsync(int bookingId);
         Task<bool> UpdateBookingAsync(Booking booking);
         Task<List<Experience>> GetAllExperiencesAsync();
@@ -40,7 +38,6 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<Review?> GetReviewByIdAsync(int reviewId);
         Task<bool> DeleteReviewAsync(Review review);
 
-        // ✅ دوال جديدة لإدارة ريفيوهات التجارب
         Task<List<ExperienceReview>> GetAllExperienceReviewsAsync();
         Task<bool> DeleteExperienceReviewAsync(int reviewId);
         //services
@@ -56,7 +53,6 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<int> GetTotalPropertiesCountAsync();
         Task<int> GetPropertiesCountByStatusAsync(PropertyStatus status);
 
-        // ✅ NEW: Statistics Update (Combined including Services)
         Task<int> GetTotalCombinedBookingsCountAsync();  // Properties + Experiences + Services
         Task<int> GetBookingsCountByStatusAsync(BookingStatus status);
 
@@ -70,8 +66,6 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<int> GetTotalServicesCountAsync();
         Task<int> GetServicesCountByStatusAsync(ServiceStatus status);
 
-        // داخل الواجهة IAdminRepository
-        //last one
         Task<List<Service>> GetAllServicesAsync(ServiceStatus? status = null, string? searchTerm = null, int pageNumber = 1, int pageSize = 10);
         Task<Service?> GetServiceByIdAsync(int serviceId);
         Task<bool> UpdateServiceAsync(Service service);

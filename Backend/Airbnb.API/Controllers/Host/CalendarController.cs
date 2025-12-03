@@ -37,7 +37,7 @@ namespace Airbnb.API.Controllers.Host
 
                 if (string.IsNullOrEmpty(hostId))
                 {
-                    hostId = "test-host-12345"; // FOR TESTING
+                    hostId = "test-host-12345";
                 }
 
                 var availability = await _calendarService.GetAvailabilityAsync(
@@ -76,7 +76,7 @@ namespace Airbnb.API.Controllers.Host
 
                 if (string.IsNullOrEmpty(hostId))
                 {
-                    hostId = "test-host-12345"; // FOR TESTING
+                    hostId = "test-host-12345";
                 }
 
                 var result = await _calendarService.UpdateAvailabilityAsync(dto, hostId);
@@ -113,7 +113,7 @@ namespace Airbnb.API.Controllers.Host
 
                 if (string.IsNullOrEmpty(hostId))
                 {
-                    hostId = "test-host-12345"; // FOR TESTING
+                    hostId = "test-host-12345"; 
                 }
 
                 var result = await _calendarService.UpdatePricingAsync(dto, hostId);
@@ -150,7 +150,7 @@ namespace Airbnb.API.Controllers.Host
 
                 if (string.IsNullOrEmpty(hostId))
                 {
-                    hostId = "test-host-12345"; // FOR TESTING
+                    hostId = "test-host-12345";
                 }
 
                 var result = await _calendarService.BulkUpdateAvailabilityAsync(dto, hostId);
@@ -185,7 +185,7 @@ namespace Airbnb.API.Controllers.Host
 
                 if (string.IsNullOrEmpty(hostId))
                 {
-                    hostId = "test-host-12345"; // FOR TESTING
+                    hostId = "test-host-12345";
                 }
 
                 var settings = await _calendarService.GetCalendarSettingsAsync(propertyId, hostId);
@@ -219,7 +219,7 @@ namespace Airbnb.API.Controllers.Host
 
                 if (string.IsNullOrEmpty(hostId))
                 {
-                    hostId = "test-host-12345"; // FOR TESTING
+                    hostId = "test-host-12345";
                 }
 
                 var result = await _calendarService.UpdateCalendarSettingsAsync(dto, hostId);

@@ -20,7 +20,6 @@ namespace Airbnb.API.Services.Implementations
         public async Task<IEnumerable<PropertySearchResultDto>> GetUserWishlistAsync(string userId)
         {
             var properties = await _wishlistRepo.GetUserWishlistAsync(userId);
-            // تحويل العقارات لنفس شكل DTO البحث عشان الفرونت ميتعبش
             return _mapper.Map<IEnumerable<PropertySearchResultDto>>(properties);
         }
 
@@ -30,12 +29,12 @@ namespace Airbnb.API.Services.Implementations
             if (exists)
             {
                 await _wishlistRepo.RemoveAsync(userId, propertyId);
-                return false; // Removed
+                return false; 
             }
             else
             {
                 await _wishlistRepo.AddAsync(new Wishlist { UserId = userId, PropertyId = propertyId });
-                return true; // Added
+                return true; 
             }
         }
     }

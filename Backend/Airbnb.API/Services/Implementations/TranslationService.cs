@@ -10,7 +10,6 @@ namespace Airbnb.API.Services.Implementations
 
         public TranslationService()
         {
-            // We instantiate the translator directly
             _translator = new GoogleTranslator();
         }
 
@@ -26,7 +25,6 @@ namespace Airbnb.API.Services.Implementations
                 };
             }
 
-            // "ar" is the code for Arabic
             var result = await _translator.TranslateAsync(text, "ar");
 
             return new TranslationResponseDto
