@@ -26,7 +26,7 @@ export class BookingDetailsComponent implements OnInit {
     if (!b) return 0;
     const start = new Date(b.checkInDate);
     const end = new Date(b.checkOutDate);
-    // حساب الفرق بالأيام
+   
     return Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
   });
 
@@ -86,7 +86,7 @@ export class BookingDetailsComponent implements OnInit {
     request$.subscribe({
       next: () => {
         alert(action === 'approve' ? 'Reservation Confirmed! 🎉' : 'Reservation Declined.');
-        // إعادة تحميل البيانات لتحديث الحالة
+  
         this.loadBooking(b.id); 
         this.isProcessing.set(false);
       },

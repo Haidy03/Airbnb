@@ -73,16 +73,15 @@ export class BookingService {
   private mapApiToBooking(apiData: any): Booking {
     let imageUrl = apiData.propertyImage || apiData.imageUrl;
     if (imageUrl) {
-        // لو الرابط مش كامل (نسبي)، نضيف رابط الباك إند
         if (!imageUrl.startsWith('http') && !imageUrl.includes('assets/')) {
             const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
-            // تأكد من وجود / في البداية
+            
             if (!imageUrl.startsWith('/')) imageUrl = `/${imageUrl}`;
             imageUrl = `${baseUrl}${imageUrl}`;
         }
     } else {
-        // صورة افتراضية لو مفيش صورة
-        imageUrl = 'assets/images/placeholder.jpg'; // تأكدي أن هذا الملف موجود
+       
+        imageUrl = 'assets/images/placeholder.jpg'; 
     }
     return {
       id: apiData.id,
@@ -185,6 +184,30 @@ export class BookingService {
         this.loadingSignal.set(false);
         this.errorSignal.set(error.message || 'Failed to load upcoming bookings');
         console.error('Error loading upcoming bookings:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * ✅ Get past bookings
+   */
+  getPastBookings(): Observable<Booking[]> {
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
+
+    return this.http.get<{ success: boolean; data: any[] }>(
+      `${this.apiUrl}/past`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => {
+        const bookings = response.data.map(b => this.mapApiToBooking(b));
+        this.loadingSignal.set(false);
+        return bookings;
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        this.errorSignal.set(error.message || 'Failed to load past bookings');
         return of([]);
       })
     );

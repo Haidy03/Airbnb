@@ -56,7 +56,7 @@
   width: 40px;
   background-color: #222;
   border-radius: 4px 4px 0 0;
-  margin-top: auto; /* Push to bottom */
+  margin-top: auto; 
   position: relative;
   transition: height 0.5s ease;
   min-height: 4px;
@@ -137,28 +137,28 @@ td {
 
 /* Colors based on type */
 .type-badge.home {
-  background-color: #e3f2fd; /* أزرق فاتح */
+  background-color: #e3f2fd; 
   color: #0d47a1;
   border: 1px solid #bbdefb;
 }
 
 .type-badge.experience {
-  background-color: #fff3e0; /* برتقالي فاتح */
+  background-color: #fff3e0; 
   color: #e65100;
   border: 1px solid #ffe0b2;
 }
 
 .type-badge.service {
-  background-color: #f3e5f5; /* بنفسجي فاتح */
+  background-color: #f3e5f5;
   color: #7b1fa2;
   border: 1px solid #e1bee7;
 }
-/* أيقونات */
+
 .type-badge i {
   font-size: 12px;
 }
 
-/* تحسين الجدول */
+
 td {
-  vertical-align: middle; /* محاذاة رأسية */
+  vertical-align: middle;
 }
