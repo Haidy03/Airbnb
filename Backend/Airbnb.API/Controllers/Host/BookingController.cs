@@ -8,7 +8,7 @@ namespace Airbnb.API.Controllers.Host
 {
     [Route("api/host/[controller]")]
     [ApiController]
-    // [Authorize] // ⚠️ Uncomment في Production
+    [Authorize]
     public class BookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;
@@ -167,6 +167,44 @@ namespace Airbnb.API.Controllers.Host
             {
                 _logger.LogError(ex, "Error getting upcoming bookings");
                 return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// ✅ Get PAST bookings (Completed or Date Passed)
+        /// </summary>
+        [HttpGet("past")]
+        public async Task<IActionResult> GetPastBookings()
+        {
+            try
+            {
+                var hostId = GetHostId();
+                var allBookings = await _bookingService.GetHostBookingsAsync(hostId); // هذه الدالة تجلب كل الأنواع الآن
+
+                var today = DateTime.Now.Date;
+
+                var pastBookings = allBookings.Where(b =>
+                {
+                    var checkOut = b.CheckOutDate.Date;
+                    bool isPastDate = checkOut < today;
+                    bool isCompletedStatus = b.Status == "Completed" || b.Status == "Cancelled" || b.Status == "Rejected";
+
+                    return isPastDate || isCompletedStatus;
+                })
+                .OrderByDescending(b => b.CheckInDate)
+                .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = pastBookings,
+                    count = pastBookings.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting past bookings");
+                return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
 

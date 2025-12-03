@@ -12,10 +12,11 @@ import { BookingService, Booking } from '../../services/booking';
 })
 export class HostDashboardComponent implements OnInit {
   // Active tab: 'today' or 'upcoming'
-  activeTab = signal<'today' | 'upcoming' >('today');  
+  activeTab = signal<'today' | 'upcoming' | 'past'>('today'); 
   // Bookings data
   todayBookings = signal<Booking[]>([]);
   upcomingBookings = signal<Booking[]>([]);
+  pastBookings = signal<Booking[]>([]);
   loading = signal<boolean>(true);
 
   constructor(
@@ -30,13 +31,31 @@ export class HostDashboardComponent implements OnInit {
   /**
    * Switch between Today and Upcoming tabs
    */
-  setActiveTab(tab: 'today' | 'upcoming'): void {
+  setActiveTab(tab: 'today' | 'upcoming' | 'past'): void {
     this.activeTab.set(tab);
     if (tab === 'upcoming') {
       this.loadUpcomingBookings();
     } else if (tab === 'today') {
       this.loadTodayBookings();
+    } else if (tab === 'past') {
+      this.loadPastBookings();
     }
+  }
+   /**
+   * ✅ Load past bookings 
+   */
+  loadPastBookings(): void {
+    this.loading.set(true);
+    this.bookingService.getPastBookings().subscribe({
+      next: (bookings) => {
+        this.pastBookings.set(bookings);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading past bookings:', err);
+        this.loading.set(false);
+      }
+    });
   }
 
   /**

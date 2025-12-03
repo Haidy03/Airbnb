@@ -14,6 +14,12 @@
       (click)="setActiveTab('upcoming')">
       Upcoming
     </button>
+     <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'past'"
+      (click)="setActiveTab('past')">
+      Past
+    </button>
   </div>
 
   <!-- Loading State -->
@@ -110,7 +116,7 @@
              <span class="type-badge" [class]="booking.type?.toLowerCase()">
               {{ booking.type }}
             </span>
-            <!-- ✅ تم التعديل هنا أيضاً لإزالة كلمة Confirmed الثابتة -->
+            
             <span class="event-badge" 
                   [class.status-confirmed]="booking.status === 'Confirmed'"
                   [class.status-pending]="booking.status === 'Pending'"
@@ -133,6 +139,52 @@
             <span class="btn-icon">💬</span> Message
           </button>
           <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">View details</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ✅ PAST TAB (NEW) ==================== -->
+  <div *ngIf="!loading() && activeTab() === 'past'" class="tab-content">
+    
+    <div *ngIf="pastBookings().length === 0" class="empty-state">
+      
+       <div class="empty-illustration">
+        <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#DDDDDD" stroke-width="1">
+           <circle cx="12" cy="12" r="10"></circle>
+           <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <h2 class="empty-title">No past reservations</h2>
+      <p class="empty-description">You haven't hosted any guests yet.</p>
+    </div>
+
+    <div *ngIf="pastBookings().length > 0" class="bookings-list">
+      <div *ngFor="let booking of pastBookings()" class="booking-card past">
+        
+        <div class="booking-image">
+          <img [src]="booking.propertyImage" [alt]="booking.propertyTitle" onerror="this.src='assets/images/placeholder-property.jpg'">
+          
+          <div style="position:absolute; inset:0; background: rgba(255,255,255,0.1);"></div>
+        </div>
+
+        <div class="booking-info">
+          <div class="booking-header">
+             <span class="type-badge" [class]="booking.type?.toLowerCase()">{{ booking.type }}</span>
+             <span class="event-badge" [class]="'status-' + booking.status.toLowerCase()">{{ booking.status }}</span>
+             <span class="booking-time text-muted">Ended on {{ formatDate(booking.checkOutDate) }}</span>
+          </div>
+
+          <h3 class="guest-name">{{ booking.guestName }}</h3>
+          <p class="property-title">{{ booking.propertyTitle }}</p>
+          <p class="booking-dates text-muted">{{ formatDateRange(booking.checkInDate, booking.checkOutDate) }}</p>
+        </div>
+
+        <div class="booking-actions">
+          <button class="action-btn" (click)="openChat(booking)">
+            <span class="btn-icon">💬</span> Message
+          </button>
+          <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">Details</button>
         </div>
       </div>
     </div>
