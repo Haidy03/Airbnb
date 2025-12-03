@@ -4,7 +4,7 @@
 :host {
   display: block;
   height: 100vh;
-  overflow: hidden; /* منع تمرير الصفحة بالكامل */
+  overflow: hidden; 
   background: white;
 }
 
@@ -32,7 +32,7 @@
 .header-start, .header-end {
   display: flex;
   align-items: center;
-  flex: 1; /* للتوزيع المتساوي */
+  flex: 1; 
 }
 
 .header-center {
@@ -101,8 +101,8 @@
 .editor-body {
   display: flex;
   flex: 1;
-  overflow: hidden; /* كل جزء يمرر بداخله */
-  max-width: 1440px; /* الحد الأقصى للعرض */
+  overflow: hidden; 
+  max-width: 1440px; 
   margin: 0 auto;
   width: 100%;
 }
@@ -114,7 +114,7 @@
   width: 360px;
   min-width: 360px;
   padding: 32px 24px;
-  overflow-y: auto; /* تمرير مستقل */
+  overflow-y: auto; 
   border-right: 1px solid #EBEBEB;
   background: white;
 }
@@ -133,7 +133,7 @@
 .nav-card.active { 
   border: 2px solid #222; 
   background: #F7F7F7; 
-  padding: 15px; /* تعويض فرق البوردر */
+  padding: 15px; 
 }
 
 .nav-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
@@ -155,7 +155,6 @@
    ========================================== */
 .editor-main {
   flex: 1;
-  /* ✅ تم التعديل: إزالة الـ padding السفلي الكبير وإضافة flex-column لدعم الـ sticky footer */
   padding: 48px 80px 0; 
   overflow-y: auto;
   position: relative;
@@ -182,7 +181,7 @@
   border: 1px solid #B0B0B0; border-radius: 8px; font-family: inherit;
   resize: none; transition: border 0.2s;
 }
-.airbnb-input:focus { outline: none; border: 2px solid #222; padding: 11px 15px; } /* تعويض فرق البوردر */
+.airbnb-input:focus { outline: none; border: 2px solid #222; padding: 11px 15px; }
 .airbnb-input.large { font-size: 22px; font-weight: 600; }
 
 /* Select */
@@ -200,8 +199,18 @@ select:focus { outline: none; border: 2px solid #222; }
 
 /* Pricing */
 .price-input-wrapper { position: relative; }
-.currency { position: absolute; top: 14px; left: 12px; font-size: 16px; font-weight: 600; }
-.airbnb-input.price { padding-left: 28px; font-weight: 600; }
+.currency { 
+  position: absolute; 
+  top: 14px; 
+  left: 12px; 
+  font-size: 16px; 
+  font-weight: 600; 
+  color: #222;
+}
+.airbnb-input.price { 
+  padding-left: 50px;
+  font-weight: 600; 
+}
 
 /* Counters */
 .counter-row {
@@ -216,16 +225,14 @@ select:focus { outline: none; border: 2px solid #222; }
 }
 .circle-btn:hover { border-color: #222; color: #222; }
 
-/* ==========================================
-   AMENITIES LIST STYLES (✅ تم التحديث بالكامل)
-   ========================================== */
+
 .amenities-list {
   display: flex;
   flex-direction: column;
 }
 
 .amenity-item {
-  padding: 20px 0; /* مساحة مريحة */
+  padding: 20px 0; 
   border-bottom: 1px solid #EBEBEB;
   transition: background-color 0.2s;
 }
@@ -236,7 +243,7 @@ select:focus { outline: none; border: 2px solid #222; }
 
 .checkbox-label {
   display: flex;
-  align-items: center; /* ✅ محاذاة النص مع الصندوق */
+  align-items: center; 
   gap: 16px;
   font-size: 16px;
   color: #222;
@@ -249,8 +256,8 @@ input[type="checkbox"], input[type="radio"] {
   height: 20px;
   accent-color: #222;
   cursor: pointer;
-  margin: 0; /* إزالة الهوامش */
-  flex-shrink: 0; /* منع الانكماش */
+  margin: 0; 
+  flex-shrink: 0; 
 }
 
 .check-text {
@@ -259,22 +266,22 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 /* ==========================================
-   SAVE BAR (Sticky at Bottom) (✅ تم التحديث بالكامل)
+   SAVE BAR (Sticky at Bottom) 
    ========================================== */
 .save-bar {
-  position: sticky; /* ✅ استخدام sticky بدلاً من absolute */
+  position: sticky; 
   bottom: 0;
   left: 0;
   right: 0;
-  margin-top: auto; /* يدفعه للأسفل */
+  margin-top: auto; 
   background: white;
   border-top: 1px solid #EBEBEB;
-  padding: 16px 0; /* padding عمودي فقط */
+  padding: 16px 0; 
   display: flex;
   justify-content: flex-end;
   align-items: center;
   z-index: 90;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.05); /* ظل خفيف */
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
 }
 
 .btn-black {
@@ -319,14 +326,14 @@ input[type="checkbox"], input[type="radio"] {
 @media (max-width: 768px) {
   .editor-body {
     flex-direction: column;
-    overflow-y: auto; /* الصفحة كلها تمرر */
+    overflow-y: auto; 
   }
   .editor-sidebar {
     width: 100%;
     height: auto;
     border-right: none;
     border-bottom: 1px solid #EBEBEB;
-    display: none; /* أو يمكن إظهاره كقائمة منسدلة */
+    display: none; 
   }
   .editor-main {
     padding: 24px;
@@ -335,7 +342,7 @@ input[type="checkbox"], input[type="radio"] {
   }
   .header-center { display: none; }
   .save-bar {
-    position: fixed; /* العودة للثبات على الشاشة في الموبايل */
+    position: fixed; 
     padding: 16px 24px;
   }
 }
@@ -363,7 +370,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .status-label.active {
-  color: #008A05; /* Green for Listed */
+  color: #008A05;
 }
 
 /* The Switch Container */
@@ -389,7 +396,7 @@ input[type="checkbox"], input[type="radio"] {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #B0B0B0; /* Grey when inactive */
+  background-color: #B0B0B0; 
   transition: .4s;
 }
 
@@ -407,7 +414,7 @@ input[type="checkbox"], input[type="radio"] {
 
 /* Checked State (Active) */
 input:checked + .slider {
-  background-color: #222222; /* Black/Green when active */
+  background-color: #222222;
 }
 
 input:checked + .slider:before {
@@ -449,7 +456,7 @@ input:checked + .slider:before {
 .map-view {
   width: 100%;
   height: 100%;
-  z-index: 1; /* Ensure it doesn't overlap dropdowns if any */
+  z-index: 1; 
 }
 
 /* --- Delete Button --- */
@@ -459,7 +466,7 @@ input:checked + .slider:before {
   background: white;
   border: 1px solid #DDDDDD;
   border-radius: 8px;
-  color: #C13515; /* Airbnb Red */
+  color: #C13515;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -478,7 +485,7 @@ input:checked + .slider:before {
 .radio-label.selected {
   border-color: #222;
   background-color: #F7F7F7;
-  border-width: 2px; /* خط أسمك قليلاً */
+  border-width: 2px; 
 }
 
 /* ==========================================
@@ -559,7 +566,7 @@ input:checked + .slider:before {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .action-btn:hover { transform: scale(1.1); }
-.action-btn.delete { color: #C13515; margin-left: auto; /* Push to right */ }
+.action-btn.delete { color: #C13515; margin-left: auto; }
 
 .action-btn.set-cover {
   width: auto; border-radius: 4px; padding: 0 8px;

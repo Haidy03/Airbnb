@@ -165,7 +165,7 @@ export interface HouseRules {
     start: string;
     end: string;
   };
-  additionalRules?: string[];
+  additionalRules?: string;
 }
 
 // ==========================================

@@ -22,7 +22,7 @@
       <div class="info-card guest-card">
         <div class="guest-header">
           <div class="guest-avatar">
-            <!-- 1. إذا وجدت الصورة -->
+         
             <img 
               *ngIf="booking()?.guestProfileImage" 
               [src]="booking()?.guestProfileImage" 
@@ -30,7 +30,7 @@
               (error)="booking()!.guestProfileImage = ''" 
             >
             
-            <!-- 2. إذا لم توجد (Placeholder بالحرف الأول) -->
+
             <div *ngIf="!booking()?.guestProfileImage" class="avatar-placeholder">
               {{ getGuestInitial() }}
             </div>
@@ -49,7 +49,7 @@
         </div>
       </div>
 
-      <!-- ... باقي الصفحة كما هي ... -->
+
       <!-- Trip Details -->
       <div class="info-card trip-card">
         <h3>Trip details</h3>

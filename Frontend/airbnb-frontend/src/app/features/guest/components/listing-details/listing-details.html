@@ -173,13 +173,41 @@
      (datesSelected)="onDatesUpdated($event)">
   </app-calendar-section>
 
+  <hr>
+
+<!-- House Rules Section -->
+<section class="section rules-section" *ngIf="listing?.checkInTime || listing?.checkOutTime">
+  <h2>Things to know</h2>
+  
+  <div class="rules-grid">
+    
+    <!-- Check-in -->
+    <div class="rule-item">
+      <span class="rule-label">Check-in</span>
+      <span class="rule-value">After {{ formatTime(listing?.checkInTime) }}</span>
+    </div>
+
+    <!-- Check-out -->
+    <div class="rule-item">
+      <span class="rule-label">Checkout</span>
+      <span class="rule-value">Before {{ formatTime(listing?.checkOutTime) }}</span>
+    </div>
+
+    <!-- Guests -->
+    <div class="rule-item">
+      <span class="rule-label">Guests</span>
+      <span class="rule-value">{{ listing?.maxGuests }} guests maximum</span>
+    </div>
+
+  </div>
+</section>
     </div> <!-- End of Left Column -->
 
 
     <!-- ::::: RIGHT COLUMN (STICKY CARD) ::::: -->
     <div class="booking-column">
       <div class="sticky-wrapper">
-        <!-- استخدام ؟. مع كل خصائص listing وتوفير قيم افتراضية عند الحاجة -->
+     
         <app-super-card
           [checkInDate]="selectedCheckIn"
           [checkOutDate]="selectedCheckOut"

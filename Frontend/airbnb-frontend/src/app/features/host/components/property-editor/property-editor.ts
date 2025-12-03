@@ -39,6 +39,7 @@ export class PropertyEditorComponent implements OnInit {
   tempTitle = signal('');
   tempDescription = signal('');
   tempPrice = signal(0);
+  tempCleaningFee = signal<number | null>(null); 
   tempPropertyType = signal<number | null>(null); 
   tempRoomType = signal('');
   tempCapacity = signal({ guests: 1, bedrooms: 1, beds: 1, bathrooms: 1 });
@@ -53,7 +54,7 @@ export class PropertyEditorComponent implements OnInit {
     exteriorCamera: false, noiseMonitor: false, weapons: false
   });
 
-  // ✅ القائمة الجديدة المطابقة لقاعدة البيانات
+
   propertyTypesList: PropTypeOption[] = [
     { id: 1, name: 'House' },
     { id: 2, name: 'Apartment' },
@@ -69,7 +70,11 @@ export class PropertyEditorComponent implements OnInit {
     { id: 12, name: 'Cycladic home' }
   ];
 
-  roomTypesList = ['Entire place', 'Private room', 'Shared room'];
+  roomTypesList = [
+    { value: 'entire_place', label: 'Entire place' },
+    { value: 'private_room', label: 'Private room' },
+    { value: 'shared_room', label: 'Shared room' }
+  ];
   
   // Full Amenities List
   availableAmenities = [
@@ -127,7 +132,7 @@ export class PropertyEditorComponent implements OnInit {
     this.tempTitle.set(prop.title);
     this.tempDescription.set(prop.description);
     this.tempPrice.set(prop.pricing?.basePrice || 0);
-    
+    this.tempCleaningFee.set(prop.pricing?.cleaningFee || null);
     // Property Type Logic
     if ((prop as any).propertyTypeId) {
       this.tempPropertyType.set((prop as any).propertyTypeId);
@@ -154,7 +159,10 @@ export class PropertyEditorComponent implements OnInit {
     this.tempInstantBook.set(prop.isInstantBook === true);
 
     // ✅ House Rules Logic (Fix: Close brackets correctly)
-    const formatTime = (time: any) => time ? String(time).substring(0, 5) : '';
+    const formatTime = (time: any) => {
+      if (!time) return '';
+      return String(time).substring(0, 5);
+    };
     if (prop.houseRules) {
       this.tempRules.set({
         checkInTime: formatTime(prop.houseRules.checkInTime),
@@ -339,7 +347,10 @@ export class PropertyEditorComponent implements OnInit {
     switch (section) {
       case 'title': updates.title = this.tempTitle(); break;
       case 'description': updates.description = this.tempDescription(); break;
-      case 'pricing': updates.pricePerNight = this.tempPrice(); break;
+      case 'pricing': 
+      updates.pricePerNight = this.tempPrice();
+      updates.cleaningFee = this.tempCleaningFee();
+       break;
       case 'propertyType': 
         updates.propertyTypeId = this.tempPropertyType(); 
         updates.roomType = this.tempRoomType(); 

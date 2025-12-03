@@ -34,6 +34,7 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
   showMap = false;
   isDesktop = true;
   isLoading = false;
+  allProperties: Property[] = []; 
 
   properties: Property[] = [];
   totalResults = 0;
@@ -65,7 +66,7 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
       this.showFilters = true;
     });
 
-    // === قراءة الفلاتر من الرابط (عشان الريفريش) ===
+   
     this.route.queryParams.subscribe(params => {
 
       // 1. الأساسيات
@@ -100,7 +101,7 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
       // 7. التقييم
       if (params['rating']) this.currentQuery.filters.rating = +params['rating'];
 
-      // تنفيذ البحث
+     
       this.executeSearch();
     });
 
@@ -117,6 +118,7 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.searchService.searchProperties(this.currentQuery).subscribe({
       next: (response) => {
+        this.allProperties = response.properties;
         this.properties = response.properties;
         this.totalResults = response.total;
         this.isLoading = false;
@@ -199,7 +201,14 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
     this.hoveredPropertyId = id;
     if (this.searchMap && id) this.searchMap.highlightMarker(id);
   }
-  onMapPropertySelect(p: Property) { this.selectedProperty = p; }
+  onMapPropertySelect(p: Property) { 
+    this.selectedProperty = p; 
+    this.properties = [p];
+  }
+    onMapBackgroundClick() {
+    this.selectedProperty = null;
+    this.properties = [...this.allProperties];
+  }
   onMapBoundsChange(b: any) {}
   onSearchBarSearch(filters: SearchFilters) {
     console.log('Search from bar:', filters);

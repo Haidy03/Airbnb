@@ -78,7 +78,7 @@ export class ListingDetails implements OnInit {
                 this.reviews = res;
             }
             if (this.listing) {
-                // لو الباك اند مش باعت التفاصيل، نحسبها إحنا
+               
                 if (!this.listing.ratingBreakdown) {
                     this.listing.ratingBreakdown = this.calculateRatingBreakdown(this.reviews);
                 }
@@ -103,7 +103,7 @@ export class ListingDetails implements OnInit {
     reviews.forEach(r => {
       breakdown.cleanliness += r.cleanlinessRating || 0;
       breakdown.communication += r.communicationRating || 0;
-      // ✅ تأكدي من اسم الحقل القادم من الريفيو (ممكن يكون checkInRating)
+
       breakdown.checkIn += r.checkInRating || 0; 
       breakdown.accuracy += r.accuracyRating || 0;
       breakdown.location += r.locationRating || 0;
@@ -114,7 +114,7 @@ export class ListingDetails implements OnInit {
     return {
       cleanliness: breakdown.cleanliness / count,
       communication: breakdown.communication / count,
-      checkin: breakdown.checkIn / count, // ✅ I Capital
+      checkin: breakdown.checkIn / count, 
       accuracy: breakdown.accuracy / count,
       location: breakdown.location / count,
       value: breakdown.value / count
@@ -125,7 +125,7 @@ export class ListingDetails implements OnInit {
   fetchBlockedDates(id: string) {
     this.listingService.getBlockedDates(id).subscribe({
       next: (dates) => {
-        // تأكد من أخذ الجزء الأول فقط من التاريخ
+
         this.blockedDates = dates.map(d => d.split('T')[0]);
         console.log('🚫 Blocked Dates:', this.blockedDates);
       },
@@ -139,7 +139,7 @@ export class ListingDetails implements OnInit {
 
   handleHostImageError() {
     if (this.listing && this.listing.host) {
-      this.listing.host.profileImageUrl = ''; // تفريغ الرابط ليظهر الـ Placeholder
+      this.listing.host.profileImageUrl = ''; 
     }}
 
   fetchListingDetails(id: string): void {
@@ -252,6 +252,17 @@ export class ListingDetails implements OnInit {
         error: (err) => console.error('Translation failed', err)
       });
   }
+  formatTime(timeString?: string): string {
+    if (!timeString) return '';
+    const [hours, minutes] = timeString.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes));
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  }
 
   showOriginal() { this.showTranslated = false; }
   toggleDescription() { this.isDescriptionExpanded = !this.isDescriptionExpanded; }
@@ -261,7 +272,7 @@ export class ListingDetails implements OnInit {
   shareListing() { navigator.clipboard.writeText(window.location.href); alert('Copied!'); }
   
   contactHost() {
-    // 1. التحقق من تسجيل الدخول
+  
     if (!this.AuthService.isAuthenticated) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;

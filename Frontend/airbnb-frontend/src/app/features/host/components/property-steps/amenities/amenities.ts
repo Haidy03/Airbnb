@@ -32,27 +32,27 @@ export class AmenitiesStepComponent implements OnInit{
   allAmenities = signal<any[]>([]);
   
   // Data matching your database screenshot
-  readonly amenities: Amenity[] = [
-    { id: 1, name: 'WiFi', description: null, icon: 'wifi', category: 'Basic', isActive: true },
-    { id: 2, name: 'TV', description: null, icon: 'tv', category: 'Entertainment', isActive: true },
-    { id: 3, name: 'Kitchen', description: null, icon: 'utensils', category: 'Kitchen', isActive: true },
-    { id: 4, name: 'Washer', description: null, icon: 'washing-machine', category: 'Basic', isActive: true },
-    { id: 5, name: 'Dryer', description: null, icon: 'wind', category: 'Basic', isActive: true },
-    { id: 6, name: 'Air conditioning', description: null, icon: 'snowflake', category: 'HeatingCooling', isActive: true },
-    { id: 7, name: 'Heating', description: null, icon: 'flame', category: 'HeatingCooling', isActive: true },
-    { id: 8, name: 'Dedicated workspace', description: null, icon: 'briefcase', category: 'InternetOffice', isActive: true },
-    { id: 9, name: 'Pool', description: null, icon: 'waves', category: 'Outdoor', isActive: true },
-    { id: 10, name: 'Hot tub', description: null, icon: 'hot-tub', category: 'Outdoor', isActive: true },
-    { id: 11, name: 'Patio', description: null, icon: 'patio', category: 'Outdoor', isActive: true }, // Added from design
-    { id: 12, name: 'BBQ grill', description: null, icon: 'grill', category: 'Outdoor', isActive: true }, // Added from design
-    { id: 13, name: 'Outdoor dining area', description: null, icon: 'dining', category: 'Outdoor', isActive: true }, // Added from design
-    { id: 14, name: 'Fire pit', description: null, icon: 'fire', category: 'Outdoor', isActive: true }, // Added from design
-    { id: 15, name: 'Free parking on premises', description: null, icon: 'parking', category: 'Parking', isActive: true },
-    { id: 16, name: 'Paid parking on premises', description: null, icon: 'paid-parking', category: 'Parking', isActive: true },
-    { id: 17, name: 'EV charger', description: null, icon: 'zap', category: 'Parking', isActive: true },
-    { id: 18, name: 'Smoke alarm', description: null, icon: 'alert-triangle', category: 'Safety', isActive: true },
-    { id: 19, name: 'Carbon monoxide alarm', description: null, icon: 'alert-circle', category: 'Safety', isActive: true },
-  ];
+  // readonly amenities: Amenity[] = [
+  //   { id: 1, name: 'WiFi', description: null, icon: 'wifi', category: 'Basic', isActive: true },
+  //   { id: 2, name: 'TV', description: null, icon: 'tv', category: 'Entertainment', isActive: true },
+  //   { id: 3, name: 'Kitchen', description: null, icon: 'utensils', category: 'Kitchen', isActive: true },
+  //   { id: 4, name: 'Washer', description: null, icon: 'washing-machine', category: 'Basic', isActive: true },
+  //   { id: 5, name: 'Dryer', description: null, icon: 'wind', category: 'Basic', isActive: true },
+  //   { id: 6, name: 'Air conditioning', description: null, icon: 'snowflake', category: 'HeatingCooling', isActive: true },
+  //   { id: 7, name: 'Heating', description: null, icon: 'flame', category: 'HeatingCooling', isActive: true },
+  //   { id: 8, name: 'Dedicated workspace', description: null, icon: 'briefcase', category: 'InternetOffice', isActive: true },
+  //   { id: 9, name: 'Pool', description: null, icon: 'waves', category: 'Outdoor', isActive: true },
+  //   { id: 10, name: 'Hot tub', description: null, icon: 'hot-tub', category: 'Outdoor', isActive: true },
+  //   { id: 11, name: 'Patio', description: null, icon: 'patio', category: 'Outdoor', isActive: true }, // Added from design
+  //   { id: 12, name: 'BBQ grill', description: null, icon: 'grill', category: 'Outdoor', isActive: true }, // Added from design
+  //   { id: 13, name: 'Outdoor dining area', description: null, icon: 'dining', category: 'Outdoor', isActive: true }, // Added from design
+  //   { id: 14, name: 'Fire pit', description: null, icon: 'fire', category: 'Outdoor', isActive: true }, // Added from design
+  //   { id: 15, name: 'Free parking on premises', description: null, icon: 'parking', category: 'Parking', isActive: true },
+  //   { id: 16, name: 'Paid parking on premises', description: null, icon: 'paid-parking', category: 'Parking', isActive: true },
+  //   { id: 17, name: 'EV charger', description: null, icon: 'zap', category: 'Parking', isActive: true },
+  //   { id: 18, name: 'Smoke alarm', description: null, icon: 'alert-triangle', category: 'Safety', isActive: true },
+  //   { id: 19, name: 'Carbon monoxide alarm', description: null, icon: 'alert-circle', category: 'Safety', isActive: true },
+  // ];
 
  
   // --- Computed Groups ---
@@ -63,12 +63,12 @@ export class AmenitiesStepComponent implements OnInit{
   ));
 
   // Group 2: "Standout amenities" (Outdoor)
-  standoutAmenities = computed(() => this.amenities.filter(a => 
+   standoutAmenities = computed(() => this.allAmenities().filter(a => 
     a.category === 'Outdoor'
   ));
 
   // Group 3: "Safety items" (Safety)
-  safetyItems = computed(() => this.amenities.filter(a => 
+ safetyItems = computed(() => this.allAmenities().filter(a => 
     a.category === 'Safety'
   ));
 

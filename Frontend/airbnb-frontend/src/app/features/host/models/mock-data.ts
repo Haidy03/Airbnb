@@ -92,7 +92,7 @@ export const MOCK_PROPERTIES: Property[] = [
       eventsAllowed: false,
       childrenAllowed: true,
       quietHours: { start: '22:00', end: '08:00' },
-      additionalRules: ['No parties or events', 'Pets allowed with prior approval']
+      additionalRules: 'No parties or events'
     },
     safetyDetails: {
         exteriorCamera: true,

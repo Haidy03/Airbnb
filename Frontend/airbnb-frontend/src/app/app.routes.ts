@@ -43,6 +43,7 @@ import { MainLayoutComponent } from './layouts/main-layout/main-layout/main-layo
 import { PropertyCreationLayoutComponent } from './layouts/property-creation-layout/property-creation-layout/property-creation-layout';
 import { ServicesHomeComponent } from './features/services/components/services-home/services-home';
 import { PaymentSuccessComponent } from './features/guest/components/payment-success/payment-success';
+import { HouseRulesComponent } from './features/host/components/property-steps/house-rules/house-rules';
 
 export const routes: Routes = [
   // 1. Public / Guest Routes (Merged from Claude's suggestion)
@@ -315,6 +316,10 @@ export const routes: Routes = [
       {
         path: 'pricing',
         component: PricingComponent
+      },
+      {
+        path: 'house-rules',
+        component: HouseRulesComponent
       },
       {
         path: 'legal-and-create',

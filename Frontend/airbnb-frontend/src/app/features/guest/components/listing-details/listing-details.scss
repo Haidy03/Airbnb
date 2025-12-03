@@ -1,4 +1,4 @@
-// متغيرات ألوان Airbnb
+
 $primary: #FF385C;
 $text-dark: #222222;
 $text-light: #717171;
@@ -103,36 +103,37 @@ $border: #DDDDDD;
   }
 }
 .outline-btn {
-  display: inline-block; /* عشان الـ padding يشتغل صح */
+  display: inline-block;
   padding: 13px 23px;
   background: white;
-  color: #222; /* أسود */
-  border: 1px solid #222; /* بوردر أسود */
+  color: #222; 
+  border: 1px solid #222; 
   border-radius: 8px;
   font-weight: 600;
   font-size: 16px;
   cursor: pointer;
-  text-decoration: none; /* عشان هو لينك <a> */
+  text-decoration: none; 
   text-align: center;
   transition: background-color 0.2s, border-color 0.2s;
-  min-width: 180px; /* عرض مناسب */
+  min-width: 180px; 
 }
 
 .outline-btn:hover {
-  background-color: #F7F7F7; /* رمادي فاتح جداً */
+  background-color: #F7F7F7;
   border-color: #000;
 }
 
 // ================= MAIN GRID LAYOUT ================= 
 .main-content-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
+  grid-template-columns: 1fr 380px; 
   gap: 80px;
   margin-top: 32px;
   position: relative;
-
+  align-items: start;
   // === LEFT COLUMN ===
   .details-column {
+    min-width: 0; 
     .section { padding: 32px 0; }
     hr { 
       border: 0; 
@@ -386,10 +387,13 @@ $border: #DDDDDD;
 
   // === RIGHT COLUMN (STICKY) ===
   .booking-column {
+    position: relative; 
+    height: 100%;
     .sticky-wrapper {
       position: sticky; 
       top: 120px; 
       z-index: 10;
+      width: 100%;
     }
   }
 }
@@ -410,25 +414,25 @@ $border: #DDDDDD;
     align-items: center;
     gap: 8px;
 
-    i { color: #222; font-size: 18px; } /* النجمة سوداء صغيرة */
+    i { color: #222; font-size: 18px; } 
   }
 
-  /* شبكة الريفيوهات: عمودين في الشاشات الكبيرة */
+
   .reviews-grid {
     display: grid;
     grid-template-columns: 1fr 1fr; 
-    gap: 40px 80px; /* مسافة رأسية وأفقية كبيرة */
+    gap: 40px 80px; 
     margin-bottom: 40px;
   }
 
-  /* كارت الريفيو الواحد */
+
   .review-card {
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
 
-  /* رأس الريفيو (صورة + اسم) */
+
   .reviewer-header {
     display: flex;
     align-items: center;
@@ -439,7 +443,7 @@ $border: #DDDDDD;
       height: 48px;
       border-radius: 50%;
       object-fit: cover;
-      background-color: #ddd; /* لون خلفية لو الصورة لسه بتحمل */
+      background-color: #ddd;
     }
 
     .reviewer-info {
@@ -460,14 +464,14 @@ $border: #DDDDDD;
     }
   }
 
-  /* نص الريفيو */
+
   .review-text {
     font-size: 16px;
-    line-height: 24px; /* مسافة بين السطور للقراءة المريحة */
+    line-height: 24px;
     color: #222;
     margin: 0;
     
-    /* اختياري: لقص النص الطويل جداً */
+
     display: -webkit-box;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
@@ -475,7 +479,7 @@ $border: #DDDDDD;
     text-overflow: ellipsis;
   }
 
-  /* زر Show All Reviews */
+
   .show-all-container {
     margin-top: 10px;
   }
@@ -485,7 +489,7 @@ $border: #DDDDDD;
     text-decoration: none;
     background-color: white;
     color: #222;
-    border: 1px solid #222; /* حدود سوداء */
+    border: 1px solid #222;
     padding: 13px 23px;
     border-radius: 8px;
     font-size: 16px;
@@ -494,7 +498,7 @@ $border: #DDDDDD;
     transition: background-color 0.2s;
 
     &:hover {
-      background-color: #F7F7F7; /* رمادي فاتح عند الماوس */
+      background-color: #F7F7F7; 
       text-decoration: none;
     }
   }
@@ -504,20 +508,20 @@ $border: #DDDDDD;
 @media (max-width: 768px) {
   .reviews-full-section {
     .reviews-grid {
-      grid-template-columns: 1fr; /* عمود واحد في الموبايل */
+      grid-template-columns: 1fr;
       gap: 24px;
     }
     
     .outline-btn {
-      width: 100%; /* الزر بعرض الشاشة في الموبايل */
+      width: 100%; 
       text-align: center;
     }
   }
 }
 .rating-breakdown-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* عمودين */
-    gap: 16px 80px; /* مسافات واسعة في النص */
+    grid-template-columns: 1fr 1fr; 
+    gap: 16px 80px;
     margin-bottom: 40px;
 
     .rating-category {
@@ -531,18 +535,18 @@ $border: #DDDDDD;
       }
 
       .bar-container {
-        width: 120px; /* حجم البار */
+        width: 120px; 
         height: 4px;
-        background: #ddd; /* لون الخلفية (رمادي) */
+        background: #ddd; 
         border-radius: 2px;
         margin: 0 12px;
         position: relative;
-        margin-left: auto; /* دفع البار لليمين */
+        margin-left: auto;
         margin-right: 8px;
 
         .fill {
           height: 100%;
-          background: #222; /* لون القيمة (أسود) */
+          background: #222; 
           border-radius: 2px;
         }
       }
@@ -556,10 +560,10 @@ $border: #DDDDDD;
     }
   }
 
-  /* تعديل للموبايل لإخفاء البارات أو جعلها عمود واحد */
+
   @media (max-width: 768px) {
     .rating-breakdown-grid {
-      display: none; /* Airbnb بيخفي التفاصيل دي في الموبايل عادةً، أو ممكن تخليها عمود واحد */
+      display: none;
     }
   }
 
@@ -715,5 +719,61 @@ $border: #DDDDDD;
 
   .host-info-card {
     order: -1;
+  }
+}
+
+// Rules Section
+.rules-section {
+  padding: 32px 0;
+
+  h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #222;
+  }
+
+  .rules-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px; 
+  }
+
+  .rule-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 150px;
+
+    .rule-label {
+      font-weight: 600;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .rule-value {
+      font-size: 16px;
+      color: #717171;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .rules-section .rules-grid {
+    gap: 24px;
+    flex-direction: column; 
+  }
+}
+
+// ================= MOBILE RESPONSIVE ================= 
+@media (max-width: 992px) { 
+  .main-content-grid {
+    display: flex; 
+    flex-direction: column;
+    gap: 40px;
+    
+    .booking-column { 
+      display: none; 
+    }
   }
 }

@@ -16,7 +16,7 @@ export class HostEarningsComponent implements OnInit {
   data = signal<EarningsDashboard | null>(null);
   isLoading = signal(true);
 
-  // لحساب ارتفاع الأعمدة في الرسم البياني
+
   maxChartValue = computed(() => {
     const chart = this.data()?.chartData;
     if (!chart || chart.length === 0) return 100;
@@ -41,6 +41,6 @@ export class HostEarningsComponent implements OnInit {
   getBarHeight(amount: number): string {
     const max = this.maxChartValue();
     const percentage = (amount / max) * 100;
-    return `${Math.max(percentage, 2)}%`; // على الأقل 2% عشان يظهر
+    return `${Math.max(percentage, 2)}%`; 
   }
 }

@@ -319,18 +319,18 @@
     #F7F7F7 10px,
     #EBEBEB 10px,
     #EBEBEB 20px
-  ); /* تأثير مخطط */
-  color: #B0B0B0; /* نص باهت */
+  ); 
+  color: #B0B0B0;
   border-color: #EBEBEB;
 }
 
 .calendar-day.blocked .day-number {
-  text-decoration: line-through; /* شطب الرقم */
+  text-decoration: line-through; 
   color: #717171;
 }
 
 .calendar-day.blocked:hover {
-  border-color: #222; /* السماح بتحديدها لفتحها مجدداً */
+  border-color: #222; 
   cursor: pointer;
 }
 
