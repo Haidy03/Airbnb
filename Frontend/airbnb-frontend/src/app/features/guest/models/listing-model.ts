@@ -54,6 +54,8 @@ export interface Listing {
   images: string[];
   amenities: amenities[]; 
   reviews: ReviewModel[];
+  checkInTime?: string;  
+  checkOutTime?: string;
 }
 // translate models
 export interface TranslationRequest {
