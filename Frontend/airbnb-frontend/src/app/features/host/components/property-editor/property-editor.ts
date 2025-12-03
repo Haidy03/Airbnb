@@ -53,7 +53,7 @@ export class PropertyEditorComponent implements OnInit {
     exteriorCamera: false, noiseMonitor: false, weapons: false
   });
 
-  // ✅ القائمة الجديدة المطابقة لقاعدة البيانات
+
   propertyTypesList: PropTypeOption[] = [
     { id: 1, name: 'House' },
     { id: 2, name: 'Apartment' },
@@ -154,7 +154,10 @@ export class PropertyEditorComponent implements OnInit {
     this.tempInstantBook.set(prop.isInstantBook === true);
 
     // ✅ House Rules Logic (Fix: Close brackets correctly)
-    const formatTime = (time: any) => time ? String(time).substring(0, 5) : '';
+    const formatTime = (time: any) => {
+      if (!time) return '';
+      return String(time).substring(0, 5);
+    };
     if (prop.houseRules) {
       this.tempRules.set({
         checkInTime: formatTime(prop.houseRules.checkInTime),
