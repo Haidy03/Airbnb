@@ -157,10 +157,10 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
   initializeForm(): void {
     this.locationForm = this.fb.group({
       searchAddress: ['', Validators.required],
-      address: [''],
-      city: [''],
+      address: ['', Validators.required],
+      city: ['', Validators.required], 
       state: [''],
-      country: [''],
+      country: ['', Validators.required],
       postalCode: [''],
       latitude: [0],
       longitude: [0]
@@ -366,12 +366,13 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
    * Check if form is valid
    */
   isFormValid(): boolean {
-    return !!(
-      this.locationForm.get('latitude')?.value &&
-      this.locationForm.get('longitude')?.value &&
-      this.locationForm.get('latitude')?.value !== 0 &&
-      this.locationForm.get('searchAddress')?.value
-    );
+    return this.locationForm.valid && this.locationForm.get('latitude')?.value !== 0;
+    // return !!(
+    //   this.locationForm.get('latitude')?.value &&
+    //   this.locationForm.get('longitude')?.value &&
+    //   this.locationForm.get('latitude')?.value !== 0 &&
+    //   this.locationForm.get('searchAddress')?.value
+    // );
   }
 
   /**

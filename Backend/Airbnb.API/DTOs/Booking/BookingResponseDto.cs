@@ -3,7 +3,7 @@
     public class BookingResponseDto
     {
         public int Id { get; set; }
-        public string Type { get; set; }
+        public string Type { get; set; } = "Property";
         public int? PropertyId { get; set; }
         public int? ExperienceId { get; set; }
         public string ExperienceImage { get; set; } = string.Empty;

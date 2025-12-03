@@ -113,7 +113,7 @@ namespace Airbnb.API.Services.Implementations
                 {
                     PropertyId = propertyId,
                     BasePrice = property.PricePerNight,
-                    WeekendPrice = property.CleaningFee, // You might want a separate weekend price field
+                    CleaningFee = property.CleaningFee, // You might want a separate weekend price field
                     MinimumNights = property.MinimumStay,
                     MaximumNights = 365,
                     AdvanceNotice = 0,
@@ -145,6 +145,8 @@ namespace Airbnb.API.Services.Implementations
                     Date = dto.Date.Date,
                     IsAvailable = dto.IsAvailable,
                     Notes = dto.Notes,
+                    SpecificCheckInTime = dto.CheckInTime,
+                    SpecificCheckOutTime = dto.CheckOutTime,
                     CreatedAt = DateTime.UtcNow
                 };
                 _context.PropertyAvailabilities.Add(availability);
@@ -153,6 +155,8 @@ namespace Airbnb.API.Services.Implementations
             {
                 availability.IsAvailable = dto.IsAvailable;
                 availability.Notes = dto.Notes;
+                availability.SpecificCheckInTime = dto.CheckInTime;
+                availability.SpecificCheckOutTime = dto.CheckOutTime;
             }
 
             await _context.SaveChangesAsync();
@@ -297,7 +301,7 @@ namespace Airbnb.API.Services.Implementations
             {
                 PropertyId = propertyId,
                 BasePrice = property.PricePerNight,
-                WeekendPrice = property.CleaningFee,
+                CleaningFee = property.CleaningFee,
                 MinimumNights = property.MinimumStay,
                 MaximumNights = 365,
                 AdvanceNotice = 0,
@@ -319,6 +323,8 @@ namespace Airbnb.API.Services.Implementations
             // Update settings
             if (dto.BasePrice.HasValue)
                 property.PricePerNight = dto.BasePrice.Value;
+            if (dto.CleaningFee.HasValue)
+                property.CleaningFee = dto.CleaningFee.Value;
 
             if (dto.MinimumNights.HasValue)
                 property.MinimumStay = dto.MinimumNights.Value;

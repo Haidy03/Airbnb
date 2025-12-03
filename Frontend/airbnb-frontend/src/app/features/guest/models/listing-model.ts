@@ -26,11 +26,11 @@ export interface ReviewModel {
 export interface amenities{
  id: number;
   name: string;
-  icon: string; // اسم الأيقونة (مثل 'wifi', 'tv')
+  icon: string;
   category: string;
 }
 
-// الهيكل الرئيسي لتفاصيل العقار
+
 export interface Listing {
   id: string;
   title: string;
@@ -46,14 +46,13 @@ export interface Listing {
   propertyType: string;
   isInstantBook:boolean;
 
-  // الخصائص المفقودة في الـ JSON الحالي ولكن مطلوبة في الـ HTML
-  rating?: number;            // <--- خاصية اختيارية
-  reviewsCount?: number;      // <--- خاصية اختيارية
-  ratingBreakdown?: RatingBreakdown; // <--- خاصية اختيارية
+  rating?: number;     
+  reviewsCount?: number;     
+  ratingBreakdown?: RatingBreakdown; 
 
   host: HostDetails;
-  images: string[]; // تحديد نوع دقيق أفضل
-  amenities: amenities[]; // تحديد نوع دقيق أفضل
+  images: string[];
+  amenities: amenities[]; 
   reviews: ReviewModel[];
 }
 // translate models

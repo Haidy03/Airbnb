@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
+// 1. تحديث CalendarDay ليشمل أوقات الدخول والخروج المخصصة لليوم
 export interface CalendarDay {
   date: Date;
   isAvailable: boolean;
@@ -16,6 +17,9 @@ export interface CalendarDay {
   isCheckOut: boolean;
   isBlocked: boolean;
   notes?: string;
+  // ✅ إضافة الحقول الجديدة (قد تكون null)
+  checkInTime?: string | null; 
+  checkOutTime?: string | null;
 }
 
 export interface CalendarAvailability {
@@ -27,10 +31,12 @@ export interface CalendarAvailability {
   settings: CalendarSettings;
 }
 
+// 2. تحديث CalendarSettings ليشمل CleaningFee
 export interface CalendarSettings {
   propertyId: number;
   basePrice: number;
-  weekendPrice?: number;
+  weekendPrice?: number; 
+  cleaningFee?: number; // ✅ إضافة Cleaning Fee
   minimumNights: number;
   maximumNights: number;
   advanceNotice: number;
@@ -39,11 +45,15 @@ export interface CalendarSettings {
   checkOutTime?: string;
 }
 
+// 3. تحديث UpdateAvailabilityDto لإرسال الوقت
 export interface UpdateAvailabilityDto {
   propertyId: number;
   date: Date;
   isAvailable: boolean;
   notes?: string | null;
+  // ✅ إضافة الوقت
+  checkInTime?: string | null; 
+  checkOutTime?: string | null;
 }
 
 export interface UpdatePricingDto {
@@ -62,9 +72,11 @@ export interface BulkUpdateAvailabilityDto {
   notes?: string | null;
 }
 
+// 4. تحديث UpdateCalendarSettingsDto
 export interface UpdateCalendarSettingsDto {
   propertyId: number;
   basePrice?: number;
+  cleaningFee?: number; // ✅ إضافة Cleaning Fee
   weekendPrice?: number;
   minimumNights?: number;
   maximumNights?: number;
@@ -120,7 +132,10 @@ export class CalendarService {
           ...response.data,
           days: response.data.days.map((day: any) => ({
             ...day,
-            date: new Date(day.date)
+            date: new Date(day.date),
+            // ✅ قراءة التوقيتات المخصصة من الرد (تأكدي أن الاسم يطابق الباك إند: specificCheckInTime)
+            checkInTime: day.specificCheckInTime, 
+            checkOutTime: day.specificCheckOutTime
           }))
         };
       }),
@@ -215,8 +230,4 @@ export class CalendarService {
       })
     );
   }
-
-
-
-
 }
