@@ -11,6 +11,8 @@
         public int TotalReviews { get; set; }
         public string ImageUrl { get; set; } // The primary image
         public bool IsGuestFavorite { get; set; } // Bonus: If rating > 4.8
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
     }
 
     // Wrapper for pagination metadata

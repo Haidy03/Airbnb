@@ -108,7 +108,9 @@ export class SearchService {
       location: {
         city: dto.city || dto.City,
         country: dto.country || dto.Country,
-        address: '', state: '', zipCode: '', latitude: 0, longitude: 0
+        address: '', state: '', zipCode: '',
+         latitude: dto.latitude || dto.Latitude || 0, 
+        longitude: dto.longitude || dto.Longitude || 0
       },
       images: [{
         id: '1',

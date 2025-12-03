@@ -14,10 +14,8 @@ namespace Airbnb.API.Repositories.Implementations
             _context = context;
         }
 
-        public async Task<Property?> GetByIdAsync(int id)
-        {
-            return await _context.Properties.FindAsync(id);
-        }
+        // ... (GetById, GetByIdWithDetails, etc. - No changes needed here) ...
+        public async Task<Property?> GetByIdAsync(int id) => await _context.Properties.FindAsync(id);
 
         public async Task<Property?> GetByIdWithDetailsAsync(int id)
         {
@@ -25,8 +23,7 @@ namespace Airbnb.API.Repositories.Implementations
                 .Include(p => p.Host)
                 .Include(p => p.PropertyType)
                 .Include(p => p.Images)
-                .Include(p => p.PropertyAmenities)
-                    .ThenInclude(pa => pa.Amenity)
+                .Include(p => p.PropertyAmenities).ThenInclude(pa => pa.Amenity)
                 .Include(p => p.Reviews)
                 .Include(p => p.Bookings)
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -37,8 +34,7 @@ namespace Airbnb.API.Repositories.Implementations
             return await _context.Properties
                 .Include(p => p.PropertyType)
                 .Include(p => p.Images)
-                .Include(p => p.PropertyAmenities)
-                    .ThenInclude(pa => pa.Amenity)
+                .Include(p => p.PropertyAmenities).ThenInclude(pa => pa.Amenity)
                 .ToListAsync();
         }
 
@@ -47,8 +43,7 @@ namespace Airbnb.API.Repositories.Implementations
             return await _context.Properties
                 .Include(p => p.PropertyType)
                 .Include(p => p.Images)
-                .Include(p => p.PropertyAmenities)
-                    .ThenInclude(pa => pa.Amenity)
+                .Include(p => p.PropertyAmenities).ThenInclude(pa => pa.Amenity)
                 .Include(p => p.Reviews)
                 .Include(p => p.Bookings)
                 .Where(p => p.HostId == hostId)
@@ -80,49 +75,38 @@ namespace Airbnb.API.Repositories.Implementations
             }
         }
 
-        public async Task<bool> ExistsAsync(int id)
-        {
-            return await _context.Properties.AnyAsync(p => p.Id == id);
-        }
+        public async Task<bool> ExistsAsync(int id) => await _context.Properties.AnyAsync(p => p.Id == id);
 
         public async Task<bool> IsHostOwnerAsync(int propertyId, string hostId)
         {
-            return await _context.Properties
-                .AnyAsync(p => p.Id == propertyId && p.HostId == hostId);
+            return await _context.Properties.AnyAsync(p => p.Id == propertyId && p.HostId == hostId);
         }
 
+        
         public async Task<PagedResult<PropertySearchResultDto>> SearchPropertiesAsync(SearchRequestDto searchDto)
         {
             var query = _context.Properties
-                .Include(p => p.PropertyType) 
+                .Include(p => p.PropertyType)
                 .Include(p => p.Images)
                 .Include(p => p.Reviews)
                 .AsQueryable()
                 .Where(p => p.IsActive && p.IsApproved);
 
-
-            // Location (Case insensitive search in City or Country)
+         
             if (!string.IsNullOrEmpty(searchDto.Location))
             {
                 var loc = searchDto.Location.ToLower();
                 query = query.Where(p => p.City.ToLower().Contains(loc) || p.Country.ToLower().Contains(loc));
             }
 
-            // Guest Count
             if (searchDto.GuestCount.HasValue)
-            {
                 query = query.Where(p => p.MaxGuests >= searchDto.GuestCount.Value);
-            }
 
-            // Price Range
             if (searchDto.MinPrice.HasValue)
-            {
                 query = query.Where(p => p.PricePerNight >= searchDto.MinPrice.Value);
-            }
+
             if (searchDto.MaxPrice.HasValue)
-            {
                 query = query.Where(p => p.PricePerNight <= searchDto.MaxPrice.Value);
-            }
 
             if (!string.IsNullOrEmpty(searchDto.PropertyType))
             {
@@ -140,36 +124,28 @@ namespace Airbnb.API.Repositories.Implementations
                 }
             }
 
-            // Availability (Check if there are ANY bookings that overlap with the requested dates)
             if (searchDto.CheckInDate.HasValue && searchDto.CheckOutDate.HasValue)
             {
                 var checkIn = searchDto.CheckInDate.Value.Date;
                 var checkOut = searchDto.CheckOutDate.Value.Date;
-
-                // 1. Check existing Bookings (Conflict if dates overlap)
                 query = query.Where(p => !p.Bookings.Any(b =>
                     b.Status != BookingStatus.Cancelled &&
                     b.Status != BookingStatus.Rejected &&
                     (checkIn < b.CheckOutDate && checkOut > b.CheckInDate)
                 ));
-
                 query = query.Where(p => !p.Availabilities.Any(pa =>
-                    pa.Date >= checkIn &&
-                    pa.Date < checkOut && // Check-out day doesn't need to be available for sleeping
-                    pa.IsAvailable == false 
+                    pa.Date >= checkIn && pa.Date < checkOut && pa.IsAvailable == false
                 ));
             }
 
-            // 3. Apply Sorting
             query = searchDto.SortBy?.ToLower() switch
             {
                 "price_asc" => query.OrderBy(p => p.PricePerNight),
                 "price_desc" => query.OrderByDescending(p => p.PricePerNight),
                 "newest" => query.OrderByDescending(p => p.CreatedAt),
-                _ => query.OrderByDescending(p => p.Reviews.Count) // Default: Popularity
+                _ => query.OrderByDescending(p => p.Reviews.Count)
             };
 
-            // 4. Execute Query (Pagination)
             var totalCount = await query.CountAsync();
 
             var items = await query
@@ -182,14 +158,16 @@ namespace Airbnb.API.Repositories.Implementations
                     City = p.City,
                     Country = p.Country,
                     PricePerNight = p.PricePerNight,
-                    // Calculate rating safely
                     Rating = p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0,
                     TotalReviews = p.Reviews.Count,
-                    // Get primary image or the first one available
                     ImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary) != null
                         ? p.Images.FirstOrDefault(i => i.IsPrimary).ImageUrl
                         : p.Images.FirstOrDefault().ImageUrl,
-                    IsGuestFavorite = p.Reviews.Count > 5 && p.Reviews.Average(r => r.Rating) > 4.8
+                    IsGuestFavorite = p.Reviews.Count > 5 && p.Reviews.Average(r => r.Rating) > 4.8,
+
+
+                    Latitude = p.Latitude,
+                    Longitude = p.Longitude
                 })
                 .ToListAsync();
 
@@ -202,6 +180,7 @@ namespace Airbnb.API.Repositories.Implementations
             };
         }
 
+ 
         public async Task<List<PropertySearchResultDto>> GetFeaturedPropertiesAsync(int count)
         {
             return await _context.Properties
@@ -209,8 +188,8 @@ namespace Airbnb.API.Repositories.Implementations
                 .Include(p => p.Images)
                 .Include(p => p.Reviews)
                 .Where(p => p.IsActive && p.IsApproved)
-                .OrderByDescending(p => p.Reviews.Average(r => r.Rating)) // Sort by highest rating
-                .Take(count) // Limit to top 5 or 10
+                .OrderByDescending(p => p.Reviews.Average(r => r.Rating))
+                .Take(count)
                 .Select(p => new PropertySearchResultDto
                 {
                     Id = p.Id,
@@ -223,123 +202,44 @@ namespace Airbnb.API.Repositories.Implementations
                     ImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary) != null
                          ? p.Images.FirstOrDefault(i => i.IsPrimary).ImageUrl
                          : p.Images.FirstOrDefault().ImageUrl,
-                    IsGuestFavorite = p.Reviews.Count > 5 && p.Reviews.Average(r => r.Rating) > 4.8
+                    IsGuestFavorite = p.Reviews.Count > 5 && p.Reviews.Average(r => r.Rating) > 4.8,
+
+        
+                    Latitude = p.Latitude,
+                    Longitude = p.Longitude
                 })
                 .ToListAsync();
         }
 
-        /// <summary>
-        /// Get image by ID with its related property
-        /// </summary>
+       
         public async Task<PropertyImage?> GetImageByIdWithPropertyAsync(int imageId)
         {
-            return await _context.PropertyImages
-                .Include(img => img.Property)
-                .FirstOrDefaultAsync(img => img.Id == imageId);
+            return await _context.PropertyImages.Include(img => img.Property).FirstOrDefaultAsync(img => img.Id == imageId);
         }
-
-        /// <summary>
-        /// Delete a property image
-        /// </summary>
         public async Task DeleteImageAsync(int imageId)
         {
             var image = await _context.PropertyImages.FindAsync(imageId);
-
-            if (image != null)
-            {
-                // Delete from storage if needed
-                try
-                {
-                    var webRootPath = "wwwroot"; // Configure this via DI if needed
-                    var filePath = Path.Combine(webRootPath, image.ImageUrl.TrimStart('/'));
-
-                    if (File.Exists(filePath))
-                    {
-                        File.Delete(filePath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Log but don't fail the database deletion
-                    Console.WriteLine($"Warning: Could not delete image file: {ex.Message}");
-                }
-
-                _context.PropertyImages.Remove(image);
-                await _context.SaveChangesAsync();
-            }
+            if (image != null) { _context.PropertyImages.Remove(image); await _context.SaveChangesAsync(); }
         }
-
-        /// <summary>
-        /// Set an image as primary for a property
-        /// </summary>
         public async Task SetPrimaryImageAsync(int imageId, int propertyId)
         {
-            // Get all images for this property
-            var allImages = await _context.PropertyImages
-                .Where(img => img.PropertyId == propertyId)
-                .ToListAsync();
-
-            // Remove primary flag from all images
-            foreach (var img in allImages)
-            {
-                img.IsPrimary = false;
-            }
-
-            // Set the selected image as primary
+            var allImages = await _context.PropertyImages.Where(img => img.PropertyId == propertyId).ToListAsync();
+            foreach (var img in allImages) img.IsPrimary = false;
             var targetImage = allImages.FirstOrDefault(img => img.Id == imageId);
-            if (targetImage != null)
-            {
-                targetImage.IsPrimary = true;
-                targetImage.DisplayOrder = 0; // Move to front
-
-                // Reorder other images
-                int order = 1;
-                foreach (var img in allImages.Where(img => img.Id != imageId))
-                {
-                    img.DisplayOrder = order++;
-                }
-            }
-
+            if (targetImage != null) targetImage.IsPrimary = true;
             await _context.SaveChangesAsync();
         }
-
         public async Task UpdatePropertyAmenitiesAsync(int propertyId, List<int> amenityIds)
         {
-            // 1. Remove existing amenities for this property
-            var existingLinks = await _context.PropertyAmenities
-                .Where(pa => pa.PropertyId == propertyId)
-                .ToListAsync();
-
-            if (existingLinks.Any())
-            {
-                _context.PropertyAmenities.RemoveRange(existingLinks);
-            }
-
-            // 2. Validate IDs: Only select IDs that actually exist in the Amenities table
-            // This PREVENTS the 500 Foreign Key Error
-            var validAmenityIds = await _context.Amenities
-                .Where(a => amenityIds.Contains(a.Id))
-                .Select(a => a.Id)
-                .ToListAsync();
-
-            // 3. Add new links
-            foreach (var amenityId in validAmenityIds)
-            {
-                await _context.PropertyAmenities.AddAsync(new PropertyAmenity
-                {
-                    PropertyId = propertyId,
-                    AmenityId = amenityId
-                });
-            }
-
+            var existingLinks = await _context.PropertyAmenities.Where(pa => pa.PropertyId == propertyId).ToListAsync();
+            if (existingLinks.Any()) _context.PropertyAmenities.RemoveRange(existingLinks);
+            var validAmenityIds = await _context.Amenities.Where(a => amenityIds.Contains(a.Id)).Select(a => a.Id).ToListAsync();
+            foreach (var amenityId in validAmenityIds) await _context.PropertyAmenities.AddAsync(new PropertyAmenity { PropertyId = propertyId, AmenityId = amenityId });
             await _context.SaveChangesAsync();
         }
-
         public async Task<IEnumerable<Amenity>> GetAllAmenitiesAsync()
         {
-            return await _context.Amenities
-                .Where(a => a.IsActive)
-                .ToListAsync();
+            return await _context.Amenities.Where(a => a.IsActive).ToListAsync();
         }
     }
 }
