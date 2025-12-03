@@ -500,3 +500,51 @@
     padding: 0 24px;
   }
 }
+
+
+/* Manual Fields Container */
+.manual-fields-container {
+  padding: 20px;
+  background: #fff;
+  border-bottom: 1px solid #EBEBEB;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.field-group {
+  margin-bottom: 12px;
+}
+.field-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #717171;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.field-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #B0B0B0;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.field-group input:focus {
+  border-color: #222;
+  box-shadow: 0 0 0 1px #222;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+/* Responsive fix */
+@media (max-height: 700px) {
+  .manual-fields-container {
+    max-height: 200px;
+  }
+}
