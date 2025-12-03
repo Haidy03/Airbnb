@@ -133,7 +133,7 @@ export class CalendarService {
           days: response.data.days.map((day: any) => ({
             ...day,
             date: new Date(day.date),
-            // ✅ قراءة التوقيتات المخصصة من الرد (تأكدي أن الاسم يطابق الباك إند: specificCheckInTime)
+           
             checkInTime: day.specificCheckInTime, 
             checkOutTime: day.specificCheckOutTime
           }))
@@ -151,9 +151,15 @@ export class CalendarService {
    * Update availability for specific dates
    */
   updateAvailability(dto: UpdateAvailabilityDto): Observable<boolean> {
+    const dateToSend = new Date(dto.date);
+    dateToSend.setMinutes(dateToSend.getMinutes() - dateToSend.getTimezoneOffset());
+    const payload = {
+      ...dto,
+      date: dateToSend 
+    };
     return this.http.post<{ success: boolean }>(
       `${this.apiUrl}/availability`,
-      dto,
+      payload,
       { headers: this.getHeaders() }
     ).pipe(
       map(response => response.success),
@@ -168,9 +174,16 @@ export class CalendarService {
    * Update pricing for specific dates
    */
   updatePricing(dto: UpdatePricingDto): Observable<boolean> {
+    const dateToSend = new Date(dto.date);
+    dateToSend.setMinutes(dateToSend.getMinutes() - dateToSend.getTimezoneOffset());
+
+    const payload = {
+      ...dto,
+      date: dateToSend
+    };
     return this.http.post<{ success: boolean }>(
       `${this.apiUrl}/pricing`,
-      dto,
+      payload,
       { headers: this.getHeaders() }
     ).pipe(
       map(response => response.success),

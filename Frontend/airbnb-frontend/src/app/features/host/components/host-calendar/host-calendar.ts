@@ -309,7 +309,7 @@ export class HostCalendar implements OnInit {
         isCurrentMonth: dayDate.getMonth() === month,
         isToday: dayDate.getTime() === today.getTime(),
         isWeekend: dayDate.getDay() === 5 || dayDate.getDay() === 6,
-        isAvailable: apiDay?.isAvailable ?? true,
+        isAvailable: apiDay ? apiDay.isAvailable : true,
         price: apiDay?.price ?? this.settings().basePrice,
         originalPrice: apiDay?.originalPrice,
         hasBooking: apiDay?.hasBooking ?? false,
@@ -318,7 +318,7 @@ export class HostCalendar implements OnInit {
         guestName: apiDay?.guestName,
         isCheckIn: apiDay?.isCheckIn ?? false,
         isCheckOut: apiDay?.isCheckOut ?? false,
-        isBlocked: apiDay?.isBlocked ?? false,
+        isBlocked: apiDay ? apiDay.isBlocked : false,
         notes: apiDay?.notes,
         isSelected: false,
         // ✅ ربط التوقيتات القادمة من الـ API
@@ -375,6 +375,7 @@ export class HostCalendar implements OnInit {
   
   onAvailabilityToggle(): void {
     // console.log('Availability changed');
+    console.log('Toggle changed to:', this.dayDetailsForm.get('isAvailable')?.value);
   }
   
   isDayModified(): boolean {
@@ -398,21 +399,25 @@ export class HostCalendar implements OnInit {
     const formValue = this.dayDetailsForm.value;
     const requests: Observable<any>[] = [];
 
-    // ✅ التحقق من أي تغيير (الحالة، الملاحظات، الوقت)
-    const hasAvailabilityChanges = 
-        formValue.isAvailable !== day.isAvailable ||
-        formValue.notes !== (day.notes || '') ||
-        formValue.checkInTime !== (day.checkInTime || null) ||
-        formValue.checkOutTime !== (day.checkOutTime || null);
+    const isAvailableChanged = formValue.isAvailable !== day.isAvailable;
+    const notesChanged = formValue.notes !== (day.notes || '');
+    const checkInTimeChanged = formValue.checkInTime !== (day.checkInTime || null);
+    const checkOutTimeChanged = formValue.checkOutTime !== (day.checkOutTime || null);
 
-    if (hasAvailabilityChanges) {
+    // const hasAvailabilityChanges = 
+    //     formValue.isAvailable !== day.isAvailable ||
+    //     formValue.notes !== (day.notes || '') ||
+    //     formValue.checkInTime !== (day.checkInTime || null) ||
+    //     formValue.checkOutTime !== (day.checkOutTime || null);
+
+    if (formValue.isAvailable !== day.isAvailable) {
       const availabilityDto = {
         propertyId: parseInt(property.id),
         date: day.date,
         isAvailable: formValue.isAvailable,
         notes: formValue.notes,
-        checkInTime: formValue.checkInTime,  // ✅ إرسال
-        checkOutTime: formValue.checkOutTime // ✅ إرسال
+        checkInTime: formValue.checkInTime, 
+        checkOutTime: formValue.checkOutTime
       };
       requests.push(this.calendarService.updateAvailability(availabilityDto));
     }
@@ -441,7 +446,7 @@ export class HostCalendar implements OnInit {
       next: () => {
         console.log('✅ Saved successfully');
         
-        // تحديث الواجهة محلياً
+       
         this.calendarDays.update(days => 
           days.map(d => {
             if (d.date.getTime() === day.date.getTime()) {
