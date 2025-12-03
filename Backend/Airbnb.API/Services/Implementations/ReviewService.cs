@@ -11,15 +11,19 @@ namespace Airbnb.API.Services.Implementations
         private readonly ApplicationDbContext _context;
         private readonly IReviewRepository _reviewRepository;
         private readonly IExperienceRepository _experienceRepository;
+        private readonly IServiceRepository _serviceRepository;
 
         public ReviewService(
             ApplicationDbContext context,
             IReviewRepository reviewRepository,
-            IExperienceRepository experienceRepository)
+            IServiceRepository serviceRepository,
+            IExperienceRepository experienceRepository
+            )
         {
             _context = context;
             _reviewRepository = reviewRepository;
             _experienceRepository = experienceRepository;
+            _serviceRepository = serviceRepository;
         }
 
         public async Task<ReviewResponseDto> CreateReviewAsync(string userId, CreateReviewDto dto)
@@ -272,6 +276,11 @@ namespace Airbnb.API.Services.Implementations
                 .ToListAsync();
 
             var expReviewsList = await _experienceRepository.GetReviewsByHostIdAsync(hostId);
+            var serviceReviewsList = await _context.ServiceReviews
+                 .Include(r => r.Reviewer)
+                 .Include(r => r.Service)
+                 .Where(r => r.Service.HostId == hostId)
+                 .ToListAsync();
 
             var allReviewsDto = new List<ReviewResponseDto>();
 
@@ -287,6 +296,26 @@ namespace Airbnb.API.Services.Implementations
                     Id = r.Id,
                     PropertyTitle = r.Experience.Title,
                     ReviewType = "Experience",
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CleanlinessRating = r.CleanlinessRating,
+                    CommunicationRating = r.CommunicationRating,
+                    LocationRating = r.LocationRating,
+                    ValueRating = r.ValueRating,
+                    ReviewerId = r.ReviewerId,
+                    ReviewerName = $"{r.Reviewer.FirstName} {r.Reviewer.LastName}",
+                    ReviewerProfileImage = r.Reviewer.ProfileImageUrl,
+                    CreatedAt = r.CreatedAt,
+                    IsApproved = true
+                });
+            }
+            foreach (var r in serviceReviewsList)
+            {
+                allReviewsDto.Add(new ReviewResponseDto
+                {
+                    Id = r.Id,
+                    PropertyTitle = r.Service.Title, // اسم الخدمة
+                    ReviewType = "Service",         // نوع الخدمة
                     Rating = r.Rating,
                     Comment = r.Comment,
                     CleanlinessRating = r.CleanlinessRating,

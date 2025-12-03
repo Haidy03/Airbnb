@@ -70,13 +70,17 @@
             <h3 class="guest-name">{{ review.reviewerName }}</h3>
             <p class="review-date">Reviewed on {{ review.createdAt | date:'MMMM yyyy' }}</p>
             <span style="font-size: 12px; color: #FF385C" *ngIf="review.reviewType === 'Experience'">Experience Review</span>
+            <span style="font-size: 12px; color: #2E86C1" *ngIf="review.reviewType === 'Service'">Service Review</span>
             <br>
             <span class="context-title">{{ review.propertyTitle }}</span>
+            
+            
+            <br>
+            
           </div>
         </div>
 
         <div class="review-body">
-          <h4 class="review-title">Great place to stay</h4> <!-- عنوان افتراضي أو من البيانات -->
           <p class="review-text">{{ review.comment }}</p>
         </div>
 

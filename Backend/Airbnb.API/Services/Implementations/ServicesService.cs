@@ -1,8 +1,10 @@
-﻿using Airbnb.API.DTOs.Services;
+﻿using Airbnb.API.DTOs.Review;
+using Airbnb.API.DTOs.Services;
 using Airbnb.API.Models;
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 
 namespace Airbnb.API.Services.Implementations
 {
@@ -15,7 +17,7 @@ namespace Airbnb.API.Services.Implementations
         {
             _serviceRepository = serviceRepository;
             _environment = environment;
-        }   
+        }
 
         // 1. Get Featured Services (Guest Home)
         public async Task<List<ServiceCardDto>> GetFeaturedServicesAsync()
@@ -34,7 +36,7 @@ namespace Airbnb.API.Services.Implementations
         // 3. Create Service (Host)
         public async Task<bool> CreateServiceAsync(string hostId, CreateServiceDto dto)
         {
-            
+
             var service = new Service
             {
                 HostId = hostId,
@@ -53,7 +55,7 @@ namespace Airbnb.API.Services.Implementations
 
             };
 
-            
+
             if (dto.Images != null && dto.Images.Count > 0)
             {
                 var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "services");
@@ -64,11 +66,11 @@ namespace Airbnb.API.Services.Implementations
                 {
                     if (file.Length > 0)
                     {
-                        
+
                         var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
                         var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                        
+
                         using (var fileStream = new FileStream(filePath, FileMode.Create))
                         {
                             await file.CopyToAsync(fileStream);
@@ -134,6 +136,8 @@ namespace Airbnb.API.Services.Implementations
                 }).ToList()
             };
         }
+
+
 
         // 5. Get All Categories (Setup)
         public async Task<List<ServiceCategory>> GetAllCategoriesAsync()
@@ -243,7 +247,7 @@ namespace Airbnb.API.Services.Implementations
         {
             var service = await _serviceRepository.GetServiceByIdForHostAsync(id);
 
-            
+
             if (service == null || service.HostId != hostId) return null;
 
 
@@ -259,7 +263,7 @@ namespace Airbnb.API.Services.Implementations
                 CoveredAreas = service.CoveredAreas,
 
                 Status = service.Status.ToString(),
-                
+
 
                 Images = service.Images.Select(i => i.Url).ToList(),
                 CategoryName = service.Category?.Name,
@@ -332,6 +336,164 @@ namespace Airbnb.API.Services.Implementations
 
             await _serviceRepository.UpdateServiceAsync(service);
             return true;
+        }
+
+
+        //reviews rahma
+
+        public async Task<ReviewResponseDto> AddReviewAsync(string userId, CreateReviewDto dto)
+        {
+            // 1. التأكد من وجود الحجز
+            var booking = await _serviceRepository.GetServiceBookingByIdAsync(dto.BookingId);
+
+            if (booking == null) throw new Exception("Booking not found");
+            if (booking.GuestId != userId) throw new UnauthorizedAccessException("Not your booking");
+            if (booking.Status != "Completed") throw new InvalidOperationException("Can only review completed services");
+
+            // 2. التأكد من عدم وجود ريفيو سابق
+            if (await _serviceRepository.ServiceReviewExistsAsync(dto.BookingId))
+                throw new InvalidOperationException("You already reviewed this service");
+
+            // 3. إنشاء الريفيو
+            var review = new ServiceReview
+            {
+                ServiceId = booking.ServiceId,
+                ServiceBookingId = booking.Id,
+                ReviewerId = userId,
+                Rating = dto.Rating,
+                Comment = dto.Comment,
+                CreatedAt = DateTime.UtcNow,
+                CleanlinessRating = dto.CleanlinessRating,
+                CommunicationRating = dto.CommunicationRating,
+                LocationRating = dto.LocationRating,
+                ValueRating = dto.ValueRating,
+            };
+
+            await _serviceRepository.AddServiceReviewAsync(review);
+
+            // تحديث متوسط التقييم للخدمة (اختياري)
+            await UpdateServiceRating(booking.ServiceId);
+
+            return MapToReviewDto(review);
+        }
+
+        // Helper
+        private ReviewResponseDto MapToReviewDto(ServiceReview r)
+        {
+            return new ReviewResponseDto
+            {
+                Id = r.Id,
+                Rating = r.Rating,
+                Comment = r.Comment,
+                ReviewerName = $"{r.Reviewer.FirstName} {r.Reviewer.LastName}",
+                ReviewerProfileImage = r.Reviewer.ProfileImageUrl,
+                CreatedAt = r.CreatedAt,
+                ReviewType = "Service",
+                PropertyTitle = r.Service?.Title // عشان تظهر في قوايم الريفيو العامة
+            };
+        }
+        public async Task<ReviewResponseDto?> GetServiceReviewDtoByIdAsync(int reviewId)
+        {
+            var review = await _serviceRepository.GetServiceReviewByIdAsync(reviewId);
+            if (review == null) return null;
+
+            return new ReviewResponseDto
+            {
+                Id = review.Id,
+                ServiceId = review.ServiceId,
+                Rating = review.Rating,
+                Comment = review.Comment,
+                CleanlinessRating = review.CleanlinessRating,
+                CommunicationRating = review.CommunicationRating,
+                LocationRating = review.LocationRating,
+                ValueRating = review.ValueRating,
+                ReviewerId = review.ReviewerId,
+            };
+        }
+
+        public async Task<List<ReviewResponseDto>> GetReviewsByServiceIdAsync(int serviceId)
+        {
+            var reviews = await _serviceRepository.GetReviewsByServiceIdAsync(serviceId);
+
+            return reviews.Select(r => new ReviewResponseDto
+            {
+                Id = r.Id,
+                ReviewerId = r.ReviewerId,
+                ReviewerName = r.Reviewer != null ? $"{r.Reviewer.FirstName} {r.Reviewer.LastName}" : "Unknown",
+                ReviewerProfileImage = r.Reviewer?.ProfileImageUrl,
+                Rating = r.Rating,
+                Comment = r.Comment,
+                CleanlinessRating = r.CleanlinessRating,
+                CommunicationRating = r.CommunicationRating,
+                LocationRating = r.LocationRating,
+                ValueRating = r.ValueRating,
+                CreatedAt = r.CreatedAt,
+                ReviewType = "Service",
+                PropertyTitle = r.Service?.Title ?? "" // عشان الاسم يظهر
+            }).ToList();
+        }
+
+        public async Task DeleteReviewAsync(int reviewId, string userId)
+        {
+            var review = await _serviceRepository.GetServiceReviewByIdAsync(reviewId);
+            if (review == null) throw new Exception("Review not found");
+
+            // السماح للمستخدم نفسه بحذف الريفيو
+            if (review.ReviewerId != userId)
+                throw new UnauthorizedAccessException("Not authorized to delete this review");
+
+            await _serviceRepository.DeleteServiceReviewAsync(review);
+
+            // تحديث التقييم بعد الحذف
+            await UpdateServiceRating(review.ServiceId);
+        }
+
+
+        // دالة مساعدة لتحديث التقييم
+        private async Task UpdateServiceRating(int serviceId)
+        {
+            var reviews = await _serviceRepository.GetReviewsByServiceIdAsync(serviceId);
+            var service = await _serviceRepository.GetServiceByIdAsync(serviceId);
+
+            if (service != null)
+            {
+                if (reviews.Any())
+                {
+                    service.AverageRating = reviews.Average(r => r.Rating);
+                    service.ReviewCount = reviews.Count;
+                }
+                else
+                {
+                    service.AverageRating = 0;
+                    service.ReviewCount = 0;
+                }
+                await _serviceRepository.UpdateServiceAsync(service);
+            }
+        }
+        public async Task<ReviewResponseDto> UpdateServiceReviewAsync(int reviewId, string userId, UpdateReviewDto dto)
+        {
+            var review = await _serviceRepository.GetServiceReviewByIdAsync(reviewId);
+            if (review == null) throw new Exception("Review not found");
+
+            if (review.ReviewerId != userId)
+                throw new UnauthorizedAccessException("Not authorized");
+
+            review.Rating = dto.Rating;
+            review.Comment = dto.Comment;
+            review.UpdatedAt = DateTime.UtcNow;
+
+            // تحديث التفاصيل
+            review.CleanlinessRating = dto.CleanlinessRating;
+            review.CommunicationRating = dto.CommunicationRating;
+            review.LocationRating = dto.LocationRating;
+            review.ValueRating = dto.ValueRating;
+
+            await _serviceRepository.UpdateServiceReviewAsync(review);
+
+            // تحديث متوسط الخدمة
+            // (Optional: call UpdateServiceRating(review.ServiceId))
+
+            return await GetServiceReviewDtoByIdAsync(reviewId);
         }
     }
 }

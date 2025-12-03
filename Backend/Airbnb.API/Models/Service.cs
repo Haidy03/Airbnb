@@ -61,6 +61,11 @@ namespace Airbnb.API.Models
         // --- Status ---
         public ServiceStatus Status { get; set; } = ServiceStatus.Draft;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; }
+        public DateTime? ApprovedAt { get; set; }
+
+        public string? RejectionReason { get; set; }
+        public bool IsActive { get; set; } = true;
         public double AverageRating { get; set; } // Cached rating
         public int ReviewCount { get; set; }
 
@@ -69,5 +74,6 @@ namespace Airbnb.API.Models
 
         public virtual ICollection<ServiceQualification> Qualifications { get; set; } = new List<ServiceQualification>();
         public virtual ICollection<ServicePackage> Packages { get; set; } = new List<ServicePackage>();
+        public virtual ICollection<ServiceReview> Reviews { get; set; } = new List<ServiceReview>();
     }
 }

@@ -127,5 +127,56 @@ namespace Airbnb.API.Repositories.Implementations
             _context.Services.Update(service);
             await _context.SaveChangesAsync();
         }
+
+
+        //reviews rahma
+
+        public async Task<ServiceBooking?> GetServiceBookingByIdAsync(int bookingId)
+        {
+            return await _context.ServiceBookings
+                .Include(b => b.Service) // نحتاج الخدمة عشان نعرف الـ ID بتاعها
+                .Include(b => b.Guest)   // نحتاج الجيست عشان نتأكد من الهوية
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+        }
+
+        public async Task AddServiceReviewAsync(ServiceReview review)
+        {
+            await _context.ServiceReviews.AddAsync(review);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> ServiceReviewExistsAsync(int bookingId)
+        {
+            return await _context.ServiceReviews.AnyAsync(r => r.ServiceBookingId == bookingId);
+        }
+
+        public async Task<List<ServiceReview>> GetReviewsByServiceIdAsync(int serviceId)
+        {
+            return await _context.ServiceReviews
+                .Include(r => r.Reviewer) // عشان نعرض اسم وصورة اللي عمل ريفيو
+                .Where(r => r.ServiceId == serviceId)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<ServiceReview?> GetServiceReviewByIdAsync(int reviewId)
+        {
+            return await _context.ServiceReviews
+                .Include(r => r.Reviewer)
+                .Include(r => r.Service)
+                .FirstOrDefaultAsync(r => r.Id == reviewId);
+        }
+
+        public async Task DeleteServiceReviewAsync(ServiceReview review)
+        {
+            _context.ServiceReviews.Remove(review);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateServiceReviewAsync(ServiceReview review)
+        {
+            _context.ServiceReviews.Update(review);
+            await _context.SaveChangesAsync();
+        }
     }
 }

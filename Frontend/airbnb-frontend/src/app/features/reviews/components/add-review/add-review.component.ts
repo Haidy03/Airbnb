@@ -6,6 +6,7 @@ import { ReviewService } from '../../services/review.service';
 import { CreateReviewDto } from '../../models/review.model';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { ExperienceService } from '../../../../shared/Services/experience.service';
+import { ServicesService } from '../../../../features/services/services/service';
 
 @Component({
   selector: 'app-add-review',
@@ -21,7 +22,8 @@ export class AddReviewComponent implements OnInit {
   loading = false;
   errorMessage = '';
   successMessage = '';
-  reviewType: 'Property' | 'Experience' = 'Property';
+  reviewType: string = 'Property';
+  //reviewType: 'Property' | 'Experience' | 'Service' = 'Property';
   overallRating = 0;
   cleanlinessRating = 0;
   communicationRating = 0;
@@ -33,6 +35,7 @@ export class AddReviewComponent implements OnInit {
     private reviewService: ReviewService,
     private route: ActivatedRoute,
     private experienceService: ExperienceService,
+    private servicesService: ServicesService,
     private router: Router
   ) {}
 
@@ -41,7 +44,7 @@ export class AddReviewComponent implements OnInit {
     
     // ✅ NEW: استقبال النوع من الـ Query Params
     this.route.queryParams.subscribe(params => {
-      this.reviewType = params['type'] || 'Property';
+      this.reviewType = params['type'] ? params['type'].toLowerCase() : 'property';
       this.checkCanReview();
     });
 
@@ -114,21 +117,30 @@ export class AddReviewComponent implements OnInit {
       bookingId: this.bookingId,
       rating: this.overallRating,
       comment: this.reviewForm.value.comment,
-      // هذه الحقول اختيارية وقد لا تستخدمها التجارب
-      cleanlinessRating: this.cleanlinessRating > 0 ? this.cleanlinessRating : undefined,
-      communicationRating: this.communicationRating > 0 ? this.communicationRating : undefined,
-      locationRating: this.locationRating > 0 ? this.locationRating : undefined,
-      valueRating: this.valueRating > 0 ? this.valueRating : undefined
+      cleanlinessRating: this.cleanlinessRating || null,
+      communicationRating: this.communicationRating || null,
+      locationRating: this.locationRating || null,
+      valueRating: this.valueRating || null
     };
 
     // ✅ NEW: إرسال البيانات حسب النوع
-    if (this.reviewType === 'Property') {
-      this.reviewService.createReview(reviewData).subscribe({
+    if (this.reviewType === 'service') {
+      // 🛠️ استدعاء سيرفس الخدمات
+      this.servicesService.addReview(reviewData).subscribe({
         next: () => this.handleSuccess(),
         error: (error) => this.handleError(error)
       });
-    } else {
+    } 
+    else if (this.reviewType === 'experience') {
+      // 🛠️ استدعاء سيرفس التجارب
       this.experienceService.addReview(reviewData).subscribe({
+        next: () => this.handleSuccess(),
+        error: (error) => this.handleError(error)
+      });
+    } 
+    else {
+      // 🛠️ استدعاء سيرفس العقارات (الافتراضي)
+      this.reviewService.createReview(reviewData).subscribe({
         next: () => this.handleSuccess(),
         error: (error) => this.handleError(error)
       });

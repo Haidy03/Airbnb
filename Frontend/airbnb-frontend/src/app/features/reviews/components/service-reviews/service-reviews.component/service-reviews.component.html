@@ -1,0 +1,63 @@
+<app-header></app-header>
+
+<div class="property-reviews-container">
+  
+  <!-- Header & Back Button -->
+  <div class="page-header-row">
+    <h1>Service Reviews</h1>
+    <a [routerLink]="['/services', serviceId]" class="btn-back">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation" focusable="false" style="display: block; fill: none; height: 12px; width: 12px; stroke: currentcolor; stroke-width: 5.33333; overflow: visible;"><path fill="none" d="M20 28 8.7 16.7a1 1 0 0 1 0-1.4L20 4"></path></svg>
+      Back to Service
+    </a>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading reviews...</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="reviewsSummary && !loading" class="reviews-content">
+    
+    <!-- Review Summary Header -->
+    <app-review-summary 
+      *ngIf="reviewsSummary.totalReviews > 0"
+      [summary]="reviewsSummary">
+    </app-review-summary>
+
+    <!-- No Reviews -->
+    <div *ngIf="reviewsSummary.totalReviews === 0" class="no-reviews">
+      <h3>No reviews yet</h3>
+      <p>Be the first to review this service!</p>
+    </div>
+
+    <!-- Reviews List -->
+    <div *ngIf="reviewsSummary.totalReviews > 0" class="reviews-list-section">
+      <h2 class="section-title">All Reviews ({{ reviewsSummary.totalReviews }})</h2>
+
+      <div class="reviews-list">
+        <div *ngFor="let review of reviewsSummary.reviews" class="review-item-wrapper">
+          
+          <!-- Review Card -->
+          <app-review-card 
+            [review]="review" 
+            [showPropertyName]="false">
+          </app-review-card>
+
+          <!-- Edit/Delete Actions -->
+          <div class="review-actions" *ngIf="isReviewOwner(review)">
+            <button class="btn btn-edit" (click)="editReview(review.id)">
+              ✏️ Edit
+            </button>
+            <button class="btn btn-delete" (click)="deleteReview(review.id)">
+              🗑️ Delete
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

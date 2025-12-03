@@ -712,6 +712,61 @@ namespace Airbnb.API.Controllers
 
         #endregion
 
+
+
+        // داخل AdminController region Services Management
+        //last one
+
+        [HttpGet("services")]
+        public async Task<ActionResult<List<AdminServiceDto>>> GetAllServices(
+            [FromQuery] string? status = null,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var services = await _adminService.GetAllServicesAsync(status, searchTerm, pageNumber, pageSize);
+                return Ok(services);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting services");
+                return StatusCode(500, "Error retrieving services");
+            }
+        }
+
+        [HttpPut("services/{id}/status")]
+        public async Task<IActionResult> UpdateServiceStatusGeneric(int id, [FromBody] UpdateStatusDto dto)
+        {
+            try
+            {
+                var result = await _adminService.UpdateServiceStatusAsync(id, dto);
+                if (!result) return NotFound(new { message = "Service not found" });
+                return Ok(new { message = "Service status updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating service status {id}");
+                return StatusCode(500, "Error updating service status");
+            }
+        }
+
+        [HttpDelete("services/{id}")]
+        public async Task<IActionResult> DeleteService(int id)
+        {
+            try
+            {
+                var result = await _adminService.DeleteServiceAsync(id);
+                if (!result) return NotFound(new { message = "Service not found" });
+                return Ok(new { message = "Service deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting service {id}");
+                return StatusCode(500, "Error deleting service");
+            }
+        }
     }
 
 

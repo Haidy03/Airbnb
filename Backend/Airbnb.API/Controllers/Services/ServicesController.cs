@@ -1,5 +1,6 @@
 ﻿using Airbnb.API.DTOs.Services;
-using Airbnb.API.Services.Interfaces; 
+using Airbnb.API.Services.Interfaces;
+using Airbnb.API.DTOs.Review;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -151,6 +152,88 @@ namespace Airbnb.API.Controllers
             if (!success) return NotFound(new { message = "Service not found or unauthorized" });
 
             return Ok(new { success = true, message = "Service updated successfully" });
+        }
+
+        //reviews rahma
+
+        [HttpPost("reviews")]
+        [Authorize]
+        public async Task<IActionResult> AddReview([FromBody] CreateReviewDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _servicesService.AddReviewAsync(userId, dto);
+            return Ok(new { success = true, data = result });
+        }
+
+        //[HttpGet("{id}/reviews")]
+        //public async Task<IActionResult> GetReviews(int id)
+        //{
+        //    var reviews = await _servicesService.GetReviewsByServiceIdAsync(id);
+
+        //    // ملاحظة: حتى لو القائمة فارغة، نرجع 200 OK وقائمة فارغة، مش 404
+        //    return Ok(new { success = true, data = reviews });
+
+        //    //// تحويل لـ DTO
+        //    //return Ok(new ReviewResponseDto
+        //    //{
+        //    //    Id = review.Id,
+        //    //    Rating = review.Rating,
+        //    //    Comment = review.Comment,
+        //    //    CleanlinessRating = review.CleanlinessRating,
+        //    //    CommunicationRating = review.CommunicationRating,
+        //    //    LocationRating = review.LocationRating,
+        //    //    ValueRating = review.ValueRating,
+        //    //    ServiceId = review.ServiceId // مهم للتوجيه
+        //    //});
+        //}
+
+        // =================================================================
+        [HttpGet("{id}/reviews")]
+        public async Task<IActionResult> GetServiceReviews(int id)
+        {
+            // هنا الـ id هو رقم الخدمة ServiceId
+            var reviews = await _servicesService.GetReviewsByServiceIdAsync(id);
+            return Ok(new { success = true, data = reviews });
+        }
+
+        // =================================================================
+        // 2. هذا لجلب ريفيو واحد فقط (عشان صفحة التعديل Edit)
+        // الرابط: api/Services/reviews/10
+        // =================================================================
+        [HttpGet("reviews/{reviewId}")]
+        public async Task<IActionResult> GetReviewById(int reviewId)
+        {
+            // هنا الـ reviewId هو رقم الريفيو نفسه
+            var review = await _servicesService.GetServiceReviewDtoByIdAsync(reviewId);
+
+            if (review == null) return NotFound(new { message = "Review not found" });
+
+            return Ok(new { success = true, data = review });
+        }
+
+        [HttpDelete("reviews/{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteReview(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _servicesService.DeleteReviewAsync(id, userId);
+            return Ok(new { success = true, message = "Review deleted" });
+        }
+
+        [HttpPut("reviews/{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateReview(int id, [FromBody] UpdateReviewDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var result = await _servicesService.UpdateServiceReviewAsync(id, userId, dto);
+                return Ok(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
     }

@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public int BookingId { get; set; }
         public int PropertyId { get; set; }
+        public int? ServiceId { get; set; }
         public string PropertyTitle { get; set; }
         public string ReviewType { get; set; }
         public int Rating { get; set; }

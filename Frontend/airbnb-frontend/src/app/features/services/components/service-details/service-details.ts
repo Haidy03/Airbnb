@@ -6,12 +6,13 @@ import { ServiceDetails, ServicePackage } from '../../models/service.model';
 import { environment } from '../../../../../environments/environment';
 import { ServiceBookingModalComponent } from '../service-booking-modal/service-booking-modal';
 import { AuthService } from '../../../auth/services/auth.service';
+import { ReviewCardComponent } from '../../../reviews/components/review-card/review-card.component';
 
 
 @Component({
   selector: 'app-service-details',
   standalone: true,
-  imports: [CommonModule, RouterModule, DatePipe, ServiceBookingModalComponent], // ✅ DatePipe Imported
+  imports: [CommonModule, RouterModule, DatePipe, ServiceBookingModalComponent, ReviewCardComponent], // ✅ DatePipe Imported
   templateUrl: './service-details.html',
   styleUrls: ['./service-details.css']
 })
@@ -26,13 +27,25 @@ export class ServiceDetailsComponent implements OnInit {
   selectedPackage = signal<ServicePackage | null>(null);
   showBookingModal = false;
   private baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+  reviews = signal<any[]>([]);
 
   ngOnInit() {
     window.scrollTo(0, 0);
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadService(Number(id));
+      this.loadReviews(Number(id));
     }
+  }
+  loadReviews(id: number) {
+    this.servicesService.getReviews(id).subscribe({
+      next: (res: any) => {
+        const data = res.success ? res.data : res;
+        if (Array.isArray(data)) {
+          this.reviews.set(data);
+        }
+      }
+    });
   }
 
   loadService(id: number) {

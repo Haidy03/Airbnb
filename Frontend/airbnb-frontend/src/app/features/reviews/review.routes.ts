@@ -26,5 +26,9 @@ export const reviewRoutes: Routes = [
     path: 'property/:propertyId',
     loadComponent: () => 
       import('./components/property-reviews/property-reviews').then(m => m.PropertyReviews)
-  }
+  },
+  {
+  path: 'service/:id', // ✅ هذا هو المسار الذي سيفتح عند الضغط على الزر
+  loadComponent: () => import('./components/service-reviews/service-reviews.component/service-reviews.component').then(m => m.ServiceReviewsComponent)
+}
 ];

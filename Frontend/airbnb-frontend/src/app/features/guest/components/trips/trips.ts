@@ -176,24 +176,40 @@ export class TripsComponent implements OnInit {
   filteredTrips = computed(() => {
     const allTrips = this.trips();
     const tab = this.activeTab(); 
-    const now = new Date();
+    
+    // نحصل على تاريخ اليوم فقط (بدون ساعات) للمقارنة الدقيقة
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
 
     return allTrips.filter((trip: any) => {
-      const tripDate = new Date(trip.checkInDate); 
+      // نحول تاريخ الحجز لتاريخ صافي أيضاً
+      const tripDate = new Date(trip.checkInDate);
+      tripDate.setHours(0, 0, 0, 0);
+
       const status = (trip.status || '').toLowerCase().trim(); 
 
+      // 1. Cancelled Tab
       if (tab === 'cancelled') {
         return status === 'cancelled' || status === 'rejected' || status === 'declined';
       }
+
+      // 2. Past Tab (الماضي فقط والمكتمل)
+      // الشرط: التاريخ أصغر من اليوم (يعني امبارح أو قبل كده)
       if (tab === 'past') {
-        return status === 'completed' || (tripDate < now && status !== 'cancelled' && status !== 'rejected' && status !== 'awaitingpayment' && status !== 'pending' && status !== 'pendingpayment');
+        // ملاحظة: بنعتبر Completed حتى لو التاريخ لسه مجاش لو السيستم حولها Completed يدوياً
+        // لكن الأساس هو التاريخ < اليوم
+        return status === 'completed' || (tripDate < today && status !== 'cancelled' && status !== 'rejected' && status !== 'awaitingpayment' && status !== 'pending' && status !== 'pendingpayment');
       }
+
+      // 3. Upcoming Tab (اليوم + المستقبل)
+      // الشرط: التاريخ أكبر من أو يساوي اليوم
       if (tab === 'upcoming') {
-        return (tripDate >= now || status === 'awaitingpayment' || status === 'pending' || status === 'pendingpayment') && 
+        return (tripDate >= today || status === 'awaitingpayment' || status === 'pending' || status === 'pendingpayment') && 
                status !== 'completed' && 
                status !== 'cancelled' && 
                status !== 'rejected';
       }
+      
       return false;
     });
   });
