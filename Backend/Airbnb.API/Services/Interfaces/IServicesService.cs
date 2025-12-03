@@ -1,4 +1,6 @@
-﻿using Airbnb.API.DTOs.Services;
+﻿using Airbnb.API.DTOs.Review;
+using Airbnb.API.DTOs.Services;
+using Airbnb.API.DTOs.Admin;
 using Airbnb.API.Models;
 
 namespace Airbnb.API.Services.Interfaces
@@ -21,5 +23,13 @@ namespace Airbnb.API.Services.Interfaces
         Task<bool> ToggleServiceStatusAsync(int id, string hostId);
         Task<ServiceDetailsDto> GetHostServiceDetailsAsync(int id, string hostId);
         Task<bool> UpdateServiceAsync(int id, string hostId, UpdateServiceDto dto);
+
+
+        //reviews rahma
+        Task<ReviewResponseDto> AddReviewAsync(string userId, CreateReviewDto dto);
+        Task<List<ReviewResponseDto>> GetReviewsByServiceIdAsync(int serviceId);
+        Task<ReviewResponseDto> UpdateServiceReviewAsync(int reviewId, string userId, UpdateReviewDto dto);
+        Task DeleteReviewAsync(int reviewId, string userId);
+        Task<ReviewResponseDto?> GetServiceReviewDtoByIdAsync(int reviewId);
     }
 }

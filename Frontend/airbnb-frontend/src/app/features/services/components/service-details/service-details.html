@@ -91,7 +91,6 @@
             <p class="text-muted small mb-0">Joined in {{ s.hostJoinedDate | date:'MMMM yyyy' }}</p>
           </div>
         </div>
-        
         <!-- ✅ زر مراسلة الهوست -->
         <div class="bg-light rounded-3 p-3 text-center my-4">
           <button class="btn btn-link text-dark fw-bold text-decoration-none" 
@@ -100,6 +99,37 @@
           </button>
         </div>
       </div>
+
+      <!-- ✅ 7. REVIEWS SECTION (NEW) -->
+      <div class="reviews-section border-bottom pb-4 mb-5" id="reviews">
+        <h3 class="h5 fw-bold mb-4">
+          <i class="bi bi-star-fill text-warning"></i> 
+          {{ service()?.rating | number:'1.1-1' }} · {{ reviews().length }} reviews
+        </h3>
+
+        <!-- Grid of Top 6 Reviews -->
+        <div class="row g-4 mb-4">
+          <div *ngFor="let review of reviews().slice(0, 6)" class="col-md-6">
+            <app-review-card 
+              [review]="review" 
+              [showPropertyName]="false">
+            </app-review-card>
+          </div>
+        </div>
+
+        <!-- Show All Button -->
+        <button  
+                class="btn btn-outline-dark fw-bold px-4 py-2"
+                [routerLink]="['/reviews/service', service()?.id]">
+          Show all reviews
+        </button>
+
+        <!-- No Reviews State -->
+        <div *ngIf="reviews().length === 0" class="text-muted">
+          No reviews yet. Be the first to book and review this service!
+        </div>
+      </div>
+
 
       <!-- 7. THINGS TO KNOW -->
       <div class="mb-5">

@@ -22,6 +22,19 @@ namespace Airbnb.API.Repositories.Interfaces
         Task UpdateServiceAsync(Service service);
         Task<Service?> GetServiceByIdForHostAsync(int id);
         Task<List<ServiceBooking>> GetServiceBookingsByGuestIdAsync(string guestId);
-        
+
+
+        //reviews rahma
+
+        Task<ServiceBooking?> GetServiceBookingByIdAsync(int bookingId);
+
+        Task AddServiceReviewAsync(ServiceReview review);
+        Task<bool> ServiceReviewExistsAsync(int bookingId);
+
+        Task<List<ServiceReview>> GetReviewsByServiceIdAsync(int serviceId);
+        Task<ServiceReview?> GetServiceReviewByIdAsync(int reviewId);
+        Task DeleteServiceReviewAsync(ServiceReview review);
+        Task UpdateServiceReviewAsync(ServiceReview review);
+
     }
 }

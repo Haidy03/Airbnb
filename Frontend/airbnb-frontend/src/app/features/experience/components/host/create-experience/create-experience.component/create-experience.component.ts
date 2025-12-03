@@ -19,7 +19,7 @@ export class CreateExperienceComponent implements OnInit {
   isSubmitting = signal(false);
   isUploading = signal(false);
   error = signal<string | null>(null);
-  
+  minDate: string = '';
   isEditMode = false;
   experienceId: number | null = null;
   existingExperience = signal<Experience | null>(null);
@@ -51,6 +51,7 @@ export class CreateExperienceComponent implements OnInit {
 
   ngOnInit(): void {
     // 1. تحميل التصنيفات أولاً
+    this.minDate = new Date().toISOString().split('T')[0];
     this.experienceService.getCategories().subscribe({
       next: (response) => {
         if (response.success) {
@@ -188,25 +189,62 @@ export class CreateExperienceComponent implements OnInit {
   }
 
   addSlot(): void {
+    // 1. التحقق من الحد الأقصى للمواعيد
     if (this.tempSlots().length >= 6) {
       alert('You can add up to 6 slots only.');
       return;
     }
+
+    // 2. التأكد من إدخال البيانات
     if (!this.newSlotDate || !this.newSlotTime) {
       alert('Please select date and start time.');
       return;
     }
 
-    // 1. التحقق من التكرار (Duplicate Check)
-    const targetDateStr = new Date(this.newSlotDate).toDateString(); // توحيد صيغة التاريخ للمقارنة
+    // ==========================================
+    // بداية التعديل: التحقق من التاريخ والوقت
+    // ==========================================
     
-    // فحص في القائمة المؤقتة (Temp Slots)
+    const now = new Date(); // الوقت الحالي الفعلي
+
+    // استخراج القيم من الـ Inputs
+    // newSlotDate format: "YYYY-MM-DD"
+    // newSlotTime format: "HH:mm"
+    const [year, month, day] = this.newSlotDate.split('-').map(Number);
+    const [hours, minutes] = this.newSlotTime.split(':').map(Number);
+
+    // إنشاء تاريخ للمقارنة (تاريخ الموعد المختار)
+    // ملاحظة: month - 1 لأن الشهور تبدأ من 0 في البرمجة
+    const selectedDate = new Date(year, month - 1, day, hours, minutes);
+
+    // إنشاء تواريخ للمقارنة "على مستوى اليوم فقط" بدون ساعات
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const selectedDayMidnight = new Date(year, month - 1, day);
+
+    // أ) التحقق لو التاريخ قديم (أيام سابقة)
+    if (selectedDayMidnight < todayMidnight) {
+      alert('⚠️ Cannot select a past date. Please choose today or a future date.');
+      return;
+    }
+
+    // ب) التحقق لو التاريخ هو النهاردة بس الساعة عدت
+    if (selectedDate < now) {
+      alert('⚠️ Cannot select a past time. Please choose a future time.');
+      return;
+    }
+    // ==========================================
+    // نهاية التعديل
+    // ==========================================
+
+
+    // 3. التحقق من التكرار (Duplicate Check) - كما هو
+    const targetDateStr = new Date(this.newSlotDate).toDateString();
+    
     const existsInTemp = this.tempSlots().some(slot => 
       new Date(slot.date).toDateString() === targetDateStr && 
-      slot.startTime.startsWith(this.newSlotTime) // "14:00" starts with "14:00"
+      slot.startTime.startsWith(this.newSlotTime)
     );
 
-    // فحص في القائمة المحفوظة (DB Slots)
     const existsInDB = this.existingSlots().some(slot => 
       new Date(slot.date).toDateString() === targetDateStr && 
       slot.startTime.startsWith(this.newSlotTime)
@@ -217,15 +255,15 @@ export class CreateExperienceComponent implements OnInit {
       return;
     }
 
-    // حساب وقت الانتهاء
-    const hours = this.experienceForm.get('durationHours')?.value || 0;
-    const minutes = this.experienceForm.get('durationMinutes')?.value || 0;
+    // 4. حساب وقت الانتهاء وإضافة الموعد
+    const durationHours = this.experienceForm.get('durationHours')?.value || 0;
+    const durationMinutes = this.experienceForm.get('durationMinutes')?.value || 0;
 
-    const [startH, startM] = this.newSlotTime.split(':').map(Number);
+    // استخدام القيم التي قمنا باستخراجها بالأعلى (hours, minutes)
     const dateObj = new Date();
-    dateObj.setHours(startH, startM, 0);
-    dateObj.setHours(dateObj.getHours() + hours);
-    dateObj.setMinutes(dateObj.getMinutes() + minutes);
+    dateObj.setHours(hours, minutes, 0);
+    dateObj.setHours(dateObj.getHours() + durationHours);
+    dateObj.setMinutes(dateObj.getMinutes() + durationMinutes);
 
     const endH = dateObj.getHours().toString().padStart(2, '0');
     const endM = dateObj.getMinutes().toString().padStart(2, '0');
@@ -241,9 +279,10 @@ export class CreateExperienceComponent implements OnInit {
 
     this.tempSlots.update(slots => [...slots, newSlot]);
     
+    // تفريغ الحقول
     this.newSlotDate = '';
     this.newSlotTime = '';
-  }
+}
 
   // ✅ NEW: حذف موعد من القائمة المؤقتة
   removeSlot(index: number): void {

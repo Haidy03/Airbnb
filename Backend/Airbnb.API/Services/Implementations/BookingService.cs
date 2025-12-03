@@ -11,7 +11,6 @@ namespace Airbnb.API.Services.Implementations
         private readonly IBookingRepository _bookingRepository;
         private readonly IPropertyRepository _propertyRepository;
         private readonly IExperienceRepository _experienceRepository;
-        // ✅ 1. Add IServiceRepository
         private readonly IServiceRepository _serviceRepository;
         private readonly IReviewRepository _reviewRepository;
         private readonly ILogger<BookingService> _logger;
@@ -185,7 +184,8 @@ namespace Airbnb.API.Services.Implementations
             foreach (var sb in serviceBookings)
             {
                 // يمكن إضافة منطق الريفيو للخدمات مستقبلاً
-                bool canReviewService = sb.Status == "Completed";
+                bool hasReview = await _serviceRepository.ServiceReviewExistsAsync(sb.Id);
+                bool canReviewService = sb.Status == "Completed" && !hasReview;
 
                 allTrips.Add(new TripDto
                 {
@@ -209,8 +209,8 @@ namespace Airbnb.API.Services.Implementations
                     TotalPrice = sb.TotalPrice,
                     Status = sb.Status, // Confirmed, PendingPayment, etc.
 
-                    CanReview = canReviewService,
-                    IsReviewed = false
+                    IsReviewed = hasReview,
+                    CanReview = canReviewService
                 });
             }
 

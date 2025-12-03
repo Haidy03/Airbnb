@@ -22,7 +22,7 @@ namespace Airbnb.API.Models
         public DbSet<PropertyAvailability> PropertyAvailabilities { get; set; }
         public DbSet<UserVerification> UserVerifications { get; set; }
 
-        // ✅ NEW: Messages DbSets
+        //Messages DbSets
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<MessageAttachment> MessageAttachments { get; set; }
@@ -39,6 +39,7 @@ namespace Airbnb.API.Models
         public DbSet<ServiceCategory> ServiceCategories { get; set; }
         public DbSet<ServiceImage> ServiceImages { get; set; }
         public DbSet<ServiceBooking> ServiceBookings { get; set; }
+        public DbSet<ServiceReview> ServiceReviews { get; set; }
 
         public DbSet<ServiceQualification> ServiceQualifications { get; set; }
         public DbSet<ServicePackage> ServicePackages { get; set; }
@@ -221,7 +222,7 @@ namespace Airbnb.API.Models
             });
 
             // ============================================
-            // ✅ NEW: Conversation Configuration
+            // Conversation Configuration
             // ============================================
             modelBuilder.Entity<Conversation>(entity =>
             {
@@ -262,7 +263,7 @@ namespace Airbnb.API.Models
             });
 
             // ============================================
-            // ✅ NEW: Message Configuration
+            // Message Configuration
             // ============================================
             modelBuilder.Entity<Message>(entity =>
             {
@@ -299,7 +300,7 @@ namespace Airbnb.API.Models
             });
 
             // ============================================
-            // ✅ NEW: MessageAttachment Configuration
+            // MessageAttachment Configuration
             // ============================================
             modelBuilder.Entity<MessageAttachment>(entity =>
             {
@@ -501,6 +502,32 @@ namespace Airbnb.API.Models
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.Property(b => b.TotalPrice).HasPrecision(18, 2);
+            });
+
+            // ============================================
+            // ServiceReview Configuration
+            // ============================================
+            modelBuilder.Entity<ServiceReview>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.HasOne(r => r.Service)
+                    .WithMany(e => e.Reviews)
+                    .HasForeignKey(r => r.ServiceId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Booking)
+                    .WithMany()
+                    .HasForeignKey(r => r.ServiceBookingId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Reviewer)
+                    .WithMany()
+                    .HasForeignKey(r => r.ReviewerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // منع تكرار الريفيو لنفس الحجز
+                entity.HasIndex(r => r.ServiceBookingId).IsUnique();
             });
         }
 

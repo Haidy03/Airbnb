@@ -62,7 +62,7 @@
   min-height: 4px;
 }
 
-.bar-value:hover { background-color: #008A05; }
+.bar-value:hover { background-color: red; }
 
 .bar-label { margin-top: 12px; font-size: 14px; color: #717171; }
 

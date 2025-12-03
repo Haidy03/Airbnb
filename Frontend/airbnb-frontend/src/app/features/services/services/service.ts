@@ -67,4 +67,33 @@ export class ServicesService {
       `${this.apiUrl.replace('/Services', '')}/Wishlist/check-service/${serviceId}`
     ).pipe(map(res => res.isWishlisted));
   }
+
+  // ✅ NEW: Reviews Methods
+  // ==========================================
+
+  // إضافة ريفيو جديد
+  addReview(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reviews`, data);
+  }
+
+  // جلب كل ريفيوهات خدمة معينة
+  getReviews(serviceId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${serviceId}/reviews`);
+  }
+
+  // حذف ريفيو
+  deleteReview(reviewId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/reviews/${reviewId}`);
+  }
+
+  // جلب ريفيو واحد (لصفحة التعديل)
+  // ملاحظة: تأكدي أن الباك إند يدعم هذا المسار، أو استخدمي دالة getReviewById العامة لو متاحة
+  getReviewById(reviewId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/reviews/${reviewId}`);
+  }
+
+  // تعديل ريفيو
+  updateReview(reviewId: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/reviews/${reviewId}`, data);
+  }
 }

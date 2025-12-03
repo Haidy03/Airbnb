@@ -245,4 +245,26 @@ export class AdminService {
   changePassword(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/change-password`, data);
   }
+
+  // داخل AdminService Class
+  
+  getAllServices(status?: string, searchTerm?: string, pageNumber = 1, pageSize = 10): Observable<AdminServiceItem[]> {
+    let params = new HttpParams()
+      .set('pageNumber', pageNumber.toString())
+      .set('pageSize', pageSize.toString());
+    
+    if (status) params = params.set('status', status);
+    if (searchTerm) params = params.set('searchTerm', searchTerm);
+
+    // لاحظ: تأكد أن المسار يطابق AdminController
+    return this.http.get<AdminServiceItem[]>(`${this.apiUrl}/services`, { params });
+  }
+
+  updateServiceStatus(id: number, status: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/services/${id}/status`, { status });
+  }
+
+  deleteService(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/services/${id}`);
+  }
 }

@@ -4,6 +4,7 @@ using Airbnb.API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Airbnb.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251202162457_servicereview")]
+    partial class servicereview
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1462,9 +1465,6 @@ namespace Airbnb.API.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("ApprovedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<double>("AverageRating")
                         .HasColumnType("float");
 
@@ -1499,9 +1499,6 @@ namespace Airbnb.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<double?>("Latitude")
                         .HasColumnType("float");
 
@@ -1523,9 +1520,6 @@ namespace Airbnb.API.Migrations
                     b.Property<int>("PricingUnit")
                         .HasColumnType("int");
 
-                    b.Property<string>("RejectionReason")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("ReviewCount")
                         .HasColumnType("int");
 
@@ -1539,9 +1533,6 @@ namespace Airbnb.API.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

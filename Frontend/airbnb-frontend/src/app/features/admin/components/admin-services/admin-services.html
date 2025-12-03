@@ -1,21 +1,42 @@
-<div class="admin-properties"> <!-- Reuse Properties Styles -->
+<div class="admin-properties"> <!-- Using the same CSS class for layout consistency -->
+  
+  <!-- Header -->
   <div class="page-header">
     <div>
       <h1>Services Management</h1>
-      <p class="subtitle">Review and approve host services</p>
+      <p class="subtitle">Manage all service listings, approvals, and quality</p>
     </div>
   </div>
 
-  <!-- Loading -->
-  <div *ngIf="loading()" class="loading-state">
-    <div class="spinner"></div>
-    <p>Loading pending services...</p>
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filter-tabs">
+      <button class="filter-tab" [class.active]="selectedStatus() === 'PendingApproval'" (click)="onStatusChange('PendingApproval')">Pending</button>
+      <button class="filter-tab" [class.active]="selectedStatus() === 'Active'" (click)="onStatusChange('Active')">Active</button>
+      <button class="filter-tab" [class.active]="selectedStatus() === 'Rejected'" (click)="onStatusChange('Rejected')">Rejected</button>
+      <button class="filter-tab" [class.active]="selectedStatus() === 'All'" (click)="onStatusChange('All')">All</button>
+    </div>
+
+    <div class="search-box">
+      <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+        <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      <input type="text" placeholder="Search services..." [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" />
+      <button class="search-btn" (click)="onSearch()">Search</button>
+    </div>
   </div>
 
-  <!-- Error -->
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading services...</p>
+  </div>
+
+  <!-- Error State -->
   <div *ngIf="error()" class="error-state">
     <p>{{ error() }}</p>
-    <button class="retry-btn" (click)="loadPendingServices()">Retry</button>
+    <button class="retry-btn" (click)="loadServices()">Retry</button>
   </div>
 
   <!-- Services Grid -->
@@ -23,9 +44,11 @@
     <div *ngFor="let service of services()" class="property-card">
       
       <!-- Status Badge -->
-      <div class="card-status pendingapproval">Pending</div>
+      <div class="card-status" [ngClass]="getStatusBadgeClass(service.status)">
+        {{ service.status }}
+      </div>
 
-      <!-- Image & Title -->
+      <!-- Service Info -->
       <div class="property-header">
         <div style="height: 160px; overflow: hidden; border-radius: 8px; margin-bottom: 12px; background: #f0f0f0;">
           <img [src]="getImageUrl(service.imageUrl)" 
@@ -33,39 +56,93 @@
                alt="Service Image">
         </div>
         <h3 class="property-title">{{ service.title }}</h3>
-        <p class="property-location">{{ service.categoryName }}</p>
+        <p class="property-location">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0a8 8 0 100 16A8 8 0 008 0zM4.5 7.5a.5.5 0 000 1h7a.5.5 0 000-1h-7z"/>
+          </svg>
+          {{ service.categoryName }}
+        </p>
       </div>
 
-      <!-- Stats -->
+      <!-- Service Stats -->
       <div class="property-stats">
         <div class="stat-item">
           <span class="stat-label">Price:</span>
           <span class="stat-value price">{{ service.pricePerUnit | currency:'EGP ' }} / {{ service.pricingUnit }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">Host:</span>
-          <span class="stat-value">{{ service.hostName }}</span>
+          <span class="stat-label">Bookings:</span>
+          <span class="stat-value">{{ service.totalBookings }}</span>
         </div>
+        <div class="stat-item">
+          <span class="stat-label">Revenue:</span>
+          <span class="stat-value">{{ service.totalRevenue | currency:'EGP ' }}</span>
+        </div>
+        <div class="stat-item" *ngIf="service.averageRating">
+          <span class="stat-label">Rating:</span>
+          <span class="stat-value">{{ service.averageRating | number:'1.1-1' }} ⭐ ({{ service.reviewsCount }})</span>
+        </div>
+      </div>
+
+      <!-- Host Info -->
+      <div class="host-info">
+        <div class="host-avatar">{{ service.hostName.charAt(0) }}</div>
+        <div>
+          <p class="host-label">Host:</p>
+          <p class="host-name">{{ service.hostName }}</p>
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="property-dates">
+        <div class="date-info">
+          <span class="date-label">Created:</span>
+          <span class="date-value">{{ formatDate(service.createdAt) }}</span>
+        </div>
+        <div class="date-info" *ngIf="service.approvedAt">
+          <span class="date-label">Approved:</span>
+          <span class="date-value">{{ formatDate(service.approvedAt) }}</span>
+        </div>
+      </div>
+
+      <!-- Rejection Reason -->
+      <div *ngIf="service.rejectionReason" class="rejection-box">
+        <strong>Rejection Reason:</strong>
+        <p>{{ service.rejectionReason }}</p>
       </div>
 
       <!-- Actions -->
       <div class="card-actions">
-        <div class="action-row">
-          <button class="btn btn-approve" (click)="openApproveModal(service)">
-            <i class="bi bi-check-lg"></i> Approve
-          </button>
-          <button class="btn btn-reject" (click)="openRejectModal(service)">
-            <i class="bi bi-x-lg"></i> Reject
-          </button>
+        <!-- Pending Actions -->
+        <div *ngIf="service.status === 'PendingApproval'" class="action-row">
+          <button class="btn btn-approve" (click)="openApproveModal(service)">Approve</button>
+          <button class="btn btn-reject" (click)="openRejectModal(service)">Reject</button>
         </div>
-      </div>
 
+        <!-- Active Actions -->
+        <div *ngIf="service.status === 'Active'" class="action-row">
+          <button class="btn btn-suspend" (click)="suspendService(service)">Suspend</button>
+        </div>
+        
+        <!-- Suspended Actions -->
+         <div *ngIf="service.status === 'Inactive'" class="action-row"> <!-- Assuming Inactive = Suspended for logic -->
+          <button class="btn btn-activate" (click)="activateService(service)">Activate</button>
+        </div>
+
+         <!-- Rejected Actions -->
+        <div *ngIf="service.status === 'Rejected'" class="action-row">
+          <button class="btn btn-secondary" (click)="moveToPending(service)">Move to pending</button>
+        </div>
+
+        <!-- Delete (Always available) -->
+        <button class="btn btn-delete" (click)="openDeleteModal(service)">Delete</button>
+      </div>
     </div>
 
     <!-- Empty State -->
     <div *ngIf="services().length === 0" class="empty-state">
-      <h3>No pending services</h3>
-      <p>Everything is up to date!</p>
+      <h3>No services found</h3>
+      <p>Try adjusting your filters or search terms.</p>
     </div>
   </div>
 
@@ -78,11 +155,14 @@
       </div>
       <div class="modal-body">
         <p>Approve <strong>{{ selectedService()?.title }}</strong>?</p>
-        <p>This service will become visible to guests immediately.</p>
+        <div class="property-preview">
+            <p><strong>Host:</strong> {{ selectedService()?.hostName }}</p>
+            <p class="price">{{ selectedService()?.pricePerUnit | currency:'EGP ' }} / {{ selectedService()?.pricingUnit }}</p>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="closeApproveModal()">Cancel</button>
-        <button class="btn btn-success" (click)="approveService()">Confirm Approve</button>
+        <button class="btn btn-success" (click)="approveService()">Confirm</button>
       </div>
     </div>
   </div>
@@ -97,13 +177,30 @@
       <div class="modal-body">
         <p>Reject <strong>{{ selectedService()?.title }}</strong>?</p>
         <label>Reason (Required):</label>
-        <textarea [(ngModel)]="rejectionReason" class="modal-textarea" rows="4" placeholder="Why is this service rejected?"></textarea>
+        <textarea [(ngModel)]="rejectionReason" class="modal-textarea" rows="4"></textarea>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="closeRejectModal()">Cancel</button>
-        <button class="btn btn-danger" (click)="rejectService()">Reject Service</button>
+        <button class="btn btn-danger" (click)="rejectService()">Reject</button>
       </div>
     </div>
   </div>
 
+   <!-- Delete Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal()" (click)="closeDeleteModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Delete Service</h2>
+        <button class="close-btn" (click)="closeDeleteModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong>{{ selectedService()?.title }}</strong>?</p>
+        <p class="warning-text">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" (click)="deleteService()">Delete</button>
+      </div>
+    </div>
+  </div>
 </div>

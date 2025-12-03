@@ -12,6 +12,9 @@
         public int TotalProperties { get; set; }
         public int ActiveProperties { get; set; }
         public int PendingProperties { get; set; }
+        public int TotalServices { get; set; }
+        public int ActiveServices { get; set; }
+        public int PendingServices { get; set; }
 
         public int TotalBookings { get; set; }
         public int ActiveBookings { get; set; }

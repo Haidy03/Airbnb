@@ -9,6 +9,10 @@ export interface DashboardStats {
   totalProperties: number;
   activeProperties: number;
   pendingProperties: number;
+
+  totalServices: number;
+  activeServices: number;
+  pendingServices: number;
   
   totalBookings: number;
   activeBookings: number;
@@ -103,7 +107,7 @@ export interface AdminProperty {
 
 export interface AdminBooking {
   id: number;
-  type: 'Property' | 'Experience';
+  type: 'Property' | 'Experience' | 'Service';
   propertyId?: number;
   propertyTitle: string;
   guestId: string;
@@ -181,14 +185,17 @@ export interface PropertyOccupancy {
 export interface AdminServiceItem {
   id: number;
   title: string;
-  hostName: string;
-  hostAvatar?: string;
   categoryName: string;
   pricePerUnit: number;
   pricingUnit: string;
-  status: string; 
-  rating: number;
+  hostName: string;
+  status: string;
   imageUrl?: string;
+  totalBookings?: number;
+  totalRevenue?: number;
+  averageRating?: number;
+  reviewsCount?: number;
   createdAt: Date;
+  approvedAt?: Date;
   rejectionReason?: string;
 }
