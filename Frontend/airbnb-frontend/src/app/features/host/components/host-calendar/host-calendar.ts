@@ -410,7 +410,7 @@ export class HostCalendar implements OnInit {
     //     formValue.checkInTime !== (day.checkInTime || null) ||
     //     formValue.checkOutTime !== (day.checkOutTime || null);
 
-    if (formValue.isAvailable !== day.isAvailable) {
+    if (isAvailableChanged || notesChanged || checkInTimeChanged || checkOutTimeChanged) {
       const availabilityDto = {
         propertyId: parseInt(property.id),
         date: day.date,
@@ -422,7 +422,7 @@ export class HostCalendar implements OnInit {
       requests.push(this.calendarService.updateAvailability(availabilityDto));
     }
 
-    // التحقق من السعر
+    
     const newPrice = formValue.customPrice;
     const currentPrice = day.price;
     
