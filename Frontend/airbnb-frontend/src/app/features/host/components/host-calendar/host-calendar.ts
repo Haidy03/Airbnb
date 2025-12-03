@@ -37,7 +37,7 @@ interface CalendarDay {
 
 interface CalendarSettings {
   basePrice: number;
-  weekendPrice?: number;
+  cleaningFee?: number;
   minimumNights: number;
   maximumNights: number;
   advanceNotice: number;
@@ -168,7 +168,7 @@ export class HostCalendar implements OnInit {
 
     this.settingsForm = this.fb.group({
       basePrice: [0, [Validators.required, Validators.min(1)]],
-      weekendPrice: [0],
+      cleaningFee: [0, [Validators.min(0)]], 
       minimumNights: [1, [Validators.required, Validators.min(1)]],
       maximumNights: [365, [Validators.required, Validators.min(1)]],
       advanceNotice: [0, [Validators.min(0)]],

@@ -243,11 +243,11 @@
         <div class="settings-items">
           <div class="settings-item">
             <span class="item-label">Base price</span>
-            <span class="item-value">${{ settings().basePrice }} per night</span>
+            <span class="item-value">EGP {{ settings().basePrice }} per night</span>
           </div>
-          <div class="settings-item" *ngIf="settings().weekendPrice">
-            <span class="item-label">Weekend price</span>
-            <span class="item-value">${{ settings().weekendPrice }}</span>
+          <div class="settings-item" *ngIf="settings().cleaningFee ">
+            <span class="item-label">Cleaning fee</span>
+            <span class="item-value">EGP {{ settings().cleaningFee  }}</span>
           </div>
         </div>
       </div>
@@ -303,7 +303,7 @@
           </p>
           
           <div class="form-group">
-            <label>Price per night ($)</label>
+            <label>Price per night (EGP)</label>
             <input 
               type="number" 
               formControlName="price"
@@ -311,12 +311,14 @@
               placeholder="Enter price">
           </div>
           
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" formControlName="applyToWeekends">
-              <span>Apply to weekend pricing</span>
-            </label>
-          </div>
+         <div class="form-group">
+          <label>Cleaning fee (EGP)</label>
+          <input 
+            type="number" 
+            formControlName="cleaningFee" 
+            min="0"
+            placeholder="e.g. 20">
+        </div>
         </div>
         
         <div class="modal-footer">
@@ -388,7 +390,7 @@
           
           <div class="form-row">
             <div class="form-group">
-              <label>Base price per night ($)</label>
+              <label>Base price per night (EGP)</label>
               <input 
                 type="number" 
                 formControlName="basePrice"
@@ -397,13 +399,13 @@
             </div>
             
             <div class="form-group">
-              <label>Weekend price ($)</label>
-              <input 
-                type="number" 
-                formControlName="weekendPrice"
-                min="0"
-                placeholder="60">
-            </div>
+            <label>Cleaning fee (EGP)</label>
+            <input 
+              type="number" 
+              formControlName="cleaningFee"
+              min="0"
+              placeholder="e.g. 20">
+          </div>
           </div>
           
           <h3 class="section-title">Availability</h3>
@@ -516,7 +518,7 @@
       
       <div class="price-input-group">
         <div class="price-input-wrapper">
-          <span class="currency-symbol">$</span>
+          <span class="currency-symbol">EGP</span>
           <input 
             type="number" 
             class="price-input"

@@ -39,7 +39,7 @@
     {
         public int PropertyId { get; set; }
         public decimal BasePrice { get; set; }
-        public decimal? WeekendPrice { get; set; }
+        public decimal? CleaningFee { get; set; }
         public int MinimumNights { get; set; }
         public int MaximumNights { get; set; }
         public int AdvanceNotice { get; set; } // Days
@@ -90,7 +90,7 @@
     {
         public int PropertyId { get; set; }
         public decimal? BasePrice { get; set; }
-        public decimal? WeekendPrice { get; set; }
+        public decimal? CleaningFee { get; set; }
         public int? MinimumNights { get; set; }
         public int? MaximumNights { get; set; }
         public int? AdvanceNotice { get; set; }
