@@ -33,7 +33,7 @@ interface CalendarDay {
   isBlocked: boolean;
   notes?: string;
   isSelected?: boolean;
-  // ✅ الإضافات الجديدة لتخزين الوقت محلياً
+
   checkInTime?: string | null;
   checkOutTime?: string | null;
 }
@@ -450,15 +450,18 @@ export class HostCalendar implements OnInit {
         this.calendarDays.update(days => 
           days.map(d => {
             if (d.date.getTime() === day.date.getTime()) {
+              const finalPrice = newPrice || d.price;
+              const basePrice = this.settings().basePrice;
+              const calculatedOriginalPrice = (finalPrice !== basePrice) ? basePrice : undefined;
               return { 
                 ...d, 
                 isAvailable: formValue.isAvailable,
                 isBlocked: !formValue.isAvailable,
-                price: newPrice || d.price,
-                originalPrice: newPrice ? (d.originalPrice || this.settings().basePrice) : undefined,
+                price: finalPrice,
+                originalPrice: calculatedOriginalPrice,
                 notes: formValue.notes,
-                checkInTime: formValue.checkInTime,   // ✅ تحديث محلي
-                checkOutTime: formValue.checkOutTime  // ✅ تحديث محلي
+                checkInTime: formValue.checkInTime,  
+                checkOutTime: formValue.checkOutTime  
               } as CalendarDay;
             }
             return d;
