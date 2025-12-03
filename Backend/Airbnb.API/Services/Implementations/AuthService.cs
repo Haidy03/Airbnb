@@ -105,6 +105,16 @@ namespace Airbnb.API.Services.Implementations
                 return null;
             }
 
+            if (user.IsBlocked)
+            {
+                throw new UnauthorizedAccessException($"Your account is blocked. Reason: {user.BlockReason ?? "Contact support"}");
+            }
+
+            if (!user.IsActive)
+            {
+                throw new UnauthorizedAccessException("Your account is deactivated.");
+            }
+
             var token = await GenerateJwtToken(user);
 
             return new AuthResponseDto

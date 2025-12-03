@@ -47,6 +47,10 @@ namespace Airbnb.API.Controllers.Auth
 
                 return Ok(authResponse);
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new { message = ex.Message });
+            }
             catch
             {
                 return StatusCode(500, new { message = "An error occurred during login." });

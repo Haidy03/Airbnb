@@ -73,6 +73,7 @@ namespace Airbnb.API.Repositories.Implementations
                 .Include(p => p.Bookings)
                 .Include(p => p.Reviews)
                 .Include(p => p.PropertyType)
+                .Include(p => p.Images)
                 .AsQueryable();
             if (status.HasValue) query = query.Where(p => p.Status == status.Value);
             if (!string.IsNullOrEmpty(searchTerm)) query = query.Where(p => p.Title.Contains(searchTerm) || p.City.Contains(searchTerm) || p.Country.Contains(searchTerm));
