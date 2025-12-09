@@ -266,6 +266,8 @@ namespace Airbnb.API.Services.Implementations
             }
 
             // 3. Create Booking Object
+            var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+            var egyptNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, egyptTimeZone);
             var booking = new ServiceBooking
             {
                 ServiceId = dto.ServiceId,
@@ -273,8 +275,8 @@ namespace Airbnb.API.Services.Implementations
                 GuestId = guestId,
                 BookingDate = cleanDate,
                 TotalPrice = finalPrice,
-                Status = "Confirmed", 
-                CreatedAt = DateTime.UtcNow,
+                Status = "Confirmed",
+                CreatedAt = egyptNow,
                 NumberOfGuests = dto.NumberOfGuests
             };
 
@@ -663,6 +665,26 @@ namespace Airbnb.API.Services.Implementations
 
             await _serviceRepository.UpdateServiceAsync(image.Service);
             return true;
+        }
+
+        public async Task<List<string>> GetBlockedSlotsAsync(int serviceId, DateTime date)
+        {
+            var service = await _serviceRepository.GetServiceByIdAsync(serviceId);
+            if (service == null) return new List<string>();
+
+            var bookedCounts = await _serviceRepository.GetBookedSlotsCountsAsync(serviceId, date);
+
+            var blockedSlots = new List<string>();
+
+            foreach (var slot in bookedCounts)
+            {
+                if (slot.Value >= service.MaxGuests)
+                {
+                    blockedSlots.Add(slot.Key.ToString(@"hh\:mm"));
+                }
+            }
+
+            return blockedSlots;
         }
     }
     public class SlotInputDto

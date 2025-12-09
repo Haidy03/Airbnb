@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common'; // ✅ Added DatePipe
 import { FormsModule } from '@angular/forms';
 import { ServiceDetails, ServicePackage } from '../../models/service.model';
 import { ServicesService } from '../../services/service';
@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
   selector: 'app-service-booking-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  providers: [DatePipe], 
   templateUrl: './service-booking-modal.html',
   styleUrls: ['./service-booking-modal.css']
 })
@@ -17,7 +18,9 @@ export class ServiceBookingModalComponent implements OnInit {
   @Input() selectedPackage: ServicePackage | null = null;
   @Output() close = new EventEmitter<void>();
 
+  private servicesService = inject(ServicesService);
   private router = inject(Router);
+  private datePipe = inject(DatePipe); 
   
   guestCount = 1;
   selectedDate: Date = new Date();
@@ -25,53 +28,128 @@ export class ServiceBookingModalComponent implements OnInit {
   isSubmitting = false;
 
   filteredTimeSlots: string[] = []; 
-  
-  // لترجمة الأرقام لأسماء أيام عشان نعرضها لليوزر
+  fullyBookedSlots: string[] = []; 
+  isLoadingSlots = false;
+ 
   daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
+  minDate: string = '';
   ngOnInit() {
     this.selectedDate = new Date();
-    // التأكد من وجود المصفوفة
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    this.minDate = `${year}-${month}-${day}`;
+   
     if (!this.service.availabilities) {
       this.service.availabilities = [];
     }
     
-    // Debugging: نشوف الداتا اللي جاية شكلها ايه
-    console.log('Service Availabilities form DB:', this.service.availabilities);
-
+   
     this.updateAvailableTimes();
+    
+ 
+    const dateStr = this.datePipe.transform(this.selectedDate, 'yyyy-MM-dd') || '';
+    this.checkBlockedSlots(dateStr);
   }
 
+  isTimePassed(timeSlot: string): boolean {
+    
+    const todayStr = new Date().toDateString();
+    const selectedStr = new Date(this.selectedDate).toDateString();
+    
+    if (todayStr !== selectedStr) {
+      return false; 
+    }
+
+   
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    
+    const [time, modifier] = timeSlot.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+
+    if (hours === 12) hours = 0;
+    if (modifier === 'PM') hours = hours + 12;
+
+   
+    if (hours < currentHour) return true; 
+    if (hours === currentHour && minutes < currentMinute) return true; 
+
+    return false;
+  }
   onDateChange(event: any) {
-    // التأكد من إنشاء التاريخ بشكل صحيح بناءً على التوقيت المحلي
-    const dateString = event.target.value; 
-    if(!dateString) return;
+    const dateString = event.target.value;
+    if (!dateString) return;
 
     this.selectedDate = new Date(dateString);
     this.updateAvailableTimes();
+    this.checkBlockedSlots(dateString); 
+  }
+
+  checkBlockedSlots(dateStr: string) {
+    console.log('📅 Checking Blocked Slots for Date:', dateStr);
+
+    this.isLoadingSlots = true;
+    this.fullyBookedSlots = []; 
+
+    this.servicesService.getBlockedSlots(this.service.id, dateStr).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          console.log('🚀 Backend Raw Blocked Times:', res.data);
+
+          this.fullyBookedSlots = res.data.map((time24: string) => this.convertToAmPm(time24));
+          
+          console.log('🔒 Converted Blocked List:', this.fullyBookedSlots);
+        }
+        this.isLoadingSlots = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoadingSlots = false;
+      }
+    });
+  }
+
+  convertToAmPm(time24: string): string {
+    if (!time24) return '';
+    const [h, m] = time24.split(':');
+    let hours = parseInt(h);
+    const minutes = m; 
+    
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; 
+    
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+  }
+
+  isSlotDisabled(timeSlot: string): boolean {
+    const isDisabled = this.fullyBookedSlots.includes(timeSlot);
+    
+    
+    if(timeSlot.includes('12:28')) {
+        console.log(`🔍 Checking [${timeSlot}]: Disabled? ${isDisabled}`);
+    }
+    
+    return isDisabled;
   }
 
   updateAvailableTimes() {
     if (!this.service.availabilities) return;
 
-    // 1. الحصول على رقم اليوم (0 = Sunday, 3 = Wednesday)
     const dayOfWeek = this.selectedDate.getDay();
     
-    console.log('Selected Date:', this.selectedDate);
-    console.log('Selected Day Index:', dayOfWeek, `(${this.daysMap[dayOfWeek]})`);
-
-    // 2. الفلترة
-    // بنستخدم (==) بدل (===) عشان لو الداتا جاية string "3" تقارن ب number 3 عادي
     this.filteredTimeSlots = this.service.availabilities
       .filter(slot => slot.dayOfWeek == dayOfWeek)
       .map(slot => this.formatTime(slot.startTime)); 
       
-    console.log('Filtered Slots:', this.filteredTimeSlots);
-
     this.selectedTime = null; 
   }
-
-  // دالة لمعرفة الأيام المتاحة لعرضها في رسالة الخطأ
+  
   getAvailableDayNames(): string {
     const uniqueDays = [...new Set(this.service.availabilities.map(s => s.dayOfWeek))];
     return uniqueDays.map(d => this.daysMap[d]).join(', ');
@@ -80,8 +158,6 @@ export class ServiceBookingModalComponent implements OnInit {
   formatTime(timeStr: string): string {
     if(!timeStr) return '';
     
-    // التعامل مع الصيغة اللي جاية من الداتابيز: "12:28:00.0000000"
-    // بناخد أول جزء بس "12:28"
     const cleanTime = timeStr.split('.')[0]; 
     const [hour, minute] = cleanTime.split(':');
     
@@ -92,8 +168,6 @@ export class ServiceBookingModalComponent implements OnInit {
     
     return `${h12.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${ampm}`;
   }
-
-  // ... (updateGuests, selectTime, confirmReservation كما هم) ...
   
   updateGuests(value: number) {
     const newVal = this.guestCount + value;
@@ -108,10 +182,14 @@ export class ServiceBookingModalComponent implements OnInit {
 
   confirmReservation() {
     if (!this.selectedTime) return;
+    const year = this.selectedDate.getFullYear();
+    const month = (this.selectedDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = this.selectedDate.getDate().toString().padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
 
     this.router.navigate(['/service-checkout', this.service.id], {
       queryParams: {
-        date: this.selectedDate.toISOString(),
+        date: dateStr, 
         time: this.selectedTime,
         guests: this.guestCount,
         packageId: this.selectedPackage?.id

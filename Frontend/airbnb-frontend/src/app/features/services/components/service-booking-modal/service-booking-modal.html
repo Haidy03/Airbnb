@@ -27,9 +27,10 @@
       <div class="section">
         <label class="section-label">Select Date</label>
         <input type="date" 
-               [ngModel]="selectedDate | date:'yyyy-MM-dd'" 
-               (change)="onDateChange($event)" 
-               class="form-control date-input">
+              [min]="minDate" 
+              [ngModel]="selectedDate | date:'yyyy-MM-dd'" 
+              (change)="onDateChange($event)" 
+              class="form-control date-input">
                
        
         <div *ngIf="filteredTimeSlots.length === 0" class="alert alert-warning small mt-3 border-0 bg-opacity-10 bg-warning text-dark">
@@ -64,14 +65,26 @@
           </span>
         </div>
 
-        <div class="time-grid" *ngIf="filteredTimeSlots.length > 0">
-          <button *ngFor="let time of filteredTimeSlots" 
-                  class="time-btn" 
-                  [class.selected]="selectedTime === time"
-                  (click)="selectTime(time)">
-            {{ time }}
-          </button>
-        </div>
+        <!-- Time Grid -->
+<div class="time-grid" *ngIf="filteredTimeSlots.length > 0">
+  <button *ngFor="let time of filteredTimeSlots" 
+          class="time-btn" 
+          [class.selected]="selectedTime === time"
+          [class.disabled-slot]="isSlotDisabled(time) || isTimePassed(time)"
+          [disabled]="isSlotDisabled(time) || isTimePassed(time)"
+          (click)="!isSlotDisabled(time) && !isTimePassed(time) && selectTime(time)">
+    
+   
+    <span *ngIf="!isSlotDisabled(time) && !isTimePassed(time)">{{ time }}</span>
+    <span *ngIf="isSlotDisabled(time)" class="text-decoration-line-through text-muted">{{ time }}</span>
+    <span *ngIf="!isSlotDisabled(time) && isTimePassed(time)" class="text-muted" style="font-size: 12px;">Expired</span>
+  </button>
+</div>
+
+<!-- Loading Indicator (Optional) -->
+<div *ngIf="isLoadingSlots" class="text-center mt-2">
+  <small class="text-muted">Checking availability...</small>
+</div>
 
         
         <div *ngIf="filteredTimeSlots.length === 0" class="alert alert-warning small mt-2">

@@ -210,6 +210,29 @@ namespace Airbnb.API.Repositories.Implementations
                             && b.Status != "Rejected")
                 .SumAsync(b => b.NumberOfGuests);
         }
+        public async Task<Dictionary<TimeSpan, int>> GetBookedSlotsCountsAsync(int serviceId, DateTime date)
+        {
+            var bookings = await _context.ServiceBookings
+            .Where(b => b.ServiceId == serviceId
+                        && b.BookingDate.Year == date.Year
+                        && b.BookingDate.Month == date.Month
+                        && b.BookingDate.Day == date.Day
+                        && b.Status != "Cancelled"
+                        && b.Status != "Rejected")
+            .Select(b => new
+            {
+                b.BookingDate.Hour,
+                b.BookingDate.Minute,
+                b.NumberOfGuests
+            })
+            .ToListAsync();
+
+                var groupedSlots = bookings
+                    .GroupBy(b => new TimeSpan(b.Hour, b.Minute, 0))
+                    .ToDictionary(g => g.Key, g => g.Sum(b => b.NumberOfGuests));
+
+                return groupedSlots;
+        }
         public async Task<ServiceImage?> GetImageByIdAsync(int id)
         {
             return await _context.ServiceImages
