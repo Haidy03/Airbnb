@@ -20,7 +20,8 @@ namespace Airbnb.API.DTOs.Services
 
         public ServiceLocationType LocationType { get; set; }
 
-      
-        public List<string>? TimeSlots { get; set; }
+        public int DurationMinutes { get; set; }
+        public string? AvailabilityJson { get; set; }
+       // public List<string>? TimeSlots { get; set; }
     }
 }

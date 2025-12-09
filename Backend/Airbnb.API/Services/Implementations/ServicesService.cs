@@ -48,12 +48,41 @@ namespace Airbnb.API.Services.Implementations
                 MinimumCost = dto.MinimumCost,
                 LocationType = dto.LocationType,
                 City = dto.City,
-                Status = ServiceStatus.PendingApproval,
-                CreatedAt = DateTime.UtcNow,
                 MaxGuests = dto.MaxGuests > 0 ? dto.MaxGuests : 1,
-                TimeSlots = dto.TimeSlots != null ? string.Join(",", dto.TimeSlots) : null,
+
+                DurationMinutes = dto.DurationMinutes,
+
+                Status = ServiceStatus.PendingApproval,
+                CreatedAt = DateTime.UtcNow
 
             };
+
+            if (!string.IsNullOrEmpty(dto.AvailabilityJson))
+            {
+                try
+                {
+                    var options = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+                    var slots = System.Text.Json.JsonSerializer.Deserialize<List<SlotInputDto>>(dto.AvailabilityJson, options);
+                    if (slots != null)
+                    {
+                        foreach (var slot in slots)
+                        {
+                            if (TimeSpan.TryParse(slot.Time, out var time))
+                            {
+                                service.Availabilities.Add(new ServiceAvailability
+                                {
+                                    DayOfWeek = (DayOfWeek)slot.Day,
+                                    StartTime = time
+                                });
+                            }
+                        }
+                    }
+                }
+                catch { /* Handle parsing error if needed */ }
+            }
 
 
             if (dto.Images != null && dto.Images.Count > 0)
@@ -110,10 +139,22 @@ namespace Airbnb.API.Services.Implementations
                 LocationType = service.LocationType.ToString(),
                 City = service.City,
                 CoveredAreas = service.CoveredAreas,
-                Images = service.Images.Select(i => i.Url).ToList(),
+                Images = service.Images.Select(i => new ServiceImageDto
+                {
+                    Id = i.Id,
+                    Url = i.Url,
+                    IsCover = i.IsCover
+                }).ToList(),
                 HostId = service.HostId,
                 HostJoinedDate = service.Host.CreatedAt,
                 MaxGuests = service.MaxGuests,
+                DurationMinutes = service.DurationMinutes,
+                Availabilities = service.Availabilities.Select(a => new ServiceAvailabilityDto
+                {
+                    DayOfWeek = (int)a.DayOfWeek,
+                    Day = a.DayOfWeek.ToString(),
+                    StartTime = a.StartTime.ToString(@"hh\:mm")
+                }).ToList(),
                 TimeSlots = !string.IsNullOrEmpty(service.TimeSlots)
                 ? service.TimeSlots.Split(',').ToList()
                 : new List<string>(),
@@ -192,6 +233,21 @@ namespace Airbnb.API.Services.Implementations
             {
                 throw new InvalidOperationException("You cannot book your own service.");
             }
+            var cleanDate = new DateTime(
+                dto.Date.Year,
+                dto.Date.Month,
+                dto.Date.Day,
+                dto.Date.Hour,
+                dto.Date.Minute,
+                0, 
+                dto.Date.Kind);
+
+            int currentBookedGuests = await _serviceRepository.GetTotalGuestsForServiceAtDateAsync(dto.ServiceId, cleanDate);
+            if (currentBookedGuests + dto.NumberOfGuests > service.MaxGuests)
+            {
+               throw new InvalidOperationException($"Sorry The Service is Fully Booked! it reached its Max capacity.");
+            }
+
 
             decimal finalPrice = service.PricePerUnit;
 
@@ -215,7 +271,7 @@ namespace Airbnb.API.Services.Implementations
                 ServiceId = dto.ServiceId,
                 PackageId = dto.PackageId,
                 GuestId = guestId,
-                BookingDate = dto.Date,
+                BookingDate = cleanDate,
                 TotalPrice = finalPrice,
                 Status = "Confirmed", 
                 CreatedAt = DateTime.UtcNow,
@@ -265,16 +321,29 @@ namespace Airbnb.API.Services.Implementations
                 LocationType = service.LocationType.ToString(),
                 City = service.City,
                 CoveredAreas = service.CoveredAreas,
-
                 Status = service.Status.ToString(),
-
-
-                Images = service.Images.Select(i => i.Url).ToList(),
+                Images = service.Images.Select(i => new ServiceImageDto
+                {
+                    Id = i.Id,
+                    Url = i.Url,
+                    IsCover = i.IsCover
+                }).ToList(),
                 CategoryName = service.Category?.Name,
                 HostId = service.HostId,
                 HostJoinedDate = service.Host.CreatedAt,
                 CancellationPolicy = service.CancellationPolicy,
                 GuestRequirements = service.GuestRequirements,
+
+              
+                MaxGuests = service.MaxGuests,
+                DurationMinutes = service.DurationMinutes,
+                Availabilities = service.Availabilities.Select(a => new ServiceAvailabilityDto
+                {
+                    DayOfWeek = (int)a.DayOfWeek,
+                    Day = a.DayOfWeek.ToString(),
+                    StartTime = a.StartTime.ToString(@"hh\:mm")
+                }).ToList(),
+                
 
                 Qualifications = service.Qualifications.Select(q => new ServiceQualificationDto
                 {
@@ -336,8 +405,35 @@ namespace Airbnb.API.Services.Implementations
             service.City = dto.City;
             service.LocationType = dto.LocationType;
 
-            service.TimeSlots = dto.TimeSlots != null ? string.Join(",", dto.TimeSlots) : null;
+            service.DurationMinutes = dto.DurationMinutes;
+            if (!string.IsNullOrEmpty(dto.AvailabilityJson))
+            {
+                
+                service.Availabilities.Clear();
 
+             
+                try
+                {
+                    var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var slots = System.Text.Json.JsonSerializer.Deserialize<List<SlotInputDto>>(dto.AvailabilityJson, options);
+
+                    if (slots != null)
+                    {
+                        foreach (var slot in slots)
+                        {
+                            if (TimeSpan.TryParse(slot.Time, out var time))
+                            {
+                                service.Availabilities.Add(new ServiceAvailability
+                                {
+                                    DayOfWeek = (DayOfWeek)slot.Day,
+                                    StartTime = time
+                                });
+                            }
+                        }
+                    }
+                }
+                catch { /* Log error */ }
+            }
             await _serviceRepository.UpdateServiceAsync(service);
             return true;
         }
@@ -505,5 +601,73 @@ namespace Airbnb.API.Services.Implementations
 
             return true;
         }
+
+        public async Task<string> UploadServiceImageAsync(int serviceId, string hostId, IFormFile file)
+        {
+            var service = await _serviceRepository.GetServiceByIdForHostAsync(serviceId);
+            if (service == null || service.HostId != hostId)
+                throw new UnauthorizedAccessException("Not authorized");
+
+            
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "services");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+
+            
+            var imageUrl = $"uploads/services/{uniqueFileName}";
+            var image = new ServiceImage
+            {
+                ServiceId = serviceId,
+                Url = imageUrl,
+                IsCover = !service.Images.Any()
+            };
+
+            service.Images.Add(image);
+            await _serviceRepository.UpdateServiceAsync(service);
+
+            return imageUrl;
+        }
+
+        public async Task<bool> DeleteServiceImageAsync(int imageId, string hostId)
+        {
+            var image = await _serviceRepository.GetImageByIdAsync(imageId); 
+            if (image == null || image.Service.HostId != hostId) return false;
+
+            var filePath = Path.Combine(_environment.WebRootPath, image.Url.Replace("/", "\\"));
+            if (File.Exists(filePath)) File.Delete(filePath);
+
+            await _serviceRepository.DeleteServiceImageAsync(image); 
+            return true;
+        }
+
+        public async Task<bool> SetCoverImageAsync(int imageId, string hostId)
+        {
+            var image = await _serviceRepository.GetImageByIdAsync(imageId);
+            if (image == null || image.Service.HostId != hostId) return false;
+
+           
+            foreach (var img in image.Service.Images)
+            {
+                img.IsCover = false;
+            }
+
+            
+            image.IsCover = true;
+
+            await _serviceRepository.UpdateServiceAsync(image.Service);
+            return true;
+        }
+    }
+    public class SlotInputDto
+    {
+        public int Day { get; set; }
+        public string Time { get; set; }
     }
 }

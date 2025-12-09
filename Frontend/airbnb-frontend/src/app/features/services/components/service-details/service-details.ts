@@ -69,14 +69,25 @@ export class ServiceDetailsComponent implements OnInit {
     }
   }
 
-  getImageUrl(url: string | undefined | null): string {
-    if (!url) return 'assets/images/placeholder.jpg';
+  getImageUrl(image: any): string { 
+    if (!image) return 'assets/images/placeholder.jpg';
+    
+    if (typeof image === 'object' && image.url) {
+        return this.formatUrl(image.url);
+    }
+    if (typeof image === 'string') {
+        return this.formatUrl(image);
+    }
+
+    return 'assets/images/placeholder.jpg';
+  }
+
+  private formatUrl(url: string): string {
     if (url.startsWith('http')) return url;
     const cleanPath = url.startsWith('/') ? url.substring(1) : url;
     return `${this.baseUrl}/${cleanPath}`;
   }
 
-  
   formatUnit(unit: string): string {
     const map: any = { 
       'PerPerson': 'guest', 
@@ -118,9 +129,8 @@ export class ServiceDetailsComponent implements OnInit {
       
      
       let propertyImage = '';
-      if (s.images && s.images.length > 0) {
-         propertyImage = s.images[0]; 
-         
+       if (s.images && s.images.length > 0) {
+         propertyImage = this.getImageUrl(s.images[0]); 
       }
 
       this.router.navigate(['/messages'], { 

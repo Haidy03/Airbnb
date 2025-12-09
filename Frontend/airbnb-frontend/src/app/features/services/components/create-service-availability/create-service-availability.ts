@@ -12,29 +12,59 @@ import { FormsModule } from '@angular/forms';
 })
 export class CreateServiceAvailabilityComponent {
   maxGuests = signal<number>(1);
-  timeSlots = signal<string[]>([]);
+  duration = signal<number>(60); 
+  slots = signal<{ day: number, time: string }[]>([]); 
   
-  // لإضافة وقت جديد
-  newTime = signal<string>('');
+
+  tempDay = signal<number>(0);
+  tempTime = signal<string>('');
+
+  days = [
+    { id: 0, name: 'Sunday' },
+    { id: 1, name: 'Monday' },
+    { id: 2, name: 'Tuesday' },
+    { id: 3, name: 'Wednesday' },
+    { id: 4, name: 'Thursday' },
+    { id: 5, name: 'Friday' },
+    { id: 6, name: 'Saturday' }
+  ];
 
   constructor(private router: Router) {
-    // استرجاع البيانات لو محفوظة
+   
     const savedMax = localStorage.getItem('draftServiceMaxGuests');
-    const savedSlots = localStorage.getItem('draftServiceTimeSlots'); // سنخزنه كـ JSON String
+    const savedDuration = localStorage.getItem('draftServiceDuration');
+    const savedSlots = localStorage.getItem('draftServiceAvailabilityJson'); 
 
     if (savedMax) this.maxGuests.set(Number(savedMax));
-    if (savedSlots) this.timeSlots.set(JSON.parse(savedSlots));
+    if (savedDuration) this.duration.set(Number(savedDuration));
+    if (savedSlots) this.slots.set(JSON.parse(savedSlots));
   }
 
-  addTimeSlot() {
-    if (this.newTime() && !this.timeSlots().includes(this.newTime())) {
-      this.timeSlots.update(slots => [...slots, this.newTime()].sort());
-      this.newTime.set(''); // مسح الحقل
+  getDayName(id: number): string {
+    return this.days.find(d => d.id == id)?.name || 'Unknown';
+  }
+
+  addSlot() {
+    const day = Number(this.tempDay());
+    const time = this.tempTime();
+
+    if (time) {
+ 
+      const exists = this.slots().some(s => s.day === day && s.time === time);
+      
+      if (!exists) {
+        this.slots.update(current => {
+          const updated = [...current, { day, time }];
+   
+          return updated.sort((a, b) => a.day - b.day || a.time.localeCompare(b.time));
+        });
+  
+      }
     }
   }
 
-  removeTimeSlot(index: number) {
-    this.timeSlots.update(slots => slots.filter((_, i) => i !== index));
+  removeSlot(index: number) {
+    this.slots.update(current => current.filter((_, i) => i !== index));
   }
 
   goBack() {
@@ -42,11 +72,11 @@ export class CreateServiceAvailabilityComponent {
   }
 
   onNext() {
-    // حفظ البيانات
+    
     localStorage.setItem('draftServiceMaxGuests', this.maxGuests().toString());
-    localStorage.setItem('draftServiceTimeSlots', JSON.stringify(this.timeSlots()));
+    localStorage.setItem('draftServiceDuration', this.duration().toString());
+    localStorage.setItem('draftServiceAvailabilityJson', JSON.stringify(this.slots()));
 
-    // التوجيه لصفحة الصور
     this.router.navigate(['/host/services/photos']);
   }
 }

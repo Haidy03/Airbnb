@@ -50,7 +50,7 @@ export interface ServiceDetails {
   city: string;
   coveredAreas?: string;
 
-  images: string[];
+  images: ServiceImage[];
   rating: number;
   
   cancellationPolicy?: string;
@@ -61,8 +61,15 @@ export interface ServiceDetails {
   categoryName: string;
   maxGuests: number;
   timeSlots: string[]; 
+  durationMinutes: number;
+  availabilities: ServiceAvailability[];
 }
 
+export interface ServiceAvailability {
+  dayOfWeek: number; // 0 = Sunday
+  day: string;       // "Sunday"
+  startTime: string; // "10:00"
+}
 export interface ServiceCategory {
   id: number;
   name: string;
@@ -81,4 +88,10 @@ export interface HostService {
   rating: number;
   categoryName: string;
   rejectionReason?: string;
+}
+
+export interface ServiceImage {
+  id: number;
+  url: string;
+  isCover: boolean;
 }
