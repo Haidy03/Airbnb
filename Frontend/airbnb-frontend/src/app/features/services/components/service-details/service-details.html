@@ -17,7 +17,7 @@
   </div>
 
   <!-- 2. IMAGE GALLERY -->
-  <div class="gallery-grid rounded-4 overflow-hidden mb-5">
+  <div class="gallery-grid rounded-4 overflow-hidden mb-5 position-relative">
     <div class="main-img bg-light position-relative">
       <img [src]="getImageUrl(s.images[0])" class="w-100 h-100 object-fit-cover" onerror="this.src='assets/images/placeholder.jpg'">
     </div>
@@ -27,8 +27,11 @@
       </div>
     </div>
    
-    <button class="btn btn-light btn-sm position-absolute bottom-0 end-0 m-4 shadow-sm border fw-bold">
-      <i class="bi bi-grid-3x3-gap me-2"></i> Show all photos
+    <button class="btn btn-light btn-sm position-absolute bottom-0 end-0 m-4 shadow-sm border fw-bold"
+            style="z-index: 5;"
+            (click)="showAllPhotos()"> 
+      <i class="bi bi-grid-3x3-gap me-2"></i> 
+      Show all photos
     </button>
   </div>
 
@@ -218,6 +221,23 @@
       </div>
     </div>
 
+  </div>
+  <div *ngIf="isGalleryOpen" class="gallery-overlay fade-in">
+  
+  <!-- Header (Close Button) -->
+  <div class="gallery-header">
+    <button class="btn btn-light rounded-circle shadow-sm" (click)="closeGallery()">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+  </div>
+
+  <!-- Images List -->
+  <div class="gallery-content container">
+    <div class="row justify-content-center g-4">
+      <div class="col-md-8" *ngFor="let img of service()?.images">
+        <img [src]="getImageUrl(img)" class="w-100 rounded-3 shadow-sm mb-2">
+      </div>
+    </div>
   </div>
 </div>
 

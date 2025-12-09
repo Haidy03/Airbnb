@@ -22,7 +22,7 @@ export class ServiceDetailsComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);  
   private notificationService = inject(NotificationService);
-  
+  isGalleryOpen = false;
   service = signal<ServiceDetails | null>(null);
   isLoading = signal(true);
   selectedPackage = signal<ServicePackage | null>(null);
@@ -146,4 +146,16 @@ export class ServiceDetailsComponent implements OnInit {
         } 
       });
     }}
+
+    showAllPhotos() {
+    this.isGalleryOpen = true;
+    // عشان نمنع السكرول في الصفحة الأساسية لما المعرض يفتح
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeGallery() {
+    this.isGalleryOpen = false;
+    // نرجع السكرول تاني
+    document.body.style.overflow = 'auto';
+  }
 }

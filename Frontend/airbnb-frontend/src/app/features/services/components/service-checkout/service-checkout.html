@@ -64,7 +64,7 @@
       <div class="summary-card">
         
         <div class="card-header-row">
-          <img [src]="getImageUrl(service.images[0])" class="service-img">
+          <img [src]="getImageUrl(service.images[0]?.url)" class="service-img">
           <div class="text-info">
             <p class="category">{{ service.categoryName }}</p>
             <h4>{{ service.title }}</h4>
