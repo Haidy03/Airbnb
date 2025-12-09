@@ -5,6 +5,7 @@ import { ServicesService } from '../../services/service';
 import { ServiceDetails, ServicePackage } from '../../models/service.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-service-checkout',
@@ -19,15 +20,15 @@ export class ServiceCheckoutComponent implements OnInit {
   private servicesService = inject(ServicesService);
   private http = inject(HttpClient);
   private location = inject(Location);
-
-  // Data
+  private notificationService = inject(NotificationService);
+ 
   serviceId!: number;
   service: ServiceDetails | null = null;
   selectedPackage: ServicePackage | null = null;
   
-  // Query Params
+ 
   date: string = '';
-  time: string = ''; // e.g. "10:30 AM"
+  time: string = '';
   guests: number = 1;
   packageId: number | null = null;
 
@@ -35,15 +36,15 @@ export class ServiceCheckoutComponent implements OnInit {
   isProcessing = false;
   totalPrice = 0;
 
-  // Base URL for images
+ 
   private baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
 
   ngOnInit() {
-    // 1. قراءة البيانات من الرابط
+   
     this.route.queryParams.subscribe(params => {
       this.serviceId = Number(this.route.snapshot.paramMap.get('id'));
       this.date = params['date'];
-      this.time = params['time']; // الوقت كنص (10:30 AM)
+      this.time = params['time']; 
       this.guests = Number(params['guests'] || 1);
       this.packageId = params['packageId'] ? Number(params['packageId']) : null;
 
@@ -59,7 +60,7 @@ export class ServiceCheckoutComponent implements OnInit {
         if (res.success) {
           this.service = res.data;
           
-          // تحديد الباقة لو موجودة
+        
           if (this.packageId && this.service?.packages) {
             this.selectedPackage = this.service.packages.find(p => p.id === this.packageId) || null;
           }
@@ -75,14 +76,14 @@ export class ServiceCheckoutComponent implements OnInit {
   calculateTotal() {
     if (!this.service) return;
 
-    // السعر الأساسي (إما سعر الباقة أو سعر الوحدة للخدمة)
+   
     let unitPrice = this.selectedPackage ? this.selectedPackage.price : this.service.pricePerUnit;
 
-    // الحساب حسب نوع التسعير
+ 
     if (this.service.pricingUnit === 'PerPerson') {
       this.totalPrice = unitPrice * this.guests;
     } else {
-      // PerHour, PerSession, FlatFee
+     
       this.totalPrice = unitPrice; 
     }
   }
@@ -91,7 +92,7 @@ export class ServiceCheckoutComponent implements OnInit {
     if (!this.service) return;
     this.isProcessing = true;
 
-    // 1. تجميع تاريخ ووقت الحجز بتنسيق ISO للباك إند
+  
     const bookingDateIso = this.getCombinedDateTime();
 
     const bookingPayload = {
@@ -101,16 +102,16 @@ export class ServiceCheckoutComponent implements OnInit {
       numberOfGuests: this.guests
     };
 
-    // 2. إنشاء الحجز في الباك إند
+ 
     this.servicesService.bookService(bookingPayload).subscribe({
       next: (res: any) => {
-        // 3. الحجز تم بنجاح، الآن نذهب للدفع
         this.initiatePayment(res.bookingId);
       },
       error: (err) => {
         console.error(err);
-        alert('Booking failed.');
         this.isProcessing = false;
+        const errorMessage = err.error?.message || 'Something went wrong. Please try again.';
+        this.notificationService.showError(errorMessage);
       }
     });
   }
@@ -124,24 +125,19 @@ export class ServiceCheckoutComponent implements OnInit {
 
     this.http.post<{ url: string }>(`${environment.apiUrl}/Payment/create-service-checkout`, paymentPayload).subscribe({
       next: (res) => {
-        // حفظ ID الحجز (اختياري للرجوع)
         sessionStorage.setItem('pendingServiceBookingId', bookingId.toString());
-        // التوجيه لـ Stripe
         window.location.href = res.url;
       },
       error: (err) => {
         console.error('Payment Error', err);
-        alert('Payment initiation failed.');
         this.isProcessing = false;
+        this.notificationService.showError('Could not initiate payment gateway.');
       }
     });
   }
 
   private getCombinedDateTime(): string {
-    // دمج التاريخ والوقت المختارين
-    // Date string from query: "2025-12-02"
-    // Time string: "10:30 AM"
-    
+   
     if (!this.time) return new Date(this.date).toISOString();
 
     const [timeStr, modifier] = this.time.split(' ');

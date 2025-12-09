@@ -340,6 +340,7 @@ namespace Airbnb.API.Repositories.Implementations
         {
             return await _context.ExperienceBookings
                 .Include(b => b.Experience)
+                .ThenInclude(e => e.Images)
                 .Include(b => b.Guest)
                 .Include(b => b.Availability)
                 .Where(b => b.Experience.HostId == hostId)
