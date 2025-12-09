@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -6,6 +6,7 @@ import { ExperienceService } from '../../../../../../shared/Services/experience.
 import { ExperienceCategory, CreateExperienceDto, UpdateExperienceDto, Experience, ExperienceAvailability, CreateAvailabilityDto } from '../../../../../../shared/models/experience.model';
 import { environment } from '../../../../../../../environments/environment';
 import { firstValueFrom } from 'rxjs';
+
 @Component({
   selector: 'app-create-experience',
   standalone: true,
@@ -19,15 +20,27 @@ export class CreateExperienceComponent implements OnInit {
   isSubmitting = signal(false);
   isUploading = signal(false);
   error = signal<string | null>(null);
+  
+  // Stepper State
+  currentStep = signal(1);
+  totalSteps = 5;
+
+  // Data State
   minDate: string = '';
   isEditMode = false;
   experienceId: number | null = null;
   existingExperience = signal<Experience | null>(null);
-  tempSlots = signal<any[]>([]); // لتخزين المواعيد الجديدة
-  existingSlots = signal<ExperienceAvailability[]>([]); // لتخزين المواعيد القديمة (في حالة التعديل)
   
+  // Schedule State
+  tempSlots = signal<any[]>([]); 
+  existingSlots = signal<ExperienceAvailability[]>([]);
   newSlotDate: string = '';
   newSlotTime: string = '';
+
+  // Photo State
+  pendingPhotos = signal<File[]>([]); // صور لوضع الإنشاء (لم ترفع بعد)
+  pendingPhotoPreviews = signal<string[]>([]); // عرض الصور قبل الرفع
+
   experienceTypes = [
     { value: 'InPerson', label: 'In-Person', icon: '🏃' },
     { value: 'Adventure', label: 'Adventure', icon: '🏔️' }
@@ -50,15 +63,11 @@ export class CreateExperienceComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // 1. تحميل التصنيفات أولاً
     this.minDate = new Date().toISOString().split('T')[0];
     this.experienceService.getCategories().subscribe({
       next: (response) => {
         if (response.success) {
           this.categories.set(response.data);
-          
-          // 2. بعد تحميل التصنيفات، نتحقق لو في Edit Mode نحمل البيانات
-          // ده عشان نضمن إننا نلاقي الـ Category ID الصح
           this.checkEditMode();
         }
       },
@@ -74,17 +83,6 @@ export class CreateExperienceComponent implements OnInit {
       this.loadExperienceDetails(this.experienceId);
       this.loadAvailabilities(this.experienceId);
     }
-  }
-  loadAvailabilities(id: number) {
-    const start = new Date();
-    const end = new Date();
-    end.setFullYear(end.getFullYear() + 1);
-
-    this.experienceService.getAvailabilities(id, start, end).subscribe({
-      next: (data) => {
-        this.existingSlots.set(data as any[]);
-      }
-    });
   }
 
   initializeForm(): void {
@@ -134,14 +132,91 @@ export class CreateExperienceComponent implements OnInit {
     countryControl?.updateValueAndValidity();
   }
 
+  // --- Navigation & Validation ---
+
+  nextStep(): void {
+    if (this.validateCurrentStep()) {
+      if (this.currentStep() < this.totalSteps) {
+        this.currentStep.update(v => v + 1);
+        window.scrollTo(0, 0);
+      }
+    }
+  }
+
+  prevStep(): void {
+    if (this.currentStep() > 1) {
+      this.currentStep.update(v => v - 1);
+      window.scrollTo(0, 0);
+    }
+  }
+
+  validateCurrentStep(): boolean {
+    const step = this.currentStep();
+    const f = this.experienceForm;
+
+    switch (step) {
+      case 1: // Schedule
+        if (this.tempSlots().length === 0 && this.existingSlots().length === 0) {
+          alert('Please add at least one available date/time slot.');
+          return false;
+        }
+        return true;
+
+      case 2: // Basic Info
+        const basicControls = ['title', 'description', 'categoryId', 'type'];
+        return this.checkControls(basicControls);
+
+      case 3: // Location & Duration
+        const locControls = ['durationHours', 'minGroupSize', 'maxGroupSize'];
+        if (f.get('type')?.value !== 'Online') {
+          locControls.push('city', 'country');
+        }
+        return this.checkControls(locControls);
+
+      case 4: // Details & Price
+        return this.checkControls(['pricePerPerson']);
+
+      case 5: // Photos (Optional but recommended)
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  checkControls(controls: string[]): boolean {
+    let isValid = true;
+    controls.forEach(key => {
+      const control = this.experienceForm.get(key);
+      if (control?.invalid) {
+        control.markAsTouched();
+        isValid = false;
+      }
+    });
+    if (!isValid) alert('Please fill in all required fields marked with *');
+    return isValid;
+  }
+
+  // --- Data Loading ---
+
+  loadAvailabilities(id: number) {
+    const start = new Date();
+    const end = new Date();
+    end.setFullYear(end.getFullYear() + 1);
+
+    this.experienceService.getAvailabilities(id, start, end).subscribe({
+      next: (data) => {
+        this.existingSlots.set(data as any[]);
+      }
+    });
+  }
+
   loadExperienceDetails(id: number): void {
     this.experienceService.getExperienceById(id).subscribe({
       next: (response) => {
         if (response.success) {
           const exp = response.data;
           this.existingExperience.set(exp);
-          
-          // تشغيل الـ Validators بناءً على النوع الراجع من الداتا بيز
           this.updateValidators(exp.type);
 
           this.experienceForm.patchValue({
@@ -177,69 +252,46 @@ export class CreateExperienceComponent implements OnInit {
     return cat ? cat.id : null;
   }
 
+  // --- Form Logic ---
+
   toggleLanguage(code: string): void {
     const index = this.selectedLanguages.indexOf(code);
     if (index > -1) {
-      if (this.selectedLanguages.length > 1) {
-        this.selectedLanguages.splice(index, 1);
-      }
+      if (this.selectedLanguages.length > 1) this.selectedLanguages.splice(index, 1);
     } else {
       this.selectedLanguages.push(code);
     }
   }
 
   addSlot(): void {
-    // 1. التحقق من الحد الأقصى للمواعيد
     if (this.tempSlots().length >= 6) {
       alert('You can add up to 6 slots only.');
       return;
     }
 
-    // 2. التأكد من إدخال البيانات
     if (!this.newSlotDate || !this.newSlotTime) {
       alert('Please select date and start time.');
       return;
     }
-
-    // ==========================================
-    // بداية التعديل: التحقق من التاريخ والوقت
-    // ==========================================
     
-    const now = new Date(); // الوقت الحالي الفعلي
-
-    // استخراج القيم من الـ Inputs
-    // newSlotDate format: "YYYY-MM-DD"
-    // newSlotTime format: "HH:mm"
+    const now = new Date();
     const [year, month, day] = this.newSlotDate.split('-').map(Number);
     const [hours, minutes] = this.newSlotTime.split(':').map(Number);
-
-    // إنشاء تاريخ للمقارنة (تاريخ الموعد المختار)
-    // ملاحظة: month - 1 لأن الشهور تبدأ من 0 في البرمجة
     const selectedDate = new Date(year, month - 1, day, hours, minutes);
-
-    // إنشاء تواريخ للمقارنة "على مستوى اليوم فقط" بدون ساعات
     const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const selectedDayMidnight = new Date(year, month - 1, day);
 
-    // أ) التحقق لو التاريخ قديم (أيام سابقة)
     if (selectedDayMidnight < todayMidnight) {
-      alert('⚠️ Cannot select a past date. Please choose today or a future date.');
+      alert('⚠️ Cannot select a past date.');
       return;
     }
 
-    // ب) التحقق لو التاريخ هو النهاردة بس الساعة عدت
     if (selectedDate < now) {
-      alert('⚠️ Cannot select a past time. Please choose a future time.');
+      alert('⚠️ Cannot select a past time.');
       return;
     }
-    // ==========================================
-    // نهاية التعديل
-    // ==========================================
 
-
-    // 3. التحقق من التكرار (Duplicate Check) - كما هو
     const targetDateStr = new Date(this.newSlotDate).toDateString();
-    
     const existsInTemp = this.tempSlots().some(slot => 
       new Date(slot.date).toDateString() === targetDateStr && 
       slot.startTime.startsWith(this.newSlotTime)
@@ -255,11 +307,9 @@ export class CreateExperienceComponent implements OnInit {
       return;
     }
 
-    // 4. حساب وقت الانتهاء وإضافة الموعد
     const durationHours = this.experienceForm.get('durationHours')?.value || 0;
     const durationMinutes = this.experienceForm.get('durationMinutes')?.value || 0;
 
-    // استخدام القيم التي قمنا باستخراجها بالأعلى (hours, minutes)
     const dateObj = new Date();
     dateObj.setHours(hours, minutes, 0);
     dateObj.setHours(dateObj.getHours() + durationHours);
@@ -278,13 +328,10 @@ export class CreateExperienceComponent implements OnInit {
     };
 
     this.tempSlots.update(slots => [...slots, newSlot]);
-    
-    // تفريغ الحقول
     this.newSlotDate = '';
     this.newSlotTime = '';
 }
 
-  // ✅ NEW: حذف موعد من القائمة المؤقتة
   removeSlot(index: number): void {
     this.tempSlots.update(slots => slots.filter((_, i) => i !== index));
   }
@@ -298,83 +345,41 @@ export class CreateExperienceComponent implements OnInit {
     });
   }
 
-  async onSubmit(): Promise<void> {
-    if (this.experienceForm.invalid) {
-      this.experienceForm.markAllAsTouched();
-      alert('Please fill in all required fields marked with *');
-      return;
-    }
+  // --- Photo Handling (Updated for Wizard) ---
 
-    this.isSubmitting.set(true);
-    this.error.set(null);
-
-    const formValues = this.experienceForm.value;
-    formValues.categoryId = Number(formValues.categoryId);
-
-    try {
-      let currentExpId = this.experienceId;
-
-      if (this.isEditMode && this.experienceId) {
-        const dto: UpdateExperienceDto = { ...formValues, languageCodes: this.selectedLanguages };
-        await firstValueFrom(this.experienceService.updateExperience(this.experienceId, dto));
-      } else {
-        const dto: CreateExperienceDto = { ...formValues, languageCodes: this.selectedLanguages };
-        const response = await firstValueFrom(this.experienceService.createExperience(dto));
-        if (response.success) {
-          currentExpId = response.data.id;
-          this.experienceId = currentExpId;
-        }
-      }
-
-      if (currentExpId && this.tempSlots().length > 0) {
-        const slots = this.tempSlots();
-        for (const slot of slots) {
-          const availabilityDto: CreateAvailabilityDto = {
-            date: slot.date,
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-            availableSpots: slot.availableSpots,
-            customPrice: slot.customPrice
-          };
-          
-          await firstValueFrom(this.experienceService.addAvailability(currentExpId, availabilityDto));
-        }
-      }
-
-      alert('Saved successfully!');
-      
-      // ✅ التوجيه لصفحة التجارب الخاصة بالهوست
-      this.router.navigate(['/host/experiences']);
-
-    } catch (err: any) {
-      console.error('Save Error:', err);
-      this.error.set(err.error?.message || 'Failed to save');
-    } finally {
-      this.isSubmitting.set(false);
-    }
-  }
-
-  // --- Image Handling ---
   onFileSelected(event: any): void {
-    if (!this.experienceId) return;
-    
     const file: File = event.target.files[0];
-    if (file) {
+    if (!file) return;
+
+    if (this.isEditMode && this.experienceId) {
+      // Old behavior: direct upload
       this.isUploading.set(true);
       this.experienceService.uploadImage(this.experienceId, file).subscribe({
         next: (response) => {
-          if (response.success) {
-            this.loadExperienceDetails(this.experienceId!);
-          }
+          if (response.success) this.loadExperienceDetails(this.experienceId!);
           this.isUploading.set(false);
         },
-        error: (err) => {
-          console.error(err);
+        error: () => {
           alert('Failed to upload image');
           this.isUploading.set(false);
         }
       });
+    } else {
+      // New behavior: Store locally for upload on submit
+      this.pendingPhotos.update(photos => [...photos, file]);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.pendingPhotoPreviews.update(prev => [...prev, e.target.result]);
+      };
+      reader.readAsDataURL(file);
     }
+  }
+
+  removePendingPhoto(index: number): void {
+    this.pendingPhotos.update(photos => photos.filter((_, i) => i !== index));
+    this.pendingPhotoPreviews.update(prev => prev.filter((_, i) => i !== index));
   }
 
   deleteImage(imageId: number): void {
@@ -391,31 +396,90 @@ export class CreateExperienceComponent implements OnInit {
   }
 
   getImageUrl(imageUrl: string): string {
-  if (!imageUrl) return '';
-  if (imageUrl.startsWith('http') || imageUrl.startsWith('data:image')) return imageUrl; // data:image عشان الـ Preview
-  
-  const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
-  const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
-  return `${baseUrl}${cleanPath}`;
-}
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('http') || imageUrl.startsWith('data:image')) return imageUrl;
+    
+    const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
+    const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+    return `${baseUrl}${cleanPath}`;
+  }
+
+  // --- SUBMIT LOGIC ---
+
+  async onSubmit(): Promise<void> {
+    if (this.experienceForm.invalid) {
+      this.experienceForm.markAllAsTouched();
+      alert('Please check previous steps for missing information.');
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.error.set(null);
+
+    const formValues = this.experienceForm.value;
+    formValues.categoryId = Number(formValues.categoryId);
+
+    try {
+      let currentExpId = this.experienceId;
+
+      // 1. Create or Update Experience
+      if (this.isEditMode && this.experienceId) {
+        const dto: UpdateExperienceDto = { ...formValues, languageCodes: this.selectedLanguages };
+        await firstValueFrom(this.experienceService.updateExperience(this.experienceId, dto));
+      } else {
+        const dto: CreateExperienceDto = { ...formValues, languageCodes: this.selectedLanguages };
+        const response = await firstValueFrom(this.experienceService.createExperience(dto));
+        if (response.success) {
+          currentExpId = response.data.id;
+        }
+      }
+
+      if (!currentExpId) throw new Error('Failed to get experience ID');
+
+      // 2. Add Slots
+      if (this.tempSlots().length > 0) {
+        const slots = this.tempSlots();
+        for (const slot of slots) {
+          const availabilityDto: CreateAvailabilityDto = {
+            date: slot.date,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            availableSpots: slot.availableSpots,
+            customPrice: slot.customPrice
+          };
+          await firstValueFrom(this.experienceService.addAvailability(currentExpId, availabilityDto));
+        }
+      }
+
+      // 3. Upload Pending Photos (For Create Mode)
+      if (this.pendingPhotos().length > 0) {
+        const uploadPromises = this.pendingPhotos().map(file => 
+          firstValueFrom(this.experienceService.uploadImage(currentExpId!, file))
+        );
+        await Promise.all(uploadPromises);
+      }
+
+      alert('Experience saved successfully!');
+      this.router.navigate(['/host/experiences']);
+
+    } catch (err: any) {
+      console.error('Save Error:', err);
+      this.error.set(err.error?.message || 'Failed to save');
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
 
   cancel(): void {
     this.router.navigate(['/host/experiences']);
   }
 
   formatTime(time: string): string {
-  if (!time) return '';
-  
-  const [h, m] = time.split(':');
-  
-  const date = new Date();
-  date.setHours(Number(h));
-  date.setMinutes(Number(m));
-  
-  return date.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit', 
-    hour12: true 
-  });
-}
+    if (!time) return '';
+    const [h, m] = time.split(':');
+    const date = new Date();
+    date.setHours(Number(h));
+    date.setMinutes(Number(m));
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
 }
