@@ -7,7 +7,7 @@ import { environment } from '../../../../../environments/environment';
 import { ServiceBookingModalComponent } from '../service-booking-modal/service-booking-modal';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ReviewCardComponent } from '../../../reviews/components/review-card/review-card.component';
-
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-service-details',
@@ -21,6 +21,7 @@ export class ServiceDetailsComponent implements OnInit {
   private servicesService = inject(ServicesService);
   private authService = inject(AuthService);
   private router = inject(Router);  
+  private notificationService = inject(NotificationService);
   
   service = signal<ServiceDetails | null>(null);
   isLoading = signal(true);
@@ -75,7 +76,7 @@ export class ServiceDetailsComponent implements OnInit {
     return `${this.baseUrl}/${cleanPath}`;
   }
 
-  // ✅ 1. تنسيق وحدة السعر
+  
   formatUnit(unit: string): string {
     const map: any = { 
       'PerPerson': 'guest', 
@@ -86,7 +87,7 @@ export class ServiceDetailsComponent implements OnInit {
     return map[unit] || unit.toLowerCase();
   }
 
-  // ✅ 2. نص الموقع (مهم جداً)
+ 
   getLocationText(s: ServiceDetails): string {
     if (s.locationType === 'Mobile') {
       return `Mobile Service • Host travels to you in ${s.city}`;

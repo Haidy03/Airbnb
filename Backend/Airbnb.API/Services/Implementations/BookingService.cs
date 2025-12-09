@@ -229,11 +229,13 @@ namespace Airbnb.API.Services.Implementations
             {
                 Id = b.Id,
                 Type = "Experience",
-                ItemTitle = b.Experience.Title, 
-                PropertyImage = b.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? "",
+                ItemTitle = b.Experience.Title,
+                PropertyImage = b.Experience.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                    ?? b.Experience.Images?.FirstOrDefault()?.ImageUrl
+                    ?? "",
                 GuestName = $"{b.Guest.FirstName} {b.Guest.LastName}",
-                CheckInDate = b.Availability.Date,
-                CheckOutDate = b.Availability.Date.AddHours(b.Experience.DurationHours),
+                CheckInDate = b.Availability.Date.Add(b.Availability.StartTime),
+                CheckOutDate = b.Availability.Date.Add(b.Availability.StartTime).AddHours(b.Experience.DurationHours),
                 Status = b.Status.ToString(),
                 TotalPrice = b.TotalPrice,
                 NumberOfGuests = b.NumberOfGuests
@@ -285,23 +287,29 @@ namespace Airbnb.API.Services.Implementations
                 {
                     Id = expBooking.Id,
                     Type = "Experience",
+
+                    
                     PropertyTitle = expBooking.Experience.Title,
-                    PropertyImage = expBooking.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
-                            ?? expBooking.Experience.Images.FirstOrDefault()?.ImageUrl ?? "",
-
-                    GuestId = expBooking.GuestId,
-                    GuestName = $"{expBooking.Guest.FirstName} {expBooking.Guest.LastName}",
-                    GuestEmail = expBooking.Guest.Email,
-                    GuestPhone = expBooking.Guest.PhoneNumber,
-
-                    CheckInDate = expBooking.Availability.Date,
-                    CheckOutDate = expBooking.Availability.Date.AddHours(expBooking.Experience.DurationHours),
+                    PropertyImage = expBooking.Experience.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                    ?? expBooking.Experience.Images?.FirstOrDefault()?.ImageUrl
+                    ?? "",
+                    CheckInDate = expBooking.Availability.Date.Add(expBooking.Availability.StartTime),
+                    CheckOutDate = expBooking.Availability.Date
+                    .Add(expBooking.Availability.StartTime)
+                    .AddHours(expBooking.Experience.DurationHours)
+                    .AddMinutes(expBooking.Experience.DurationMinutes ?? 0),
 
                     NumberOfGuests = expBooking.NumberOfGuests,
                     NumberOfNights = 0, 
                     PricePerNight = expBooking.PricePerPerson, 
                     CleaningFee = 0,
                     TotalPrice = expBooking.TotalPrice,
+
+                   
+                    GuestId = expBooking.GuestId,
+                    GuestName = $"{expBooking.Guest.FirstName} {expBooking.Guest.LastName}",
+                    GuestEmail = expBooking.Guest.Email,
+                    GuestJoinedDate = expBooking.Guest.CreatedAt,
                     Status = expBooking.Status.ToString(),
                     SpecialRequests = expBooking.SpecialRequests,
                     CreatedAt = expBooking.CreatedAt
@@ -330,6 +338,7 @@ namespace Airbnb.API.Services.Implementations
                     GuestName = $"{srvBooking.Guest.FirstName} {srvBooking.Guest.LastName}",
                     GuestEmail = srvBooking.Guest.Email,
                     GuestPhone = srvBooking.Guest.PhoneNumber,
+                    GuestJoinedDate = srvBooking.Guest.CreatedAt,
 
                     CheckInDate = srvBooking.BookingDate,
                     CheckOutDate = srvBooking.BookingDate.AddHours(1), 
@@ -470,6 +479,7 @@ namespace Airbnb.API.Services.Implementations
                 GuestName = booking.Guest != null ? $"{booking.Guest.FirstName} {booking.Guest.LastName}".Trim() : "",
                 GuestEmail = booking.Guest?.Email ?? "",
                 GuestPhone = booking.Guest?.PhoneNumber,
+                GuestJoinedDate = booking.Guest?.CreatedAt ?? DateTime.UtcNow,
 
                 CheckInDate = booking.CheckInDate,
                 CheckOutDate = booking.CheckOutDate,

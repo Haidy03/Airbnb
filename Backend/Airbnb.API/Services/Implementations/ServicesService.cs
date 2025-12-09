@@ -188,6 +188,11 @@ namespace Airbnb.API.Services.Implementations
             var service = await _serviceRepository.GetServiceByIdAsync(dto.ServiceId);
             if (service == null) throw new Exception("Service not found");
 
+            if (service.HostId == guestId)
+            {
+                throw new InvalidOperationException("You cannot book your own service.");
+            }
+
             decimal finalPrice = service.PricePerUnit;
 
             // 2. If Package selected, get price from Repo

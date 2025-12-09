@@ -10,6 +10,7 @@ export interface Booking {
   guestEmail: string;
   guestPhone: string;
   guestProfileImage?: string;
+  guestJoinedDate: Date;
   numberOfGuests: number;
   
   // Dates
