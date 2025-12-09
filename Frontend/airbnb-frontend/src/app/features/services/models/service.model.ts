@@ -61,8 +61,15 @@ export interface ServiceDetails {
   categoryName: string;
   maxGuests: number;
   timeSlots: string[]; 
+  durationMinutes: number;
+  availabilities: ServiceAvailability[];
 }
 
+export interface ServiceAvailability {
+  dayOfWeek: number; // 0 = Sunday
+  day: string;       // "Sunday"
+  startTime: string; // "10:00"
+}
 export interface ServiceCategory {
   id: number;
   name: string;

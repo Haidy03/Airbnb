@@ -43,6 +43,10 @@ namespace Airbnb.API.DTOs.Services
         public List<IFormFile>? Images { get; set; }
         public int MaxGuests { get; set; }
         public List<string>? TimeSlots { get; set; }
+
+        [Required]
+        public int DurationMinutes { get; set; }
+        public string? AvailabilityJson { get; set; }
     }
 
 
@@ -65,6 +69,15 @@ namespace Airbnb.API.DTOs.Services
         public List<ServicePackageDto> Packages { get; set; }
         public int MaxGuests { get; set; }
         public List<string> TimeSlots { get; set; }
+        public int DurationMinutes { get; set; }
+        public List<ServiceAvailabilityDto> Availabilities { get; set; }
+    }
+
+    public class ServiceAvailabilityDto
+    {
+        public string Day { get; set; } // "Monday", "Tuesday"
+        public int DayOfWeek { get; set; } // 0, 1, 2
+        public string StartTime { get; set; } // "10:00"
     }
 
     public class ServiceQualificationDto

@@ -23,13 +23,24 @@
         </div>
       </div>
 
-      <!-- 2. Date Picker (Native for now, styled) -->
+      <!-- 2. Date Picker -->
       <div class="section">
         <label class="section-label">Select Date</label>
         <input type="date" 
                [ngModel]="selectedDate | date:'yyyy-MM-dd'" 
-               (ngModelChange)="selectedDate = $event"
+               (change)="onDateChange($event)" 
                class="form-control date-input">
+               
+       
+        <div *ngIf="filteredTimeSlots.length === 0" class="alert alert-warning small mt-3 border-0 bg-opacity-10 bg-warning text-dark">
+          <div class="d-flex gap-2">
+            <i class="bi bi-info-circle-fill text-warning"></i>
+            <div>
+              <strong>No slots on {{ selectedDate | date:'EEEE' }}.</strong><br>
+              This service is available on: <span class="fw-bold">{{ getAvailableDayNames() }}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 3. Selected Package Preview (If any) -->
@@ -43,19 +54,29 @@
         </div>
       </div>
 
-      <!-- 4. Time Slots -->
+      <!-- 4. Time Slots (Dynamic) -->
       <div class="section">
-        <label class="section-label mb-3">Select Time</label>
-        <div class="time-grid">
-          <button *ngFor="let time of availableTimeSlots" 
+        <div class="d-flex justify-content-between mb-3">
+          <label class="section-label mb-0">Available Times</label>
+        
+          <span class="badge bg-light text-dark border">
+            Duration: {{ service.durationMinutes }} min
+          </span>
+        </div>
+
+        <div class="time-grid" *ngIf="filteredTimeSlots.length > 0">
+          <button *ngFor="let time of filteredTimeSlots" 
                   class="time-btn" 
                   [class.selected]="selectedTime === time"
                   (click)="selectTime(time)">
             {{ time }}
           </button>
-          <p *ngIf="availableTimeSlots.length === 0" class="text-muted small">
-            No specific times available. Contact host.
-          </p>
+        </div>
+
+        
+        <div *ngIf="filteredTimeSlots.length === 0" class="alert alert-warning small mt-2">
+          <i class="bi bi-info-circle me-2"></i>
+          No slots available on {{ selectedDate | date:'EEEE' }}. Please try another date.
         </div>
       </div>
 

@@ -41,6 +41,7 @@ namespace Airbnb.API.Repositories.Implementations
                 .Include(s => s.Category)
                 .Include(s => s.Host)
                 .Include(s => s.Images)
+                .Include(s => s.Availabilities)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 

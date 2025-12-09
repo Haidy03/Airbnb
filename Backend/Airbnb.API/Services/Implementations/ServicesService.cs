@@ -48,12 +48,41 @@ namespace Airbnb.API.Services.Implementations
                 MinimumCost = dto.MinimumCost,
                 LocationType = dto.LocationType,
                 City = dto.City,
-                Status = ServiceStatus.PendingApproval,
-                CreatedAt = DateTime.UtcNow,
                 MaxGuests = dto.MaxGuests > 0 ? dto.MaxGuests : 1,
-                TimeSlots = dto.TimeSlots != null ? string.Join(",", dto.TimeSlots) : null,
+
+                DurationMinutes = dto.DurationMinutes,
+
+                Status = ServiceStatus.PendingApproval,
+                CreatedAt = DateTime.UtcNow
 
             };
+
+            if (!string.IsNullOrEmpty(dto.AvailabilityJson))
+            {
+                try
+                {
+                    var options = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+                    var slots = System.Text.Json.JsonSerializer.Deserialize<List<SlotInputDto>>(dto.AvailabilityJson, options);
+                    if (slots != null)
+                    {
+                        foreach (var slot in slots)
+                        {
+                            if (TimeSpan.TryParse(slot.Time, out var time))
+                            {
+                                service.Availabilities.Add(new ServiceAvailability
+                                {
+                                    DayOfWeek = (DayOfWeek)slot.Day,
+                                    StartTime = time
+                                });
+                            }
+                        }
+                    }
+                }
+                catch { /* Handle parsing error if needed */ }
+            }
 
 
             if (dto.Images != null && dto.Images.Count > 0)
@@ -114,6 +143,13 @@ namespace Airbnb.API.Services.Implementations
                 HostId = service.HostId,
                 HostJoinedDate = service.Host.CreatedAt,
                 MaxGuests = service.MaxGuests,
+                DurationMinutes = service.DurationMinutes,
+                Availabilities = service.Availabilities.Select(a => new ServiceAvailabilityDto
+                {
+                    DayOfWeek = (int)a.DayOfWeek,
+                    Day = a.DayOfWeek.ToString(),
+                    StartTime = a.StartTime.ToString(@"hh\:mm")
+                }).ToList(),
                 TimeSlots = !string.IsNullOrEmpty(service.TimeSlots)
                 ? service.TimeSlots.Split(',').ToList()
                 : new List<string>(),
@@ -520,5 +556,10 @@ namespace Airbnb.API.Services.Implementations
 
             return true;
         }
+    }
+    public class SlotInputDto
+    {
+        public int Day { get; set; }
+        public string Time { get; set; }
     }
 }

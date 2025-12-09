@@ -40,7 +40,7 @@ namespace Airbnb.API.Models
         public DbSet<ServiceImage> ServiceImages { get; set; }
         public DbSet<ServiceBooking> ServiceBookings { get; set; }
         public DbSet<ServiceReview> ServiceReviews { get; set; }
-
+        public DbSet<ServiceAvailability> ServiceAvailabilities { get; set; }
         public DbSet<ServiceQualification> ServiceQualifications { get; set; }
         public DbSet<ServicePackage> ServicePackages { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)

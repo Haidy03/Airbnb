@@ -18,11 +18,10 @@ export class CreateServiceReviewComponent implements OnInit {
   title = '';
   description = '';
   price = 0;
-  category = '';
-  locationType = ''; // Text representation
-  coverPhotoUrl = ''; // Preview URL
+  duration = 0;
+  locationType = ''; 
+  coverPhotoUrl = ''; 
 
-  // Helper Maps
   private unitLabels: any = { '0': 'hour', '1': 'guest', '2': 'session', '3': 'flat fee' };
 
   constructor(
@@ -40,10 +39,12 @@ export class CreateServiceReviewComponent implements OnInit {
     this.description = localStorage.getItem('draftServiceDescription') || '';
     this.price = Number(localStorage.getItem('draftServicePrice'));
     
+    
+    this.duration = Number(localStorage.getItem('draftServiceDuration') || '60');
+
     const type = localStorage.getItem('draftServiceLocationType');
     this.locationType = type === '0' ? 'Mobile (You travel)' : 'On-Site (Guests come)';
 
-    // Get Cover Photo for preview
     const photos = this.store.getPhotos();
     if (photos.length > 0) {
       this.coverPhotoUrl = URL.createObjectURL(photos[0]);
@@ -63,8 +64,8 @@ export class CreateServiceReviewComponent implements OnInit {
     this.isSubmitting.set(true);
 
     const formData = new FormData();
-
     
+    // 1. Basic Info
     formData.append('Title', this.title);
     formData.append('Description', this.description);
     formData.append('CategoryId', localStorage.getItem('draftServiceCategory') || '1');
@@ -72,26 +73,31 @@ export class CreateServiceReviewComponent implements OnInit {
     formData.append('PricingUnit', localStorage.getItem('draftServiceUnit') || '1');
     formData.append('LocationType', localStorage.getItem('draftServiceLocationType') || '1');
     formData.append('City', localStorage.getItem('draftServiceCity') || '');
-    formData.append('MinimumCost', '0'); // Optional
+    formData.append('MinimumCost', '0'); 
     formData.append('MaxGuests', localStorage.getItem('draftServiceMaxGuests') || '1');
 
+    // ✅ 2. New Availability Logic (Duration + JSON)
+    const duration = localStorage.getItem('draftServiceDuration');
+    const availabilityJson = localStorage.getItem('draftServiceAvailabilityJson');
 
-     const timeSlots = JSON.parse(localStorage.getItem('draftServiceTimeSlots') || '[]');
-    timeSlots.forEach((slot: string) => {
-      formData.append('TimeSlots', slot); 
-    });
-    // 2. Append Photos
+    if (duration) formData.append('DurationMinutes', duration);
+    if (availabilityJson) formData.append('AvailabilityJson', availabilityJson);
+
+    
+
+    // 3. Append Photos
     const photos = this.store.getPhotos();
     photos.forEach((file) => {
-      formData.append('Images', file); // 'Images' must match backend property
+      formData.append('Images', file); 
     });
 
-    // 3. Send to Backend
+    // 4. Send to Backend
     this.servicesService.createService(formData).subscribe({
       next: (res) => {
+       
         alert('Service created successfully! Waiting for admin approval.');
         this.clearDraft();
-        this.router.navigate(['/host/services']); // Or 'my-services'
+        this.router.navigate(['/host/services']); 
       },
       error: (err) => {
         console.error(err);
@@ -102,6 +108,7 @@ export class CreateServiceReviewComponent implements OnInit {
   }
 
   clearDraft() {
+   
     localStorage.removeItem('draftServiceTitle');
     localStorage.removeItem('draftServiceDescription');
     localStorage.removeItem('draftServicePrice');
@@ -109,5 +116,11 @@ export class CreateServiceReviewComponent implements OnInit {
     localStorage.removeItem('draftServiceCategory');
     localStorage.removeItem('draftServiceLocationType');
     localStorage.removeItem('draftServiceCity');
+    
+  
+    localStorage.removeItem('draftServiceMaxGuests');
+    localStorage.removeItem('draftServiceDuration');
+    localStorage.removeItem('draftServiceAvailabilityJson');
+    localStorage.removeItem('draftServiceTimeSlots'); 
   }
 }
