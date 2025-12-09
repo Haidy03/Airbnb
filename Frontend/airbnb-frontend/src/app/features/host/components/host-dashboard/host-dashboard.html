@@ -79,7 +79,7 @@
             [queryParams]="{ guestId: booking.guestId, propertyId: booking.propertyId }">
             <span class="btn-icon">💬</span> Message
           </button>
-          <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">View details</button>
+          <button class="action-btn secondary" (click)="viewDetails(booking)">View details</button>
         </div>
       </div>
     </div>
@@ -138,7 +138,7 @@
             (click)="openChat(booking)">
             <span class="btn-icon">💬</span> Message
           </button>
-          <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">View details</button>
+          <button class="action-btn secondary" (click)="viewDetails(booking)">View details</button>
         </div>
       </div>
     </div>
@@ -184,7 +184,7 @@
           <button class="action-btn" (click)="openChat(booking)">
             <span class="btn-icon">💬</span> Message
           </button>
-          <button class="action-btn secondary" [routerLink]="['/host/bookings', booking.id]">Details</button>
+          <button class="action-btn secondary" (click)="viewDetails(booking)">Details</button>
         </div>
       </div>
     </div>

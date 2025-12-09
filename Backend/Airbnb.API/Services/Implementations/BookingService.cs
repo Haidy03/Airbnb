@@ -269,15 +269,76 @@ namespace Airbnb.API.Services.Implementations
             return bookings.Select(MapToResponseDto).ToList();
         }
 
-        public async Task<BookingResponseDto?> GetBookingByIdAsync(int id, string userId)
+        public async Task<BookingResponseDto?> GetBookingByIdAsync(int id, string userId, string type)
         {
-            var booking = await _bookingRepository.GetByIdAsync(id);
-            if (booking == null) return null;
+            if (string.Equals(type, "Experience", StringComparison.OrdinalIgnoreCase))
+            {
+                // 1. التعامل مع Experiences
+                var expBooking = await _experienceRepository.GetBookingByIdAsync(id);
+                if (expBooking == null) return null;
 
-            if (booking.GuestId != userId && booking.Property.HostId != userId)
-                throw new UnauthorizedAccessException("You are not authorized to view this booking");
+                // التأكد من الصلاحية
+                if (expBooking.GuestId != userId && expBooking.Experience.HostId != userId)
+                    throw new UnauthorizedAccessException("Not authorized");
 
-            return MapToResponseDto(booking);
+                // تحويل إلى DTO موحد
+                return new BookingResponseDto
+                {
+                    Id = expBooking.Id,
+                    Type = "Experience",
+                    ItemTitle = expBooking.Experience.Title,
+                    PropertyTitle = expBooking.Experience.Title, // Mapping for UI
+                    PropertyImage = expBooking.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? "",
+                    GuestId = expBooking.GuestId,
+                    GuestName = $"{expBooking.Guest.FirstName} {expBooking.Guest.LastName}",
+                    GuestEmail = expBooking.Guest.Email,
+                    CheckInDate = expBooking.Availability.Date,
+                    CheckOutDate = expBooking.Availability.Date.AddHours(expBooking.Experience.DurationHours),
+                    NumberOfGuests = expBooking.NumberOfGuests,
+                    TotalPrice = expBooking.TotalPrice,
+                    Status = expBooking.Status.ToString(),
+                    SpecialRequests = expBooking.SpecialRequests,
+                    CreatedAt = expBooking.CreatedAt
+                };
+            }
+            else if (string.Equals(type, "Service", StringComparison.OrdinalIgnoreCase))
+            {
+                // 2. التعامل مع Services
+                var srvBooking = await _serviceRepository.GetServiceBookingByIdAsync(id);
+                if (srvBooking == null) return null;
+
+                if (srvBooking.GuestId != userId && srvBooking.Service.HostId != userId)
+                    throw new UnauthorizedAccessException("Not authorized");
+
+                return new BookingResponseDto
+                {
+                    Id = srvBooking.Id,
+                    Type = "Service",
+                    ItemTitle = srvBooking.Service.Title,
+                    PropertyTitle = srvBooking.Service.Title,
+                    PropertyImage = srvBooking.Service.Images.FirstOrDefault(i => i.IsCover)?.Url ?? "",
+                    GuestId = srvBooking.GuestId,
+                    GuestName = $"{srvBooking.Guest.FirstName} {srvBooking.Guest.LastName}",
+                    GuestEmail = srvBooking.Guest.Email,
+                    CheckInDate = srvBooking.BookingDate,
+                    CheckOutDate = srvBooking.BookingDate.AddHours(1), // Default duration
+                    NumberOfGuests = srvBooking.NumberOfGuests,
+                    TotalPrice = srvBooking.TotalPrice,
+                    Status = srvBooking.Status,
+                    CreatedAt = srvBooking.CreatedAt
+                };
+            }
+            else
+            {
+                // 3. التعامل مع Properties (الكود القديم)
+                var booking = await _bookingRepository.GetByIdAsync(id);
+                if (booking == null) return null;
+
+                if (booking.GuestId != userId && booking.Property.HostId != userId)
+                    throw new UnauthorizedAccessException("You are not authorized to view this booking");
+
+                return MapToResponseDto(booking);
+            }
         }
 
         public async Task<bool> ApproveBookingAsync(int id, string hostId)
