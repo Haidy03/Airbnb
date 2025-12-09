@@ -14,7 +14,11 @@ export class BookingDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private bookingService = inject(BookingService);
+  isProperty = computed(() => !this.booking()?.type || this.booking()?.type === 'Property');
+  isExperience = computed(() => this.booking()?.type === 'Experience');
+  isService = computed(() => this.booking()?.type === 'Service');
 
+  
   // Signals
   booking = signal<Booking | null>(null);
   isLoading = signal(true);
@@ -23,10 +27,10 @@ export class BookingDetailsComponent implements OnInit {
   // Computed properties
   nightsCount = computed(() => {
     const b = this.booking();
-    if (!b) return 0;
+    if (!b || this.isExperience() || this.isService()) return 0; 
+    
     const start = new Date(b.checkInDate);
     const end = new Date(b.checkOutDate);
-   
     return Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
   });
 

@@ -52,21 +52,34 @@
 
       <!-- Trip Details -->
       <div class="info-card trip-card">
-        <h3>Trip details</h3>
-        
+        <h3>
+        <span *ngIf="isProperty()">Trip details</span>
+        <span *ngIf="isExperience()">Experience details</span>
+        <span *ngIf="isService()">Service details</span>
+      </h3>
+        <!-- Dates (Different format for Service/Experience) -->
         <div class="detail-row">
           <div class="detail-icon">📅</div>
           <div class="detail-content">
-            <h4>Dates</h4>
-            <p>{{ booking()?.checkInDate | date:'mediumDate' }} – {{ booking()?.checkOutDate | date:'mediumDate' }}</p>
+             <h4>{{ isProperty() ? 'Dates' : 'Date & Time' }}</h4>
+
+             <!-- Property: Range -->
+            <p *ngIf="isProperty()">
+            {{ booking()?.checkInDate | date:'mediumDate' }} – {{ booking()?.checkOutDate | date:'mediumDate' }}
+          </p>
+          <!-- Experience/Service: Specific Date/Time -->
+          <p *ngIf="!isProperty()">
+            {{ booking()?.checkInDate | date:'mediumDate' }} at {{ booking()?.checkInDate | date:'shortTime' }}
+          </p>
+
           </div>
         </div>
-
+           <!-- Guests -->
         <div class="detail-row">
           <div class="detail-icon">👥</div>
           <div class="detail-content">
-            <h4>Guests</h4>
-            <p>{{ booking()?.numberOfGuests }} guest{{ booking()?.numberOfGuests !== 1 ? 's' : '' }}</p>
+            <h4>{{ isService() ? 'Attendees' : 'Guests' }}</h4>
+           <p>{{ booking()?.numberOfGuests }} {{ booking()?.numberOfGuests !== 1 ? 'people' : 'person' }}</p>
           </div>
         </div>
       </div>
@@ -93,10 +106,12 @@
         
         <!-- Property Preview -->
         <div class="property-preview">
-          <img [src]="booking()?.propertyImage || 'assets/images/placeholder-property.jpg'" alt="Property">
+         <img [src]="booking()?.propertyImage || 'assets/images/placeholder.jpg'" alt="Listing Image">
           <div class="property-text">
             <h4>{{ booking()?.propertyTitle }}</h4>
-            <p>Entire rental unit</p>
+            <p *ngIf="isProperty()">Entire rental unit</p>
+            <p *ngIf="isExperience()">Experience</p>
+            <p *ngIf="isService()">Service</p>
           </div>
         </div>
 
@@ -104,11 +119,18 @@
 
         <!-- Payout Breakdown -->
         <h3>Payout details</h3>
-        <div class="price-row">
+        <!-- 1. CASE PROPERTY: Price x Nights -->
+        <div class="price-row" *ngIf="isProperty()">
           <span>LE.{{ booking()?.pricePerNight }} x {{ nightsCount() }} nights</span>
           <span>LE.{{ (booking()?.pricePerNight || 0) * nightsCount() }}</span>
         </div>
-        <div class="price-row">
+         <!-- 2. CASE SERVICE/EXPERIENCE: Price x Guests -->
+        <div class="price-row" *ngIf="!isProperty()">
+          <span>LE.{{ booking()?.pricePerNight }} x {{ booking()?.numberOfGuests }} guests</span>
+          <span>LE.{{ (booking()?.pricePerNight || 0) * (booking()?.numberOfGuests || 1) }}</span>
+        </div>
+        <!-- Cleaning Fee (Show ONLY if > 0) -->
+        <div class="price-row" *ngIf="booking()?.cleaningFee && booking()?.cleaningFee! > 0">
           <span>Cleaning fee</span>
           <span>LE.{{ booking()?.cleaningFee }}</span>
         </div>
