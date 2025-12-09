@@ -32,9 +32,14 @@ export class ServiceBookingModalComponent implements OnInit {
   isLoadingSlots = false;
  
   daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
+  minDate: string = '';
   ngOnInit() {
     this.selectedDate = new Date();
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    this.minDate = `${year}-${month}-${day}`;
    
     if (!this.service.availabilities) {
       this.service.availabilities = [];
@@ -48,6 +53,33 @@ export class ServiceBookingModalComponent implements OnInit {
     this.checkBlockedSlots(dateStr);
   }
 
+  isTimePassed(timeSlot: string): boolean {
+    
+    const todayStr = new Date().toDateString();
+    const selectedStr = new Date(this.selectedDate).toDateString();
+    
+    if (todayStr !== selectedStr) {
+      return false; 
+    }
+
+   
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    
+    const [time, modifier] = timeSlot.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+
+    if (hours === 12) hours = 0;
+    if (modifier === 'PM') hours = hours + 12;
+
+   
+    if (hours < currentHour) return true; 
+    if (hours === currentHour && minutes < currentMinute) return true; 
+
+    return false;
+  }
   onDateChange(event: any) {
     const dateString = event.target.value;
     if (!dateString) return;
