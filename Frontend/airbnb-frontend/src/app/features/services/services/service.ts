@@ -71,33 +71,43 @@ export class ServicesService {
   // ✅ NEW: Reviews Methods
   // ==========================================
 
-  // إضافة ريفيو جديد
+
   addReview(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/reviews`, data);
   }
 
-  // جلب كل ريفيوهات خدمة معينة
+  
   getReviews(serviceId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/${serviceId}/reviews`);
   }
 
-  // حذف ريفيو
   deleteReview(reviewId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/reviews/${reviewId}`);
   }
 
-  // جلب ريفيو واحد (لصفحة التعديل)
-  // ملاحظة: تأكدي أن الباك إند يدعم هذا المسار، أو استخدمي دالة getReviewById العامة لو متاحة
   getReviewById(reviewId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/reviews/${reviewId}`);
   }
 
-  // تعديل ريفيو
+ 
   updateReview(reviewId: number, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/reviews/${reviewId}`, data);
   }
   cancelBooking(bookingId: number): Observable<any> {
-    // نفترض أن المسار في الباك إند هو: api/Services/bookings/{id}/cancel
     return this.http.post(`${this.apiUrl}/bookings/${bookingId}/cancel`, {});
   }
+
+  uploadImage(serviceId: number, file: File): Observable<any> {
+  const formData = new FormData();
+  formData.append('file', file);
+  return this.http.post(`${this.apiUrl}/${serviceId}/images`, formData);
+}
+
+deleteImage(imageId: number): Observable<any> {
+  return this.http.delete(`${this.apiUrl}/images/${imageId}`);
+}
+
+setCoverImage(imageId: number): Observable<any> {
+  return this.http.patch(`${this.apiUrl}/images/${imageId}/cover`, {});
+}
 }

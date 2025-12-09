@@ -11,8 +11,9 @@
       <span class="status-badge" 
             [class.active]="service.status === 'Active'"
             [class.pending]="service.status === 'PendingApproval'"
-            [class.inactive]="service.status === 'Inactive'">
-        {{ service.status === 'PendingApproval' ? 'Pending' : service.status }}
+            [class.inactive]="service.status === 'Inactive'"
+            [class.rejected]="service.status === 'Rejected'">
+        {{ service.status === 'PendingApproval' ? 'Pending Approval' : service.status }}
       </span>
 
       <!-- Delete Button -->
@@ -25,24 +26,32 @@
     </div>
   </header>
 
+  <!-- Rejection Reason (If Rejected) -->
+  <div *ngIf="service.status === 'Rejected'" class="alert alert-danger mb-4">
+    <strong><i class="bi bi-exclamation-circle"></i> Service Rejected:</strong>
+    {{ service.rejectionReason || 'No reason provided.' }}
+  </div>
+
   <!-- Main Content -->
   <div class="content-grid">
     
     <!-- Left: Image & Info -->
     <div class="main-info">
       <div class="image-wrapper">
-        <img [src]="getImageUrl(service.images[0])" class="service-img">
-      </div>
+      <img [src]="getMainImageUrl()" class="service-img" onerror="this.src='assets/images/placeholder.jpg'">
+    </div>
       
       <h1 class="service-title">{{ service.title }}</h1>
-      <p class="service-cat text-muted">{{ service.categoryName }}</p>
+      <p class="service-cat text-muted">
+        <i class="bi bi-tag-fill me-1"></i> {{ service.categoryName }}
+      </p>
       
       <div class="price-box">
         <span class="price">{{ service.pricePerUnit | currency:'EGP ' }}</span>
         <span class="unit">/ {{ service.pricingUnit }}</span>
       </div>
 
-      <hr>
+      <hr class="my-4">
 
       <!-- Visibility Toggle Section -->
       <div class="visibility-section">
@@ -51,6 +60,7 @@
           <p class="text-muted small" *ngIf="service.status === 'Active'">Your service is live and visible to guests.</p>
           <p class="text-muted small" *ngIf="service.status === 'Inactive'">Your service is hidden from search.</p>
           <p class="text-danger small" *ngIf="service.status === 'PendingApproval'">Waiting for admin approval.</p>
+          <p class="text-danger small" *ngIf="service.status === 'Rejected'">This service was rejected. Please edit and resubmit.</p>
         </div>
 
         <!-- Toggle Switch -->
@@ -63,22 +73,91 @@
         </label>
       </div>
 
+      <!-- Packages Section (If any) -->
+      <div class="mt-4" *ngIf="service.packages && service.packages.length > 0">
+        <h3>Packages</h3>
+        <div class="row g-3 mt-2">
+          <div *ngFor="let pkg of service.packages" class="col-md-6">
+            <div class="border rounded p-3 bg-light">
+              <h5 class="mb-1 fw-bold">{{ pkg.title }}</h5>
+              <p class="small text-muted mb-2">{{ pkg.description }}</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold">{{ pkg.price | currency:'EGP ' }}</span>
+                <span class="badge bg-secondary">{{ pkg.duration }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Right: Additional Details -->
     <div class="side-details">
+      
+      <!-- Description -->
       <div class="detail-card">
         <h3>Description</h3>
-        <p>{{ service.description }}</p>
+        <p class="text-muted" style="white-space: pre-line;">{{ service.description }}</p>
       </div>
 
+      <!-- Location Info -->
       <div class="detail-card">
         <h3>Location</h3>
-        <p><i class="bi bi-geo-alt"></i> {{ service.city }}</p>
-        <p class="text-muted small">
+        <p class="mb-1"><i class="bi bi-geo-alt-fill text-danger me-2"></i> {{ service.city }}</p>
+        <p class="text-muted small mb-0">
+          <span class="badge bg-dark me-2">{{ service.locationType }}</span>
           {{ service.locationType === 'Mobile' ? 'You travel to guests' : 'Guests come to you' }}
         </p>
+        <p *ngIf="service.coveredAreas" class="mt-2 small text-muted">
+          <strong>Covered Areas:</strong> {{ service.coveredAreas }}
+        </p>
       </div>
+
+      <!-- ✅ Availability & Capacity (NEW) -->
+      <div class="detail-card">
+        <h3>Availability & Capacity</h3>
+        
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Max Guests:</span>
+          <span class="fw-bold">{{ service.maxGuests }}</span>
+        </div>
+        
+        <div class="d-flex justify-content-between mb-3">
+          <span class="text-muted">Duration:</span>
+          <span class="fw-bold">{{ service.durationMinutes }} mins</span>
+        </div>
+
+        <hr>
+
+        <h4 class="h6 fw-bold mt-3 mb-2">Schedule:</h4>
+        <div *ngIf="service.availabilities && service.availabilities.length > 0; else noSlots">
+          <div class="d-flex flex-wrap gap-2">
+            <span *ngFor="let slot of service.availabilities" class="badge bg-light text-dark border">
+              {{ slot.day }} @ {{ slot.startTime }}
+            </span>
+          </div>
+        </div>
+        <ng-template #noSlots>
+          <p class="small text-muted fst-italic">No specific time slots added.</p>
+        </ng-template>
+      </div>
+
+      <!-- Requirements & Policy -->
+      <div class="detail-card">
+        <h3>Policy & Requirements</h3>
+        
+        <div class="mb-3">
+          <h6 class="fw-bold small mb-1">Cancellation Policy</h6>
+          <p class="small text-muted">{{ service.cancellationPolicy || 'Standard 48-hour cancellation.' }}</p>
+        </div>
+
+        <div>
+          <h6 class="fw-bold small mb-1">Guest Requirements</h6>
+          <p class="small text-muted">{{ service.guestRequirements || 'No specific requirements.' }}</p>
+        </div>
+      </div>
+
     </div>
 
   </div>

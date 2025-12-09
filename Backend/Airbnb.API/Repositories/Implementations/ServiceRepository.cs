@@ -105,7 +105,8 @@ namespace Airbnb.API.Repositories.Implementations
             return await _context.Services
                 .Include(s => s.Category)
                 .Include(s => s.Images)
-                .Include(s => s.Host) 
+                .Include(s => s.Host)
+                .Include(s => s.Availabilities)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
@@ -208,6 +209,19 @@ namespace Airbnb.API.Repositories.Implementations
                             && b.Status != "Cancelled"
                             && b.Status != "Rejected")
                 .SumAsync(b => b.NumberOfGuests);
+        }
+        public async Task<ServiceImage?> GetImageByIdAsync(int id)
+        {
+            return await _context.ServiceImages
+                .Include(i => i.Service)
+                    .ThenInclude(s => s.Images) 
+                .FirstOrDefaultAsync(i => i.Id == id);
+        }
+
+        public async Task DeleteServiceImageAsync(ServiceImage image)
+        {
+            _context.ServiceImages.Remove(image);
+            await _context.SaveChangesAsync();
         }
     }
 }

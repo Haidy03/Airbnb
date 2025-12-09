@@ -227,5 +227,45 @@ namespace Airbnb.API.Controllers
             }
         }
 
+        [HttpPost("{id}/images")]
+        [Authorize]
+        public async Task<IActionResult> UploadImage(int id, IFormFile file)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var url = await _servicesService.UploadServiceImageAsync(id, userId, file);
+                return Ok(new { success = true, url });
+            }
+            catch (UnauthorizedAccessException) { return Forbid(); }
+            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpDelete("images/{imageId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteImage(int imageId)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var result = await _servicesService.DeleteServiceImageAsync(imageId, userId);
+                return result ? Ok(new { success = true }) : NotFound();
+            }
+            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpPatch("images/{imageId}/cover")]
+        [Authorize]
+        public async Task<IActionResult> SetCover(int imageId)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var result = await _servicesService.SetCoverImageAsync(imageId, userId);
+                return result ? Ok(new { success = true }) : NotFound();
+            }
+            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
     }
 }

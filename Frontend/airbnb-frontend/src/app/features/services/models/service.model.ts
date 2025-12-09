@@ -50,7 +50,7 @@ export interface ServiceDetails {
   city: string;
   coveredAreas?: string;
 
-  images: string[];
+  images: ServiceImage[];
   rating: number;
   
   cancellationPolicy?: string;
@@ -88,4 +88,10 @@ export interface HostService {
   rating: number;
   categoryName: string;
   rejectionReason?: string;
+}
+
+export interface ServiceImage {
+  id: number;
+  url: string;
+  isCover: boolean;
 }

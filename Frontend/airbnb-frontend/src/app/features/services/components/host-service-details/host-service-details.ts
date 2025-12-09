@@ -39,17 +39,31 @@ export class HostServiceDetailsComponent implements OnInit {
     });
   }
 
-  getImageUrl(url: string) {
-    if (!url) return 'assets/images/placeholder.jpg';
-    if (url.startsWith('http')) return url;
-    return `${this.baseUrl}/${url}`;
+  getImageUrl(url: string | undefined | null) {
+  if (!url) return 'assets/images/placeholder.jpg';
+  
+  if (url.startsWith('http')) return url;
+  const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+  const cleanBase = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
+  return `${cleanBase}/${cleanUrl}`;
+  }
+  
+  getMainImageUrl(): string {
+    if (!this.service || !this.service.images || this.service.images.length === 0) {
+      return 'assets/images/placeholder.jpg';
+    }
+    const coverImage = this.service.images.find((img: any) => img.isCover === true);
+    const targetImage = coverImage || this.service.images[0];
+    
+    const url = targetImage.url || targetImage; 
+    return this.getImageUrl(url);
   }
 
   // Toggle Status Logic
   toggleStatus() {
     if (!this.service) return;
     
-    // منع التغيير لو الحالة Pending أو Rejected
+    
     if (this.service.status === 'PendingApproval' || this.service.status === 'Rejected') {
       alert('Cannot change status while Pending or Rejected.');
       return;
@@ -58,7 +72,7 @@ export class HostServiceDetailsComponent implements OnInit {
     this.isToggling.set(true);
     this.servicesService.toggleServiceStatus(this.service.id).subscribe({
       next: () => {
-        // عكس الحالة محلياً
+        
         this.service.status = this.service.status === 'Active' ? 'Inactive' : 'Active';
         this.isToggling.set(false);
       },

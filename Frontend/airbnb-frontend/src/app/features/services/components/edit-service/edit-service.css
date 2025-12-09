@@ -83,3 +83,67 @@ label {
 .btn-secondary { background: #fff; border: 1px solid #222; color: #222; }
 .btn-dark { background: #222; color: #fff; }
 .btn-dark:disabled { opacity: 0.7; }
+
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.photo-card {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-actions {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: 0.2s;
+}
+
+.photo-card:hover .photo-actions {
+  opacity: 1;
+}
+
+.btn-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  color: #222;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.btn-icon.delete:hover { background: #dc3545; color: white; }
+.btn-icon.cover:hover { background: #ffc107; }
+
+.cover-badge {
+  position: absolute;
+  top: 8px; left: 8px;
+  background: #222; color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.photo-card.uploading {
+  background: #f0f0f0;
+  display: flex; align-items: center; justify-content: center;
+}

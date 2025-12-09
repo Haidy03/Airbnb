@@ -12,19 +12,17 @@
 
     <form *ngIf="!isLoading()" [formGroup]="editForm" (ngSubmit)="onSubmit()">
       
-      <!-- Title -->
+      <!-- ================= BASIC INFO ================= -->
       <div class="form-group">
         <label>Title</label>
         <input type="text" formControlName="title" class="form-control">
       </div>
 
-      <!-- Description -->
       <div class="form-group">
         <label>Description</label>
         <textarea formControlName="description" rows="5" class="form-control"></textarea>
       </div>
 
-      <!-- Grid for Price & Guests -->
       <div class="form-row">
         <div class="form-group">
           <label>Price (EGP)</label>
@@ -36,7 +34,6 @@
         </div>
       </div>
 
-      <!-- Location -->
       <div class="form-row">
         <div class="form-group">
           <label>City</label>
@@ -51,23 +48,92 @@
         </div>
       </div>
 
-      <!-- Time Slots -->
+      <hr class="my-4">
+
+      <!-- ================= IMAGES (NEW) ================= -->
       <div class="form-group">
-        <label>Time Slots</label>
-        <div class="d-flex gap-2 mb-2">
-          <input type="time" class="form-control w-auto" (change)="addTimeSlot($event)">
-          <small class="text-muted align-self-center">Select to add</small>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <label class="mb-0 fw-bold">Photos</label>
+          
+          <label class="btn btn-sm btn-outline-dark cursor-pointer d-flex align-items-center gap-2" [class.disabled]="isUploading()">
+            <i class="bi bi-upload"></i> Add Photo
+            <input type="file" (change)="onFileSelected($event)" hidden accept="image/*" [disabled]="isUploading()">
+          </label>
         </div>
-        
-        <div class="slots-container">
-          <div *ngFor="let time of timeSlots; let i = index" class="slot-chip">
-            {{ time }}
-            <span (click)="removeTimeSlot(i)" class="remove-btn">×</span>
+
+        <div class="photos-grid">
+          <div *ngFor="let img of images" class="photo-card" [class.is-cover]="img.isCover">
+            <img [src]="img.url" alt="Service Img">
+            
+            <div class="photo-actions">
+              <!-- Delete -->
+              <button type="button" class="btn-icon delete" (click)="deleteImg(img.id)" title="Delete">
+                <i class="bi bi-trash"></i>
+              </button>
+              
+              <!-- Set Cover (يظهر فقط إذا لم تكن الصورة الرئيسية) -->
+              <button type="button" class="btn-icon cover" *ngIf="!img.isCover" (click)="setCover(img.id)" title="Make Cover">
+                <i class="bi bi-star"></i>
+              </button>
+            </div>
+            
+            <span class="cover-badge" *ngIf="img.isCover">Cover</span>
+          </div>
+          
+          <!-- Loading Placeholder -->
+          <div *ngIf="isUploading()" class="photo-card uploading">
+            <div class="spinner-border spinner-border-sm text-secondary"></div>
           </div>
         </div>
       </div>
 
-      <!-- Actions -->
+      <hr class="my-4">
+
+      <!-- ================= AVAILABILITY (NEW) ================= -->
+      <h4 class="mb-3 fs-5 fw-bold">Availability & Duration</h4>
+
+      <!-- Duration -->
+      <div class="form-group mb-4">
+        <label>Duration (per session)</label>
+        <select class="form-select w-50" [(ngModel)]="duration" [ngModelOptions]="{standalone: true}">
+          <option [value]="30">30 Minutes</option>
+          <option [value]="60">1 Hour</option>
+          <option [value]="90">1.5 Hours</option>
+          <option [value]="120">2 Hours</option>
+          <option [value]="180">3 Hours</option>
+          <option [value]="240">4 Hours</option>
+        </select>
+      </div>
+
+      <!-- Weekly Schedule -->
+      <div class="form-group">
+        <label>Weekly Schedule</label>
+        
+        <div class="d-flex gap-2 mb-3">
+          <!-- Select Day -->
+          <select class="form-select" [(ngModel)]="tempDay" [ngModelOptions]="{standalone: true}">
+            <option *ngFor="let day of days" [value]="day.id">{{ day.name }}</option>
+          </select>
+
+          <!-- Select Time -->
+          <input type="time" class="form-control" [(ngModel)]="tempTime" [ngModelOptions]="{standalone: true}">
+          
+          <button type="button" class="btn btn-dark" (click)="addSlot()" [disabled]="!tempTime">Add</button>
+        </div>
+
+        <!-- List -->
+        <div class="slots-container">
+          <div *ngFor="let slot of slots; let i = index" class="slot-chip">
+            <strong>{{ getDayName(slot.day) }}</strong> {{ slot.time }}
+            <span (click)="removeSlot(i)" class="remove-btn">×</span>
+          </div>
+          <p *ngIf="slots.length === 0" class="text-muted small">No slots added.</p>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <!-- ================= ACTIONS ================= -->
       <div class="form-actions">
         <button type="button" class="btn btn-secondary" (click)="goBack()">Cancel</button>
         <button type="submit" class="btn btn-dark" [disabled]="editForm.invalid || isSaving()">
