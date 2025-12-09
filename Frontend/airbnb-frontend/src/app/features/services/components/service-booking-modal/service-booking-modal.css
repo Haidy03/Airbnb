@@ -12,7 +12,7 @@
 .modal-content {
   background: white;
   width: 100%;
-  max-width: 500px; /* نفس عرض الصورة */
+  max-width: 500px; 
   border-radius: 16px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.28);
   max-height: 85vh;
@@ -146,7 +146,7 @@
 .time-btn {
   background: white;
   border: 1px solid #ddd;
-  border-radius: 20px; /* Pill shape */
+  border-radius: 20px; 
   padding: 8px 0;
   font-size: 14px;
   font-weight: 500;
@@ -182,3 +182,16 @@
 /* Animations */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+
+.time-btn:disabled, .time-btn.disabled-slot {
+  background-color: #f3f3f3;
+  color: #ccc;
+  border-color: #e0e0e0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.time-btn.disabled-slot:hover {
+  border-color: #e0e0e0; 
+}

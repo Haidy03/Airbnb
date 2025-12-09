@@ -103,11 +103,15 @@ export class ServicesService {
   return this.http.post(`${this.apiUrl}/${serviceId}/images`, formData);
 }
 
-deleteImage(imageId: number): Observable<any> {
-  return this.http.delete(`${this.apiUrl}/images/${imageId}`);
-}
+  deleteImage(imageId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/images/${imageId}`);
+  }
 
-setCoverImage(imageId: number): Observable<any> {
-  return this.http.patch(`${this.apiUrl}/images/${imageId}/cover`, {});
-}
+  setCoverImage(imageId: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/images/${imageId}/cover`, {});
+  }
+
+  getBlockedSlots(serviceId: number, date: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${serviceId}/blocked-slots?date=${date}`);
+  }
 }

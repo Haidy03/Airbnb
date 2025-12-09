@@ -64,14 +64,26 @@
           </span>
         </div>
 
-        <div class="time-grid" *ngIf="filteredTimeSlots.length > 0">
-          <button *ngFor="let time of filteredTimeSlots" 
-                  class="time-btn" 
-                  [class.selected]="selectedTime === time"
-                  (click)="selectTime(time)">
-            {{ time }}
-          </button>
-        </div>
+        <!-- Time Grid -->
+<div class="time-grid" *ngIf="filteredTimeSlots.length > 0">
+  <button *ngFor="let time of filteredTimeSlots" 
+          class="time-btn" 
+          [class.selected]="selectedTime === time"
+          [class.disabled-slot]="isSlotDisabled(time)"
+          [disabled]="isSlotDisabled(time)"
+          (click)="!isSlotDisabled(time) && selectTime(time)">
+    
+    <!-- محتوى الزر -->
+    <span *ngIf="!isSlotDisabled(time)">{{ time }}</span>
+    <span *ngIf="isSlotDisabled(time)" class="text-decoration-line-through text-muted">{{ time }}</span>
+  
+  </button>
+</div>
+
+<!-- Loading Indicator (Optional) -->
+<div *ngIf="isLoadingSlots" class="text-center mt-2">
+  <small class="text-muted">Checking availability...</small>
+</div>
 
         
         <div *ngIf="filteredTimeSlots.length === 0" class="alert alert-warning small mt-2">

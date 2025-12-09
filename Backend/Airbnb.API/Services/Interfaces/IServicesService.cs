@@ -34,6 +34,7 @@ namespace Airbnb.API.Services.Interfaces
         Task<string> UploadServiceImageAsync(int serviceId, string hostId, IFormFile file);
         Task<bool> DeleteServiceImageAsync(int imageId, string hostId);
         Task<bool> SetCoverImageAsync(int imageId, string hostId);
+        Task<List<string>> GetBlockedSlotsAsync(int serviceId, DateTime date);
 
     }
 }
