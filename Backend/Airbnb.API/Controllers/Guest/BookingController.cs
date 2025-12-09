@@ -1,5 +1,4 @@
-﻿using Airbnb.API.Dtos;
-using Airbnb.API.DTOs.Booking;
+﻿using Airbnb.API.DTOs.Booking;
 using Airbnb.API.Models;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
