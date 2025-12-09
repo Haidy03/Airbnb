@@ -53,10 +53,25 @@
     <!-- 2. Popular with travelers Section -->
     <section class="section" *ngIf="popularExperiences().length > 0">
       <div class="section-header">
-        <h2 class="section-title">Popular with travelers from your area</h2>
-      </div>
+        <div>
+            <h2 class="section-title">Popular with travelers from your area</h2>
+        </div>
+
+      <div class="nav-arrows">
+          <button class="nav-arrow" (click)="scrollLeft('popular')" aria-label="Previous">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M8 2L4 6l4 4"/>
+            </svg>
+          </button>
+          <button class="nav-arrow" (click)="scrollRight('popular')" aria-label="Next">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M4 2l4 4-4 4"/>
+            </svg>
+          </button>
+        </div>
+      </div>  
       
-      <div class="cards-scroll">
+      <div class="cards-scroll" id="popular">
         <app-experience-card 
           *ngFor="let exp of popularExperiences()" 
           [experience]="exp"

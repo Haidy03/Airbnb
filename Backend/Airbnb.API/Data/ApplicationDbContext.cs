@@ -533,17 +533,15 @@ namespace Airbnb.API.Models
         private void SeedExperienceCategories(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ExperienceCategory>().HasData(
-                new ExperienceCategory { Id = 1, Name = "Food & Drink", Icon = "🍽️", DisplayOrder = 10, IsActive = true },
-                new ExperienceCategory { Id = 2, Name = "Art & Culture", Icon = "🎨", DisplayOrder = 11, IsActive = true },
+                new ExperienceCategory { Id = 1, Name = "Food ", Icon = "🍽️", DisplayOrder = 10, IsActive = true },
+                new ExperienceCategory { Id = 2, Name = "Art ", Icon = "🎨", DisplayOrder = 11, IsActive = true },
                 new ExperienceCategory { Id = 11, Name = "Photography", Icon = "📸", DisplayOrder = 1, IsActive = true, Description = "Professional photography sessions" },
-                new ExperienceCategory { Id = 12, Name = "Chefs", Icon = "👨‍🍳", DisplayOrder = 2, IsActive = true, Description = "Personal chef experiences" },
-                new ExperienceCategory { Id = 13, Name = "Prepared meals", Icon = "🍱", DisplayOrder = 3, IsActive = true, Description = "Ready-to-eat meal services" },
+                new ExperienceCategory { Id = 12, Name = "Master chefs", Icon = "👨‍🍳", DisplayOrder = 2, IsActive = true, Description = "Personal chef experiences" },
+                new ExperienceCategory { Id = 13, Name = "Traditional meals", Icon = "🍱", DisplayOrder = 3, IsActive = true, Description = "Ready-to-eat meal services" },
                 new ExperienceCategory { Id = 14, Name = "Massage", Icon = "💆", DisplayOrder = 4, IsActive = true, Description = "Relaxing massage therapy" },
-                new ExperienceCategory { Id = 15, Name = "Training", Icon = "🏋️", DisplayOrder = 5, IsActive = true, Description = "Personal training sessions" },
-                new ExperienceCategory { Id = 16, Name = "Makeup", Icon = "💄", DisplayOrder = 6, IsActive = true, Description = "Professional makeup artists" },
-                new ExperienceCategory { Id = 17, Name = "Hair", Icon = "💇", DisplayOrder = 7, IsActive = true, Description = "Hairstyling services" },
-                new ExperienceCategory { Id = 18, Name = "Spa treatments", Icon = "🧖", DisplayOrder = 8, IsActive = true, Description = "Spa and facial treatments" },
-                new ExperienceCategory { Id = 19, Name = "Catering", Icon = "🥂", DisplayOrder = 9, IsActive = true, Description = "Event catering services" }
+                new ExperienceCategory { Id = 15, Name = "Walking", Icon = "🏋️", DisplayOrder = 5, IsActive = true, Description = "Personal training sessions" },
+                new ExperienceCategory { Id = 16, Name = "Culuture", Icon = "🎨", DisplayOrder = 6, IsActive = true, Description = "Professional makeup artists" },
+                new ExperienceCategory { Id = 17, Name = "Cooking", Icon = "👨‍🍳", DisplayOrder = 7, IsActive = true, Description = "Hairstyling services" }
             );
         }
 
