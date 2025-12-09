@@ -152,12 +152,15 @@ export class ServiceCheckoutComponent implements OnInit {
     return dateObj.toISOString();
   }
 
-  getImageUrl(url: string | undefined): string {
-    if (!url) return 'assets/images/placeholder.jpg';
-    if (url.startsWith('http')) return url;
-    const cleanPath = url.startsWith('/') ? url.substring(1) : url;
-    return `${this.baseUrl}/${cleanPath}`;
-  }
+  getImageUrl(image: any): string { 
+  if (!image) return 'assets/images/placeholder.jpg';
+  const url = image.url || image;
+
+  if (url.startsWith('http')) return url;
+  
+  const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+  return `${this.baseUrl}/${cleanPath}`;
+}
 
   goBack() {
     this.location.back();
