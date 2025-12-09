@@ -145,6 +145,7 @@ namespace Airbnb.API.Repositories.Implementations
         {
             return await _context.ServiceBookings
                 .Include(b => b.Service)
+                .ThenInclude(s => s.Images)
                 .Include(b => b.Guest) 
                 .FirstOrDefaultAsync(b => b.Id == bookingId);
         }

@@ -238,11 +238,12 @@ export class BookingService {
   }
 
   /**
-   * ✅ Get booking by ID
+   * ✅ Get booking by ID and Type
    */
-  getBookingById(id: number): Observable<Booking> {
+  getBookingById(id: number, type: string = 'Property'): Observable<Booking> {
+    // إضافة النوع في الرابط
     return this.http.get<{ success: boolean; data: any }>(
-      `${this.apiUrl}/${id}`,
+      `${this.apiUrl}/${id}?type=${type}`, 
       { headers: this.getHeaders() }
     ).pipe(
       map(response => this.mapApiToBooking(response.data)),

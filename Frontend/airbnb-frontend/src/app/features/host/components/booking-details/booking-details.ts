@@ -14,7 +14,11 @@ export class BookingDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private bookingService = inject(BookingService);
+  isProperty = computed(() => !this.booking()?.type || this.booking()?.type === 'Property');
+  isExperience = computed(() => this.booking()?.type === 'Experience');
+  isService = computed(() => this.booking()?.type === 'Service');
 
+  
   // Signals
   booking = signal<Booking | null>(null);
   isLoading = signal(true);
@@ -23,10 +27,10 @@ export class BookingDetailsComponent implements OnInit {
   // Computed properties
   nightsCount = computed(() => {
     const b = this.booking();
-    if (!b) return 0;
+    if (!b || this.isExperience() || this.isService()) return 0; 
+    
     const start = new Date(b.checkInDate);
     const end = new Date(b.checkOutDate);
-   
     return Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
   });
 
@@ -36,17 +40,21 @@ export class BookingDetailsComponent implements OnInit {
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadBooking(Number(id));
-    }
+    this.route.queryParams.subscribe(params => {
+      const type = params['type'] || 'Property';
+      
+      if (id) {
+        this.loadBooking(Number(id), type);
+      }
+    });
   }
 
-  loadBooking(id: number) {
+  loadBooking(id: number, type: string) { 
     this.isLoading.set(true);
-    this.bookingService.getBookingById(id).subscribe({
+    this.bookingService.getBookingById(id, type).subscribe({
       next: (res) => {
-        // @ts-ignore (Fix if API response structure differs)
-        this.booking.set(res); 
+        // @ts-ignore
+        this.booking.set(res.data || res); // Handle potential response wrapping
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -69,9 +77,9 @@ export class BookingDetailsComponent implements OnInit {
   }
 
   getGuestInitial(): string {
-  const name = this.booking()?.guestName;
-  return name ? name.charAt(0).toUpperCase() : 'G';
-}
+    const name = this.booking()?.guestName;
+    return name ? name.charAt(0).toUpperCase() : 'G';
+  }
 
   private processAction(action: 'approve' | 'decline') {
     const b = this.booking();
@@ -79,6 +87,8 @@ export class BookingDetailsComponent implements OnInit {
 
     this.isProcessing.set(true);
     
+    // Note: You might need to update approve/decline services to accept 'type' as well
+    // if the backend requires different endpoints for Experiences vs Properties.
     const request$ = action === 'approve' 
       ? this.bookingService.approveBooking(b.id) 
       : this.bookingService.declineBooking(b.id);
@@ -87,7 +97,9 @@ export class BookingDetailsComponent implements OnInit {
       next: () => {
         alert(action === 'approve' ? 'Reservation Confirmed! 🎉' : 'Reservation Declined.');
   
-        this.loadBooking(b.id); 
+        // ✅ FIXED: Passed the type argument here
+        this.loadBooking(b.id, b.type || 'Property'); 
+        
         this.isProcessing.set(false);
       },
       error: (err) => {
