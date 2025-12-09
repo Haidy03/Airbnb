@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ServiceDetails, ServicePackage } from '../../models/service.model';
 import { ServicesService } from '../../services/service';
 import { Router } from '@angular/router';
+
 @Component({
   selector: 'app-service-booking-modal',
   standalone: true,
@@ -16,34 +17,86 @@ export class ServiceBookingModalComponent implements OnInit {
   @Input() selectedPackage: ServicePackage | null = null;
   @Output() close = new EventEmitter<void>();
 
-  private servicesService = inject(ServicesService);
   private router = inject(Router);
-  // Form State
+  
   guestCount = 1;
   selectedDate: Date = new Date();
   selectedTime: string | null = null;
   isSubmitting = false;
 
-  // Mock Time Slots (كما في الصورة)
-  timeSlots: string[] = [
-    '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM',
-    '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM',
-    '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM',
-    '07:30 PM', '08:00 PM', '08:30 PM', '09:00 PM'
-  ];
+  filteredTimeSlots: string[] = []; 
+  
+  // لترجمة الأرقام لأسماء أيام عشان نعرضها لليوزر
+  daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   ngOnInit() {
-    // التأكد من أن التاريخ يبدأ من اليوم
-    //this.selectedDate.setHours(0,0,0,0);
+    this.selectedDate = new Date();
+    // التأكد من وجود المصفوفة
+    if (!this.service.availabilities) {
+      this.service.availabilities = [];
+    }
+    
+    // Debugging: نشوف الداتا اللي جاية شكلها ايه
+    console.log('Service Availabilities form DB:', this.service.availabilities);
+
+    this.updateAvailableTimes();
   }
 
-   get availableTimeSlots(): string[] {
-    return this.service.timeSlots || []; 
+  onDateChange(event: any) {
+    // التأكد من إنشاء التاريخ بشكل صحيح بناءً على التوقيت المحلي
+    const dateString = event.target.value; 
+    if(!dateString) return;
+
+    this.selectedDate = new Date(dateString);
+    this.updateAvailableTimes();
   }
+
+  updateAvailableTimes() {
+    if (!this.service.availabilities) return;
+
+    // 1. الحصول على رقم اليوم (0 = Sunday, 3 = Wednesday)
+    const dayOfWeek = this.selectedDate.getDay();
+    
+    console.log('Selected Date:', this.selectedDate);
+    console.log('Selected Day Index:', dayOfWeek, `(${this.daysMap[dayOfWeek]})`);
+
+    // 2. الفلترة
+    // بنستخدم (==) بدل (===) عشان لو الداتا جاية string "3" تقارن ب number 3 عادي
+    this.filteredTimeSlots = this.service.availabilities
+      .filter(slot => slot.dayOfWeek == dayOfWeek)
+      .map(slot => this.formatTime(slot.startTime)); 
+      
+    console.log('Filtered Slots:', this.filteredTimeSlots);
+
+    this.selectedTime = null; 
+  }
+
+  // دالة لمعرفة الأيام المتاحة لعرضها في رسالة الخطأ
+  getAvailableDayNames(): string {
+    const uniqueDays = [...new Set(this.service.availabilities.map(s => s.dayOfWeek))];
+    return uniqueDays.map(d => this.daysMap[d]).join(', ');
+  }
+
+  formatTime(timeStr: string): string {
+    if(!timeStr) return '';
+    
+    // التعامل مع الصيغة اللي جاية من الداتابيز: "12:28:00.0000000"
+    // بناخد أول جزء بس "12:28"
+    const cleanTime = timeStr.split('.')[0]; 
+    const [hour, minute] = cleanTime.split(':');
+    
+    const h = parseInt(hour);
+    const m = parseInt(minute);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12; 
+    
+    return `${h12.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${ampm}`;
+  }
+
+  // ... (updateGuests, selectTime, confirmReservation كما هم) ...
   
- updateGuests(value: number) {
+  updateGuests(value: number) {
     const newVal = this.guestCount + value;
-  
     if (newVal >= 1 && newVal <= this.service.maxGuests) {
       this.guestCount = newVal;
     }
@@ -53,35 +106,17 @@ export class ServiceBookingModalComponent implements OnInit {
     this.selectedTime = time;
   }
 
-  // دمج التاريخ والوقت
-  private getCombinedDateTime(): string {
-    if (!this.selectedTime) return '';
-    
-    // تحويل الوقت (01:30 PM) إلى ساعات ودقائق
-    const [time, modifier] = this.selectedTime.split(' ');
-    let [hours, minutes] = time.split(':');
-    
-    if (hours === '12') hours = '00';
-    if (modifier === 'PM') hours = (parseInt(hours, 10) + 12).toString();
-    
-    const date = new Date(this.selectedDate);
-    date.setHours(parseInt(hours, 10), parseInt(minutes, 10));
-    
-    return date.toISOString();
-  }
-
   confirmReservation() {
     if (!this.selectedTime) return;
 
     this.router.navigate(['/service-checkout', this.service.id], {
       queryParams: {
-        date: this.selectedDate.toISOString(), // التاريخ فقط (أو المدمج حسب الحاجة)
-        time: this.selectedTime,               // الوقت كنص (10:30 AM)
+        date: this.selectedDate.toISOString(),
+        time: this.selectedTime,
         guests: this.guestCount,
         packageId: this.selectedPackage?.id
       }
     });
-    
-    this.close.emit(); // إغلاق المودال
+    this.close.emit();
   }
 }

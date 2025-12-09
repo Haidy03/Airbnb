@@ -22,6 +22,7 @@ namespace Airbnb.API.Models
         public int MaxGuests { get; set; } = 1;
 
         public string? TimeSlots { get; set; }
+        public int DurationMinutes { get; set; } = 60;
 
         [Required]
         public int CategoryId { get; set; }
@@ -75,5 +76,8 @@ namespace Airbnb.API.Models
         public virtual ICollection<ServiceQualification> Qualifications { get; set; } = new List<ServiceQualification>();
         public virtual ICollection<ServicePackage> Packages { get; set; } = new List<ServicePackage>();
         public virtual ICollection<ServiceReview> Reviews { get; set; } = new List<ServiceReview>();
+
+        public virtual ICollection<ServiceAvailability> Availabilities { get; set; } = new List<ServiceAvailability>();
+
     }
 }

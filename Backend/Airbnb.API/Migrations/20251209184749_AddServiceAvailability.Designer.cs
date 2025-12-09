@@ -4,6 +4,7 @@ using Airbnb.API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Airbnb.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209184749_AddServiceAvailability")]
+    partial class AddServiceAvailability
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -633,7 +636,7 @@ namespace Airbnb.API.Migrations
                             DisplayOrder = 10,
                             Icon = "🍽️",
                             IsActive = true,
-                            Name = "Food "
+                            Name = "Food & Drink"
                         },
                         new
                         {
@@ -641,7 +644,7 @@ namespace Airbnb.API.Migrations
                             DisplayOrder = 11,
                             Icon = "🎨",
                             IsActive = true,
-                            Name = "Art "
+                            Name = "Art & Culture"
                         },
                         new
                         {
@@ -659,7 +662,7 @@ namespace Airbnb.API.Migrations
                             DisplayOrder = 2,
                             Icon = "👨‍🍳",
                             IsActive = true,
-                            Name = "Master chefs"
+                            Name = "Chefs"
                         },
                         new
                         {
@@ -668,7 +671,7 @@ namespace Airbnb.API.Migrations
                             DisplayOrder = 3,
                             Icon = "🍱",
                             IsActive = true,
-                            Name = "Traditional meals"
+                            Name = "Prepared meals"
                         },
                         new
                         {
@@ -686,25 +689,43 @@ namespace Airbnb.API.Migrations
                             DisplayOrder = 5,
                             Icon = "🏋️",
                             IsActive = true,
-                            Name = "Walking"
+                            Name = "Training"
                         },
                         new
                         {
                             Id = 16,
                             Description = "Professional makeup artists",
                             DisplayOrder = 6,
-                            Icon = "🎨",
+                            Icon = "💄",
                             IsActive = true,
-                            Name = "Culuture"
+                            Name = "Makeup"
                         },
                         new
                         {
                             Id = 17,
                             Description = "Hairstyling services",
                             DisplayOrder = 7,
-                            Icon = "👨‍🍳",
+                            Icon = "💇",
                             IsActive = true,
-                            Name = "Cooking"
+                            Name = "Hair"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Description = "Spa and facial treatments",
+                            DisplayOrder = 8,
+                            Icon = "🧖",
+                            IsActive = true,
+                            Name = "Spa treatments"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Description = "Event catering services",
+                            DisplayOrder = 9,
+                            Icon = "🥂",
+                            IsActive = true,
+                            Name = "Catering"
                         });
                 });
 

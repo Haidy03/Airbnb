@@ -41,6 +41,7 @@ namespace Airbnb.API.Repositories.Implementations
                 .Include(s => s.Category)
                 .Include(s => s.Host)
                 .Include(s => s.Images)
+                .Include(s => s.Availabilities)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
@@ -104,7 +105,8 @@ namespace Airbnb.API.Repositories.Implementations
             return await _context.Services
                 .Include(s => s.Category)
                 .Include(s => s.Images)
-                .Include(s => s.Host) 
+                .Include(s => s.Host)
+                .Include(s => s.Availabilities)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
@@ -192,6 +194,33 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task UpdateServiceBookingAsync(ServiceBooking booking)
         {
             _context.ServiceBookings.Update(booking);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> GetTotalGuestsForServiceAtDateAsync(int serviceId, DateTime bookingDate)
+        {
+            return await _context.ServiceBookings
+                .Where(b => b.ServiceId == serviceId
+                            && b.BookingDate.Year == bookingDate.Year
+                            && b.BookingDate.Month == bookingDate.Month
+                            && b.BookingDate.Day == bookingDate.Day
+                            && b.BookingDate.Hour == bookingDate.Hour
+                            && b.BookingDate.Minute == bookingDate.Minute
+                            && b.Status != "Cancelled"
+                            && b.Status != "Rejected")
+                .SumAsync(b => b.NumberOfGuests);
+        }
+        public async Task<ServiceImage?> GetImageByIdAsync(int id)
+        {
+            return await _context.ServiceImages
+                .Include(i => i.Service)
+                    .ThenInclude(s => s.Images) 
+                .FirstOrDefaultAsync(i => i.Id == id);
+        }
+
+        public async Task DeleteServiceImageAsync(ServiceImage image)
+        {
+            _context.ServiceImages.Remove(image);
             await _context.SaveChangesAsync();
         }
     }
