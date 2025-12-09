@@ -12,7 +12,7 @@ namespace Airbnb.API.Services.Interfaces
         // --- Host Methods
         Task<IEnumerable<BookingResponseDto>> GetHostBookingsAsync(string hostId);
         Task<IEnumerable<BookingResponseDto>> GetPropertyBookingsAsync(int propertyId, string hostId);
-        Task<BookingResponseDto?> GetBookingByIdAsync(int id, string userId); 
+        Task<BookingResponseDto?> GetBookingByIdAsync(int id, string userId, string type); 
         Task<bool> ApproveBookingAsync(int id, string hostId);
         Task<bool> DeclineBookingAsync(int id, string hostId);
 

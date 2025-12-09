@@ -220,21 +220,19 @@ namespace Airbnb.API.Services.Implementations
         {
             var allBookings = new List<BookingResponseDto>();
 
-            // 1. Properties (الكود القديم)
+           
             var propBookings = await _bookingRepository.GetByHostIdAsync(hostId);
             allBookings.AddRange(propBookings.Select(MapToResponseDto));
 
-            // 2. Experiences (الجديد)
-            // (تأكدي من وجود دالة GetBookingsByHostIdAsync في ExperienceRepo)
             var expBookings = await _experienceRepository.GetBookingsByHostIdAsync(hostId);
             allBookings.AddRange(expBookings.Select(b => new BookingResponseDto
             {
                 Id = b.Id,
-                Type = "Experience", // ✅ إضافة النوع
-                ItemTitle = b.Experience.Title, // استخدمي خاصية موحدة
+                Type = "Experience",
+                ItemTitle = b.Experience.Title, 
                 PropertyImage = b.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? "",
                 GuestName = $"{b.Guest.FirstName} {b.Guest.LastName}",
-                CheckInDate = b.Availability.Date, // وقت التجربة
+                CheckInDate = b.Availability.Date,
                 CheckOutDate = b.Availability.Date.AddHours(b.Experience.DurationHours),
                 Status = b.Status.ToString(),
                 TotalPrice = b.TotalPrice,
@@ -246,12 +244,12 @@ namespace Airbnb.API.Services.Implementations
             allBookings.AddRange(serviceBookings.Select(b => new BookingResponseDto
             {
                 Id = b.Id,
-                Type = "Service", // ✅ إضافة النوع
+                Type = "Service", 
                 ItemTitle = b.Service.Title,
                 PropertyImage = b.Service.Images.FirstOrDefault(i => i.IsCover)?.Url ?? "",
                 GuestName = $"{b.Guest.FirstName} {b.Guest.LastName}",
                 CheckInDate = b.BookingDate,
-                CheckOutDate = b.BookingDate.AddHours(1), // افتراضي
+                CheckOutDate = b.BookingDate.AddHours(1),
                 Status = b.Status,
                 TotalPrice = b.TotalPrice,
                 NumberOfGuests = b.NumberOfGuests
@@ -269,15 +267,94 @@ namespace Airbnb.API.Services.Implementations
             return bookings.Select(MapToResponseDto).ToList();
         }
 
-        public async Task<BookingResponseDto?> GetBookingByIdAsync(int id, string userId)
+        public async Task<BookingResponseDto?> GetBookingByIdAsync(int id, string userId, string type)
         {
-            var booking = await _bookingRepository.GetByIdAsync(id);
-            if (booking == null) return null;
+            // 1. Experiences
+            if (string.Equals(type, "Experience", StringComparison.OrdinalIgnoreCase))
+            {
+                
+                var expBooking = await _experienceRepository.GetBookingByIdAsync(id);
+                if (expBooking == null) return null;
 
-            if (booking.GuestId != userId && booking.Property.HostId != userId)
-                throw new UnauthorizedAccessException("You are not authorized to view this booking");
+                
+                if (expBooking.GuestId != userId && expBooking.Experience.HostId != userId)
+                    throw new UnauthorizedAccessException("Not authorized");
 
-            return MapToResponseDto(booking);
+
+                return new BookingResponseDto
+                {
+                    Id = expBooking.Id,
+                    Type = "Experience",
+                    PropertyTitle = expBooking.Experience.Title,
+                    PropertyImage = expBooking.Experience.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                            ?? expBooking.Experience.Images.FirstOrDefault()?.ImageUrl ?? "",
+
+                    GuestId = expBooking.GuestId,
+                    GuestName = $"{expBooking.Guest.FirstName} {expBooking.Guest.LastName}",
+                    GuestEmail = expBooking.Guest.Email,
+                    GuestPhone = expBooking.Guest.PhoneNumber,
+
+                    CheckInDate = expBooking.Availability.Date,
+                    CheckOutDate = expBooking.Availability.Date.AddHours(expBooking.Experience.DurationHours),
+
+                    NumberOfGuests = expBooking.NumberOfGuests,
+                    NumberOfNights = 0, 
+                    PricePerNight = expBooking.PricePerPerson, 
+                    CleaningFee = 0,
+                    TotalPrice = expBooking.TotalPrice,
+                    Status = expBooking.Status.ToString(),
+                    SpecialRequests = expBooking.SpecialRequests,
+                    CreatedAt = expBooking.CreatedAt
+                };
+            }
+            // 2. Services
+            else if (string.Equals(type, "Service", StringComparison.OrdinalIgnoreCase))
+            {
+               
+                var srvBooking = await _serviceRepository.GetServiceBookingByIdAsync(id);
+                if (srvBooking == null) return null;
+
+                if (srvBooking.GuestId != userId && srvBooking.Service.HostId != userId)
+                    throw new UnauthorizedAccessException("Not authorized");
+
+                return new BookingResponseDto
+                {
+                    Id = srvBooking.Id,
+                    Type = "Service",
+                    PropertyTitle = srvBooking.Service.Title,
+                    PropertyImage = srvBooking.Service.Images?.FirstOrDefault(i => i.IsCover)?.Url
+                    ?? srvBooking.Service.Images?.FirstOrDefault()?.Url
+                    ?? "",
+
+                    GuestId = srvBooking.GuestId,
+                    GuestName = $"{srvBooking.Guest.FirstName} {srvBooking.Guest.LastName}",
+                    GuestEmail = srvBooking.Guest.Email,
+                    GuestPhone = srvBooking.Guest.PhoneNumber,
+
+                    CheckInDate = srvBooking.BookingDate,
+                    CheckOutDate = srvBooking.BookingDate.AddHours(1), 
+
+                    NumberOfGuests = srvBooking.NumberOfGuests,
+                    NumberOfNights = 0, 
+                    PricePerNight = srvBooking.Service.PricePerUnit, 
+                    CleaningFee = 0,
+                    TotalPrice = srvBooking.TotalPrice,
+                    Status = srvBooking.Status,
+                    CreatedAt = srvBooking.CreatedAt
+                };
+            }
+            // 3. Properties
+            else
+            {
+                
+                var booking = await _bookingRepository.GetByIdAsync(id);
+                if (booking == null) return null;
+
+                if (booking.GuestId != userId && booking.Property.HostId != userId)
+                    throw new UnauthorizedAccessException("You are not authorized to view this booking");
+
+                return MapToResponseDto(booking);
+            }
         }
 
         public async Task<bool> ApproveBookingAsync(int id, string hostId)

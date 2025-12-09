@@ -244,12 +244,12 @@ namespace Airbnb.API.Controllers.Host
         /// Get booking details by ID
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBookingById(int id)
+        public async Task<IActionResult> GetBookingById(int id, [FromQuery] string type = "Property")
         {
             try
             {
                 var hostId = GetHostId();
-                var booking = await _bookingService.GetBookingByIdAsync(id, hostId);
+                var booking = await _bookingService.GetBookingByIdAsync(id, hostId, type);
 
                 if (booking == null)
                     return NotFound(new { success = false, message = "Booking not found" });

@@ -86,10 +86,12 @@ namespace Airbnb.API.Controllers.Guest
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTripDetails(int id)
+        public async Task<IActionResult> GetTripDetails(int id, [FromQuery] string type = "Property")
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var booking = await _bookingService.GetBookingByIdAsync(id, userId);
+
+            // ✅ FIXED: Passed 'type' to the service
+            var booking = await _bookingService.GetBookingByIdAsync(id, userId, type);
 
             if (booking == null)
             {

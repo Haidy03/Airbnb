@@ -76,6 +76,16 @@ export class HostDashboardComponent implements OnInit {
       }
     });
   }
+
+  /**
+   * ✅ Load today's bookings (check-ins and check-outs)
+   */
+
+viewDetails(booking: Booking): void {
+  this.router.navigate(['/host/bookings', booking.id], { 
+    queryParams: { type: booking.type || 'Property' } 
+  });
+}
   /**
  * Open chat with specific guest
  */

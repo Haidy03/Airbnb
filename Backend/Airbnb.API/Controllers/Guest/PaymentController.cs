@@ -49,17 +49,16 @@ namespace Airbnb.API.Controllers.Guest
         // ---------------------------------------------------------
         // 2. (Request -> Approved -> Pay)
         // ---------------------------------------------------------
-        
+
         [HttpPost("pay-booking/{bookingId}")]
-        public async Task<IActionResult> PayForBooking(int bookingId)
+        public async Task<IActionResult> PayForBooking(int bookingId, [FromQuery] string type = "Property")
         {
             try
             {
-              
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-              
-                var booking = await _bookingService.GetBookingByIdAsync(bookingId, userId);
+                // ✅ FIXED: Passed 'type' to the service
+                var booking = await _bookingService.GetBookingByIdAsync(bookingId, userId, type);
 
                 if (booking == null)
                     return NotFound(new { message = "Booking not found" });
