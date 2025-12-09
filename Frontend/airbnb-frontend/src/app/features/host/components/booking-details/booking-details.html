@@ -38,7 +38,9 @@
 
           <div class="guest-info">
             <h2>{{ booking()?.guestName }}</h2>
-            <p class="guest-meta">Joined Airbnb in 2024</p>
+             <p class="guest-meta">
+              Joined in {{ booking()?.guestJoinedDate | date:'yyyy' }}
+            </p>
           </div>
         </div>
 

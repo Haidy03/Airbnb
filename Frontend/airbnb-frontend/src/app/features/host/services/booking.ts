@@ -16,6 +16,7 @@ export interface Booking {
   guestName: string;
   guestEmail: string;
   guestPhone?: string;
+  guestJoinedDate: Date;
   guestProfileImage?: string;
   
   // Dates
@@ -96,6 +97,7 @@ export class BookingService {
       guestName: apiData.guestName || 'Guest',
       guestEmail: apiData.guestEmail || '',
       guestPhone: apiData.guestPhone,
+      guestJoinedDate: new Date(apiData.guestJoinedDate),
       guestProfileImage: apiData.guestProfileImage, 
       checkInDate: new Date(apiData.checkInDate),
       checkOutDate: new Date(apiData.checkOutDate),
@@ -241,7 +243,7 @@ export class BookingService {
    * ✅ Get booking by ID and Type
    */
   getBookingById(id: number, type: string = 'Property'): Observable<Booking> {
-    // إضافة النوع في الرابط
+    
     return this.http.get<{ success: boolean; data: any }>(
       `${this.apiUrl}/${id}?type=${type}`, 
       { headers: this.getHeaders() }
