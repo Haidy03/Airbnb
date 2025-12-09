@@ -194,5 +194,19 @@ namespace Airbnb.API.Repositories.Implementations
             _context.ServiceBookings.Update(booking);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<int> GetTotalGuestsForServiceAtDateAsync(int serviceId, DateTime bookingDate)
+        {
+            return await _context.ServiceBookings
+                .Where(b => b.ServiceId == serviceId
+                            && b.BookingDate.Year == bookingDate.Year
+                            && b.BookingDate.Month == bookingDate.Month
+                            && b.BookingDate.Day == bookingDate.Day
+                            && b.BookingDate.Hour == bookingDate.Hour
+                            && b.BookingDate.Minute == bookingDate.Minute
+                            && b.Status != "Cancelled"
+                            && b.Status != "Rejected")
+                .SumAsync(b => b.NumberOfGuests);
+        }
     }
 }

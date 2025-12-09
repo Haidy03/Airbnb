@@ -37,5 +37,7 @@ namespace Airbnb.API.Repositories.Interfaces
         Task UpdateServiceReviewAsync(ServiceReview review);
         Task UpdateServiceBookingAsync(ServiceBooking booking);
 
+        Task<int> GetTotalGuestsForServiceAtDateAsync(int serviceId, DateTime bookingDate);
+
     }
 }

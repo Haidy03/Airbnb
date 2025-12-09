@@ -192,6 +192,21 @@ namespace Airbnb.API.Services.Implementations
             {
                 throw new InvalidOperationException("You cannot book your own service.");
             }
+            var cleanDate = new DateTime(
+                dto.Date.Year,
+                dto.Date.Month,
+                dto.Date.Day,
+                dto.Date.Hour,
+                dto.Date.Minute,
+                0, 
+                dto.Date.Kind);
+
+            int currentBookedGuests = await _serviceRepository.GetTotalGuestsForServiceAtDateAsync(dto.ServiceId, cleanDate);
+            if (currentBookedGuests + dto.NumberOfGuests > service.MaxGuests)
+            {
+               throw new InvalidOperationException($"Sorry The Service is Fully Booked! it reached its Max capacity.");
+            }
+
 
             decimal finalPrice = service.PricePerUnit;
 
@@ -215,7 +230,7 @@ namespace Airbnb.API.Services.Implementations
                 ServiceId = dto.ServiceId,
                 PackageId = dto.PackageId,
                 GuestId = guestId,
-                BookingDate = dto.Date,
+                BookingDate = cleanDate,
                 TotalPrice = finalPrice,
                 Status = "Confirmed", 
                 CreatedAt = DateTime.UtcNow,
