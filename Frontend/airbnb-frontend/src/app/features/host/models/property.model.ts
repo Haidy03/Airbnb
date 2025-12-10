@@ -207,3 +207,54 @@ export const PROPERTY_STATUS_LABELS: { [key: number]: string } = {
   5: 'Inactive',
   6: 'Suspended'
 };
+
+
+// ==========================================
+// SEARCH & FILTER INTERFACES (Add this to property.model.ts)
+// ==========================================
+
+export interface SearchFilters {
+  location?: string | null;
+  checkIn?: Date | string | null;
+  checkOut?: Date | string | null;
+  guests?: number | null;
+  priceMin?: number | null;
+  priceMax?: number | null;
+  propertyTypes?: any[]; // يمكن أن يكون string[] أو number[]
+  amenities?: any[];
+  bedrooms?: number | null;
+  beds?: number | null;
+  bathrooms?: number | null;
+  instantBook?: boolean | null;
+}
+
+export interface SearchQuery {
+  page: number;
+  pageSize: number;
+  sortBy: string;
+  filters: SearchFilters;
+}
+
+export interface SearchResponse {
+  properties: Property[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+// يستخدم في الـ API Response الخام
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageIndex: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+// DTO للبحث (لو مستخدم في مكان ما)
+export interface SearchRequestDto {
+  pageIndex: number;
+  pageSize: number;
+  // ... باقي الخصائص
+}

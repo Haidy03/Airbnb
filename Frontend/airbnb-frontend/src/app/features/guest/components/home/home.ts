@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from '../header/header';
 import { SearchService } from '../search/services/search-service';
-import { Property } from '../search/models/property.model';
+// تأكدي إن SearchQuery و SearchResponse و Property موجودين في الاستيراد
+import { Property, SearchQuery, SearchResponse } from '../search/models/property.model';
 import { WishlistService } from '../../services/wishlist.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { Router } from '@angular/router';
@@ -39,10 +40,38 @@ export class HomeComponent implements OnInit {
 
   private loadProperties(): void {
     this.isLoading = true;
-    this.searchService.getFeaturedProperties().subscribe({
-      next: (data) => {
-        this.groupPropertiesByCity(data);
-        data.forEach(p => {
+
+    // ✅ إعداد كائن البحث بناءً على الـ Interface الجديد
+    const searchQuery: SearchQuery = {
+      page: 1,
+      pageSize: 50,
+      sortBy: 'latest',
+      filters: {
+        location: undefined,
+        checkIn: undefined,
+        checkOut: undefined,
+        guests: undefined,
+        priceMin: undefined,
+        priceMax: undefined,
+        propertyTypes: [],
+        amenities: [],
+        bedrooms: undefined,
+        beds: undefined,
+        bathrooms: undefined,
+        instantBook: false
+      }
+    }as any;
+  
+    // ✅ استدعاء السيرفس
+    this.searchService.searchProperties(searchQuery).subscribe({ 
+      next: (response: SearchResponse) => { 
+        // الـ Service بترجع { properties: [...], total: ... }
+        const properties = response.properties || [];
+
+        this.groupPropertiesByCity(properties);
+        
+        // التحقق من الـ Wishlist
+        properties.forEach((p: Property) => {
             this.listingService.checkIsWishlisted(p.id).subscribe(isListed => {
                 if(isListed) this.wishlistIds.add(p.id);
             });
@@ -58,17 +87,23 @@ export class HomeComponent implements OnInit {
 
   private groupPropertiesByCity(allProperties: Property[]) {
     const groups: { [key: string]: Property[] } = {};
+    
     allProperties.forEach(property => {
-      const city = property.location.city || 'Other Locations';
+      // التعامل مع احتمال أن location غير موجودة لتجنب الأخطاء
+      const city = property.location?.city || 'Other Locations';
+      
       if (!groups[city]) groups[city] = [];
       groups[city].push(property);
     });
+
     this.cityGroups = Object.keys(groups).map(city => ({
       city: city,
       properties: groups[city]
     }));
   }
 
+  // ... باقي الدوال كما هي ...
+  
   isPropertyInWishlist(propertyId: string): boolean {
     return this.wishlistIds.has(propertyId);
   }
