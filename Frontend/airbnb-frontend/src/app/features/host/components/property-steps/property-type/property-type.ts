@@ -5,9 +5,10 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../../environments/environment';
 import { PropertyDraftService } from '../../../services/property-draft';
 import { PropertyService } from '../../../services/property';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 interface PropertyTypeOption {
-  id: number; // ✅ Changed to number
+  id: number; 
   code: string;
   label: string;
   icon: string;
@@ -32,15 +33,16 @@ export class PropertyTypeComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private http: HttpClient, // ✅ Inject HttpClient
-    private propertyService: PropertyService // ✅ Inject PropertyService
+    private http: HttpClient, 
+    private propertyService: PropertyService ,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
-    this.loadPropertyTypes(); // ✅ Load from backend
-    this.loadSavedSelection(); // ✅ Load saved selection
+    this.loadPropertyTypes(); 
+    this.loadSavedSelection(); 
     
-    this.getCurrentDraft(); // ✅ Load existing draft
+    this.getCurrentDraft(); 
   }
 
     /**
@@ -112,14 +114,13 @@ export class PropertyTypeComponent implements OnInit {
   /**
    * Save and exit
    */
-   saveAndExit(): void {
-    const confirmed = confirm('Save your progress and exit?');
+   async saveAndExit(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction('Save & Exit?', 'Your progress will be saved.');
     if (!confirmed) return;
 
     this.isLoading.set(true);
 
     if (this.currentDraftId && this.selectedType()) {
-      // ✅ Save progress at this step
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
         {propertyTypeId: this.selectedType() },
@@ -131,7 +132,7 @@ export class PropertyTypeComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message); // ✅
         }
       });
     } else {
@@ -142,8 +143,9 @@ export class PropertyTypeComponent implements OnInit {
 
 
   showQuestionsModal(): void {
-    alert('Questions? Contact our support team for help with listing your property.');
+    this.notificationService.showToast('info', 'Contact support for help.'); 
   }
+
 
   goBack(): void {
     this.router.navigate(['/host/properties/intro']);
@@ -152,14 +154,14 @@ export class PropertyTypeComponent implements OnInit {
   goNext(): void {
     
     if (!this.selectedType()) {
-      alert('Please select a property type to continue.');
+      this.notificationService.showError('Please select a property type to continue.');
       return;
     }
 
     this.isLoading.set(true);
     
     if (this.currentDraftId) {
-      // ✅ Save before moving to next step
+    
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
         { propertyTypeId: this.selectedType() },
@@ -171,7 +173,7 @@ export class PropertyTypeComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     } else {

@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-
+import { NotificationService } from '../../../core/services/notification.service';
 @Component({
   selector: 'app-property-creation-layout',
   standalone: true,
@@ -21,7 +21,7 @@ import { CommonModule } from '@angular/common';
       </div>
     </header>
 
-    <!-- ✅ هنا سيتم عرض محتوى الصفحات المتغيرة (Intro, Location, Pricing...) -->
+    
     <div class="step-content">
       <router-outlet></router-outlet>
     </div>
@@ -91,14 +91,24 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class PropertyCreationLayoutComponent {
-  constructor(private router: Router) {}
 
-  saveAndExit() {
-   
-    this.router.navigate(['/host/properties']);
+  private router = inject(Router);
+  private notificationService = inject(NotificationService); 
+
+  async saveAndExit() {
+
+    const confirmed = await this.notificationService.confirmAction(
+      'Exit Property Creation?',
+      'Any unsaved progress on the current step might be lost.'
+    );
+
+    if (confirmed) {
+      this.router.navigate(['/host/properties']);
+    }
   }
 
   showQuestions() {
-    alert("Help center coming soon!");
+
+    this.notificationService.showToast('info', 'Help center coming soon!');
   }
 }

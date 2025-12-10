@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../../services/property';
 import { Property } from '../../../models/property.model'; 
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-safety-details',
@@ -23,7 +24,8 @@ export class legalandcreateComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private propertyService: PropertyService
+    private propertyService: PropertyService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -39,7 +41,7 @@ export class legalandcreateComponent implements OnInit {
         next: (draft) => {
           this.currentDraft = draft;
           
-          // Load safety details if they exist
+          
           if (draft.safetyDetails) {
             console.log('📦 Loading Safety Details from Draft:', draft.safetyDetails);
             this.exteriorCamera.set(draft.safetyDetails.exteriorCamera || false);
@@ -49,7 +51,7 @@ export class legalandcreateComponent implements OnInit {
             console.log('⚠️ No safetyDetails found in draft');
           }
           
-          // Debug: Show current state
+         
           console.log('✅ Current State:', {
             exteriorCamera: this.exteriorCamera(),
             noiseMonitor: this.noiseMonitor(),
@@ -70,7 +72,7 @@ export class legalandcreateComponent implements OnInit {
   }
 
   toggleSafety(item: 'exteriorCamera' | 'noiseMonitor' | 'weapons', event?: Event): void {
-    // Prevent double-firing
+
     if (event) {
       event.stopPropagation();
     }
@@ -95,7 +97,7 @@ export class legalandcreateComponent implements OnInit {
         break;
     }
 
-    // Show all current values after toggle
+
     console.log('📊 Current Values After Toggle:', {
       exteriorCamera: this.exteriorCamera(),
       noiseMonitor: this.noiseMonitor(),
@@ -115,7 +117,7 @@ export class legalandcreateComponent implements OnInit {
   }
 
   showQuestionsModal(): void {
-    alert('Safety details help guests understand what to expect at your property.');
+    this.notificationService.showToast('info', 'Safety details help guests know what to expect.');
   }
 
   private getSafetyPayload() {
@@ -129,31 +131,27 @@ export class legalandcreateComponent implements OnInit {
     return payload;
   }
 
-  exit(): void {
-    if (!confirm('Exit? Make sure to publish your listing later.')) return;
+   async exit(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction('Exit?', 'Make sure to publish your listing later.'); 
+    if (!confirmed) return;
 
-    console.log('🚪 Exiting and saving...');
     this.isLoading.set(true);
 
     if (this.currentDraftId) {
       const payload = this.getSafetyPayload();
       
-      console.log('📤 Sending Safety Payload to Backend:', payload);
-
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
         payload, 
         'safety-details'
       ).subscribe({
         next: (response) => {
-          console.log('✅ Save Successful! Response:', response);
           this.isLoading.set(false);
           this.router.navigate(['/host/properties']);
         },
         error: (error) => {
-          console.error('❌ Save Failed:', error);
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message); 
         }
       });
     } else {
@@ -188,13 +186,13 @@ export class legalandcreateComponent implements OnInit {
               console.log('✅ Property Published Successfully:', publishResponse);
               this.isLoading.set(false);
               this.clearAllLocalStorage();
-              alert('✅ Your listing has been published successfully!');
+              this.notificationService.showSuccess('Congratulations!', 'Your listing has been published successfully!');
               this.router.navigate(['/host/properties']);
             },
             error: (error) => {
               console.error('❌ Publish Failed:', error);
               this.isLoading.set(false);
-              alert('Property saved but not yet published. ' + error.message);
+              this.notificationService.showError('Property saved but not published: ' + error.message);
               this.router.navigate(['/host/properties']);
             }
           });
@@ -202,7 +200,7 @@ export class legalandcreateComponent implements OnInit {
         error: (error) => {
           console.error('❌ Update Failed:', error);
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     } else {

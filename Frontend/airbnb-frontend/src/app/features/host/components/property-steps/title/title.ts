@@ -4,7 +4,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../../services/property';
 import { Property } from '../../../models/property.model'; 
-
+import { NotificationService } from '../../../../../core/services/notification.service';
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-property-title',
   standalone: true,
@@ -25,7 +26,8 @@ export class PropertyTitleComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private propertyService: PropertyService
+    private propertyService: PropertyService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -105,8 +107,9 @@ export class PropertyTitleComponent implements OnInit {
   /**
    * Save and exit
    */
-  saveAndExit(): void {
-    if (!confirm('Save your progress and exit? You can continue later.')) return;
+  async saveAndExit(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction('Save & Exit?', 'Your progress will be saved.'); // ✅
+    if (!confirmed) return;
 
     this.isLoading.set(true);
 
@@ -118,13 +121,11 @@ export class PropertyTitleComponent implements OnInit {
       ).subscribe({
         next: () => {
           this.isLoading.set(false);
-          console.log('✅ Title saved');
           this.router.navigate(['/host/properties']);
         },
         error: (error) => {
           this.isLoading.set(false);
-          console.error('Error saving:', error);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message); // ✅
         }
       });
     } else {
@@ -136,14 +137,18 @@ export class PropertyTitleComponent implements OnInit {
    * Show help modal
    */
   showQuestionsModal(): void {
-    alert(
-      `Tips for a great title:\n\n` +
-      `✓ Be specific and descriptive\n` +
-      `✓ Highlight unique features\n` +
-      `✓ Keep it short and punchy\n` +
-      `✓ Examples: "Cozy Cave with City Views", "Luxury Cave Retreat"\n\n` +
-      `You can change this anytime!`
-    );
+    Swal.fire({
+      title: 'Title Tips',
+      html: `
+        <ul style="text-align: left;">
+          <li>✓ Be specific and descriptive</li>
+          <li>✓ Highlight unique features</li>
+          <li>✓ Keep it short and punchy</li>
+        </ul>
+      `,
+      confirmButtonColor: '#222',
+      confirmButtonText: 'Got it'
+    });
   }
 
   /**
@@ -158,7 +163,7 @@ export class PropertyTitleComponent implements OnInit {
    */
   goNext(): void {
     if (!this.titleForm.valid) {
-      alert('Please enter a valid title (10-50 characters)');
+      this.notificationService.showError('Please enter a valid title (10-50 characters)');
       return;
     }
 
@@ -178,7 +183,7 @@ export class PropertyTitleComponent implements OnInit {
         error: (error) => {
           this.isLoading.set(false);
           console.error('Error saving:', error);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     }

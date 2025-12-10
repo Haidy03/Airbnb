@@ -4,7 +4,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../../services/property';
 import { Property } from '../../../models/property.model'; 
-
+import { NotificationService } from '../../../../../core/services/notification.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-property-description',
@@ -25,7 +26,8 @@ export class PropertyDescriptionComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private propertyService: PropertyService
+    private propertyService: PropertyService,
+    private notificationService: NotificationService 
   ) {}
 
   ngOnInit(): void {
@@ -80,8 +82,9 @@ export class PropertyDescriptionComponent implements OnInit {
     return description.length;
   }
 
-  saveAndExit(): void {
-    if (!confirm('Save your progress and exit?')) return;
+  async saveAndExit(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction('Save & Exit?', 'Your progress will be saved.');
+    if (!confirmed) return;
 
     this.isLoading.set(true);
 
@@ -97,7 +100,7 @@ export class PropertyDescriptionComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     } else {
@@ -105,8 +108,9 @@ export class PropertyDescriptionComponent implements OnInit {
     }
   }
 
+
   showQuestionsModal(): void {
-    alert('Share what makes your place special and unique!');
+    this.notificationService.showToast('info', 'Share what makes your place special!'); 
   }
 
   goBack(): void {
@@ -115,7 +119,7 @@ export class PropertyDescriptionComponent implements OnInit {
 
   goNext(): void {
     if (!this.descriptionForm.valid) {
-      alert(`Please enter a description (${this.minChars}-${this.maxChars} characters)`);
+      this.notificationService.showError(`Please enter a description (${this.minChars}-${this.maxChars} characters)`);
       return;
     }
 
@@ -133,7 +137,7 @@ export class PropertyDescriptionComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     }

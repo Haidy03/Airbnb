@@ -2,7 +2,8 @@ import { Component, computed, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PropertyService } from '../../../services/property';
-
+import { NotificationService } from '../../../../../core/services/notification.service';
+import Swal from 'sweetalert2';
 interface Amenity {
   id: number;
   name: string;
@@ -74,7 +75,8 @@ export class AmenitiesStepComponent implements OnInit{
 
   constructor(
     private router: Router,
-    private propertyService: PropertyService 
+    private propertyService: PropertyService ,
+    private notificationService: NotificationService 
 
   ) {}
 
@@ -158,7 +160,7 @@ export class AmenitiesStepComponent implements OnInit{
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     }
@@ -184,7 +186,7 @@ export class AmenitiesStepComponent implements OnInit{
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     }

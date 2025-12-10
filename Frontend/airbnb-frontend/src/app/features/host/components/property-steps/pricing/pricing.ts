@@ -5,6 +5,8 @@ import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../../services/property';
 import { Property } from '../../../models/property.model'; 
 import * as L from 'leaflet';
+import { NotificationService } from '../../../../../core/services/notification.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-pricing',
@@ -21,14 +23,15 @@ export class PricingComponent implements OnInit, AfterViewInit {
   showMap = signal(false);
   currentDraftId: string | null = null;
   currentDraft: Property | null = null;
-  showCleaningFee = signal(false); // ✅ للتحكم في ظهور الحقل
+  showCleaningFee = signal(false); 
 
   private map!: L.Map;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private propertyService: PropertyService
+    private propertyService: PropertyService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -37,7 +40,6 @@ export class PricingComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Initialize map only when needed
     if (this.showMap()) {
       this.initializeMap();
     }
@@ -48,12 +50,12 @@ export class PricingComponent implements OnInit, AfterViewInit {
       pricePerNight: [46, [
         Validators.required,
         Validators.min(10),
-        Validators.max(10000)
+        Validators.max(1000000)
       ]],
-      cleaningFee: [null] // ✅ الحقل الخاص برسوم التنظيف
+      cleaningFee: [null] 
     });
 
-    // Watch for price changes
+    
     this.pricingForm.get('pricePerNight')?.valueChanges.subscribe(() => {
       this.pricingForm.updateValueAndValidity();
     });
@@ -72,7 +74,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
             cleaningFee: draft.pricing?.cleaningFee || null
           });
 
-          // ✅ إظهار الحقل إذا كانت هناك قيمة محفوظة
+  
           if (draft.pricing?.cleaningFee) {
             this.showCleaningFee.set(true);
           }
@@ -97,7 +99,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // 1. تحديد المركز (موقعك الحالي أو الافتراضي)
+   
     let lat = 30.0444;
     let lng = 31.2357;
     
@@ -109,14 +111,14 @@ export class PricingComponent implements OnInit, AfterViewInit {
       lng = this.currentDraft.longitude;
     }
 
-    // 2. إنشاء الخريطة
+   
     this.map = L.map(this.mapContainer.nativeElement).setView([lat, lng], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(this.map);
 
-    // 3. أيقونة منزلك (You)
+ 
     const homeIcon = L.divIcon({
       className: 'custom-marker home',
       html: `<div style="background:#222;color:white;padding:6px 12px;border-radius:20px;font-weight:bold;box-shadow:0 2px 5px rgba(0,0,0,0.3); white-space:nowrap;">You (EGP${this.pricingForm.get('pricePerNight')?.value})</div>`
@@ -124,7 +126,6 @@ export class PricingComponent implements OnInit, AfterViewInit {
 
     L.marker([lat, lng], { icon: homeIcon, zIndexOffset: 1000 }).addTo(this.map);
 
-    // 4. ✅ جلب العقارات الحقيقية من السيرفر
     this.propertyService.getAllProperties().subscribe({
       next: (properties) => {
         const realListings = properties.filter(p => 
@@ -173,15 +174,20 @@ export class PricingComponent implements OnInit, AfterViewInit {
     return Math.round(price * 1.12);
   }
 
-  saveAndExit(): void {
-    if (!confirm('Save your progress and exit?')) return;
+  async saveAndExit(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction(
+      'Save & Exit?',
+      'Your progress will be saved, and you can resume later.'
+    );
  
+    if (!confirmed) return;
+
     this.saveData(() => this.router.navigate(['/host/properties']));
   }
 
   goNext(): void {
     if (!this.pricingForm.valid) {
-      alert('Please enter valid pricing information');
+      this.notificationService.showError('Please enter a valid price (between 10 and 1,000,000 EGP)');
       return;
     }
    
@@ -201,7 +207,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
         cleaningFee: feeValue
       };
 
-      console.log('📤 Saving Pricing:', payload); // Debug
+      console.log('📤 Saving Pricing:', payload); 
 
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
@@ -215,7 +221,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
         error: (error) => {
           this.isLoading.set(false);
           console.error('Save error:', error);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     } else {
@@ -224,9 +230,23 @@ export class PricingComponent implements OnInit, AfterViewInit {
   }
 
   showQuestionsModal(): void {
-    alert('Set competitive pricing based on your location and amenities!');
+    Swal.fire({
+      title: 'Pricing Tips',
+      html: `
+        <div style="text-align: left; line-height: 1.6;">
+          <p>Set a competitive price to attract more guests.</p>
+          <ul style="list-style: none; padding: 0;">
+            <li>💰 <b>Start lower</b> to get your first reviews</li>
+            <li>🧹 <b>Cleaning fee</b> covers housekeeping costs</li>
+            <li>📍 <b>Check similar listings</b> in your area</li>
+          </ul>
+        </div>
+      `,
+      confirmButtonColor: '#222',
+      confirmButtonText: 'Got it'
+    });
   }
-
+  
   openMap(): void {
     this.showMap.set(true);
     setTimeout(() => {

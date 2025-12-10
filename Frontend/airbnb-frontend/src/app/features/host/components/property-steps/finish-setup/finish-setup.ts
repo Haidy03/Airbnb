@@ -15,7 +15,7 @@ export class FinishsetupComponent {
   constructor(private router: Router) {}
 
   showQuestionsModal() {
-    // Logic for help modal
+   
   }
 
   saveAndExit() {
@@ -27,12 +27,10 @@ export class FinishsetupComponent {
   }
 
   goBack() {
-    // العودة لآخر خطوة في المرحلة السابقة
     this.router.navigate(['/host/properties/description']); 
   }
 
   startPropertyCreation() {
-    // الانتقال للخطوة التالية (مثلاً التسعير أو الحجز الفوري)
     this.router.navigate(['/host/properties/instant-book']); 
   }
 }
