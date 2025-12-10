@@ -37,7 +37,7 @@ export class HostEarningsComponent implements OnInit {
     });
   }
 
-  // دالة مساعدة لحساب نسبة ارتفاع العمود
+
   getBarHeight(amount: number): string {
     const max = this.maxChartValue();
     const percentage = (amount / max) * 100;
