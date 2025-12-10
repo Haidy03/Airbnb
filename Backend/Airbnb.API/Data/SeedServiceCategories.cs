@@ -9,16 +9,17 @@ namespace Airbnb.API.Data
 
             var categories = new List<ServiceCategory>
 {
-new ServiceCategory { Name = "Catering", Icon = "https://cdn-icons-png.flaticon.com/512/3480/3480822.png" },
-new ServiceCategory { Name = "Chef", Icon = "https://cdn-icons-png.flaticon.com/512/1831/1831251.png" },
-new ServiceCategory { Name = "Hair styling", Icon = "https://cdn-icons-png.flaticon.com/512/3037/3037316.png" },
-new ServiceCategory { Name = "Makeup", Icon = "https://cdn-icons-png.flaticon.com/512/2913/2913212.png" },
-new ServiceCategory { Name = "Massage", Icon = "https://cdn-icons-png.flaticon.com/512/2784/2784428.png" },
-new ServiceCategory { Name = "Nails", Icon = "https://cdn-icons-png.flaticon.com/512/3051/3051726.png" },
-new ServiceCategory { Name = "Personal training", Icon = "https://cdn-icons-png.flaticon.com/512/2936/2936886.png" },
-new ServiceCategory { Name = "Photography", Icon = "https://cdn-icons-png.flaticon.com/512/3342/3342137.png" },
-new ServiceCategory { Name = "Prepared meals", Icon = "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" },
-new ServiceCategory { Name = "Spa treatments", Icon = "https://cdn-icons-png.flaticon.com/512/2647/2647880.png" } };
+new ServiceCategory { Name = "Catering", Icon = "https://img.icons8.com/ios/500/meal.png" },
+new ServiceCategory { Name = "Chef", Icon = "https://img.icons8.com/ios/500/chef-hat.png" },
+new ServiceCategory { Name = "Hair styling", Icon = "https://img.icons8.com/ios/500/hair-dryer.png" },
+new ServiceCategory { Name = "Makeup", Icon = "https://img.icons8.com/ios/500/cosmetic-brush.png" },
+new ServiceCategory { Name = "Massage", Icon = "https://img.icons8.com/ios/500/spa.png" },
+new ServiceCategory { Name = "Nails", Icon = "https://img.icons8.com/ios/500/nail-polish.png" },
+new ServiceCategory { Name = "Personal training", Icon = "https://img.icons8.com/ios/500/dumbbell.png" },
+new ServiceCategory { Name = "Photography", Icon = "https://img.icons8.com/ios/500/camera.png" },
+new ServiceCategory { Name = "Prepared meals", Icon = "https://img.icons8.com/ios/500/ingredients.png" },
+new ServiceCategory { Name = "Spa treatments", Icon = "https://img.icons8.com/ios/500/spa-flower.png" }
+ };
 
             foreach (var cat in categories)
             {

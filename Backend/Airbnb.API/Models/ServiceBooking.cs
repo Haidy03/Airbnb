@@ -20,7 +20,7 @@ namespace Airbnb.API.Models
         [ForeignKey("GuestId")]
         public virtual ApplicationUser Guest { get; set; }
 
-        public DateTime BookingDate { get; set; } // تاريخ الحجز
+        public DateTime BookingDate { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [Column(TypeName = "decimal(18,2)")]

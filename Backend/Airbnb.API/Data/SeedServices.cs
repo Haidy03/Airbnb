@@ -18,7 +18,7 @@ namespace Airbnb.API.Data
             var category = await context.ServiceCategories.FirstOrDefaultAsync(c => c.Name == "Wellness");
             if (category == null)
             {
-                category = new ServiceCategory { Name = "Wellness", Icon = "bi-heart-pulse" };
+                category = new ServiceCategory { Name = "Wellness", Icon = "https://cdn-icons-png.flaticon.com/512/2966/2966334.png" };
                 context.ServiceCategories.Add(category);
                 await context.SaveChangesAsync();
             }

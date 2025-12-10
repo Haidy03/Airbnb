@@ -160,9 +160,14 @@ export class ListingDetails implements OnInit {
             ...data,
             images: processedImages,
             ratingBreakdown: data.ratingBreakdown ?? undefined,
-            reviewsCount: data.reviews?.length || 0,
+            reviewsCount: data.reviewsCount || 0,
             rating: data.rating || 0,
           };
+          if (this.reviews.length > 0 && this.listing.reviewsCount === 0) {
+         this.listing.reviewsCount = this.reviews.length;
+         const total = this.reviews.reduce((acc, r) => acc + r.rating, 0);
+         this.listing.rating = total / this.reviews.length;
+      }
         },
         error: (err) => {
           this.error = "Failed to load listing details.";

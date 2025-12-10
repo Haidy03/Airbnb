@@ -8,9 +8,16 @@
 
     <div class="actions-row">
       <div class="left-actions">
-        <span class="rating">★ {{ listing?.rating }}</span>
+        <span class="rating" *ngIf="(listing?.rating || 0) > 0">
+          ★ {{ listing?.rating | number:'1.1-1' }}
+        </span>
+        <span class="rating" *ngIf="(listing?.rating || 0) === 0">
+          ★ New
+        </span>
         <span class="dot">·</span>
-        <span class="reviews-link">{{ listing?.reviewsCount }} reviews</span>
+        <span class="reviews-link">
+          {{ listing?.reviewsCount || reviews.length }} reviews
+        </span>
         <span class="dot">·</span>
         <span class="location">{{ listing?.country }}, {{ listing?.city }}, {{ listing?.address }}</span>
       </div>
