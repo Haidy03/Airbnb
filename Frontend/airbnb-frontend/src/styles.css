@@ -17,6 +17,13 @@ body, html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.swal2-container {
+  z-index: 9999 !important;
+}
+
+.swal2-popup {
+  font-family: 'Inter', sans-serif !important; 
+}
 
 h1, h2, h3, h4, h5, h6,
 button, input, optgroup, select, textarea, .btn {

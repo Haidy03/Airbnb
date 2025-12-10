@@ -7,6 +7,7 @@ import { Property, HouseRules, SafetyDetails } from '../../models/property.model
 import * as L from 'leaflet'; // ✅ Import Leaflet
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../auth/services/auth.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 type EditorSection = 
   | 'photos' | 'title' | 'propertyType' | 'capacity' | 'description' 
@@ -30,6 +31,7 @@ export class PropertyEditorComponent implements OnInit {
   private propertyService = inject(PropertyService);
   private http = inject(HttpClient);
   public authService = inject(AuthService);
+  private notificationService = inject(NotificationService); 
 
   property = signal<Property | null>(null);
   isLoading = signal(true);
@@ -119,6 +121,7 @@ export class PropertyEditorComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
+        this.notificationService.showError('Failed to load property details.');
         this.router.navigate(['/host/properties']);
       }
     });
@@ -328,11 +331,12 @@ export class PropertyEditorComponent implements OnInit {
       next: (updatedProp) => {
         this.property.set(updatedProp);
         this.isLoading.set(false);
+        this.notificationService.showToast('success', isChecked ? 'Listing published!' : 'Listing unlisted.');
       },
       error: (err) => {
         this.isLoading.set(false);
         (event.target as HTMLInputElement).checked = !isChecked;
-        alert('Failed to update status: ' + err.message);
+        this.notificationService.showError('Failed to update status: ' + err.message); 
       }
     });
   }
@@ -374,7 +378,7 @@ export class PropertyEditorComponent implements OnInit {
         break;
       case 'booking': updates.isInstantBook = this.tempInstantBook(); break;
       case 'rules': 
-        // ✅ Fix: Send times separately
+   
         updates.checkInTime = this.tempRules().checkInTime;
         updates.checkOutTime = this.tempRules().checkOutTime;
         break;
@@ -389,11 +393,11 @@ export class PropertyEditorComponent implements OnInit {
     this.propertyService.updateProperty(prop.id, updates).subscribe({
       next: (updatedProp) => {
         this.property.set(updatedProp);
-        alert('Saved successfully!');
+        this.notificationService.showToast('success', 'Changes saved successfully');
       },
       error: (err) => {
         console.error(err);
-        alert('Failed to save changes. Please check your input.');
+        this.notificationService.showError('Failed to save changes. Please check your input.'); 
       }
     });
   }
@@ -413,19 +417,21 @@ export class PropertyEditorComponent implements OnInit {
       next: (newImages) => {
         this.loadProperty(prop.id);
         input.value = '';
+        this.notificationService.showToast('success', 'Photos uploaded successfully'); 
       },
       error: (err) => {
         this.isLoading.set(false);
-        alert('Failed to upload images: ' + err.message);
+        this.notificationService.showError('Failed to upload images: ' + err.message);
       }
     });
   }
 
-  deleteImage(imageId: string) {
+  async deleteImage(imageId: string) {
     const prop = this.property();
     if (!prop) return;
 
-    if (!confirm('Delete this photo?')) return;
+    const confirmed = await this.notificationService.confirmAction('Delete Photo?', 'Are you sure you want to delete this photo?'); // ✅
+    if (!confirmed) return;
 
     this.loadingImages.update(set => { set.add(imageId); return new Set(set); });
 
@@ -435,9 +441,10 @@ export class PropertyEditorComponent implements OnInit {
         this.property.update(p => p ? { ...p, images: updatedImages } : null);
         
         this.loadingImages.update(set => { set.delete(imageId); return new Set(set); });
+        this.notificationService.showToast('success', 'Photo deleted'); // ✅
       },
       error: (err) => {
-        alert('Failed to delete image');
+        this.notificationService.showError('Failed to delete image'); // ✅
         this.loadingImages.update(set => { set.delete(imageId); return new Set(set); });
       }
     });
@@ -460,10 +467,11 @@ export class PropertyEditorComponent implements OnInit {
         
         this.property.update(p => p ? { ...p, images: updatedImages, coverImage: newCover } : null);
         this.isLoading.set(false);
+        this.notificationService.showToast('success', 'Cover photo updated');
       },
       error: (err) => {
         this.isLoading.set(false);
-        alert('Failed to update cover photo');
+        this.notificationService.showError('Failed to update cover photo'); 
       }
     });
   }
@@ -472,20 +480,26 @@ export class PropertyEditorComponent implements OnInit {
     return this.loadingImages().has(id);
   }
 
-  deleteProperty() {
+  async deleteProperty() {
     const prop = this.property();
     if (!prop) return;
 
-    if (confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
+    const confirmed = await this.notificationService.confirmAction(
+      'Delete Listing?', 
+      'Are you sure you want to delete this listing? This action cannot be undone.',
+      'Yes, delete'
+    ); // ✅
+
+    if (confirmed) {
       this.isLoading.set(true);
       this.propertyService.deleteDraft(prop.id).subscribe({
         next: () => {
-          alert('Property deleted successfully.');
+          this.notificationService.showSuccess('Deleted', 'Property deleted successfully.'); // ✅
           this.router.navigate(['/host/properties']);
         },
         error: (err) => {
           this.isLoading.set(false);
-          alert('Failed to delete property: ' + err.message);
+          this.notificationService.showError('Failed to delete property: ' + err.message); // ✅
         }
       });
     }
