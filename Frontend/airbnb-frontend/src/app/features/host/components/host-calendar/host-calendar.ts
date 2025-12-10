@@ -6,7 +6,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { CalendarService } from '../../services/calendar-service';
 import { PropertyService } from '../../services/property';
 import { forkJoin, Observable, of } from 'rxjs';
-
+import { NotificationService } from '../../../../core/services/notification.service';
 // Interfaces
 interface CalendarProperty {
   id: string;
@@ -92,7 +92,7 @@ export class HostCalendar implements OnInit {
   private fb = inject(FormBuilder);
   private calendarService = inject(CalendarService);
   private propertyService = inject(PropertyService);
-
+  private notificationService = inject(NotificationService);
   // State
   currentDate = signal<Date>(new Date());
   selectedProperty = signal<CalendarProperty | null>(null);
@@ -445,7 +445,7 @@ export class HostCalendar implements OnInit {
     forkJoin(requests).subscribe({
       next: () => {
         console.log('✅ Saved successfully');
-        
+        this.notificationService.showToast('success', 'Changes saved successfully');
        
         this.calendarDays.update(days => 
           days.map(d => {
@@ -474,7 +474,7 @@ export class HostCalendar implements OnInit {
       error: (err) => {
         console.error('❌ Error saving details:', err);
         this.savingDaySignal.set(false);
-        alert('Failed to save changes.');
+        this.notificationService.showError('Failed to save changes.');
       }
     });
   }
@@ -627,11 +627,12 @@ export class HostCalendar implements OnInit {
     }).subscribe({
       next: () => {
        // alert('Settings updated successfully');
+        this.notificationService.showToast('success', 'Settings updated successfully');
         this.closeSettingsModal();
         this.loadSettings();
         this.loadCalendarData();
       },
-      error: (err) => alert('Failed to update settings')
+      error: (err) => this.notificationService.showError('Failed to update settings')
     });
   }
 
