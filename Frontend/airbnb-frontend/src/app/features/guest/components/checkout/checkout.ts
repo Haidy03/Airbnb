@@ -8,7 +8,7 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } 
 import { NgxPayPalModule, IPayPalConfig, ICreateOrderRequest } from 'ngx-paypal';
 import { environment } from '../../../../../environments/environment'; 
 import { StripeService } from '../../../../core/services/stripe.service';
-
+import { NotificationService } from '../../../../core/services/notification.service';
 @Component({
   selector: 'app-checkout',
   standalone: true,
@@ -48,7 +48,8 @@ export class Checkout implements OnInit {
     private guestBookingService: GuestBookingService,
     private stripeService: StripeService,
     private location: Location,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private notificationService: NotificationService
   ) {
     this.paymentForm = this.fb.group({
       street: ['', Validators.required],
@@ -93,7 +94,6 @@ export class Checkout implements OnInit {
       const service = this.serviceFee || 0;
       this.totalPrice = baseTotal + cleaning + service; 
 
-      // تهيئة PayPal فقط إذا كان الحجز فوري
       if (this.bookingType === 'instant') {
         this.initConfig();
       }
@@ -102,13 +102,13 @@ export class Checkout implements OnInit {
 
   payWithStripe() {
     if (!this.listing) {
-      alert('Listing data not loaded');
+      this.notificationService.showError('Listing data not loaded');
       return;
     }
 
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please log in to complete your booking.');
+      this.notificationService.showError('Please log in to complete your booking.');
       this.router.navigate(['/login'], { 
         queryParams: { 
           returnUrl: `/checkout/${this.listing.id}`,
@@ -123,7 +123,6 @@ export class Checkout implements OnInit {
 
     this.isLoading = true;
 
-    // إرسال المبلغ بالجنيه المصري (الباك إند يعالجه كـ EGP)
     const amountEGP = this.totalPrice;
 
     this.stripeService.createCheckoutSession(amountEGP , this.listing.title).subscribe({
@@ -142,7 +141,8 @@ export class Checkout implements OnInit {
       error: (err) => {
         this.isLoading = false;
         console.error('❌ Stripe Error:', err);
-        alert('Failed to create payment session: ' + (err.error?.error || err.message));
+        const msg = err.error?.error || err.message || 'Payment initiation failed';
+        this.notificationService.showError('Failed to create payment session: ' + msg);
       }
     });
   }
@@ -164,34 +164,41 @@ export class Checkout implements OnInit {
       next: (res) => {
         this.isLoading = false;
         if (this.bookingType === 'instant') {
-          alert('🎉 Payment Successful! Your reservation is confirmed.');
+          this.notificationService.showSuccess(
+            'Payment Successful!', 
+            'Your reservation is confirmed. Pack your bags! 🎉'
+          );
         } else {
-          alert('📩 Request Sent! Waiting for host approval.');
+          this.notificationService.showSuccess(
+            'Request Sent!', 
+            'Your request has been sent to the host. You will be notified once approved.'
+          );
         }
         this.router.navigate(['/trips']);
       },
       error: (err) => {
         this.isLoading = false;
         console.error(err);
-        alert('Booking failed: ' + (err.error?.message || err.message));
+        const msg = err.error?.message || err.message || 'Booking failed';
+        this.notificationService.showError(msg);
       }
     });
   }
 
-  // ✅ تصحيح إعدادات PayPal
+ 
   private initConfig(): void {
-    // تحويل السعر للدولار (للـ Sandbox)
+
     const amountUSD = (this.totalPrice / 50).toFixed(2); 
 
     this.payPalConfig = {
-      currency: 'USD', // ✅ يجب أن تكون USD لتتطابق مع purchase_units
-      clientId: 'sb', // ⚠️ استبدلي sb بالـ Client ID الحقيقي من PayPal Developer Dashboard
+      currency: 'USD', 
+      clientId: 'sb', 
       
       createOrderOnClient: (data) => <ICreateOrderRequest>{
         intent: 'CAPTURE',
         purchase_units: [{
           amount: {
-            currency_code: 'USD', // ✅ موحدة
+            currency_code: 'USD',
             value: amountUSD,
             breakdown: {
               item_total: { currency_code: 'USD', value: amountUSD }

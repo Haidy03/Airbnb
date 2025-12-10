@@ -31,14 +31,14 @@
 /* --- Main Content --- */
 .main-content {
  
-  padding: 40px; /* Bottom padding for footer */
+  padding: 40px; 
   min-height: calc(100vh - 160px);
   display: flex;
   justify-content: center;
 }
 
 .content-container {
-  max-width: 640px; /* Airbnb standard width for this step */
+  max-width: 640px;
   width: 100%;
 }
 
@@ -77,20 +77,20 @@
 /* --- Grid & Cards --- */
 .amenities-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns strictly */
+  grid-template-columns: repeat(3, 1fr); 
   gap: 16px;
 }
 
 .amenity-card {
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Push content apart */
+  justify-content: space-between; 
   align-items: flex-start;
   background: white;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 24px;
-  min-height: 140px; /* Square-ish shape */
+  min-height: 140px; 
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
   text-align: left;
@@ -102,9 +102,9 @@
 }
 
 .amenity-card.selected {
-  border: 2px solid black; /* Thicker black border when selected */
-  background-color: #F7F7F7; /* Subtle background change */
-  padding: 23px; /* Adjust padding to prevent layout shift from border */
+  border: 2px solid black;
+  background-color: #F7F7F7;
+  padding: 23px; 
 }
 
 /* Icons */
@@ -146,16 +146,16 @@
   position: absolute;
   top: 0; left: 0;
   height: 4px;
-  background: var(--primary-color); /* Black fill */
+  background: var(--primary-color);
   transition: width 0.3s ease;
-  background-color: #DDDDDD; /* Gray track */
+  background-color: #DDDDDD; 
 }
 .progress-bar::after {
   content: '';
   display: block;
   background: black;
   height: 100%;
-  width: 100%; /* Set dynamically in HTML */
+  width: 100%; 
 }
 
 .btn-back {
@@ -188,13 +188,13 @@
   }
   
   .amenities-grid {
-    grid-template-columns: 1fr 1fr; /* 2 cols on tablet */
+    grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (max-width: 480px) {
   .amenities-grid {
-    grid-template-columns: 1fr; /* 1 col on mobile? Or stick to 2 small ones */
+    grid-template-columns: 1fr; 
     grid-template-columns: 1fr 1fr; 
   }
   

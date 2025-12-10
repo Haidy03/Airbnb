@@ -2,7 +2,8 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../../services/property';
-
+import { NotificationService } from '../../../../../core/services/notification.service';
+import Swal from 'sweetalert2';
 interface FloorPlanData {
   guests: number;
   bedrooms: number;
@@ -38,7 +39,8 @@ export class PropertyFloorPlanComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private propertyService: PropertyService
+    private propertyService: PropertyService,
+    private notificationService: NotificationService 
   ) {}
 
   ngOnInit(): void {
@@ -127,7 +129,7 @@ export class PropertyFloorPlanComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     } else {

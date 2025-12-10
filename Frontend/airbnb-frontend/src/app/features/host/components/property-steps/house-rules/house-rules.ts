@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../../services/property';
+import { NotificationService } from '../../../../../core/services/notification.service'; 
 
 @Component({
   selector: 'app-house-rules',
@@ -19,7 +20,8 @@ export class HouseRulesComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private propertyService: PropertyService
+    private propertyService: PropertyService,
+    private notificationService: NotificationService 
   ) {}
 
   ngOnInit() {
@@ -29,7 +31,7 @@ export class HouseRulesComponent implements OnInit {
 
   initForm() {
     this.rulesForm = this.fb.group({
-      // ✅ فقط الوقت
+     
       checkInTime: ['15:00', Validators.required], 
       checkOutTime: ['11:00', Validators.required]
     });
@@ -43,8 +45,7 @@ export class HouseRulesComponent implements OnInit {
         next: (draft) => {
           const formatTime = (t: any) => t ? String(t).substring(0, 5) : '';
           const d = draft as any;
-          
-          // محاولة قراءة الوقت سواء كان Flat أو Nested
+         
           const inTime = d.checkInTime || d.houseRules?.checkInTime;
           const outTime = d.checkOutTime || d.houseRules?.checkOutTime;
           
@@ -71,7 +72,7 @@ export class HouseRulesComponent implements OnInit {
     this.isLoading.set(true);
 
     if (this.currentDraftId) {
-      // إرسال التوقيتات فقط
+      
       this.propertyService.updateDraftAtStep(
         this.currentDraftId,
         this.rulesForm.value,
@@ -83,14 +84,15 @@ export class HouseRulesComponent implements OnInit {
         },
         error: (err) => {
           this.isLoading.set(false);
-          alert('Failed to save rules: ' + (err.error?.message || err.message));
+          this.notificationService.showError('Failed to save rules: ' + (err.error?.message || err.message));
         }
       });
     }
   }
 
-  saveAndExit() {
-    if (!confirm('Save your progress and exit?')) return;
+  async saveAndExit(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction('Save & Exit?', 'Your progress will be saved.'); 
+    if (!confirmed) return;
 
     this.isLoading.set(true);
 
@@ -106,7 +108,7 @@ export class HouseRulesComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + (error.message || 'Unknown error'));
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     } else {
@@ -115,6 +117,6 @@ export class HouseRulesComponent implements OnInit {
   }
 
   showQuestionsModal() {
-    alert('Set clear expectations for your guests regarding arrival and departure times.');
+    this.notificationService.showToast('info', 'Set clear expectations for your guests.');
   }
 }
