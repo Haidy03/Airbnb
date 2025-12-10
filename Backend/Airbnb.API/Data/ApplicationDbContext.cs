@@ -454,18 +454,18 @@ namespace Airbnb.API.Models
             // Services
             // ============================================
 
-            modelBuilder.Entity<Service>()
-                .HasOne(s => s.Category)
-                .WithMany()
-                .HasForeignKey(s => s.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Service>()
+            //    .HasOne(s => s.Category)
+            //    .WithMany()
+            //    .HasForeignKey(s => s.CategoryId)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-                        modelBuilder.Entity<ServiceCategory>().HasData(
-                            new ServiceCategory { Id = 1, Name = "Chefs", Icon = "chef-hat", DisplayOrder = 1 },
-                            new ServiceCategory { Id = 2, Name = "Training", Icon = "dumbbell", DisplayOrder = 2 },
-                            new ServiceCategory { Id = 3, Name = "Beauty", Icon = "spa", DisplayOrder = 3 },
-                            new ServiceCategory { Id = 4, Name = "Cleaning", Icon = "broom", DisplayOrder = 4 }
-                        );
+            //            modelBuilder.Entity<ServiceCategory>().HasData(
+            //                new ServiceCategory { Id = 1, Name = "Chefs", Icon = "chef-hat", DisplayOrder = 1 },
+            //                new ServiceCategory { Id = 2, Name = "Training", Icon = "dumbbell", DisplayOrder = 2 },
+            //                new ServiceCategory { Id = 3, Name = "Beauty", Icon = "spa", DisplayOrder = 3 },
+            //                new ServiceCategory { Id = 4, Name = "Cleaning", Icon = "broom", DisplayOrder = 4 }
+            //            );
 
             // ============================================
             // Seed Experience Categories
