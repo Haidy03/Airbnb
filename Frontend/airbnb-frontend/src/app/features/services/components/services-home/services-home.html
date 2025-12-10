@@ -1,27 +1,40 @@
-<!-- لا نضع Header هنا لأن MainLayout يحتويه بالفعل -->
-
-<div class="container-fluid px-4 px-md-5 pb-5" style="margin-top: 20px;">
+<div class="container-fluid px-4 px-md-5 pb-5" style="margin-top: 30px;">
   
-  <h2 class="h3 fw-bold text-dark mb-4">Discover Services</h2>
+  <h1 class="h2 fw-bold text-dark mb-5">Discover Services</h1>
 
-  <!-- Loading -->
+  <!-- Loading Spinner -->
   <div *ngIf="isLoading" class="d-flex justify-content-center py-5">
     <div class="spinner-border text-danger" role="status"></div>
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!isLoading && services.length === 0" class="text-center py-5">
-    <h3>No services found</h3>
+  <div *ngIf="!isLoading && categorySections.length === 0" class="text-center py-5">
+    <h3>No services available yet</h3>
     <p class="text-muted">Check back later.</p>
   </div>
 
-  <!-- Grid -->
-  <div *ngIf="!isLoading && services.length > 0">
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4">
-      <div class="col" *ngFor="let service of services">
-        <app-service-card [service]="service"></app-service-card>
+  <!-- Sections Loop -->
+  <div *ngIf="!isLoading && categorySections.length > 0">
+    
+    <div *ngFor="let section of categorySections" class="category-section mb-5">
+      
+      <!-- Category Header -->
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <!-- Icon -->
+        <img [src]="section.category.icon" class="cat-icon" alt="" onerror="this.style.display='none'">
+        <h2 class="h4 fw-bold mb-0">{{ section.category.name }}</h2>
       </div>
+
+      <!-- Services Grid (Horizontal Scroll on Mobile, Grid on Desktop) -->
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4">
+        <div class="col" *ngFor="let service of section.services">
+          <app-service-card [service]="service"></app-service-card>
+        </div>
+      </div>
+
+      <hr class="mt-5 text-muted opacity-25">
     </div>
+
   </div>
 
 </div>

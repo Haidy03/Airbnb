@@ -1,28 +1,63 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ServicesService } from '../../services/service';
-import { ServiceCard } from '../../models/service.model';
+import { ServiceCard, ServiceCategory } from '../../models/service.model';
 import { ServiceCardComponent } from '../../components/service-card/service-card';
+import { forkJoin, map } from 'rxjs';
+
+interface CategorySection {
+  category: ServiceCategory;
+  services: ServiceCard[];
+}
 
 @Component({
   selector: 'app-services-home',
   standalone: true,
   imports: [CommonModule, ServiceCardComponent],
-  templateUrl: './services-home.html'
+  templateUrl: './services-home.html',
+  styleUrls: ['./services-home.css']
 })
 export class ServicesHomeComponent implements OnInit {
-  services: ServiceCard[] = [];
+
+  categorySections: CategorySection[] = [];
   isLoading = true;
 
-  constructor(private servicesService: ServicesService) {}
+  private servicesService = inject(ServicesService);
 
   ngOnInit() {
-    this.servicesService.getFeaturedServices().subscribe({
+    this.loadData();
+  }
+
+  loadData() {
+    this.isLoading = true;
+
+ 
+    this.servicesService.getAllCategories().subscribe({
       next: (res) => {
         if (res.success) {
-          this.services = res.data;
+          const categories = res.data;
+          
+         
+          const requests = categories.map(cat => 
+            this.servicesService.getServicesByCategory(cat.name).pipe(
+              
+              map(serviceRes => ({
+                category: cat,
+                services: serviceRes.data || [] 
+              }))
+            )
+          );
+
+          forkJoin(requests).subscribe({
+            next: (results) => {
+              this.categorySections = results.filter(section => section.services.length > 0);
+              this.isLoading = false;
+            },
+            error: () => this.isLoading = false
+          });
+        } else {
+          this.isLoading = false;
         }
-        this.isLoading = false;
       },
       error: () => this.isLoading = false
     });
