@@ -266,6 +266,18 @@ namespace Airbnb.API.Controllers
             }
             catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
         }
-
+        [HttpGet("{id}/blocked-slots")]
+        public async Task<IActionResult> GetBlockedSlots(int id, [FromQuery] DateTime date)
+        {
+            try
+            {
+                var blockedSlots = await _servicesService.GetBlockedSlotsAsync(id, date);
+                return Ok(new { success = true, data = blockedSlots });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
     }
 }

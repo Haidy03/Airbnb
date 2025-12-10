@@ -137,27 +137,32 @@ export class ServiceCheckoutComponent implements OnInit {
   }
 
   private getCombinedDateTime(): string {
-   
-    if (!this.time) return new Date(this.date).toISOString();
+  
+    if (!this.time || !this.date) return new Date().toISOString();
 
+  
     const [timeStr, modifier] = this.time.split(' ');
     let [hours, minutes] = timeStr.split(':');
 
     if (hours === '12') hours = '00';
     if (modifier === 'PM') hours = (parseInt(hours, 10) + 12).toString();
 
-    const dateObj = new Date(this.date);
-    dateObj.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+    
+    const hh = hours.toString().padStart(2, '0');
+    const mm = minutes.toString().padStart(2, '0');
 
-    return dateObj.toISOString();
+    return `${this.date}T${hh}:${mm}:00`;
   }
 
-  getImageUrl(url: string | undefined): string {
-    if (!url) return 'assets/images/placeholder.jpg';
-    if (url.startsWith('http')) return url;
-    const cleanPath = url.startsWith('/') ? url.substring(1) : url;
-    return `${this.baseUrl}/${cleanPath}`;
-  }
+  getImageUrl(image: any): string { 
+  if (!image) return 'assets/images/placeholder.jpg';
+  const url = image.url || image;
+
+  if (url.startsWith('http')) return url;
+  
+  const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+  return `${this.baseUrl}/${cleanPath}`;
+}
 
   goBack() {
     this.location.back();

@@ -40,5 +40,6 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<int> GetTotalGuestsForServiceAtDateAsync(int serviceId, DateTime bookingDate);
         Task<ServiceImage?> GetImageByIdAsync(int id);
         Task DeleteServiceImageAsync(ServiceImage image);
+        Task<Dictionary<TimeSpan, int>> GetBookedSlotsCountsAsync(int serviceId, DateTime date);
     }
 }
