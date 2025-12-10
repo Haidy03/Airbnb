@@ -180,24 +180,23 @@ body {
 }
 
 .edit-btn {
-    background: none;
-    border: none;
-    color: #222;
+    border: #E31C5F;
+    color: white;
+    background-color: #E31C5F;
     font-size: 16px;
     font-weight: 600;
-    text-decoration: underline;
     cursor: pointer;
     padding: 8px 16px;
+    border-radius: 8px;
 }
 
 .edit-btn:hover {
-    background-color: #f7f7f7;
+    background-color: black;
     border-radius: 8px;
 }
 
 /* Profile Card */
 .profile-card {
-   
      display: grid;
     grid-template-columns: 360px 400px; 
     grid-template-rows: 2fr 1fr;
@@ -243,13 +242,6 @@ body {
 }
 
 .complete-profile {
-    /* background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 16px;
-    padding: 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px; */
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 16px;
