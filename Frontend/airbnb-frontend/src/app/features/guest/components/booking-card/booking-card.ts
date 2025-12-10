@@ -1,7 +1,6 @@
 import { Component, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-// ✅ 1. استيراد CalendarSection لاستخدامه داخل الـ Popup
 import { CalendarSection } from '../calendar-section/calendar-section';
 
 export interface GuestCounts {
@@ -14,7 +13,6 @@ export interface GuestCounts {
 @Component({
   selector: 'app-super-card',
   standalone: true,
-  // ✅ 2. إضافة CalendarSection للـ imports
   imports: [CommonModule, FormsModule, CalendarSection],
   templateUrl: './booking-card.html',
   styleUrls: ['./booking-card.scss']
@@ -31,18 +29,18 @@ export class BookingCard implements OnInit, OnChanges {
   @Input() isInstantBook: boolean = false;
   @Input() maxGuests: number = 100;
 
-  // ✅ 3. إضافة المدخلات الناقصة (حل الخطأ الأول)
+
   @Input() blockedDates: string[] = [];
   @Input() checkInDate: string = '';
   @Input() checkOutDate: string = '';
 
-  // ✅ 4. تحديد نوع البيانات المرسلة بدقة (حل الخطأ الثاني)
+  
   @Output() dateChanged = new EventEmitter<{checkIn: string, checkOut: string}>();
   @Output() reserve = new EventEmitter<void>();
   @Output() guestsChange = new EventEmitter<number>();
 
   isGuestMenuOpen: boolean = false;
-  isCalendarOpen: boolean = false; // للتحكم في ظهور الـ Popup
+  isCalendarOpen: boolean = false; 
 
   guests: GuestCounts = { adults: 1, children: 0, infants: 0, pets: 0 };
   priceBreakdown: any = null;
@@ -60,36 +58,36 @@ export class BookingCard implements OnInit, OnChanges {
     }
   }
 
-  // --- منطق الـ Popup Calendar ---
+ 
   
   toggleCalendarModal() {
     this.isCalendarOpen = !this.isCalendarOpen;
-    this.isGuestMenuOpen = false; // إغلاق قائمة الضيوف إذا كانت مفتوحة
+    this.isGuestMenuOpen = false; 
   }
 
   closeCalendar() {
     this.isCalendarOpen = false;
   }
 
-  // دالة تستقبل التاريخ من CalendarSection الداخلي وترسله للأب
+  
   onPopupDatesSelected(dates: {checkIn: string, checkOut: string}) {
-  // 1. تحديث القيم المحلية فوراً (ليظهر التاريخ في الـ fake-input)
+
   this.checkInDate = dates.checkIn;
   this.checkOutDate = dates.checkOut;
   
-  // 2. إرسال التحديث للأب (ListingDetails)
+
   this.dateChanged.emit(dates);
   
-  // 3. إغلاق الـ Popup فقط إذا اكتمل الاختيار (التاريخين موجودين)
+
   if (dates.checkIn && dates.checkOut) {
-    // تأخير بسيط لإعطاء المستخدم فرصة لرؤية التحديد قبل الإغلاق
+
     setTimeout(() => {
       this.closeCalendar();
-    }, 300); // 300ms تأخير جمالي
+    }, 300);
   }
 }
 
-  // --- باقي المنطق (الحسابات والضيوف) ---
+
 
   calculateTotal() {
     if (!this.checkInDate || !this.checkOutDate) {
@@ -126,7 +124,7 @@ export class BookingCard implements OnInit, OnChanges {
   }
 
   updateCount(type: keyof GuestCounts, change: number) {
-    // ... (نفس كود الضيوف السابق) ...
+
     const currentTotal = this.guests.adults + this.guests.children;
     const newValue = this.guests[type] + change;
     if (type === 'adults' && newValue < 1) return;
@@ -142,7 +140,7 @@ export class BookingCard implements OnInit, OnChanges {
   }
 
   get guestLabel(): string {
-     // ... (نفس الكود السابق) ...
+
      return `${this.guests.adults + this.guests.children} guests`;
   }
 
