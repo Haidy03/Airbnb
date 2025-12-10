@@ -2,6 +2,7 @@
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,23 +12,23 @@ namespace Airbnb.API.Services.Implementations
     public class ChatService : IChatService
     {
         private readonly IPropertyRepository _propertyRepository;
-        private readonly IExperienceRepository _experienceRepository; 
-        private readonly IServiceRepository _serviceRepository;       
+        private readonly IExperienceRepository _experienceRepository;
+        private readonly IServiceRepository _serviceRepository;
         private readonly IConfiguration _config;
         private readonly HttpClient _httpClient;
         private readonly IMemoryCache _cache;
 
         public ChatService(
             IPropertyRepository propertyRepository,
-            IExperienceRepository experienceRepository, 
-            IServiceRepository serviceRepository,      
+            IExperienceRepository experienceRepository,
+            IServiceRepository serviceRepository,
             IConfiguration config,
             HttpClient httpClient,
             IMemoryCache cache)
         {
             _propertyRepository = propertyRepository;
-            _experienceRepository = experienceRepository; 
-            _serviceRepository = serviceRepository;       
+            _experienceRepository = experienceRepository;
+            _serviceRepository = serviceRepository;
             _config = config;
             _httpClient = httpClient;
             _cache = cache;
@@ -35,130 +36,118 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<ChatResponseDto> GetResponseAsync(string userMessage, string userId)
         {
+            // 1. RETRIEVE HISTORY
             string cacheKey = $"ChatHistory_{userId}";
             if (!_cache.TryGetValue(cacheKey, out List<string> conversationHistory))
             {
                 conversationHistory = new List<string>();
             }
 
-            // 2. FETCH DATA (The Missing Part)
-            var properties = await _propertyRepository.GetFeaturedPropertiesAsync(10);
-            var experiences = await _experienceRepository.GetFeaturedExperiencesAsync(10); 
-            var services = await _serviceRepository.GetFeaturedServicesAsync();            
+            // 2. FETCH DATA
+            var properties = await _propertyRepository.GetFeaturedPropertiesAsync(5); // Reduced count to save tokens
+            var experiences = await _experienceRepository.GetFeaturedExperiencesAsync(5);
+            var services = await _serviceRepository.GetFeaturedServicesAsync();
 
             // 3. BUILD CONTEXT
             var contextBuilder = new StringBuilder();
 
-            // --- Properties ---
             contextBuilder.AppendLine("=== HOMES / STAYS ===");
             foreach (var p in properties)
-            {
-                contextBuilder.AppendLine($"- [HOME] ID: {p.Id}, Title: {p.Title}, City: {p.City}, Price: {p.PricePerNight} EGP/night");
-            }
+                contextBuilder.AppendLine($"- [HOME] ID: {p.Id}, Title: {p.Title}, City: {p.City}, Price: {p.PricePerNight} EGP");
 
-            // --- Experiences (NEW) ---
-            contextBuilder.AppendLine("\n=== EXPERIENCES / ACTIVITIES ===");
+            contextBuilder.AppendLine("\n=== EXPERIENCES ===");
             foreach (var e in experiences)
-            {
-                contextBuilder.AppendLine($"- [EXPERIENCE] ID: {e.Id}, Title: {e.Title}, City: {e.City}, Price: {e.PricePerPerson} EGP/person");
-            }
+                contextBuilder.AppendLine($"- [EXPERIENCE] ID: {e.Id}, Title: {e.Title}, City: {e.City}, Price: {e.PricePerPerson} EGP");
 
-            // --- Services (NEW) ---
-            contextBuilder.AppendLine("\n=== SERVICES / PROFESSIONAL HELP ===");
+            contextBuilder.AppendLine("\n=== SERVICES ===");
             foreach (var s in services)
             {
-                // Handle null city if it's an online/covered area service
                 var loc = !string.IsNullOrEmpty(s.City) ? s.City : (s.CoveredAreas ?? "General");
                 contextBuilder.AppendLine($"- [SERVICE] ID: {s.Id}, Title: {s.Title}, Location: {loc}, Price: {s.PricePerUnit} EGP");
             }
 
-            // 4. BUILD PROMPT
-            // We format the history as: "User: ... \n AI: ... \n"
             var historyText = string.Join("\n", conversationHistory);
 
             var systemInstruction = $@"
-                You are a smart Airbnb assistant, you need to help with planning a stay or go on a trip or get a service, if the request was not available, you can start vy saying 'i wish i can help you but the service you asked for is currently unavailable', then start recommending other services, you must also end the sentence with a question like would like to go to another place?, or can i help you with anything else?
-                Use the data below to answer.
+                You are a smart Airbnb assistant. Use the inventory below to answer.
                 
-                AVAILABLE INVENTORY:
+                INVENTORY:
                 {contextBuilder}
 
-                CONVERSATION HISTORY:
+                HISTORY:
                 {historyText}
 
-                Current User Question: {userMessage}
-                
-                Answer the current question based on the history and inventory, and always ignore the metadata given like ID and studd you can just mention the names location and prices, you need to sound like a normal human
-                If the user asks for 'Catering' or 'Yoga', look in the [SERVICE] or [EXPERIENCE] sections.
-                Keep it short.
+                Recommend items from the list based on the user's request, if the user's request's isn't available, you start apologizing and try to suggest something close to the request
+                If they ask for catering or yoga, check SERVICES or EXPERIENCES.
+                don't make the reply too long.
             ";
 
-            // --- DEBUG LOGGING ---
-            // Where to find this: In Visual Studio, go to "Output" window and select "ASP.NET Core Web Server" from the dropdown
-            Console.WriteLine("================ AI PROMPT START ================");
-            Console.WriteLine(contextBuilder.ToString()); // Print just the inventory to check
-            Console.WriteLine("================ AI PROMPT END   ================");
-
-            // 5. CALL GOOGLE
-            var apiKey = _config["Gemini:ApiKey"];
-            var url = $"{_config["Gemini:Url"]}?key={apiKey}";
+            // 4. CALL OPENAI API
+            var apiKey = _config["OpenAI:ApiKey"];
+            var url = _config["OpenAI:Url"];
+            var model = _config["OpenAI:Model"];
 
             var requestBody = new
             {
-                contents = new[]
+                model = model,
+                messages = new[]
                 {
-                    new { parts = new[] { new { text = systemInstruction } } }
-                }
+                    new { role = "system", content = systemInstruction },
+                    new { role = "user", content = userMessage }
+                },
+                temperature = 0.7
             };
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+            // ✅ OpenAI requires the Key in the Header, not the URL
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
             var response = await _httpClient.PostAsync(url, jsonContent);
 
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[Gemini Error] Status: {response.StatusCode}, Details: {errorContent}");
+                Console.WriteLine($"[OpenAI Error] {response.StatusCode}: {errorContent}");
                 return new ChatResponseDto { Response = "I am having trouble connecting to the AI brain right now." };
             }
 
             var responseString = await response.Content.ReadAsStringAsync();
-            var geminiResponse = JsonSerializer.Deserialize<GeminiApiResponse>(responseString);
-            var aiReply = geminiResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text ?? "No response.";
+            var openAiResponse = JsonSerializer.Deserialize<OpenAiApiResponse>(responseString);
 
-            // 6. UPDATE MEMORY
+            // Extract the text from OpenAI's structure
+            var aiReply = openAiResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? "No response.";
+
+            // 5. UPDATE MEMORY
             conversationHistory.Add($"User: {userMessage}");
             conversationHistory.Add($"AI: {aiReply}");
 
-            if (conversationHistory.Count > 10)
-            {
-                conversationHistory.RemoveRange(0, conversationHistory.Count - 10);
-            }
-
+            if (conversationHistory.Count > 10) conversationHistory.RemoveRange(0, conversationHistory.Count - 10);
             _cache.Set(cacheKey, conversationHistory, TimeSpan.FromMinutes(30));
 
             return new ChatResponseDto { Response = aiReply };
         }
     }
 
-    // Helper classes to parse Gemini Response
-    public class GeminiApiResponse
+    // === NEW HELPER CLASSES FOR OPENAI ===
+    public class OpenAiApiResponse
     {
-        [JsonPropertyName("candidates")]
-        public List<Candidate> Candidates { get; set; }
+        [JsonPropertyName("choices")]
+        public List<OpenAiChoice> Choices { get; set; }
     }
-    public class Candidate
+
+    public class OpenAiChoice
     {
+        [JsonPropertyName("message")]
+        public OpenAiMessage Message { get; set; }
+    }
+
+    public class OpenAiMessage
+    {
+        [JsonPropertyName("role")]
+        public string Role { get; set; }
+
         [JsonPropertyName("content")]
-        public Content Content { get; set; }
-    }
-    public class Content
-    {
-        [JsonPropertyName("parts")]
-        public List<Part> Parts { get; set; }
-    }
-    public class Part
-    {
-        [JsonPropertyName("text")]
-        public string Text { get; set; }
+        public string Content { get; set; }
     }
 }
