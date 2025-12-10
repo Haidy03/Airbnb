@@ -4,3 +4,21 @@ body {
   margin: 0;
   padding: 0;
 }
+
+:root {
+  --bs-body-font-family: 'Inter', sans-serif;
+  --bs-font-sans-serif: 'Inter', sans-serif;
+}
+
+
+body, html {
+  font-family: 'Inter', sans-serif !important;
+  -webkit-font-smoothing: antialiased; 
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+h1, h2, h3, h4, h5, h6,
+button, input, optgroup, select, textarea, .btn {
+  font-family: 'Inter', sans-serif !important;
+}
