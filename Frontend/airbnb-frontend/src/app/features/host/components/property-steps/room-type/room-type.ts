@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../../services/property';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 type RoomType = 'entire_place' | 'private_room' | 'shared_room' | 'hotel_room';
 
@@ -49,7 +50,8 @@ export class PropertyRoomTypeComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private propertyService: PropertyService // ✅ Inject PropertyService
+    private propertyService: PropertyService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -77,8 +79,9 @@ export class PropertyRoomTypeComponent implements OnInit {
     this.selectedType.set(type);
   }
 
-  saveAndExit(): void {
-    if (!confirm('Save your progress and exit?')) return;
+  async saveAndExit(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction('Save & Exit?', 'Your progress will be saved.');
+    if (!confirmed) return;
 
     this.isLoading.set(true);
 
@@ -94,14 +97,14 @@ export class PropertyRoomTypeComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message); 
         }
       });
     }
   }
 
   showQuestionsModal(): void {
-    alert('Questions? Contact support.');
+    this.notificationService.showToast('info', 'Contact support.'); 
   }
 
   goBack(): void {
@@ -110,7 +113,7 @@ export class PropertyRoomTypeComponent implements OnInit {
 
    goNext(): void {
     if (!this.selectedType()) {
-      alert('Please select a room type.');
+      this.notificationService.showError('Please select a room type.');
       return;
     }
 
@@ -128,7 +131,7 @@ export class PropertyRoomTypeComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     }

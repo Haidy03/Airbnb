@@ -157,7 +157,7 @@ export class PropertyPhotosComponent implements OnInit {
     const remaining = this.maxPhotos - current.length;
 
     if (files.length > remaining) {
-      // ✅ استبدال Alert
+    
       this.notificationService.showToast('error', `You can only add ${remaining} more photos.`);
       files = files.slice(0, remaining);
     }

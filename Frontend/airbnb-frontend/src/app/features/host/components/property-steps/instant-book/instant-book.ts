@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../../services/property';
 import { Property } from '../../../models/property.model'; 
+import { NotificationService } from '../../../../../core/services/notification.service'; 
 
 @Component({
   selector: 'app-booking-settings',
@@ -21,7 +22,8 @@ export class instantBookComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private propertyService: PropertyService
+    private propertyService: PropertyService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -36,7 +38,7 @@ export class instantBookComponent implements OnInit {
         next: (draft) => {
           this.currentDraft = draft;
           
-          // ✅ تصحيح 1: قراءة القيمة من الداتا بيز وضبط حالة الزر
+          
           if (draft.isInstantBook) {
             this.bookingMode.set('instant');
           } else {
@@ -68,8 +70,9 @@ export class instantBookComponent implements OnInit {
     };
   }
 
-  saveAndExit(): void {
-    if (!confirm('Save your progress and exit?')) return;
+  async saveAndExit(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction('Save & Exit?', 'Your progress will be saved.'); 
+    if (!confirmed) return;
 
     this.isLoading.set(true);
 
@@ -85,7 +88,7 @@ export class instantBookComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message); 
         }
       });
     } else {
@@ -94,7 +97,7 @@ export class instantBookComponent implements OnInit {
   }
 
   showQuestionsModal(): void {
-    alert('You can change your booking settings anytime from your account settings!');
+    this.notificationService.showToast('info', 'You can change this anytime!'); 
   }
 
   learnMore(): void {
@@ -120,7 +123,7 @@ export class instantBookComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     }

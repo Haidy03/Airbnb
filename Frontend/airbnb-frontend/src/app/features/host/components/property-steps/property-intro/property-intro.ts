@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { PropertyService } from '../../../services/property';
-
+import { NotificationService } from '../../../../../core/services/notification.service';
 @Component({
   selector: 'app-property-intro',
   standalone: true,
@@ -16,7 +16,8 @@ export class PropertyIntroComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private propertyService: PropertyService
+    private propertyService: PropertyService,
+    private notificationService: NotificationService 
   ) {}
 
   ngOnInit(): void {
@@ -41,7 +42,7 @@ export class PropertyIntroComponent implements OnInit {
         },
         error: (error) => {
           console.error('❌ Error loading draft:', error);
-          // ✅ If draft doesn't exist, clear the ID
+          
           localStorage.removeItem('currentDraftId');
           this.currentDraftId = null;
         }
@@ -76,8 +77,11 @@ export class PropertyIntroComponent implements OnInit {
   /**
    * ✅ Save progress and exit
    */
-  saveAndExit(): void {
-    const confirmed = confirm('Save your progress and exit?');
+  async saveAndExit(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction(
+      'Save & Exit?',
+      'Your progress will be saved.'
+    );
     if (confirmed) {
       this.router.navigate(['/host/properties']);
     }
@@ -87,7 +91,7 @@ export class PropertyIntroComponent implements OnInit {
    * Show questions/help modal
    */
   showQuestionsModal(): void {
-    alert('Questions? Contact our support team for help with listing your property.');
+    this.notificationService.showToast('info', 'Contact our support team for help.');
   }
 
   /**
@@ -128,7 +132,7 @@ export class PropertyIntroComponent implements OnInit {
       error: (error) => {
         this.isLoading.set(false);
         console.error('Error creating draft:', error);
-        alert('Failed to create property. Please try again.');
+        this.notificationService.showError('Failed to create property. Please try again.');
       }
     });
   }

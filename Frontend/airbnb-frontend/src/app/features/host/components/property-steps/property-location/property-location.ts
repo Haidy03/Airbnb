@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import * as L from 'leaflet';
 import { PropertyService } from '../../../services/property';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-property-location',
@@ -26,14 +27,15 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
   private marker!: L.Marker;
   
   // Map state
-  mapCenter = signal({ lat: 30.0444, lng: 31.2357 }); // Default: Cairo
+  mapCenter = signal({ lat: 30.0444, lng: 31.2357 });
   mapZoom = signal(12);
   markerPosition = signal<{ lat: number; lng: number } | null>(null);
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private propertyService: PropertyService
+    private propertyService: PropertyService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -253,7 +255,7 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
    */
   useCurrentLocation(): void {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
+      this.notificationService.showError('Geolocation is not supported by your browser'); 
       return;
     }
 
@@ -273,7 +275,7 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
       (error) => {
         console.error('Geolocation error:', error);
         this.isGettingLocation.set(false);
-        alert('Unable to get your location. Please enter your address manually.');
+        this.notificationService.showError('Unable to get location. Enter manually.');
       },
       {
         enableHighAccuracy: true,
@@ -352,13 +354,13 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
           const result = data[0];
           this.selectAddress(result);
         } else {
-          alert('Address not found. Please check and try again.');
+          this.notificationService.showError('Address not found.');
         }
       })
       .catch(error => {
         console.error('Geocoding error:', error);
         this.isLoading.set(false);
-        alert('Error finding address. Please try again.');
+        this.notificationService.showError('Error finding address.'); 
       });
   }
 
@@ -378,8 +380,9 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
   /**
    * Save and exit
    */
-   saveAndExit(): void {
-    if (!confirm('Save your progress and exit?')) return;
+   async saveAndExit(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction('Save & Exit?', 'Your progress will be saved.'); // ✅
+    if (!confirmed) return;
 
     this.isLoading.set(true);
 
@@ -395,7 +398,7 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message); // ✅
         }
       });
     }
@@ -405,8 +408,9 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
    * Show questions modal
    */
   showQuestionsModal(): void {
-    alert('Need help? Contact our support team.');
+    this.notificationService.showToast('info', 'Need help? Contact support.'); // ✅
   }
+
 
   /**
    * Go back to previous step
@@ -421,7 +425,7 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
    */
     goNext(): void {
     if (!this.locationForm.valid) {
-      alert('Please fill in all required fields');
+      this.notificationService.showError('Please fill in all required fields');
       return;
     }
 
@@ -439,7 +443,7 @@ export class PropertyLocationComponent implements OnInit, AfterViewInit {
         },
         error: (error) => {
           this.isLoading.set(false);
-          alert('Failed to save: ' + error.message);
+          this.notificationService.showError('Failed to save: ' + error.message);
         }
       });
     }
