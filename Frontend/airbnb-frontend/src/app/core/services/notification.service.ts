@@ -60,4 +60,32 @@ export class NotificationService {
       title: title
     });
   }
+
+
+   async confirmAction(
+    title: string, 
+    text: string, 
+    confirmButtonText: string = 'Yes', 
+    cancelButtonText: string = 'Cancel'
+  ): Promise<boolean> {
+    const result = await Swal.fire({
+      title: title,
+      text: text,
+      icon: 'question', 
+      showCancelButton: true,
+      confirmButtonColor: '#222222', 
+      cancelButtonColor: '#ffffff',  
+      confirmButtonText: confirmButtonText,
+      cancelButtonText: cancelButtonText,
+      reverseButtons: true, 
+      customClass: {
+        popup: 'rounded-4 shadow-lg',
+        confirmButton: 'px-4 py-2 rounded-3 fw-bold border-0',
+      
+        cancelButton: 'px-4 py-2 rounded-3 fw-bold text-dark border border-secondary me-2' 
+      }
+    });
+
+    return result.isConfirmed;
+  }
 }
