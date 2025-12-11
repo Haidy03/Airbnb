@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ServicesService } from '../../services/service';
 import { ServiceCreationStore } from '../../models/service-creation.store';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-create-service-review',
@@ -14,7 +15,6 @@ import { ServiceCreationStore } from '../../models/service-creation.store';
 export class CreateServiceReviewComponent implements OnInit {
   isSubmitting = signal(false);
   
-  // Data Holders for Preview
   title = '';
   description = '';
   price = 0;
@@ -27,7 +27,8 @@ export class CreateServiceReviewComponent implements OnInit {
   constructor(
     private servicesService: ServicesService,
     private store: ServiceCreationStore,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -38,7 +39,6 @@ export class CreateServiceReviewComponent implements OnInit {
     this.title = localStorage.getItem('draftServiceTitle') || 'Untitled';
     this.description = localStorage.getItem('draftServiceDescription') || '';
     this.price = Number(localStorage.getItem('draftServicePrice'));
-    
     
     this.duration = Number(localStorage.getItem('draftServiceDuration') || '60');
 
@@ -76,14 +76,12 @@ export class CreateServiceReviewComponent implements OnInit {
     formData.append('MinimumCost', '0'); 
     formData.append('MaxGuests', localStorage.getItem('draftServiceMaxGuests') || '1');
 
-    // ✅ 2. New Availability Logic (Duration + JSON)
+    // 2. New Availability Logic (Duration + JSON)
     const duration = localStorage.getItem('draftServiceDuration');
     const availabilityJson = localStorage.getItem('draftServiceAvailabilityJson');
 
     if (duration) formData.append('DurationMinutes', duration);
     if (availabilityJson) formData.append('AvailabilityJson', availabilityJson);
-
-    
 
     // 3. Append Photos
     const photos = this.store.getPhotos();
@@ -94,21 +92,26 @@ export class CreateServiceReviewComponent implements OnInit {
     // 4. Send to Backend
     this.servicesService.createService(formData).subscribe({
       next: (res) => {
-       
-        alert('Service created successfully! Waiting for admin approval.');
+        this.notificationService.showSuccess(
+          'Service Submitted!',
+          'Your service has been created successfully and is pending admin approval.'
+        );
+        
         this.clearDraft();
         this.router.navigate(['/host/services']); 
       },
       error: (err) => {
         console.error(err);
-        alert('Error creating service. Please try again.');
+        
+        const errorMsg = err.error?.message || 'Error creating service. Please try again.';
+        this.notificationService.showError(errorMsg);
+        
         this.isSubmitting.set(false);
       }
     });
   }
 
   clearDraft() {
-   
     localStorage.removeItem('draftServiceTitle');
     localStorage.removeItem('draftServiceDescription');
     localStorage.removeItem('draftServicePrice');
@@ -117,7 +120,6 @@ export class CreateServiceReviewComponent implements OnInit {
     localStorage.removeItem('draftServiceLocationType');
     localStorage.removeItem('draftServiceCity');
     
-  
     localStorage.removeItem('draftServiceMaxGuests');
     localStorage.removeItem('draftServiceDuration');
     localStorage.removeItem('draftServiceAvailabilityJson');
