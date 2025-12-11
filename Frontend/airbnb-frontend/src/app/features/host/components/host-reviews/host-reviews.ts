@@ -33,14 +33,12 @@ export class HostReviewsComponent implements OnInit {
       }
     });
   }
-  getImageUrl(url?: string): string {
-    if (!url) return 'assets/images/user.png'; // صورة افتراضية لو مفيش صورة
-    
-    if (url.startsWith('http')) return url; // لو رابط خارجي (جوجل مثلا)
 
+  getImageUrl(url?: string): string {
+    if (!url) return 'assets/images/user.png'; 
+    if (url.startsWith('http')) return url;
     const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
     const cleanPath = url.startsWith('/') ? url : `/${url}`;
-    
     return `${baseUrl}${cleanPath}`;
   }
 }
