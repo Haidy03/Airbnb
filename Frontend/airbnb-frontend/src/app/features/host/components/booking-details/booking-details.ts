@@ -2,7 +2,7 @@ import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BookingService, Booking } from '../../services/booking';
-
+import { NotificationService } from '../../../../core/services/notification.service';
 @Component({
   selector: 'app-booking-details',
   standalone: true,
@@ -14,6 +14,8 @@ export class BookingDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private bookingService = inject(BookingService);
+  private notificationService = inject(NotificationService);
+
   isProperty = computed(() => !this.booking()?.type || this.booking()?.type === 'Property');
   isExperience = computed(() => this.booking()?.type === 'Experience');
   isService = computed(() => this.booking()?.type === 'Service');
@@ -60,20 +62,34 @@ export class BookingDetailsComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.isLoading.set(false);
-        alert('Could not load booking details');
+        this.notificationService.showError('Could not load booking details');
         this.router.navigate(['/host/dashboard']);
       }
     });
   }
 
-  approve() {
-    if (!confirm('Are you sure you want to accept this reservation?')) return;
-    this.processAction('approve');
+  async approve() {
+    const confirmed = await this.notificationService.confirmAction(
+      'Accept Reservation?',
+      'Are you sure you want to accept this reservation request?',
+      'Accept'
+    );
+
+    if (confirmed) {
+      this.processAction('approve');
+    }
   }
 
-  decline() {
-    if (!confirm('Are you sure you want to decline this request?')) return;
-    this.processAction('decline');
+  async decline() {
+    const confirmed = await this.notificationService.confirmAction(
+      'Decline Request?',
+      'Are you sure you want to decline this request?',
+      'Decline'
+    );
+
+    if (confirmed) {
+      this.processAction('decline');
+    }
   }
 
   getGuestInitial(): string {
@@ -87,23 +103,23 @@ export class BookingDetailsComponent implements OnInit {
 
     this.isProcessing.set(true);
     
-    // Note: You might need to update approve/decline services to accept 'type' as well
-    // if the backend requires different endpoints for Experiences vs Properties.
     const request$ = action === 'approve' 
       ? this.bookingService.approveBooking(b.id) 
       : this.bookingService.declineBooking(b.id);
 
     request$.subscribe({
       next: () => {
-        alert(action === 'approve' ? 'Reservation Confirmed! 🎉' : 'Reservation Declined.');
-  
-        // ✅ FIXED: Passed the type argument here
+         if (action === 'approve') {
+          this.notificationService.showSuccess('Confirmed!', 'Reservation has been accepted successfully.');
+        } else {
+          this.notificationService.showToast('info', 'Reservation request declined.');
+        }
         this.loadBooking(b.id, b.type || 'Property'); 
         
         this.isProcessing.set(false);
       },
       error: (err) => {
-        alert('Error processing request: ' + err.message);
+        this.notificationService.showError('Error processing request: ' + (err.error?.message || err.message));
         this.isProcessing.set(false);
       }
     });
