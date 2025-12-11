@@ -356,9 +356,13 @@
          <span class="toggle-label" *ngIf="dayDetailsForm.get('isAvailable')?.value">Available</span>
          <span class="toggle-label blocked" *ngIf="!dayDetailsForm.get('isAvailable')?.value">Blocked</span>
       </div>
+
+        <p *ngIf="selectedDay()?.hasBooking || selectedDay()?.isCheckIn || selectedDay()?.isCheckOut" 
+         style="font-size: 12px; color: #717171; margin-top: 8px;">
+         🔒 Dates with active bookings cannot be manually unblocked.
+      </p>
     </div>
 
-    <!-- ✅ قسم الإعدادات (Check-in / Check-out) ظاهر دائماً -->
     <div class="sidebar-section settings-section" *ngIf="dayDetailsForm.get('isAvailable')?.value">
       <div class="section-header">
         <span class="section-title">Availability settings</span>
