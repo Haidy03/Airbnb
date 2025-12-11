@@ -16,23 +16,40 @@
   <!-- Sections Loop -->
   <div *ngIf="!isLoading && categorySections.length > 0">
     
-    <div *ngFor="let section of categorySections" class="category-section mb-5">
+    <div *ngFor="let section of categorySections" class="category-section mb-5 border-bottom pb-4">
       
-      <!-- Category Header -->
-      <div class="d-flex align-items-center gap-3 mb-3">
-        <!-- Icon -->
-        <img [src]="section.category.icon" class="cat-icon" alt="" onerror="this.style.display='none'">
-        <h2 class="h4 fw-bold mb-0">{{ section.category.name }}</h2>
-      </div>
+      <!-- Category Header with Arrows -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+          <img [src]="section.category.icon" class="cat-icon" alt="" onerror="this.style.display='none'">
+          <h2 class="h4 fw-bold mb-0">{{ section.category.name }}</h2>
+        </div>
 
-      <!-- Services Grid (Horizontal Scroll on Mobile, Grid on Desktop) -->
-      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4">
-        <div class="col" *ngFor="let service of section.services">
-          <app-service-card [service]="service"></app-service-card>
+        <!-- Navigation Arrows -->
+        <div class="nav-arrows d-none d-md-flex gap-2">
+          <button class="nav-arrow btn btn-light rounded-circle border shadow-sm p-0 d-flex align-items-center justify-content-center" 
+                  style="width: 32px; height: 32px; cursor: pointer;"
+                  (click)="scroll(cardContainer, 'left')">
+            <i class="bi bi-chevron-left small text-dark"></i>
+          </button>
+          <button class="nav-arrow btn btn-light rounded-circle border shadow-sm p-0 d-flex align-items-center justify-content-center" 
+                  style="width: 32px; height: 32px; cursor: pointer;"
+                  (click)="scroll(cardContainer, 'right')">
+            <i class="bi bi-chevron-right small text-dark"></i>
+          </button>
         </div>
       </div>
 
-      <hr class="mt-5 text-muted opacity-25">
+      <!-- Scrollable Container -->
+      <div #cardContainer class="cards-scroller d-flex gap-4 overflow-x-auto pb-3 no-scrollbar scroll-smooth">
+        
+        <!-- Fixed width card item -->
+        <div class="card-item flex-shrink-0" *ngFor="let service of section.services" style="width: 280px;">
+          <app-service-card [service]="service"></app-service-card>
+        </div>
+
+      </div>
+
     </div>
 
   </div>

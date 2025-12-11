@@ -29,3 +29,23 @@ h1, h2, h3, h4, h5, h6,
 button, input, optgroup, select, textarea, .btn {
   font-family: 'Inter', sans-serif !important;
 }
+
+
+
+
+/* إخفاء شريط التمرير (Scrollbar) لجميع العناصر التي تحمل هذا الكلاس */
+.cards-scroller::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  -webkit-appearance: none !important;
+}
+
+.cards-scroller,
+.no-scrollbar {
+  scrollbar-width: none !important;  /* Firefox */
+  -ms-overflow-style: none !important;  /* IE 10+ */
+  overflow-y: hidden; /* تأكيد إخفاء السكرول العمودي */
+}
