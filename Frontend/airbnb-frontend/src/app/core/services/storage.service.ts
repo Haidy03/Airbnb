@@ -15,7 +15,6 @@ export class StorageService {
     }
   }
 
-  // Get item from localStorage
   getItem<T>(key: string): T | null {
     try {
       const item = localStorage.getItem(key);
@@ -26,7 +25,6 @@ export class StorageService {
     }
   }
 
-  // Remove item from localStorage
   removeItem(key: string): void {
     try {
       localStorage.removeItem(key);
@@ -35,7 +33,6 @@ export class StorageService {
     }
   }
 
-  // Clear all localStorage
   clear(): void {
     try {
       localStorage.clear();
@@ -44,12 +41,10 @@ export class StorageService {
     }
   }
 
-  // Check if key exists
   hasItem(key: string): boolean {
     return localStorage.getItem(key) !== null;
   }
 
-  // Get all keys
   getAllKeys(): string[] {
     return Object.keys(localStorage);
   }
