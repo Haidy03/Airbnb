@@ -33,8 +33,7 @@
 .header-container.scrolled .big-search-wrapper {
   opacity: 0; transform: scaleY(0); height: 0; margin: 0 !important; padding: 0 !important; overflow: hidden; display: none;
 }
-
-/* تعديل البار الصغير */
+*/
 .small-search-container {
   position: absolute;
   top: 50%;
@@ -44,9 +43,8 @@
   visibility: hidden;
   transition: all 0.2s ease;
   z-index: 1045;
-  width: auto; /* ياخد حجمه الطبيعي */
-  /* شلنا max-width عشان ميعملش ellipsis */
-  white-space: nowrap; /* منع نزول الكلام سطر جديد */
+  width: auto; 
+  white-space: nowrap; 
 }
 
 .header-container.scrolled .small-search-container {
@@ -54,7 +52,6 @@
   visibility: visible;
 }
 
-/* تنسيق زر الفلتر الجديد */
 .btn-white {
   background-color: white;
   border: 1px solid #dddddd;
@@ -70,9 +67,9 @@
 
 .user-menu-btn:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.18); }
 .custom-dropdown { border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
- */
 
-/* الحاوية الأساسية */
+
+
 .header-container {
   background-color: white !important;
   transition: all 0.2s ease-in-out;
@@ -84,7 +81,7 @@
   box-shadow: 0 1px 0 rgba(0,0,0,0.05);
 }
 
-/* الصف العلوي */
+
 .nav-top {
   position: relative;
   z-index: 1050;
@@ -92,7 +89,6 @@
   background-color: white;
 }
 
-/* اللوجو */
 .logo-container {
   position: relative;
   z-index: 2000;
@@ -109,7 +105,7 @@
 }
 
 /* =========================================
-   ✅ NEW: Navigation Tabs Styling
+    Navigation Tabs Styling
    ========================================= */
 .nav-tabs-container {
   display: flex;
@@ -166,7 +162,7 @@
 }
 
 /* =========================================
-   إصلاح البار الكبير (Big Search Bar)
+      (Big Search Bar)
    ========================================= */
 .big-search-wrapper {
   opacity: 1;
