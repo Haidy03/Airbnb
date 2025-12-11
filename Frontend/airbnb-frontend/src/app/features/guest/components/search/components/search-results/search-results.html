@@ -1,4 +1,4 @@
-<div class="search-results-container" style="padding-top: 120px;">
+<div class="search-results-container">
 
   <app-filters
     [isOpen]="showFilters"
@@ -41,17 +41,26 @@
              <div [class]="showMap ? 'col-12 col-sm-6 col-lg-4 col-xl-4' : 'col-12 col-sm-6 col-md-4 col-lg-3'"
                   *ngFor="let property of properties">
 
-<app-property-card
-  [property]="property"
-  [isFavorite]="isPropertyInWishlist(property.id)"
-  (favoriteToggle)="onToggleWishlist(property)"
-  (cardClick)="onPropertySelect(property.id)"
-  (mouseenter)="onPropertyHover(property.id)"
-  (mouseleave)="onPropertyHover(null)">
-</app-property-card>
+          <app-property-card
+            [property]="property"
+            [isFavorite]="isPropertyInWishlist(property.id)"
+            (favoriteToggle)="onToggleWishlist(property)"
+            (cardClick)="onPropertySelect(property.id)"
+            (mouseenter)="onPropertyHover(property.id)"
+            (mouseleave)="onPropertyHover(null)">
+          </app-property-card>
 
              </div>
            </div>
+        </div>
+
+        <div class="mt-5 mb-4" *ngIf="properties.length > 0 && totalItems > pageSize">
+          <app-pagination
+            [totalItems]="totalItems"
+            [itemsPerPage]="pageSize"
+            [currentPage]="currentPage"
+            (pageChanged)="onPageChange($event)">
+          </app-pagination>
         </div>
 
         <!-- Empty State -->

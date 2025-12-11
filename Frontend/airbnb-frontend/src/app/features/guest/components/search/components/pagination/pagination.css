@@ -1,0 +1,10 @@
+.page-link {
+  cursor: pointer;
+  user-select: none;
+}
+
+.page-item.disabled .page-link {
+  cursor: default; 
+  pointer-events: none; 
+  color: #ccc;
+}
