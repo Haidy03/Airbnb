@@ -61,31 +61,48 @@
       
       <div class="review-card" *ngFor="let review of stats()?.reviews">
         <div class="review-header">
+          <!-- الصورة -->
           <img 
-    [src]="getImageUrl(review.reviewerProfileImage)" 
-    class="avatar" 
-    alt="Guest"
-    loading="lazy">
+            [src]="getImageUrl(review.reviewerProfileImage)" 
+            class="avatar" 
+            alt="Guest"
+            loading="lazy">
+          
           <div class="reviewer-info">
+            <!-- الاسم -->
             <h3 class="guest-name">{{ review.reviewerName }}</h3>
-            <p class="review-date">Reviewed on {{ review.createdAt | date:'MMMM yyyy' }}</p>
-            <span style="font-size: 12px; color: #FF385C" *ngIf="review.reviewType === 'Experience'">Experience Review</span>
-            <span style="font-size: 12px; color: #2E86C1" *ngIf="review.reviewType === 'Service'">Service Review</span>
-            <br>
+            
+            <!-- الصف (النجوم + التاريخ) -->
+            <div class="review-meta">
+              <!-- عرض التقييم -->
+              <div class="individual-rating" *ngIf="review.rating">
+                <span class="small-star">★</span>
+                <span>{{ review.rating }}</span>
+              </div>
+              <span *ngIf="review.rating">·</span>
+              
+              <!-- التاريخ -->
+              <span class="date">{{ review.createdAt | date:'MMMM yyyy' }}</span>
+            </div>
+
+            <!-- البادجات الملونة (Experience / Service) -->
+            <div class="tags-container">
+              <span class="tag tag-experience" *ngIf="review.reviewType === 'Experience'">
+                <i class="bi bi-heart-fill"></i> Experience
+              </span>
+              
+              <span class="tag tag-service" *ngIf="review.reviewType === 'Service'">
+                <i class="bi bi-bell-fill"></i> Service
+              </span>
+            </div>
+
+            <!-- اسم العقار أو الخدمة -->
             <span class="context-title">{{ review.propertyTitle }}</span>
-            
-            
-            <br>
-            
           </div>
         </div>
 
         <div class="review-body">
           <p class="review-text">{{ review.comment }}</p>
-        </div>
-
-        <div class="review-footer" *ngIf="false"> <!-- زر الرد (مستقبلاً) -->
-           <button class="btn-reply">Reply</button>
         </div>
       </div>
 

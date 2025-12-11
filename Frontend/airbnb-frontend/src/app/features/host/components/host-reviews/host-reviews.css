@@ -1,7 +1,7 @@
 .reviews-page {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 48px 24px;
+  padding: 0px 24px;
   font-family: 'Circular', -apple-system, BlinkMacSystemFont, Roboto, Helvetica Neue, sans-serif;
   color: #222;
 }
@@ -17,11 +17,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 48px;
 }
 
 .big-rating {
-  font-size: 80px; /* حجم كبير للرقم */
+  font-size: 80px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -2px;
@@ -40,7 +39,7 @@
 /* Layout */
 .reviews-layout {
   display: grid;
-  grid-template-columns: 350px 1fr; /* عمود يسار ثابت، ويمين مرن */
+  grid-template-columns: 350px 1fr;
   gap: 80px;
 }
 
@@ -98,14 +97,13 @@
   border: 1px solid #DDDDDD;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.04); /* ظل خفيف */
+  box-shadow: 0 6px 16px rgba(0,0,0,0.04);
 }
 
 .review-header {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  align-items: flex-start; /* تغيير المحاذاة */
+  gap: 16px;
 }
 
 .avatar {
@@ -114,24 +112,82 @@
   object-fit: cover;
 }
 
+.reviewer-info {
+  flex: 1;
+}
+
 .guest-name {
-  font-size: 16px; font-weight: 600; margin: 0;
+  font-size: 16px; font-weight: 600; margin: 0; color: #222;
 }
 
-.review-date {
-  font-size: 14px; color: #717171; margin: 2px 0 0;
-}
-
-.review-title {
-  font-size: 16px; font-weight: 600; margin: 0 0 8px;
-}
-.context-title {
+.review-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 14px;
   color: #717171;
+}
+
+.individual-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #222;
+  font-weight: 600;
+}
+
+.small-star {
+  font-size: 12px;
+}
+
+/* --- BADGES STYLES (NEW) --- */
+.tags-container {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  display: flex;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Experience Badge (Orange) */
+.tag-experience {
+  background-color: #FFF8F0;
+  color: #C13515;
+  border: 1px solid #FFD8A8;
+}
+
+/* Service Badge (Purple) */
+.tag-service {
+  background-color: #F5E8F5;
+  color: #590059;
+  border: 1px solid #E0B0E0;
+}
+
+.tag i {
+  font-size: 12px;
+}
+
+.context-title {
+  color: #222;
   font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 250px; /* عشان الاسم مياخدش مساحة كبيرة */
+  font-size: 14px;
+  display: block;
+  margin-top: 4px;
+}
+
+.review-body {
+  margin-top: 12px;
 }
 
 .review-text {
