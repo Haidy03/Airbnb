@@ -64,3 +64,49 @@
   transform: scale(1.1);
   transition: transform 0.2s;
 }
+
+
+/* Container للسكرول الأفقي */
+.cards-scroller {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;
+}
+
+/* Chrome/Safari/Opera: إخفاء السكرول بار */
+.cards-scroller::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent;
+}
+
+.cards-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cards-scroller::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* تنسيق أزرار التنقل */
+.nav-arrow:hover {
+  background-color: #f7f7f7;
+  border-color: #000 !important;
+  transform: scale(1.05);
+}
+
+.nav-arrow:active {
+  transform: scale(0.95);
+}
+
+/* تنسيق الكارت ليكون بحجم ثابت داخل السكرول */
+.card-item {
+  width: 270px; /* عرض الكارت الواحد */
+  flex-shrink: 0; /* منع الانكماش */
+}
+
+@media (max-width: 768px) {
+  .card-item {
+    width: 240px; /* تصغير الكارت في الموبايل */
+  }
+}

@@ -62,4 +62,15 @@ export class ServicesHomeComponent implements OnInit {
       error: () => this.isLoading = false
     });
   }
+
+
+  scroll(container: HTMLElement, direction: 'left' | 'right') {
+  const scrollAmount = container.clientWidth * 0.8;
+  
+  if (direction === 'left') {
+    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+  } else {
+    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  }
+}
 }

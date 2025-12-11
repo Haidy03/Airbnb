@@ -41,7 +41,6 @@ export class HomeComponent implements OnInit {
   private loadProperties(): void {
     this.isLoading = true;
 
-    // ✅ إعداد كائن البحث بناءً على الـ Interface الجديد
     const searchQuery: SearchQuery = {
       page: 1,
       pageSize: 50,
@@ -62,15 +61,12 @@ export class HomeComponent implements OnInit {
       }
     }as any;
   
-    // ✅ استدعاء السيرفس
     this.searchService.searchProperties(searchQuery).subscribe({ 
       next: (response: SearchResponse) => { 
-        // الـ Service بترجع { properties: [...], total: ... }
         const properties = response.properties || [];
 
         this.groupPropertiesByCity(properties);
         
-        // التحقق من الـ Wishlist
         properties.forEach((p: Property) => {
             this.listingService.checkIsWishlisted(p.id).subscribe(isListed => {
                 if(isListed) this.wishlistIds.add(p.id);
@@ -89,7 +85,6 @@ export class HomeComponent implements OnInit {
     const groups: { [key: string]: Property[] } = {};
     
     allProperties.forEach(property => {
-      // التعامل مع احتمال أن location غير موجودة لتجنب الأخطاء
       const city = property.location?.city || 'Other Locations';
       
       if (!groups[city]) groups[city] = [];
@@ -102,7 +97,6 @@ export class HomeComponent implements OnInit {
     }));
   }
 
-  // ... باقي الدوال كما هي ...
   
   isPropertyInWishlist(propertyId: string): boolean {
     return this.wishlistIds.has(propertyId);
@@ -133,4 +127,14 @@ export class HomeComponent implements OnInit {
   onPropertyClick(property: Property): void {
     this.router.navigate(['/listing', property.id]);
   }
+
+  scroll(container: HTMLElement, direction: 'left' | 'right') {
+  const scrollAmount = container.clientWidth * 0.8;
+  
+  if (direction === 'left') {
+    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+  } else {
+    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  }
+}
 }
