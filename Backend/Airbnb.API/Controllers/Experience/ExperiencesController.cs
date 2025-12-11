@@ -520,6 +520,17 @@ namespace Airbnb.API.Controllers
                     return BadRequest(new { success = false, errors = ModelState });
 
                 var userId = GetCurrentUserId();
+
+                var experience = await _experienceService.GetExperienceByIdAsync(id);
+                if (experience == null)
+                {
+                    return NotFound(new { success = false, message = "Experience not found" });
+                }
+
+                if (experience.HostId == userId)
+                {
+                    return BadRequest(new { success = false, message = "You cannot book your own experience." });
+                }
                 var booking = await _experienceService.BookExperienceAsync(id, userId, dto);
 
                 return Ok(new { success = true, data = booking, message = "Experience booked successfully" });

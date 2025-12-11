@@ -19,9 +19,8 @@ export class ExperienceDetailsComponent implements OnInit {
   experience = signal<Experience | null>(null);
   isLoading = signal(true);
   error = signal<string | null>(null);
-  
+  isOwner = signal(false); 
   isWishlisted = signal(false);
-
   reviews = signal<ExperienceReview[]>([]);
   
   selectedImageIndex = 0;
@@ -53,6 +52,10 @@ export class ExperienceDetailsComponent implements OnInit {
           this.experience.set(response.data);
           
           this.checkWishlistStatus(id);
+           const currentUserId = this.authService.getUserId();
+          if (currentUserId && response.data.hostId === currentUserId) {
+            this.isOwner.set(true);
+          }
         }
         this.isLoading.set(false);
       },

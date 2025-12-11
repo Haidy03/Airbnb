@@ -206,9 +206,18 @@
           </div>
         </div>
 
-        <button class="book-btn" (click)="bookExperience()">
-          Check availability
+        <!-- ✅ تعديل الزر -->
+        <button class="book-btn" 
+                (click)="bookExperience()"
+                [disabled]="isOwner()"
+                [ngStyle]="{'opacity': isOwner() ? '0.6' : '1', 'cursor': isOwner() ? 'not-allowed' : 'pointer'}">
+          {{ isOwner() ? 'You host this experience' : 'Check availability' }}
         </button>
+
+        <!-- ✅ إضافة رسالة توضيحية (اختياري) -->
+        <p *ngIf="isOwner()" style="color: #d93900; font-size: 13px; text-align: center; margin-top: 8px;">
+          Hosts cannot book their own experiences.
+        </p>
 
         <p class="booking-note">You won't be charged yet</p>
       </div>
