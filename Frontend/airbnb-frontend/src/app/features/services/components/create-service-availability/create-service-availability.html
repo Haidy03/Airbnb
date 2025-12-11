@@ -22,9 +22,13 @@
 
 
       <div class="input-group mb-4">
-        <label class="label">Service Duration</label>
-        <p class="small text-muted">How long does one session last?</p>
-        <select class="form-control time-input w-50" [ngModel]="duration()" (ngModelChange)="duration.set($event)">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+        
+            <label class="label" style="margin-bottom: 0;">Service Duration</label>
+            <p class="small text-muted" style="margin-bottom: 0; margin-top: 4px;">How long does one session last?</p>
+         </div>
+        <select class="form-control time-input" style="flex: none; width: 200px; margin-left: 100px;" [ngModel]="duration()" (ngModelChange)="duration.set($event)">
           <option [value]="30">30 Minutes</option>
           <option [value]="60">1 Hour</option>
           <option [value]="90">1.5 Hours</option>
@@ -33,12 +37,13 @@
           <option [value]="240">4 Hours</option>
         </select>
       </div>
-
+      </div>
      
       <div class="input-group">
-        <label class="label">Weekly Schedule</label>
-        <p class="small text-muted">Add available slots for each day.</p>
-        
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px;">
+          <label class="label" style="margin-bottom: 0;">Weekly Schedule</label>
+          <p class="small text-muted" style="margin-bottom: 0;">Add available slots for each day.</p>
+        </div>
         <div class="add-time-row">
          
           <select class="form-control time-input" [ngModel]="tempDay()" (ngModelChange)="tempDay.set($event)">
