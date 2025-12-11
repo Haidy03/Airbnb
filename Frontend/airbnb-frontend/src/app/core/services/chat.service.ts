@@ -16,7 +16,6 @@ export class ChatService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   
-  // Ensure this matches your backend port
   private readonly API_URL = 'https://localhost:5202/api/Chat';
 
   private getHeaders(): HttpHeaders {

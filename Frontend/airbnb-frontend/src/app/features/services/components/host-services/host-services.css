@@ -27,7 +27,7 @@
 }
 
 .create-btn {
-  background: #222;
+  background: #E31C5F;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -40,8 +40,8 @@
 }
 
 .create-btn:hover {
-  background: #000;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(230, 30, 77, 0.3);
 }
 
 /* Grid */

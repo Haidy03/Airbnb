@@ -36,14 +36,11 @@ export class AdminAnalyticsComponent implements OnInit {
     const start = new Date();
     const end = new Date();
 
-    // اجعل البداية من أول السنة الحالية (عشان نجيب كل اللي فات)
-    start.setMonth(0); // شهر يناير
-    start.setDate(1);  // يوم 1
+    start.setMonth(0);
+    start.setDate(1);
     
-    // اجعل النهاية بعد سنة من الآن (عشان نجيب الحجوزات المستقبلية المؤكدة Confirmed)
     end.setFullYear(end.getFullYear() + 1);
 
-    // تنسيق التاريخ YYYY-MM-DD للـ Input
     this.startDate.set(start.toISOString().split('T')[0]);
     this.endDate.set(end.toISOString().split('T')[0]);
   }

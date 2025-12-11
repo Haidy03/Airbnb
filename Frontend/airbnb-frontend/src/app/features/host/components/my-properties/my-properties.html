@@ -2,7 +2,11 @@
   
   <!-- Header -->
   <header class="listings-header">
-    <h1 class="page-title">Your listings</h1>
+    <div>
+      <h1 class="page-title">Your listings</h1>
+      <p class="page-subtitle">Manage and create amazing properties</p>
+    </div>
+
     
     <div class="header-actions">
       <!-- Search Input -->
@@ -26,9 +30,9 @@
         <svg *ngIf="viewMode() === 'list'" viewBox="0 0 16 16" style="display:block;height:16px;width:16px;fill:currentColor"><path d="M2 3h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2zM2 7h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2zM2 11h4a1 1 0 0 1 0 2H2a1 1 0 1 1 0-2zm6 0h6a1 1 0 0 1 0 2H8a1 1 0 1 1 0-2z"/></svg>
       </button>
 
-      <!-- ✅ Create Button: Triggers Modal -->
-      <button class="icon-btn create-btn" (click)="openCreationModal()" title="Create listing">
+      <button class="create-btn" (click)="openCreationModal()">
         <svg viewBox="0 0 32 32" style="display:block;fill:none;height:16px;width:16px;stroke:currentColor;stroke-width:3"><path d="M2 16h28M16 2v28"></path></svg>
+        <span>Create Property </span>
       </button>
     </div>
   </header>
@@ -84,11 +88,18 @@
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!isLoading() && properties().length === 0" style="text-align: center; padding: 80px; color: #717171;">
-    <p>You don't have any listings yet.</p>
+  <div *ngIf="!isLoading() && properties().length === 0" class="empty-state">
+    <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+      <circle cx="50" cy="50" r="48" stroke="#EBEBEB" stroke-width="2"/>
+      <path d="M50 30v40M30 50h40" stroke="#DDDDDD" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h2>No properties yet</h2>
+    <p>Start sharing your passion with the world</p>
+    <button class="create-btn-large" (click)="openCreationModal()">
+      Create Your First Property
+    </button>
   </div>
 
-  <!-- ✅ LISTING TYPE MODAL -->
   <app-listing-type-modal 
     *ngIf="isCreationModalOpen()" 
     (typeSelected)="handleCreationType($event)"
