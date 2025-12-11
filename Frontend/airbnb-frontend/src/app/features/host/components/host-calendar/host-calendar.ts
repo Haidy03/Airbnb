@@ -351,7 +351,6 @@ export class HostCalendar implements OnInit {
     this.selectedDaySignal.set(day);
     const isAvailableState = !day.isBlocked; 
 
-    // ✅ ملء الفورم بالبيانات المخزنة لليوم أو الإعدادات العامة
     this.dayDetailsForm.patchValue({
       isAvailable: isAvailableState,
       customPrice: day.originalPrice ? day.price : (isAvailableState ? this.settings().basePrice : null),
@@ -360,7 +359,16 @@ export class HostCalendar implements OnInit {
       notes: day.notes || ''
     }, { emitEvent: false });
 
-    this.originalDayDetails = this.dayDetailsForm.value;
+    const hasBooking = day.hasBooking || day.isCheckIn || day.isCheckOut;
+    const availabilityControl = this.dayDetailsForm.get('isAvailable');
+
+    if (hasBooking) {
+      availabilityControl?.disable({ emitEvent: false });
+    } else {
+      availabilityControl?.enable({ emitEvent: false }); 
+    }
+
+    this.originalDayDetails = this.dayDetailsForm.getRawValue();
   }
   
   closeDaySidebar(): void {
@@ -374,7 +382,6 @@ export class HostCalendar implements OnInit {
   }
   
   onAvailabilityToggle(): void {
-    // console.log('Availability changed');
     console.log('Toggle changed to:', this.dayDetailsForm.get('isAvailable')?.value);
   }
   

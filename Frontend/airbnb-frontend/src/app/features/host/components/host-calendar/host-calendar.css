@@ -1494,3 +1494,19 @@ input:checked + .toggle-slider:before {
   border-radius: 3px;
 }
 
+.toggle-switch input:disabled + .toggle-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #EBEBEB; 
+}
+
+.toggle-switch input:disabled + .toggle-slider:before {
+  background-color: #F5F5F5;
+}
+
+.locked-msg {
+  font-size: 12px;
+  color: #C13515;
+  margin-top: 8px;
+  display: block;
+}
