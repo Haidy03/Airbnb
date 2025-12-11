@@ -45,7 +45,7 @@
   display: flex;
   justify-content: center;
   padding-top: 40px;
-  padding-bottom: 120px; /* مساحة للفوتر */
+  padding-bottom: 120px; 
 }
 
 .content-wrapper {
@@ -73,7 +73,7 @@
   border: 1px solid #DDDDDD;
   padding: 24px;
   border-radius: 12px;
-  margin-bottom: 24px; /* مسافة بين الكروت */
+  margin-bottom: 24px; 
 }
 
 .label {
@@ -96,7 +96,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: 16px;
+  margin-left: 120px !important
 }
 
 .counter-btn {
@@ -112,6 +112,7 @@
   cursor: pointer;
   font-size: 18px;
   transition: 0.2s;
+  
 }
 
 .counter-btn:hover:not(:disabled) {
@@ -137,7 +138,7 @@
 .add-time-row {
   display: flex;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 24px;
 }
 
 .time-input {
@@ -154,7 +155,7 @@
 .time-input:focus {
   border-color: #222;
   border-width: 2px;
-  padding: 11px; /* Adjust for border */
+  padding: 11px; 
 }
 
 .btn-add {
@@ -192,7 +193,7 @@
   background: #F7F7F7;
   border: 1px solid #DDDDDD;
   padding: 8px 16px;
-  border-radius: 24px; /* شكل كبسولة */
+  border-radius: 24px; 
   font-weight: 500;
   font-size: 14px;
   color: #222;
