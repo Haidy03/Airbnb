@@ -51,7 +51,7 @@ export class SearchService {
     let selectedAmenityIds: number[] | undefined = undefined;
     if (query.filters.amenities && query.filters.amenities.length > 0) {
       selectedAmenityIds = query.filters.amenities
-        .map(id => Number(id)) // تحويل لـ int
+        .map(id => Number(id)) 
         .filter(n => !isNaN(n));
     }
 

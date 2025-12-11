@@ -12,7 +12,6 @@ import {ServiceCategory} from '../../models/service.model';
   styleUrls: ['./create-service.css']
 })
 export class CreateServiceComponent implements OnInit {
-  // Signals لإدارة الحالة
   categories = signal<ServiceCategory[]>([]);
   isLoading = signal(true);
   selectedCategoryId = signal<number | null>(null);

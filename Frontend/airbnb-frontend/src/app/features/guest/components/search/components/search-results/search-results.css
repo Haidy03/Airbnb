@@ -1,7 +1,7 @@
 .search-results-container {
   min-height: 100vh;
   background: white;
-  padding-top: 80px;
+  
   position: relative;
   z-index: 1;
 }
@@ -9,31 +9,32 @@
 .results-content {
   display: flex;
   position: relative;
-  height: calc(100vh - 80px);
+  min-height: calc(100vh - 160px); 
 }
 
-/* القائمة */
+
 .results-list-section {
   flex: 1;
   padding: 24px;
-  overflow-y: auto;
-  height: 100%;
+  overflow-y: visible;
+  height: auto;
 }
 
-/* لما الخريطة تكون موجودة */
+
 .results-list-section.with-map {
-  /* التعديل: خليناها 60% عشان تساع 3 كروت مستريحين */
+ 
   flex: 0 0 60%;
   max-width: 60%;
 }
 
-/* الخريطة */
+
 .results-map-section {
-  flex: 1; /* الباقي 40% */
-  height: 100%;
+  flex: 1; 
+  height: calc(100vh - 160px);
   position: sticky;
-  top: 80px;
-  right: 20px;;
+  top: 160px; 
+  right: 0;
+  margin-top: 10px;
   background: #f7f7f7;
 }
 
@@ -53,6 +54,11 @@
   position: absolute; top: 20px; left: 20px; z-index: 9999;
   width: 40px; height: 40px; border-radius: 50%; background: white; border: none;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+@media (max-width: 768px) {
+  .search-results-container {
+    padding-top: 140px;
+  }
 }
 
 @media (max-width: 1023px) {

@@ -12,7 +12,7 @@ import { SearchService } from '../../services/search-service';
 import { WishlistService } from '../../../../services/wishlist.service';
 import { ToastService } from '../../../../../../core/services/toast.service';
 import { AuthService } from '../../../../../auth/services/auth.service';
-
+import { PaginationComponent } from '../pagination/pagination';
 @Component({
   selector: 'app-search-results',
   standalone: true,
@@ -21,7 +21,8 @@ import { AuthService } from '../../../../../auth/services/auth.service';
     PropertyCardComponent,
     SearchMapComponent,
     FiltersComponent,
-    SearchBarComponent
+    SearchBarComponent,
+    PaginationComponent 
   ],
   templateUrl: './search-results.html',
   styleUrls: ['./search-results.css']
@@ -29,6 +30,11 @@ import { AuthService } from '../../../../../auth/services/auth.service';
 export class SearchResultsComponent implements OnInit, OnDestroy {
 
   @ViewChild(SearchMapComponent) searchMap!: SearchMapComponent;
+
+  currentPage = 1;
+  pageSize = 6; 
+  totalItems = 0;
+
 
   showFilters = false;
   showMap = false;
@@ -69,36 +75,34 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
    
     this.route.queryParams.subscribe(params => {
 
-      // 1. الأساسيات
       this.currentQuery.filters.location = params['location'];
       this.currentQuery.filters.guests = params['guests'] ? +params['guests'] : undefined;
       if (params['checkIn']) this.currentQuery.filters.checkIn = new Date(params['checkIn']);
       if (params['checkOut']) this.currentQuery.filters.checkOut = new Date(params['checkOut']);
 
-      // 2. السعر
+   
       if (params['minPrice']) this.currentQuery.filters.priceMin = +params['minPrice'];
       if (params['maxPrice']) this.currentQuery.filters.priceMax = +params['maxPrice'];
 
-      // 3. نوع العقار (مهم جداً)
+  
       if (params['propertyType']) {
         this.currentQuery.filters.propertyTypes = [params['propertyType'] as PropertyType];
       }
 
-      // 4. المرافق (Amenities)
       if (params['amenities']) {
         const amParams = params['amenities'];
         this.currentQuery.filters.amenities = Array.isArray(amParams) ? amParams : (amParams as string).split(',');
       }
 
-      // 5. الغرف والأسرّة
+   
       if (params['bedrooms']) this.currentQuery.filters.bedrooms = +params['bedrooms'];
       if (params['beds']) this.currentQuery.filters.beds = +params['beds'];
       if (params['bathrooms']) this.currentQuery.filters.bathrooms = +params['bathrooms'];
 
-      // 6. خيارات الحجز
+  
       if (params['instantBook']) this.currentQuery.filters.instantBook = params['instantBook'] === 'true';
 
-      // 7. التقييم
+   
       if (params['rating']) this.currentQuery.filters.rating = +params['rating'];
 
      
@@ -116,12 +120,18 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
 
   private executeSearch() {
     this.isLoading = true;
+    this.currentQuery.page = this.currentPage;
+    this.currentQuery.pageSize = this.pageSize;
+
     this.searchService.searchProperties(this.currentQuery).subscribe({
       next: (response) => {
         this.allProperties = response.properties;
+        this.totalItems = response.total;
+        this.currentPage = response.page; 
         this.properties = response.properties;
         this.totalResults = response.total;
         this.isLoading = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       },
       error: (err) => {
         console.error('Search Error:', err);
@@ -130,7 +140,11 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // === تحديث الرابط عند تطبيق الفلاتر ===
+  onPageChange(page: number) {
+    this.currentPage = page;
+    this.executeSearch();
+  }
+
   onFiltersApply(newFilters: SearchFilters) {
     const queryParams: any = {
       minPrice: newFilters.priceMin,
@@ -144,20 +158,18 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
       rating: newFilters.rating
     };
 
-    // إزالة القيم الـ null/undefined من الرابط لتنظيفه
+   
     Object.keys(queryParams).forEach(key => queryParams[key] == null && delete queryParams[key]);
 
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: queryParams,
-      queryParamsHandling: 'merge' // دمج مع الموقع والتاريخ
+      queryParamsHandling: 'merge'
     });
 
     this.showFilters = false;
   }
 
-  // ... (باقي الكود: Wishlist, Map, UI كما هو) ...
-  // --- Wishlist Logic ---
   isPropertyInWishlist(propertyId: string): boolean {
     return this.wishlistService.isInWishlist(Number(propertyId));
   }
