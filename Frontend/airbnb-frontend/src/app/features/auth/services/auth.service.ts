@@ -445,4 +445,7 @@ fetchAndSetFullProfile(): void {
     const role = user.role.toLowerCase();
     return role.includes('host') || role.includes('admin');
   }
+  getCurrentUserId(): string | null {
+  return localStorage.getItem(this.USER_ID_KEY);
+}
 }
