@@ -10,7 +10,7 @@
       <h1 class="step-title">Availability & Capacity</h1>
       <p class="step-subtitle">Set duration, capacity, and weekly schedule.</p>
 
-      <!-- 1. Max Guests -->
+   
       <div class="input-group mb-4">
         <label class="label">Maximum Guests per booking</label>
         <div class="counter-wrapper">
@@ -20,7 +20,7 @@
         </div>
       </div>
 
-      <!-- ✅ 2. Service Duration -->
+
       <div class="input-group mb-4">
         <label class="label">Service Duration</label>
         <p class="small text-muted">How long does one session last?</p>
@@ -34,24 +34,24 @@
         </select>
       </div>
 
-      <!-- ✅ 3. Weekly Schedule (Day + Time) -->
+     
       <div class="input-group">
         <label class="label">Weekly Schedule</label>
         <p class="small text-muted">Add available slots for each day.</p>
         
         <div class="add-time-row">
-          <!-- اختيار اليوم -->
+         
           <select class="form-control time-input" [ngModel]="tempDay()" (ngModelChange)="tempDay.set($event)">
             <option *ngFor="let day of days" [value]="day.id">{{ day.name }}</option>
           </select>
 
-          <!-- اختيار الساعة -->
+          
           <input type="time" [ngModel]="tempTime()" (ngModelChange)="tempTime.set($event)" class="time-input">
           
           <button class="btn-add" (click)="addSlot()" [disabled]="!tempTime()">Add</button>
         </div>
 
-        <!-- عرض المواعيد المضافة -->
+        
         <div class="slots-container mt-3">
           <div *ngFor="let slot of slots(); let i = index" class="slot-chip">
             <strong>{{ getDayName(slot.day) }}</strong> : {{ slot.time }}
