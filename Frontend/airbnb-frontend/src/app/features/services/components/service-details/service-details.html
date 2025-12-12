@@ -5,7 +5,8 @@
 <div *ngIf="!isLoading() && service() as s" class="container pt-4 pb-5 fade-in">
 
   <!-- 1. HEADER & TITLE -->
-  <div class="mb-4">
+  <div class="mb-4 d-flex justify-content-between align-items-start">
+    <div>
     <h1 class="display-6 fw-bold text-dark">{{ s.title }}</h1>
     <div class="d-flex align-items-center gap-2 text-dark small mt-2">
       <span class="fw-bold"><i class="bi bi-star-fill"></i> {{ s.rating | number:'1.1-1' }}</span>
@@ -16,6 +17,24 @@
     </div>
   </div>
 
+  <!-- ✅ Right Side: Actions (Share & Save) -->
+  <div class="header-actions d-flex gap-2">
+    <!-- Share Button -->
+    <button class="action-btn btn btn-white border rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-2" 
+            (click)="shareService()">
+      <i class="bi bi-share"></i> Share
+    </button>
+
+    <!-- Save Button -->
+    <button class="action-btn btn btn-white border rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-2" 
+            (click)="toggleWishlist()">
+      <i [class]="isWishlisted() ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"></i>
+      <span>{{ isWishlisted() ? 'Saved' : 'Save' }}</span>
+    </button>
+
+  </div>
+
+</div>
   <!-- 2. IMAGE GALLERY -->
   <div class="gallery-grid rounded-4 overflow-hidden mb-5 position-relative">
     <div class="main-img bg-light position-relative">

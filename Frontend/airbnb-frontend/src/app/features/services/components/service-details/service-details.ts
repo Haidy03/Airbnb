@@ -27,6 +27,7 @@ export class ServiceDetailsComponent implements OnInit {
   isLoading = signal(true);
   selectedPackage = signal<ServicePackage | null>(null);
   showBookingModal = false;
+  isWishlisted = signal(false);
   private baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
   reviews = signal<any[]>([]);
 
@@ -36,6 +37,57 @@ export class ServiceDetailsComponent implements OnInit {
     if (id) {
       this.loadService(Number(id));
       this.loadReviews(Number(id));
+
+      if (this.authService.isAuthenticated) {
+        this.checkWishlistStatus(Number(id));
+      }
+    }
+  }
+
+  checkWishlistStatus(id: number): void {
+    this.servicesService.checkIsWishlisted(id).subscribe({
+      next: (isListed) => {
+        this.isWishlisted.set(isListed);
+      },
+      error: () => this.isWishlisted.set(false) 
+    });
+  }
+  toggleWishlist(): void {
+    const s = this.service();
+    if (!s) return;
+
+    if (!this.authService.isAuthenticated) {
+      this.notificationService.showToast('info', 'Please log in to save services.');
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
+    const previousState = this.isWishlisted();
+    this.isWishlisted.update(v => !v);
+
+    this.servicesService.toggleWishlist(s.id).subscribe({
+      next: (res) => {
+        this.isWishlisted.set(res.isWishlisted);
+        const msg = res.isWishlisted ? 'Saved to wishlist' : 'Removed from wishlist';
+        this.notificationService.showToast('success', msg);
+      },
+      error: (err) => {
+        this.isWishlisted.set(previousState);
+        this.notificationService.showError('Failed to update wishlist');
+      }
+    });
+  }
+
+  shareService(): void {
+    if (navigator.share) {
+      navigator.share({
+        title: this.service()?.title,
+        text: `Check out this service on Airbnb Clone: ${this.service()?.title}`,
+        url: window.location.href
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      this.notificationService.showToast('success', 'Link copied to clipboard!');
     }
   }
   loadReviews(id: number) {
@@ -149,13 +201,11 @@ export class ServiceDetailsComponent implements OnInit {
 
     showAllPhotos() {
     this.isGalleryOpen = true;
-    // عشان نمنع السكرول في الصفحة الأساسية لما المعرض يفتح
     document.body.style.overflow = 'hidden';
   }
 
   closeGallery() {
     this.isGalleryOpen = false;
-    // نرجع السكرول تاني
     document.body.style.overflow = 'auto';
   }
 }
