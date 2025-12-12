@@ -14,7 +14,6 @@ namespace Airbnb.API.Repositories.Implementations
             _context = context;
         }
 
-        // ... (GetById, GetByIdWithDetails, etc. - No changes needed here) ...
         public async Task<Property?> GetByIdAsync(int id) => await _context.Properties.FindAsync(id);
 
         public async Task<Property?> GetByIdWithDetailsAsync(int id)
@@ -28,6 +27,8 @@ namespace Airbnb.API.Repositories.Implementations
                 .Include(p => p.Bookings)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
+
+        
 
         public async Task<IEnumerable<Property>> GetAllAsync()
         {
@@ -90,9 +91,9 @@ namespace Airbnb.API.Repositories.Implementations
                 .Include(p => p.Images)
                 .Include(p => p.Reviews)
                 .AsQueryable()
-                .Where(p => p.IsActive && p.IsApproved);
+                .Where(p => p.Status == PropertyStatus.Approved || p.Status == PropertyStatus.Active);
 
-         
+
             if (!string.IsNullOrEmpty(searchDto.Location))
             {
                 var loc = searchDto.Location.ToLower();
@@ -187,7 +188,7 @@ namespace Airbnb.API.Repositories.Implementations
                 .Include(p => p.PropertyType)
                 .Include(p => p.Images)
                 .Include(p => p.Reviews)
-                .Where(p => p.IsActive && p.IsApproved)
+                .Where(p => p.Status == PropertyStatus.Approved || p.Status == PropertyStatus.Active)
                 .OrderByDescending(p => p.Reviews.Average(r => r.Rating))
                 .Take(count)
                 .Select(p => new PropertySearchResultDto
