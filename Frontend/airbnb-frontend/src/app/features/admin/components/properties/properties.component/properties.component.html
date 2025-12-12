@@ -22,12 +22,7 @@
         (click)="onStatusChange('Approved')">
         Approved
       </button>
-      <button 
-        class="filter-tab"
-        [class.active]="selectedStatus() === 'Active'"
-        (click)="onStatusChange('Active')">
-        Active
-      </button>
+      
       <button 
         class="filter-tab"
         [class.active]="selectedStatus() === 'Rejected'"
@@ -100,14 +95,14 @@
           <span class="stat-label">Price/Night:</span>
           <span class="stat-value price"><span>EGP</span>{{ property.pricePerNight }}</span>
         </div>
-        <div class="stat-item">
+        <!-- <div class="stat-item">
           <span class="stat-label">Bookings:</span>
           <span class="stat-value">{{ property.totalBookings }}</span>
-        </div>
-        <div class="stat-item">
+        </div> -->
+        <!-- <div class="stat-item">
           <span class="stat-label">Revenue:</span>
           <span class="stat-value"><span>EGP</span>{{ property.totalRevenue }}</span>
-        </div>
+        </div> -->
         <div class="stat-item" *ngIf="property.averageRating">
           <span class="stat-label">Rating:</span>
           <span class="stat-value">{{ property.averageRating | number:'1.1-1' }} ⭐ ({{ property.reviewsCount }})</span>

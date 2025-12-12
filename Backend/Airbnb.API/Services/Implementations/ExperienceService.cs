@@ -708,7 +708,15 @@ namespace Airbnb.API.Services.Implementations
 
             experience.Status = status;
 
-            if (status == ExperienceStatus.PendingApproval)
+            if (status == ExperienceStatus.Suspended)
+            {
+                experience.IsActive = false; 
+            }
+            else if (status == ExperienceStatus.Active)
+            {
+                experience.IsActive = true; 
+            }
+            else if (status == ExperienceStatus.PendingApproval)
             {
                 experience.RejectionReason = null;
                 experience.IsActive = false;

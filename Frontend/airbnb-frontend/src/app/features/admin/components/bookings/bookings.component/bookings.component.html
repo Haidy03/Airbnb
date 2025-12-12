@@ -16,12 +16,7 @@
         (click)="onStatusChange('All')">
         All Bookings
       </button>
-      <button 
-        class="filter-tab"
-        [class.active]="selectedStatus() === 'Pending'"
-        (click)="onStatusChange('Pending')">
-        Pending
-      </button>
+      
       <button 
         class="filter-tab"
         [class.active]="selectedStatus() === 'Confirmed'"

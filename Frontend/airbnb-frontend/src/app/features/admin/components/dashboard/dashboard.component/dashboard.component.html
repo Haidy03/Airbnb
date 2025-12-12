@@ -53,7 +53,7 @@
           <h3>Properties</h3>
           <p class="stat-number">{{ stats.totalProperties | number }}</p>
           <div class="stat-details">
-            <span class="detail-item active">{{ stats.activeProperties }} Active</span>
+            <span class="detail-item approve">{{ stats.approvedProperties}} Approved</span>
             <span class="detail-item pending">{{ stats.pendingProperties }} Pending</span>
           </div>
         </div>
@@ -89,7 +89,7 @@
         </div>
         <div class="stat-content">
           <h3>Total Revenue</h3>
-          <p class="stat-number">EGP{{ stats.totalRevenue | number:'1.2-2' }}</p>
+          <p class="stat-number">EGP{{ stats.totalRevenue | number:'' }}</p>
           <div class="stat-details">
             <span class="detail-item growth">+{{ revenueGrowth | number:'1.1-1' }}% this month</span>
           </div>

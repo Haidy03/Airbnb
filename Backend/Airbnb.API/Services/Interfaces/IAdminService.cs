@@ -57,5 +57,10 @@ namespace Airbnb.API.Services.Interfaces
         Task<List<AdminServiceDto>> GetAllServicesAsync(string? status = null, string? searchTerm = null, int pageNumber = 1, int pageSize = 10);
         Task<bool> UpdateServiceStatusAsync(int serviceId, UpdateStatusDto dto);
         Task<bool> DeleteServiceAsync(int serviceId);
+
+
+        Task<bool> DeleteExperienceAsync(int id);
+
+
     }
 }

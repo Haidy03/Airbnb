@@ -76,10 +76,31 @@ namespace Airbnb.API.Repositories.Implementations
 
         public async Task DeleteAsync(int id)
         {
-            var experience = await _context.Experiences.FindAsync(id);
+            var experience = await _context.Experiences
+                .Include(e => e.Bookings)
+                .Include(e => e.Reviews)
+                .Include(e => e.Availabilities) // عادة Cascade بس للتأكيد
+                .Include(e => e.Images)         // عادة Cascade بس للتأكيد
+                .Include(e => e.Languages)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
             if (experience != null)
             {
+                // 2. نحذف الحجوزات المرتبطة أولاً (لأن الداتا بيز Restrict)
+                if (experience.Bookings != null && experience.Bookings.Any())
+                {
+                    _context.ExperienceBookings.RemoveRange(experience.Bookings);
+                }
+
+                // 3. نحذف الريفيوهات المرتبطة أولاً (لأن الداتا بيز Restrict)
+                if (experience.Reviews != null && experience.Reviews.Any())
+                {
+                    _context.ExperienceReviews.RemoveRange(experience.Reviews);
+                }
+
+                // 4. الآن يمكن حذف التجربة بأمان (باقي الحاجات زي الصور هتحذف تلقائي لو معمولة Cascade)
                 _context.Experiences.Remove(experience);
+
                 await _context.SaveChangesAsync();
             }
         }
