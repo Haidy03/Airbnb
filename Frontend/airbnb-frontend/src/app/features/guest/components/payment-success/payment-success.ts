@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GuestBookingService, CreateBookingDto } from '../../services/booking.service';
 import { CommonModule } from '@angular/common';
-import { ServicesService } from '../../../services/services/service'; // ✅ تأكدي من المسار الصحيح للسيرفس
+import { ServicesService } from '../../../services/services/service';
 
 @Component({
   selector: 'app-payment-success',
@@ -23,7 +23,7 @@ export class PaymentSuccessComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private guestBookingService: GuestBookingService,
-    private servicesService: ServicesService // ✅ Added
+    private servicesService: ServicesService 
   ) {}
 
   ngOnInit() {
@@ -59,14 +59,14 @@ export class PaymentSuccessComponent implements OnInit {
     const pendingBooking = sessionStorage.getItem('pendingBooking');
     
     if (payingBookingId) {
-      // ✅ السيناريو الأول: دفع لحجز عقار موجود مسبقاً
+     
       this.confirmExistingBooking(payingBookingId);
     } else if (pendingBooking) {
-      // ✅ السيناريو الثاني: إنشاء حجز عقار جديد فوري
+     
       const bookingData = JSON.parse(pendingBooking);
       this.createBooking(bookingData);
     } else {
-      // خطأ: لا توجد بيانات حجز (لا عقار ولا خدمة)
+   
       this.hasError = true;
       this.errorMessage = 'No booking data found. Payment processed but booking details are missing.';
       this.isProcessing = false;
@@ -80,7 +80,7 @@ export class PaymentSuccessComponent implements OnInit {
     this.servicesService.confirmPayment(id).subscribe({
       next: (res) => {
         console.log('✅ Service Booking confirmed:', res);
-        sessionStorage.removeItem('pendingServiceBookingId'); // تنظيف
+        sessionStorage.removeItem('pendingServiceBookingId'); 
         this.successMessage = 'Your service has been successfully booked!';
         this.isProcessing = false;
         this.hasError = false;
@@ -89,7 +89,7 @@ export class PaymentSuccessComponent implements OnInit {
     });
   }
 
-  // --- السيناريو الأول: إنشاء حجز جديد (عقار) ---
+
   createBooking(data: any) {
     const payload: CreateBookingDto = {
       propertyId: Number(data.propertyId),
@@ -113,14 +113,14 @@ export class PaymentSuccessComponent implements OnInit {
     });
   }
 
-  // --- السيناريو الثاني: تأكيد حجز موجود (عقار) ---
+
   confirmExistingBooking(bookingId: string) {
     console.log('🔄 Confirming Existing Booking ID:', bookingId);
 
     this.guestBookingService.confirmBookingPayment(Number(bookingId)).subscribe({
       next: (res) => {
         console.log('✅ Booking confirmed:', res);
-        sessionStorage.removeItem('payingBookingId'); // تنظيف
+        sessionStorage.removeItem('payingBookingId'); 
         this.successMessage = 'Payment received! Your booking is now fully confirmed.';
         this.isProcessing = false;
         this.hasError = false;
@@ -129,7 +129,6 @@ export class PaymentSuccessComponent implements OnInit {
     });
   }
 
-  // --- معالجة الأخطاء الموحدة ---
   handleError(err: any) {
     console.error('❌ Error:', err);
     this.isProcessing = false;
@@ -149,7 +148,7 @@ export class PaymentSuccessComponent implements OnInit {
   retry() {
     this.hasError = false;
     this.isProcessing = true;
-    this.ngOnInit(); // إعادة المحاولة
+    this.ngOnInit(); 
   }
 
   goToTrips() {
