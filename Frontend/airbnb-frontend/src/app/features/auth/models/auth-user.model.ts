@@ -92,3 +92,8 @@ export interface ResetPasswordRequest {
 export interface VerifyResetTokenRequest {
   token: string;
 }
+
+export interface ChangePasswordResponse {
+  message?: string;
+  token?: string;
+}

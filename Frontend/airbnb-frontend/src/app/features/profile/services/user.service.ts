@@ -28,10 +28,9 @@ export class UserService {
   private transformUrl(path: string): string {
     if (!path) return '';
     if (path.startsWith('http')) return path; 
-    
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    // ✅ CACHE BUSTING: The ?t= timestamp forces the browser to re-download the image
     const timestamp = new Date().getTime();
+    // ✅ Returns: https://localhost:5202/uploads/profiles/xxx.jpg?t=123
     return `${this.API_BASE_URL}/${cleanPath}?t=${timestamp}`;
   }
 
@@ -97,27 +96,19 @@ export class UserService {
   uploadProfileImage(file: File): Observable<{url: string}> {
     const formData = new FormData();
     formData.append('file', file); 
-
-    const token = this.authService.getToken();
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
 
     return this.http.post<{url: string, message: string}>(
       `${this.apiUrl}/Auth/upload-photo`, 
       formData,
-      { headers }
+      { headers } // لا تضيفي Content-Type: multipart/form-data، المتصفح بيضيفه لوحده
     ).pipe(
        map(response => {
-        // Return the full URL so the UI updates immediately
+        // ✅ المهم هنا: بنرجع الرابط الكامل عشان الكومبوننت يبعته للـ AuthService صح
         return { 
           url: this.transformUrl(response.url) 
         };
-       }),
-      catchError(error => {
-        console.error('Error uploading image:', error);
-        return throwError(() => error);
-      })
+       })
     );
   }
 
