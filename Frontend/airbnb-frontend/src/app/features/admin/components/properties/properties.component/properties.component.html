@@ -131,10 +131,10 @@
       </div>
 
       <!-- Rejection Reason -->
-      <div *ngIf="property.rejectionReason" class="rejection-box">
-        <strong>Rejection Reason:</strong>
-        <p>{{ property.rejectionReason }}</p>
-      </div>
+      <div *ngIf="property.status === 'Rejected' && property.rejectionReason" class="rejection-box">
+  <strong>Rejection Reason:</strong>
+  <p>{{ property.rejectionReason }}</p>
+</div>
 
       <!-- Actions -->
       <div class="card-actions">

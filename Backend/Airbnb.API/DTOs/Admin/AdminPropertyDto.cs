@@ -16,6 +16,6 @@
         public int ReviewsCount { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? ApprovedAt { get; set; }
-        public string? RejectionReason { get; set; }
+        public string RejectionReason { get; set; }
     }
 }

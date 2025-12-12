@@ -155,9 +155,12 @@ export class AdminPropertiesComponent implements OnInit {
   }
 
   activateProperty(property: AdminProperty): void {
-    this.adminService.updatePropertyStatus(property.id, 'Active').subscribe({
+    // نرسل Approved للسيرفر ليكون اللون أزرق
+    this.adminService.updatePropertyStatus(property.id, 'Approved').subscribe({
       next: () => {
-        property.status = 'Active';
+        // نحدث الواجهة فوراً
+        property.status = 'Approved'; 
+        property.rejectionReason = ""; // نمسح السبب من الذاكرة
         this.showNotification('Property activated successfully');
       },
       error: (err) => {
@@ -165,7 +168,7 @@ export class AdminPropertiesComponent implements OnInit {
         this.showNotification('Failed to activate property', 'error');
       }
     });
-  }
+}
 
   openDeleteModal(property: AdminProperty): void {
     this.selectedProperty.set(property);

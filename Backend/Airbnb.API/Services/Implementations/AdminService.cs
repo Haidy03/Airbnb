@@ -505,9 +505,34 @@ namespace Airbnb.API.Services.Implementations
         { var p = await _adminRepository.GetPropertyByIdAsync(id); 
             return p != null ? MapPropertyToDto(p) : null; 
         }
-        public async Task<bool> ApprovePropertyAsync(int id, string adminId, ApprovePropertyDto dto) { var p = await _adminRepository.GetPropertyByIdAsync(id); if (p == null) return false; p.Status = PropertyStatus.Approved; p.ApprovedAt = DateTime.UtcNow; p.ApprovedByAdminId = adminId; p.IsApproved = true; p.IsActive = true; return await _adminRepository.UpdatePropertyAsync(p); }
+        public async Task<bool> ApprovePropertyAsync(int id, string adminId, ApprovePropertyDto dto) 
+        { 
+            var p = await _adminRepository.GetPropertyByIdAsync(id); 
+            if (p == null) return false; 
+            p.Status = PropertyStatus.Approved; 
+            p.ApprovedAt = DateTime.UtcNow; 
+            p.ApprovedByAdminId = adminId; 
+            p.IsApproved = true; 
+            p.IsActive = true;
+            p.RejectionReason = null;
+            return await _adminRepository.UpdatePropertyAsync(p); 
+        }
         public async Task<bool> RejectPropertyAsync(int id, string adminId, RejectPropertyDto dto) { var p = await _adminRepository.GetPropertyByIdAsync(id); if (p == null) return false; p.Status = PropertyStatus.Rejected; p.IsApproved = false; p.RejectionReason = dto.RejectionReason; p.UpdatedAt = DateTime.UtcNow; return await _adminRepository.UpdatePropertyAsync(p); }
-        public async Task<bool> UpdatePropertyStatusAsync(int id, UpdatePropertyStatusDto dto) { var p = await _adminRepository.GetPropertyByIdAsync(id); if (p == null) return false; if (Enum.TryParse<PropertyStatus>(dto.Status, out var s)) { p.Status = s; return await _adminRepository.UpdatePropertyAsync(p); } return false; }
+        public async Task<bool> UpdatePropertyStatusAsync(int id, UpdatePropertyStatusDto dto) 
+        { 
+            var p = await _adminRepository.GetPropertyByIdAsync(id); 
+            if (p == null) return false; 
+            if (Enum.TryParse<PropertyStatus>(dto.Status, out var s)) { 
+                p.Status = s;
+
+                if (s == PropertyStatus.Approved || s == PropertyStatus.PendingApproval || s == PropertyStatus.Active)
+                {
+                    p.RejectionReason = null;
+                }
+                return await _adminRepository.UpdatePropertyAsync(p); 
+            } 
+            return false; 
+        }
         public async Task<bool> DeletePropertyAsync(int propertyId) 
         {
             return await _adminRepository.DeletePropertyDeepAsync(propertyId);

@@ -103,7 +103,7 @@ export interface AdminProperty {
   reviewsCount: number;
   createdAt: Date;
   approvedAt?: Date;
-  rejectionReason?: string;
+  rejectionReason: string;
 }
 
 export interface AdminBooking {
