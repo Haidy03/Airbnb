@@ -59,7 +59,7 @@ export class SearchService {
     const requestBody = {
       pageIndex: query.page,
       pageSize: query.pageSize,
-
+      
       location: query.filters.location || null,
       checkInDate: query.filters.checkIn ? new Date(query.filters.checkIn).toISOString() : null,
       checkOutDate: query.filters.checkOut ? new Date(query.filters.checkOut).toISOString() : null,
@@ -76,7 +76,7 @@ export class SearchService {
       beds: query.filters.beds || null,
       bathrooms: query.filters.bathrooms || null,
       isInstantBook: query.filters.instantBook !== undefined ? query.filters.instantBook : null,
-
+      rating: query.filters.rating || null,
       sortBy: query.sortBy || "popular"
     };
 

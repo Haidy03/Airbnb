@@ -128,7 +128,9 @@ export class FiltersComponent implements OnChanges {
 
   incrementRooms(type: 'bedrooms' | 'beds' | 'bathrooms') { if (this[type] === null) this[type] = 1; else this[type]!++; }
   decrementRooms(type: 'bedrooms' | 'beds' | 'bathrooms') { if (this[type] !== null && this[type]! > 0) { this[type]!--; if (this[type] === 0) this[type] = null; } }
-  setMinRating(r: number) { this.minRating = this.minRating === r ? null : r; }
+  setMinRating(r: number) { 
+    this.minRating = this.minRating === r ? null : r; 
+  }
   onPriceMinChange(e: Event) { const v = +(e.target as HTMLInputElement).value; this.priceMin = Math.min(v, this.priceMax ?? 50000); }
   onPriceMaxChange(e: Event) { const v = +(e.target as HTMLInputElement).value; this.priceMax = Math.max(v, this.priceMin ?? 0); }
 
