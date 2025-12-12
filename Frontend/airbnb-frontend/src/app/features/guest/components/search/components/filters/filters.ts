@@ -31,12 +31,18 @@ export class FiltersComponent implements OnChanges {
 
   // Types
   propertyTypes = [
-    { type: PropertyType.APARTMENT, icon: 'bi-building', label: 'Apartment', selected: false },
     { type: PropertyType.HOUSE, icon: 'bi-house-door', label: 'House', selected: false },
-    { type: PropertyType.ROOM, icon: 'bi-door-open', label: 'Room', selected: false },
-    { type: PropertyType.VILLA, icon: 'bi-house', label: 'Villa', selected: false },
-    { type: PropertyType.STUDIO, icon: 'bi-square', label: 'Studio', selected: false },
-    { type: PropertyType.CHALET, icon: 'bi-tree', label: 'Chalet', selected: false }
+    { type: PropertyType.APARTMENT, icon: 'bi-building', label: 'Apartment', selected: false },
+    { type: PropertyType.BARN, icon: 'bi-house-heart', label: 'Barn', selected: false }, // شكل ريفي
+    { type: PropertyType.BED_BREAKFAST, icon: 'bi-cup-hot', label: 'Bed & breakfast', selected: false },
+    { type: PropertyType.BOAT, icon: 'bi-water', label: 'Boat', selected: false },
+    { type: PropertyType.CABIN, icon: 'bi-tree', label: 'Cabin', selected: false },
+    { type: PropertyType.CAMPER, icon: 'bi-truck', label: 'Camper/RV', selected: false },
+    { type: PropertyType.CASA_PARTICULAR, icon: 'bi-house-fill', label: 'Casa particular', selected: false },
+    { type: PropertyType.CASTLE, icon: 'bi-bricks', label: 'Castle', selected: false },
+    { type: PropertyType.CAVE, icon: 'bi-moon', label: 'Cave', selected: false }, // رمز يعبر عن الطبيعة/الظلام
+    { type: PropertyType.CONTAINER, icon: 'bi-box-seam', label: 'Container', selected: false },
+    { type: PropertyType.CYCLADIC_HOME, icon: 'bi-sun', label: 'Cycladic home', selected: false } // رمز يعبر عن الجزر اليونانية
   ];
 
   // Rooms
@@ -125,13 +131,16 @@ export class FiltersComponent implements OnChanges {
   onPriceMaxChange(e: Event) { const v = +(e.target as HTMLInputElement).value; this.priceMax = Math.max(v, this.priceMin ?? 0); }
 
   clearAll() {
-    this.priceMin = null; this.priceMax = null;
+    this.priceMin = null; 
+    this.priceMax = null;
     this.propertyTypes.forEach(t => t.selected = false);
     this.amenities.forEach(a => a.selected = false);
-    this.bedrooms = null; this.beds = null; this.bathrooms = null;
+    this.bedrooms = null; 
+    this.beds = null; 
+    this.bathrooms = null;
     this.instantBook = false;
-    this.selfCheckIn = false; // Reset
-    this.allowsPets = false;  // Reset
+    this.selfCheckIn = false;
+    this.allowsPets = false;
     this.minRating = null;
   }
 
@@ -149,7 +158,7 @@ export class FiltersComponent implements OnChanges {
       bathrooms: this.bathrooms || undefined,
       instantBook: this.instantBook || undefined,
       rating: this.minRating || undefined
-      // ملاحظة: selfCheckIn و allowsPets مش بنبعتهم للباك إند لأنهم مش في الـ DTO حالياً، بس خليناهم هنا عشان الـ HTML ميضربش
+     
     };
 
     this.applyFilters.emit(filters);

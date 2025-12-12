@@ -42,7 +42,7 @@ export class SearchService {
   searchProperties(query: SearchQuery): Observable<SearchResponse> {
 
     // 1. Property Type (String)
-    let selectedType: string | undefined = undefined;
+    let selectedType: string | null = null;
     if (query.filters.propertyTypes && query.filters.propertyTypes.length > 0) {
       selectedType = query.filters.propertyTypes[0].toString();
     }
@@ -68,7 +68,7 @@ export class SearchService {
       minPrice: query.filters.priceMin || null,
       maxPrice: (query.filters.priceMax && query.filters.priceMax < 50000) ? query.filters.priceMax : null,
 
-      propertyType: selectedType || null, // "Apartment"
+      propertyType: selectedType || null,
       amenityIds: (selectedAmenityIds && selectedAmenityIds.length > 0) ? selectedAmenityIds : null,
 
       // Rooms
