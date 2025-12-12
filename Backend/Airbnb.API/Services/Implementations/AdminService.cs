@@ -3,6 +3,7 @@ using Airbnb.API.DTOs.Admin;
 using Airbnb.API.DTOs.Booking;
 using Airbnb.API.DTOs.Review;
 using Airbnb.API.Models;
+using Airbnb.API.Repositories.Implementations;
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -16,15 +17,18 @@ namespace Airbnb.API.Services.Implementations
         private readonly IAdminRepository _adminRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<AdminService> _logger;
+        private readonly IExperienceRepository _experienceRepository;
 
         public AdminService(
             IAdminRepository adminRepository,
             UserManager<ApplicationUser> userManager,
+            IExperienceRepository experienceRepository,
             ILogger<AdminService> logger)
         {
             _adminRepository = adminRepository;
             _userManager = userManager;
             _logger = logger;
+            _experienceRepository = experienceRepository;
         }
 
         #region Dashboard & Analytics
@@ -50,7 +54,7 @@ namespace Airbnb.API.Services.Implementations
                     PendingVerifications = (await _adminRepository.GetAllVerificationsAsync(VerificationStatus.Pending))?.Count ?? 0,
 
                     TotalProperties = await _adminRepository.GetTotalPropertiesCountAsync(),
-                    ActiveProperties = await _adminRepository.GetPropertiesCountByStatusAsync(PropertyStatus.Active),
+                    ApprovedProperties = await _adminRepository.GetPropertiesCountByStatusAsync(PropertyStatus.Approved),
                     PendingProperties = await _adminRepository.GetPropertiesCountByStatusAsync(PropertyStatus.PendingApproval),
 
 
@@ -504,7 +508,10 @@ namespace Airbnb.API.Services.Implementations
         public async Task<bool> ApprovePropertyAsync(int id, string adminId, ApprovePropertyDto dto) { var p = await _adminRepository.GetPropertyByIdAsync(id); if (p == null) return false; p.Status = PropertyStatus.Approved; p.ApprovedAt = DateTime.UtcNow; p.ApprovedByAdminId = adminId; p.IsApproved = true; p.IsActive = true; return await _adminRepository.UpdatePropertyAsync(p); }
         public async Task<bool> RejectPropertyAsync(int id, string adminId, RejectPropertyDto dto) { var p = await _adminRepository.GetPropertyByIdAsync(id); if (p == null) return false; p.Status = PropertyStatus.Rejected; p.IsApproved = false; p.RejectionReason = dto.RejectionReason; p.UpdatedAt = DateTime.UtcNow; return await _adminRepository.UpdatePropertyAsync(p); }
         public async Task<bool> UpdatePropertyStatusAsync(int id, UpdatePropertyStatusDto dto) { var p = await _adminRepository.GetPropertyByIdAsync(id); if (p == null) return false; if (Enum.TryParse<PropertyStatus>(dto.Status, out var s)) { p.Status = s; return await _adminRepository.UpdatePropertyAsync(p); } return false; }
-        public async Task<bool> DeletePropertyAsync(int id) { var p = await _adminRepository.GetPropertyByIdAsync(id); if (p == null) return false; return await _adminRepository.DeletePropertyAsync(p); }
+        public async Task<bool> DeletePropertyAsync(int propertyId) 
+        {
+            return await _adminRepository.DeletePropertyDeepAsync(propertyId);
+        }
 
         private AdminPropertyDto MapPropertyToDto(Property p) => new AdminPropertyDto { Id = p.Id, Title = p.Title, HostId = p.HostId, HostName = p.Host.FirstName + " " + p.Host.LastName, Status = p.Status.ToString(), PricePerNight = p.PricePerNight, Location = p.City + ", " + p.Country, TotalBookings = p.Bookings.Count, TotalRevenue = p.Bookings.Where(b => b.Status == BookingStatus.Completed).Sum(b => b.TotalPrice), AverageRating = p.Reviews.Any() ? p.Reviews.Average(r => (double?)r.Rating) : null, ReviewsCount = p.Reviews.Count, CreatedAt = p.CreatedAt, ApprovedAt = p.ApprovedAt, RejectionReason = p.RejectionReason };
         #endregion
@@ -645,5 +652,19 @@ namespace Airbnb.API.Services.Implementations
         {
             return await _adminRepository.DeleteServiceAsync(serviceId);
         }
+
+        public async Task<bool> DeleteExperienceAsync(int id)
+        {
+            var experience = await _experienceRepository.GetByIdAsync(id);
+
+            if (experience == null)
+                return false;
+
+            await _experienceRepository.DeleteAsync(id);
+
+            return true;
+        }
+
+
     }
 }

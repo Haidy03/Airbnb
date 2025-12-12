@@ -440,7 +440,7 @@ namespace Airbnb.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error deleting property {propertyId}");
-                return StatusCode(500, "Error deleting property");
+                return StatusCode(500, new { message = "Error deleting property", details = ex.Message });
             }
         }
 
@@ -473,21 +473,52 @@ namespace Airbnb.API.Controllers
         [HttpPut("experiences/{id}/status")]
         public async Task<IActionResult> UpdateExperienceStatus(int id, [FromBody] UpdateStatusDto dto)
         {
+
             try
             {
+                // ✅ التعديل الجديد: دعم حالات Active و Suspended
                 if (dto.Status == "PendingApproval")
                 {
                     var result = await _experienceService.UpdateStatusAsync(id, ExperienceStatus.PendingApproval);
-                    if (result) return Ok(new { message = "Status updated successfully" });
+                    if (result) return Ok(new { message = "Status updated to PendingApproval" });
+                }
+                else if (dto.Status == "Active")
+                {
+                    // Unsuspend logic
+                    var result = await _experienceService.UpdateStatusAsync(id, ExperienceStatus.Active);
+                    if (result) return Ok(new { message = "Experience activated successfully" });
+                }
+                else if (dto.Status == "Suspended")
+                {
+                    // Suspend logic
+                    var result = await _experienceService.UpdateStatusAsync(id, ExperienceStatus.Suspended);
+                    if (result) return Ok(new { message = "Experience suspended successfully" });
                 }
 
-                return BadRequest(new { message = "Invalid status transition" });
+                return BadRequest(new { message = $"Invalid status transition: {dto.Status}" });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error updating experience status {id}");
                 return StatusCode(500, "Error updating status");
             }
+            //try
+            //{
+            //    if (dto.Status == "PendingApproval")
+            //    {
+            //        var result = await _experienceService.UpdateStatusAsync(id, ExperienceStatus.PendingApproval);
+            //        if (result) return Ok(new { message = "Status updated successfully" });
+            //    }
+
+            //    return BadRequest(new { message = "Invalid status transition" });
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex, $"Error updating experience status {id}");
+            //    return StatusCode(500, "Error updating status");
+            //}
+
+
         }
 
         [HttpPost("experiences/{id}/approve")]
@@ -618,6 +649,25 @@ namespace Airbnb.API.Controllers
             {
                 _logger.LogError(ex, "Error getting reviews");
                 return StatusCode(500, "Error retrieving reviews");
+            }
+        }
+
+        [HttpDelete("experiences/{id}")]
+        public async Task<IActionResult> DeleteExperience(int id)
+        {
+            try
+            {
+                var result = await _adminService.DeleteExperienceAsync(id);
+
+                if (!result)
+                    return NotFound(new { message = "Experience not found" });
+
+                return Ok(new { message = "Experience deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting experience {id}");
+                return StatusCode(500, "Error deleting experience");
             }
         }
 

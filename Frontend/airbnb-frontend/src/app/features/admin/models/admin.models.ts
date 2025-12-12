@@ -7,7 +7,7 @@ export interface DashboardStats {
   pendingVerifications: number;
   
   totalProperties: number;
-  activeProperties: number;
+  approvedProperties: number;
   pendingProperties: number;
 
   totalServices: number;

@@ -201,30 +201,22 @@ export class AdminService {
     return this.http.put(`${this.apiUrl}/experiences/${id}/status`, { status });
   }
 
-  // دالة حذف التجربة
   deleteExperience(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/experiences/${id}`);
   }
-   // ==========================================
-  // ✅ SERVICES MANAGEMENT (NEW)
-  // ==========================================
 
-  // جلب الخدمات المعلقة (للموافقة)
   getPendingServices(): Observable<any> { // الباك إند بيرجع { success: true, data: [...] }
     return this.http.get(`${this.apiUrl}/services/pending`);
   }
 
-  // الموافقة على الخدمة
   approveService(id: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/services/${id}/approve`, {});
   }
 
-  // رفض الخدمة
   rejectService(id: number, reason: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/services/${id}/reject`, { reason });
   }
 
-  // Settings
   getSettings(): Observable<any> {
     return this.http.get(`${this.apiUrl}/settings`);
   }
@@ -246,7 +238,6 @@ export class AdminService {
     return this.http.post(`${this.apiUrl}/change-password`, data);
   }
 
-  // داخل AdminService Class
   
   getAllServices(status?: string, searchTerm?: string, pageNumber = 1, pageSize = 10): Observable<AdminServiceItem[]> {
     let params = new HttpParams()
@@ -256,7 +247,6 @@ export class AdminService {
     if (status) params = params.set('status', status);
     if (searchTerm) params = params.set('searchTerm', searchTerm);
 
-    // لاحظ: تأكد أن المسار يطابق AdminController
     return this.http.get<AdminServiceItem[]>(`${this.apiUrl}/services`, { params });
   }
 

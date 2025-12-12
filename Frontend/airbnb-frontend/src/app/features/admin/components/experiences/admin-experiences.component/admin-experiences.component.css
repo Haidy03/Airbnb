@@ -265,3 +265,29 @@
   color: #717171;
   font-weight: 500;
 }
+
+
+
+/* Suspend Button (Orange/Yellow) */
+.btn-suspend {
+  background: white;
+  color: #F57F17; /* برتقالي غامق */
+  border: 1px solid #F57F17;
+}
+
+.btn-suspend:hover {
+  background: #FFF8E1;
+  transform: scale(1.02);
+}
+
+/* Unsuspend Button (Green/Teal) */
+.btn-unsuspend {
+  background: white;
+  color: #00A699; /* لون Airbnb الأخضر */
+  border: 1px solid #00A699;
+}
+
+.btn-unsuspend:hover {
+  background: #E8F5F4;
+  transform: scale(1.02);
+}

@@ -70,14 +70,14 @@
           <span class="stat-label">Price:</span>
           <span class="stat-value price">{{ service.pricePerUnit | currency:'EGP ' }} / {{ service.pricingUnit }}</span>
         </div>
-        <div class="stat-item">
+        <!-- <div class="stat-item">
           <span class="stat-label">Bookings:</span>
           <span class="stat-value">{{ service.totalBookings }}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Revenue:</span>
           <span class="stat-value">{{ service.totalRevenue | currency:'EGP ' }}</span>
-        </div>
+        </div> -->
         <div class="stat-item" *ngIf="service.averageRating">
           <span class="stat-label">Rating:</span>
           <span class="stat-value">{{ service.averageRating | number:'1.1-1' }} ⭐ ({{ service.reviewsCount }})</span>

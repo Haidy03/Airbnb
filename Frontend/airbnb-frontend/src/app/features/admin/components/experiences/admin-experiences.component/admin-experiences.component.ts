@@ -74,7 +74,7 @@ export class AdminExperiencesComponent implements OnInit {
         this.experiences.set(data);
         this.loading.set(false);
       },
-      error: (err: any) => { // ✅ Fixed: Added type 'any'
+      error: (err: any) => { 
         console.error(err);
         this.error.set('Failed to load experiences');
         this.loading.set(false);
@@ -122,13 +122,12 @@ export class AdminExperiencesComponent implements OnInit {
   moveToPending(exp: AdminExperience): void {
     if(!confirm('Are you sure you want to move this experience back to pending approval?')) return;
 
-    // ✅ Fixed: Now 'updateExperienceStatus' exists in AdminService
     this.adminService.updateExperienceStatus(exp.id, 'PendingApproval').subscribe({
       next: () => {
         this.loadExperiences();
         this.showNotification('Experience moved to pending successfully');
       },
-      error: (err: any) => { // ✅ Fixed: Added type 'any'
+      error: (err: any) => { 
         console.error(err);
         this.showNotification('Failed to update status', 'error');
       }
@@ -140,13 +139,11 @@ export class AdminExperiencesComponent implements OnInit {
     this.showDeleteModal.set(true);
   }
 
-  // ✅ Added: Missing closeDeleteModal method (usually needed)
   closeDeleteModal(): void {
     this.showDeleteModal.set(false);
     this.selectedExperience.set(null);
   }
 
-  // ✅ Added: Missing deleteExperience method implementation
   deleteExperience(): void {
     const exp = this.selectedExperience();
     if (!exp) return;
@@ -194,7 +191,6 @@ export class AdminExperiencesComponent implements OnInit {
 
   // --- Helpers ---
 
-  // ✅ Added: Helper method to fix 'showNotification' error
   private showNotification(message: string, type: 'success' | 'error' = 'success'): void {
     console.log(`[${type.toUpperCase()}] ${message}`);
     alert(message); // Simple alert for now, can be replaced with Toastr
@@ -227,5 +223,27 @@ export class AdminExperiencesComponent implements OnInit {
   }
 
   nextPage() { this.pageNumber.update(v => v + 1); this.loadExperiences(); }
-  previousPage() { if(this.pageNumber() > 1) { this.pageNumber.update(v => v - 1); this.loadExperiences(); } }
+  previousPage() { if(this.pageNumber() > 1) { this.pageNumber.update(v => v - 1); this.loadExperiences(); } 
+}
+
+
+toggleSuspension(exp: AdminExperience): void {
+    // تحديد الحالة الجديدة بناءً على الحالة الحالية
+    const isSuspended = exp.status === 'Suspended';
+    const newStatus = isSuspended ? 'Active' : 'Suspended';
+    const actionText = isSuspended ? 'unsuspend' : 'suspend';
+
+    if (!confirm(`Are you sure you want to ${actionText} this experience?`)) return;
+
+    this.adminService.updateExperienceStatus(exp.id, newStatus).subscribe({
+      next: () => {
+        this.showNotification(`Experience ${actionText}ed successfully`);
+        this.loadExperiences(); // إعادة تحميل القائمة لتحديث الواجهة
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.showNotification(`Failed to ${actionText} experience`, 'error');
+      }
+    });
+  }
 }

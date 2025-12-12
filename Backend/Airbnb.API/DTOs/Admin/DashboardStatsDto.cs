@@ -10,7 +10,7 @@
         public int PendingVerifications { get; set; }
 
         public int TotalProperties { get; set; }
-        public int ActiveProperties { get; set; }
+        public int ApprovedProperties { get; set; }
         public int PendingProperties { get; set; }
         public int TotalServices { get; set; }
         public int ActiveServices { get; set; }

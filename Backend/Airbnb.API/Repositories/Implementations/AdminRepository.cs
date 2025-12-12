@@ -82,9 +82,85 @@ namespace Airbnb.API.Repositories.Implementations
         public async Task<Property?> GetPropertyByIdAsync(int propertyId) => await _context.Properties.Include(p => p.Host).Include(p => p.Bookings).Include(p => p.Reviews).FirstOrDefaultAsync(p => p.Id == propertyId);
         public async Task<bool> UpdatePropertyAsync(Property property) { _context.Properties.Update(property); return await _context.SaveChangesAsync() > 0; }
         public async Task<bool> DeletePropertyAsync(Property property) { _context.Properties.Remove(property); return await _context.SaveChangesAsync() > 0; }
+
+
+
+        public async Task<bool> DeletePropertyDeepAsync(int propertyId)
+        {
+            var strategy = _context.Database.CreateExecutionStrategy();
+
+            return await strategy.ExecuteAsync(async () =>
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // 1. جلب العقار مع البيانات المرتبطة
+                    var property = await _context.Properties
+                        .Include(p => p.Bookings)
+                        .Include(p => p.Reviews)
+                        .Include(p => p.Images)
+                        .Include(p => p.Availabilities)
+                        .Include(p => p.PropertyAmenities)
+                        // .Include(p => p.Wishlists) // <--- تأكد من هذا الجدول كما ذكرنا سابقاً
+                        .FirstOrDefaultAsync(p => p.Id == propertyId);
+
+                    if (property == null) return false;
+
+                    // 2. حذف الحجوزات
+                    if (property.Bookings != null && property.Bookings.Any())
+                    {
+                        _context.Bookings.RemoveRange(property.Bookings);
+                    }
+
+                    // 3. حذف التقييمات
+                    if (property.Reviews != null && property.Reviews.Any())
+                    {
+                        _context.Reviews.RemoveRange(property.Reviews);
+                    }
+
+                    // 4. حذف الصور
+                    if (property.Images != null && property.Images.Any())
+                    {
+                        _context.PropertyImages.RemoveRange(property.Images);
+                    }
+
+                    // 5. حذف المواعيد
+                    if (property.Availabilities != null && property.Availabilities.Any())
+                    {
+                        _context.PropertyAvailabilities.RemoveRange(property.Availabilities);
+                    }
+
+                    // 6. حذف وسائل الراحة
+                    if (property.PropertyAmenities != null && property.PropertyAmenities.Any())
+                    {
+                        _context.PropertyAmenities.RemoveRange(property.PropertyAmenities);
+                    }
+
+                    var wishlistItems = _context.Wishlists.Where(w => w.PropertyId == propertyId).ToList();
+                    if (wishlistItems.Any())
+                    {
+                        _context.Wishlists.RemoveRange(wishlistItems);
+                    }
+
+                    // 7. حذف العقار نفسه
+                    _context.Properties.Remove(property);
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync(); // إتمام العملية
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    // طباعة الخطأ في الكونسول للمساعدة في التتبع
+                    Console.WriteLine($"Error deleting property: {ex.Message}");
+                    throw;
+                }
+            });
+        }
         #endregion
 
-        #region Bookings (Unified: Properties + Experiences + Services)
+            #region Bookings (Unified: Properties + Experiences + Services)
 
         public async Task<List<BookingResponseDto>> GetUnifiedBookingsAsync(string? status = null, DateTime? startDate = null, DateTime? endDate = null, int pageNumber = 1, int pageSize = 10)
         {

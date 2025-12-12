@@ -95,42 +95,56 @@ export class AdminUsersComponent implements OnInit {
 
   blockUser(): void {
     const user = this.selectedUser();
-    if (!user || !this.blockReason().trim()) {
-      this.showNotification('Please provide a reason for blocking', 'error');
-      return;
-    }
+    
+    // تأكد أن المستخدم موجود
+    if (!user) return;
 
     if (user.isBlocked) {
-      // Unblock
+      // =================================================
+      // حالة فك الحظر (Unblock)
+      // لا نحتاج للتحقق من السبب هنا
+      // =================================================
       this.adminService.unblockUser(user.id).subscribe({
         next: () => {
+          // 1. تحديث حالة المستخدم محلياً
           user.isBlocked = false;
-          user.blockReason = undefined;
+          user.isActive = true; // تفعيل المستخدم ليتمكن من الدخول
+          user.blockReason = undefined; // مسح سبب الحظر القديم
+          
+          // 2. إغلاق المودال مباشرة
           this.closeBlockModal();
-          this.showNotification('User unblocked successfully');
+          
+          // (تم إزالة التنبيه notification كما طلبتِ)
         },
         error: (err) => {
           console.error('Error unblocking user:', err);
-          this.showNotification('Failed to unblock user', 'error');
         }
       });
+
     } else {
-      // Block
+      // =================================================
+      // حالة الحظر (Block)
+      // هنا يجب التحقق من كتابة السبب
+      // =================================================
+      if (!this.blockReason().trim()) {
+        this.showNotification('Please provide a reason for blocking', 'error');
+        return;
+      }
+
       this.adminService.blockUser(user.id, this.blockReason()).subscribe({
         next: () => {
           user.isBlocked = true;
+          user.isActive = false; // إلغاء تفعيل المستخدم
           user.blockReason = this.blockReason();
+          
           this.closeBlockModal();
-          this.showNotification('User blocked successfully');
         },
         error: (err) => {
           console.error('Error blocking user:', err);
-          this.showNotification('Failed to block user', 'error');
         }
       });
     }
   }
-
   openDeleteModal(user: AdminUser): void {
     this.selectedUser.set(user);
     this.showDeleteModal.set(true);

@@ -24,6 +24,7 @@ namespace Airbnb.API.Repositories.Interfaces
         Task<Property?> GetPropertyByIdAsync(int propertyId);
         Task<bool> UpdatePropertyAsync(Property property);
         Task<bool> DeletePropertyAsync(Property property);
+        Task<bool> DeletePropertyDeepAsync(int propertyId);
 
         // Bookings (Unified)
         Task<List<BookingResponseDto>> GetUnifiedBookingsAsync(string? status = null, DateTime? startDate = null, DateTime? endDate = null, int pageNumber = 1, int pageSize = 10);
