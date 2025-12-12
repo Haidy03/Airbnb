@@ -5,6 +5,7 @@ import { GuestBookingService } from '../../../../guest/services/booking.service'
 import { ServicesService } from '../../../../services/services/service';
 import { ExperienceService } from '../../../../../shared/Services/experience.service';
 import { environment } from '../../../../../../environments/environment';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-my-bookings',
@@ -18,10 +19,10 @@ export class MyBookingsComponent implements OnInit {
   private servicesService = inject(ServicesService);
   private experienceService = inject(ExperienceService);
   private router = inject(Router);
+  private notificationService = inject(NotificationService);
 
   loading = signal(true);
 
-  // القوائم المنفصلة
   propertyBookings = signal<any[]>([]);
   experienceBookings = signal<any[]>([]);
   serviceBookings = signal<any[]>([]);
@@ -36,7 +37,6 @@ export class MyBookingsComponent implements OnInit {
       next: (res: any) => {
         const allData = Array.isArray(res) ? res : (res.data || []);
 
-        // تصفية البيانات وتوزيعها
         this.propertyBookings.set(allData.filter((t: any) => t.type === 'Property'));
         this.experienceBookings.set(allData.filter((t: any) => t.type === 'Experience'));
         this.serviceBookings.set(allData.filter((t: any) => t.type === 'Service'));
@@ -47,7 +47,6 @@ export class MyBookingsComponent implements OnInit {
     });
   }
 
-  // التحقق من شرط الـ 24 ساعة
   canCancel(dateStr: string): boolean {
     const tripDate = new Date(dateStr);
     const now = new Date();
@@ -55,8 +54,15 @@ export class MyBookingsComponent implements OnInit {
     return diffHours > 24;
   }
 
-  cancelBooking(trip: any): void {
-    if (!confirm('Are you sure you want to cancel? Refund will be processed.')) return;
+  async cancelBooking(trip: any): Promise<void> {
+    
+    const confirmed = await this.notificationService.confirmAction(
+      'Cancel Booking?', 
+      'Are you sure you want to cancel? Any applicable refund will be processed.',
+      'Yes, cancel'
+    );
+
+    if (!confirmed) return;
 
     let cancelObs;
     
@@ -71,11 +77,11 @@ export class MyBookingsComponent implements OnInit {
     if(cancelObs) {
         cancelObs.subscribe({
           next: () => {
-            alert('Booking cancelled successfully.');
-            this.loadBookings(); // تحديث القائمة
+            this.notificationService.showSuccess('Cancelled', 'Booking cancelled successfully.');
+            this.loadBookings(); 
           },
           error: (err: any) => {
-            alert(err.error?.message || 'Failed to cancel.');
+            this.notificationService.showError(err.error?.message || 'Failed to cancel booking.');
           }
         });
     }
