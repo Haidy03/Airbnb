@@ -114,6 +114,11 @@ namespace Airbnb.API.Repositories.Implementations
                 query = query.Where(p => p.NumberOfBathrooms >= searchDto.Bathrooms.Value);
             }
 
+            if (searchDto.IsInstantBook.HasValue)
+            {
+                query = query.Where(p => p.IsInstantBook == searchDto.IsInstantBook.Value);
+            }
+
             if (searchDto.GuestCount.HasValue)
                 query = query.Where(p => p.MaxGuests >= searchDto.GuestCount.Value);
 

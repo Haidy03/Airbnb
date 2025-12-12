@@ -75,7 +75,7 @@ export class SearchService {
       bedrooms: query.filters.bedrooms || null,
       beds: query.filters.beds || null,
       bathrooms: query.filters.bathrooms || null,
-      isInstantBook: query.filters.instantBook || null,
+      isInstantBook: query.filters.instantBook !== undefined ? query.filters.instantBook : null,
 
       sortBy: query.sortBy || "popular"
     };

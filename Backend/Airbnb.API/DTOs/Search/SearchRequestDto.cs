@@ -26,6 +26,8 @@ namespace Airbnb.API.DTOs.Search
         public int? Beds { get; set; }
         public int? Bathrooms { get; set; }
 
+        public bool? IsInstantBook { get; set; }
+
         // List of Amenity IDs (e.g., user wants Wifi [1] and Pool [5])
         public List<int>? AmenityIds { get; set; }
 

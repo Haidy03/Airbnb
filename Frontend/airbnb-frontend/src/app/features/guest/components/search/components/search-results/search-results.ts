@@ -81,7 +81,6 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
       if (params['checkIn']) this.currentQuery.filters.checkIn = new Date(params['checkIn']);
       if (params['checkOut']) this.currentQuery.filters.checkOut = new Date(params['checkOut']);
 
-      // 3. قراءة الفلاتر الإضافية (الآن لو الرابط مفيهوش minPrice، القيمة هتبقى undefined لأننا صفرنا الاوبجكت فوق)
       if (params['minPrice']) this.currentQuery.filters.priceMin = +params['minPrice'];
       if (params['maxPrice']) this.currentQuery.filters.priceMax = +params['maxPrice'];
 
@@ -98,11 +97,17 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
       if (params['beds']) this.currentQuery.filters.beds = +params['beds'];
       if (params['bathrooms']) this.currentQuery.filters.bathrooms = +params['bathrooms'];
 
-      if (params['instantBook']) this.currentQuery.filters.instantBook = params['instantBook'] === 'true';
+       if (params['instantBook'] !== undefined) {
+        const val = params['instantBook'];
+        if (val === 'true') {
+            this.currentQuery.filters.instantBook = true;
+        } else if (val === 'false') {
+            this.currentQuery.filters.instantBook = false;
+        }
+      }
 
       if (params['rating']) this.currentQuery.filters.rating = +params['rating'];
 
-      // تنفيذ البحث بالقيم الجديدة (النظيفة)
       this.executeSearch();
     });
 
@@ -172,12 +177,16 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
       bedrooms: newFilters.bedrooms,
       beds: newFilters.beds,
       bathrooms: newFilters.bathrooms,
-      instantBook: newFilters.instantBook ? 'true' : null,
+      instantBook: newFilters.instantBook,
       rating: newFilters.rating
     };
 
    
-    Object.keys(queryParams).forEach(key => queryParams[key] == null && delete queryParams[key]);
+     Object.keys(queryParams).forEach(key => {
+        if (queryParams[key] === null || queryParams[key] === undefined) {
+            delete queryParams[key];
+        }
+    });
 
     this.router.navigate(['/search'], {
       queryParams: queryParams

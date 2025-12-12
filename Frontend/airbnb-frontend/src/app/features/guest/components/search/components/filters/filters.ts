@@ -68,10 +68,12 @@ export class FiltersComponent implements OnChanges {
     { id: '14', name: 'Carbon monoxide alarm', icon: 'bi-exclamation-circle', selected: false }
   ];
 
-  // Booking Options (تم إعادتهم لإصلاح الخطأ)
+ 
   instantBook = false;
-  selfCheckIn = false; // Added back
-  allowsPets = false;  // Added back
+  requestToBook = false; 
+
+  selfCheckIn = false; 
+  allowsPets = false;  
 
   // Rating
   minRating: number | null = null;
@@ -90,10 +92,11 @@ export class FiltersComponent implements OnChanges {
     this.bedrooms = this.currentFilters.bedrooms || null;
     this.beds = this.currentFilters.beds || null;
     this.bathrooms = this.currentFilters.bathrooms || null;
-    this.instantBook = !!this.currentFilters.instantBook;
+    this.instantBook = this.currentFilters.instantBook === true;
+    this.requestToBook = this.currentFilters.instantBook === false;
     this.minRating = this.currentFilters.rating || null;
 
-    // استرجاع الأنواع
+  
     this.propertyTypes.forEach(t => t.selected = false);
     if (this.currentFilters.propertyTypes && this.currentFilters.propertyTypes.length > 0) {
       const selectedType = this.currentFilters.propertyTypes[0];
@@ -101,7 +104,6 @@ export class FiltersComponent implements OnChanges {
       if (target) target.selected = true;
     }
 
-    // استرجاع المرافق
     this.amenities.forEach(a => a.selected = false);
     if (this.currentFilters.amenities) {
       this.currentFilters.amenities.forEach(id => {
@@ -139,6 +141,7 @@ export class FiltersComponent implements OnChanges {
     this.beds = null; 
     this.bathrooms = null;
     this.instantBook = false;
+    this.requestToBook = false;
     this.selfCheckIn = false;
     this.allowsPets = false;
     this.minRating = null;
@@ -147,6 +150,13 @@ export class FiltersComponent implements OnChanges {
   apply() {
     const selectedTypes = this.propertyTypes.filter(t => t.selected).map(t => t.type);
     const selectedAmenities = this.amenities.filter(a => a.selected).map(a => a.id);
+    let isInstantValue: boolean | undefined = undefined;
+
+    if (this.instantBook && !this.requestToBook) {
+      isInstantValue = true; 
+    } else if (!this.instantBook && this.requestToBook) {
+      isInstantValue = false;
+    }
 
     const filters: SearchFilters = {
       priceMin: this.priceMin || undefined,
@@ -156,11 +166,12 @@ export class FiltersComponent implements OnChanges {
       bedrooms: this.bedrooms || undefined,
       beds: this.beds || undefined,
       bathrooms: this.bathrooms || undefined,
-      instantBook: this.instantBook || undefined,
+      instantBook: isInstantValue,
       rating: this.minRating || undefined
      
     };
 
+    console.log('Filters emitting:', filters); // Debugging line
     this.applyFilters.emit(filters);
     this.onClose();
   }
@@ -171,7 +182,7 @@ export class FiltersComponent implements OnChanges {
     if (this.propertyTypes.some(t => t.selected)) count++;
     if (this.amenities.some(a => a.selected)) count++;
     if (this.bedrooms || this.beds || this.bathrooms) count++;
-    if (this.instantBook || this.selfCheckIn || this.allowsPets) count++;
+    if (this.instantBook || this.requestToBook) count++;
     if (this.minRating) count++;
     return count;
   }

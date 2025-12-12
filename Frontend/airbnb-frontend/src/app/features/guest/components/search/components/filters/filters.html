@@ -185,6 +185,8 @@
     <div class="filter-section">
       <h3 class="filter-heading">Booking options</h3>
       <div class="booking-options">
+
+         <!-- Instant Book -->
         <label class="option-item">
           <div class="option-info">
             <div class="option-name">Instant Book</div>
@@ -193,21 +195,22 @@
           <input type="checkbox" class="form-check-input" [(ngModel)]="instantBook">
         </label>
 
+        <!-- Request to Book (NEW) -->
         <label class="option-item">
           <div class="option-info">
-            <div class="option-name">Self check-in</div>
-            <div class="option-description">Easy access to the property</div>
+            <div class="option-name">Request to book</div>
+            <div class="option-description">Listings that require host approval before booking</div>
           </div>
-          <input type="checkbox" class="form-check-input" [(ngModel)]="selfCheckIn">
+          <input type="checkbox" class="form-check-input" [(ngModel)]="requestToBook">
         </label>
 
-        <label class="option-item">
+        <!-- <label class="option-item">
           <div class="option-info">
             <div class="option-name">Allows pets</div>
             <div class="option-description">Bringing a pet along</div>
           </div>
           <input type="checkbox" class="form-check-input" [(ngModel)]="allowsPets">
-        </label>
+        </label> -->
       </div>
     </div>
 
