@@ -110,7 +110,7 @@ public class EarningsService : IEarningsService
             .Concat(expTransactions)
             .Concat(serviceTransactions) 
             .OrderByDescending(t => t.Date)
-            .Take(10)
+            .Take(50)
             .ToList();
 
         var grandTotalEarnings = paidBookings.Sum(b => b.TotalPrice)
@@ -127,27 +127,22 @@ public class EarningsService : IEarningsService
             + paidServiceBookings.Where(b => b.BookingDate.Month == today.Month && b.BookingDate.Year == today.Year).Sum(b => b.TotalPrice); 
 
         var chartData = new List<MonthlyChartDataDto>();
-        for (int i = 5; i >= 0; i--)
+        var culture = System.Globalization.CultureInfo.InvariantCulture;
+
+        for (int m = 1; m <= 12; m++)
         {
-            var date = today.AddMonths(-i);
+            var monthName = new DateTime(2000, m, 1).ToString("MMM", culture);
 
-            var monthProp = paidBookings
-                .Where(b => b.CheckInDate.Month == date.Month && b.CheckInDate.Year == date.Year)
-                .Sum(b => b.TotalPrice);
-
-            var monthExp = paidExpBookings
-                .Where(b => b.Availability.Date.Month == date.Month && b.Availability.Date.Year == date.Year)
-                .Sum(b => b.TotalPrice);
-
-            var monthSvc = paidServiceBookings 
-                .Where(b => b.BookingDate.Month == date.Month && b.BookingDate.Year == date.Year)
-                .Sum(b => b.TotalPrice);
+            var amount =
+                   paidBookings.Where(b => b.CheckInDate.Month == m).Sum(b => b.TotalPrice)
+                 + paidExpBookings.Where(b => b.Availability.Date.Month == m).Sum(b => b.TotalPrice)
+                 + paidServiceBookings.Where(b => b.BookingDate.Month == m).Sum(b => b.TotalPrice);
 
             chartData.Add(new MonthlyChartDataDto
             {
-                Month = date.ToString("MMM"),
-                Year = date.Year,
-                Amount = monthProp + monthExp + monthSvc
+                Month = monthName,
+                Year = today.Year, 
+                Amount = amount
             });
         }
 

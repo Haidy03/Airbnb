@@ -36,7 +36,7 @@
              [class.empty]="item.amount === 0"> 
 
         <div class="bar-value" [style.height]="getBarHeight(item.amount)">
-          <span class="tooltip">EGP{{ item.amount }}</span>
+          <span class="tooltip">EGP{{ item.amount | number:'1.0-0' }}</span>
         </div>
         <span class="bar-label">{{ item.month }}</span>
       </div>
