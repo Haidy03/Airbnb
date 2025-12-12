@@ -75,16 +75,15 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
    
     this.route.queryParams.subscribe(params => {
 
-      this.currentQuery.filters.location = params['location'];
-      this.currentQuery.filters.guests = params['guests'] ? +params['guests'] : undefined;
+      this.currentQuery.filters = {}; 
+       if (params['location']) this.currentQuery.filters.location = params['location'];
+      if (params['guests']) this.currentQuery.filters.guests = +params['guests'];
       if (params['checkIn']) this.currentQuery.filters.checkIn = new Date(params['checkIn']);
       if (params['checkOut']) this.currentQuery.filters.checkOut = new Date(params['checkOut']);
 
-   
       if (params['minPrice']) this.currentQuery.filters.priceMin = +params['minPrice'];
       if (params['maxPrice']) this.currentQuery.filters.priceMax = +params['maxPrice'];
 
-  
       if (params['propertyType']) {
         this.currentQuery.filters.propertyTypes = [params['propertyType'] as PropertyType];
       }
@@ -94,18 +93,21 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
         this.currentQuery.filters.amenities = Array.isArray(amParams) ? amParams : (amParams as string).split(',');
       }
 
-   
       if (params['bedrooms']) this.currentQuery.filters.bedrooms = +params['bedrooms'];
       if (params['beds']) this.currentQuery.filters.beds = +params['beds'];
       if (params['bathrooms']) this.currentQuery.filters.bathrooms = +params['bathrooms'];
 
-  
-      if (params['instantBook']) this.currentQuery.filters.instantBook = params['instantBook'] === 'true';
+       if (params['instantBook'] !== undefined) {
+        const val = params['instantBook'];
+        if (val === 'true') {
+            this.currentQuery.filters.instantBook = true;
+        } else if (val === 'false') {
+            this.currentQuery.filters.instantBook = false;
+        }
+      }
 
-   
       if (params['rating']) this.currentQuery.filters.rating = +params['rating'];
 
-     
       this.executeSearch();
     });
 
@@ -140,13 +142,34 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
     });
   }
 
+  get hasActiveFilters(): boolean {
+    const f = this.currentQuery.filters;
+    return !!(
+      f.priceMin || 
+      f.priceMax || 
+      (f.propertyTypes && f.propertyTypes.length > 0) || 
+      (f.amenities && f.amenities.length > 0) || 
+      f.bedrooms || 
+      f.beds || 
+      f.bathrooms || 
+      f.instantBook || 
+      f.rating
+    );
+  }
+
   onPageChange(page: number) {
     this.currentPage = page;
     this.executeSearch();
   }
 
   onFiltersApply(newFilters: SearchFilters) {
+   
     const queryParams: any = {
+      location: this.route.snapshot.queryParams['location'],
+      checkIn: this.route.snapshot.queryParams['checkIn'],
+      checkOut: this.route.snapshot.queryParams['checkOut'],
+      guests: this.route.snapshot.queryParams['guests'],
+
       minPrice: newFilters.priceMin,
       maxPrice: newFilters.priceMax,
       propertyType: newFilters.propertyTypes && newFilters.propertyTypes.length > 0 ? newFilters.propertyTypes[0] : null,
@@ -154,17 +177,19 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
       bedrooms: newFilters.bedrooms,
       beds: newFilters.beds,
       bathrooms: newFilters.bathrooms,
-      instantBook: newFilters.instantBook ? 'true' : null,
+      instantBook: newFilters.instantBook,
       rating: newFilters.rating
     };
 
    
-    Object.keys(queryParams).forEach(key => queryParams[key] == null && delete queryParams[key]);
+     Object.keys(queryParams).forEach(key => {
+        if (queryParams[key] === null || queryParams[key] === undefined) {
+            delete queryParams[key];
+        }
+    });
 
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: queryParams,
-      queryParamsHandling: 'merge'
+    this.router.navigate(['/search'], {
+      queryParams: queryParams
     });
 
     this.showFilters = false;
@@ -172,6 +197,19 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
 
   isPropertyInWishlist(propertyId: string): boolean {
     return this.wishlistService.isInWishlist(Number(propertyId));
+  }
+
+  clearFilters() {
+    const baseParams: any = {
+      location: this.route.snapshot.queryParams['location'],
+      checkIn: this.route.snapshot.queryParams['checkIn'],
+      checkOut: this.route.snapshot.queryParams['checkOut'],
+      guests: this.route.snapshot.queryParams['guests']
+    };
+
+    this.router.navigate(['/search'], {
+      queryParams: baseParams
+    });
   }
 
   onToggleWishlist(property: Property): void {

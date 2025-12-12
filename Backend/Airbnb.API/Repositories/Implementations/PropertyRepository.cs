@@ -100,6 +100,31 @@ namespace Airbnb.API.Repositories.Implementations
                 query = query.Where(p => p.City.ToLower().Contains(loc) || p.Country.ToLower().Contains(loc));
             }
 
+            if (searchDto.Bedrooms.HasValue && searchDto.Bedrooms.Value > 0)
+            {
+                query = query.Where(p => p.NumberOfBedrooms >= searchDto.Bedrooms.Value);
+            }
+
+            if (searchDto.Beds.HasValue && searchDto.Beds.Value > 0)
+            {
+                query = query.Where(p => p.NumberOfBeds >= searchDto.Beds.Value);
+            }
+
+            if (searchDto.Bathrooms.HasValue && searchDto.Bathrooms.Value > 0)
+            {
+                query = query.Where(p => p.NumberOfBathrooms >= searchDto.Bathrooms.Value);
+            }
+
+            if (searchDto.IsInstantBook.HasValue)
+            {
+                query = query.Where(p => p.IsInstantBook == searchDto.IsInstantBook.Value);
+            }
+
+            if (searchDto.Rating.HasValue)
+            {
+                query = query.Where(p => p.Reviews.Any() && p.Reviews.Average(r => r.Rating) >= searchDto.Rating.Value);
+            }
+
             if (searchDto.GuestCount.HasValue)
                 query = query.Where(p => p.MaxGuests >= searchDto.GuestCount.Value);
 

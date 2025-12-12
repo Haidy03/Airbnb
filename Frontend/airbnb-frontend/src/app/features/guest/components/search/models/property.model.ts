@@ -1,4 +1,3 @@
-// الحفاظ على الـ Interfaces القديمة كما هي وإضافة الـ DTOs في النهاية
 
 export interface Property {
   id: string;
@@ -111,14 +110,18 @@ export interface MapBounds {
 }
 
 export enum PropertyType {
-  APARTMENT = 'APARTMENT',
   HOUSE = 'HOUSE',
-  ROOM = 'ROOM',
-  VILLA = 'VILLA',
-  STUDIO = 'STUDIO',
-  CHALET = 'CHALET',
+  APARTMENT = 'APARTMENT',
+  BARN = 'BARN',
+  BED_BREAKFAST = 'BED_BREAKFAST',
+  BOAT = 'BOAT',
   CABIN = 'CABIN',
-  HOTEL = 'HOTEL'
+  CAMPER = 'CAMPER',
+  CASA_PARTICULAR = 'CASA_PARTICULAR',
+  CASTLE = 'CASTLE',
+  CAVE = 'CAVE',
+  CONTAINER = 'CONTAINER',
+  CYCLADIC_HOME = 'CYCLADIC_HOME'
 }
 
 export enum AmenityCategory {
