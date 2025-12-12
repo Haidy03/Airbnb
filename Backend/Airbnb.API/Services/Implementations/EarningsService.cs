@@ -26,9 +26,10 @@ public class EarningsService : IEarningsService
                         b.Status != BookingStatus.Cancelled &&
                         b.Status != BookingStatus.Rejected)
             .ToListAsync();
-
-        var paidBookings = bookings.Where(b => b.Status == BookingStatus.Completed || b.CheckInDate <= today);
-        var pendingBookings = bookings.Where(b => b.Status == BookingStatus.Confirmed && b.CheckInDate > today);
+        // ✅ PAID: Confirmed (Money transferred) OR Completed. regardless of date.
+        var paidBookings = bookings.Where(b => b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Completed);
+        // ✅ EXPECTED: Pending approval OR Awaiting Payment.
+        var expectedBookings = bookings.Where(b => b.Status == BookingStatus.Pending || b.Status == BookingStatus.AwaitingPayment);
 
         var propTransactions = bookings
             .Select(b => new TransactionDto
@@ -38,7 +39,7 @@ public class EarningsService : IEarningsService
                 PropertyTitle = b.Property.Title,
                 Date = b.CheckInDate.AddDays(1),
                 Amount = b.TotalPrice,
-                Status = b.CheckInDate <= today ? "Paid" : "Pending",
+                Status = (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Completed) ? "Paid" : "Pending",
                 Type = "Home"
              }).ToList();
 
@@ -53,11 +54,13 @@ public class EarningsService : IEarningsService
                             b.Status != ExperienceBookingStatus.Cancelled)
                 .ToListAsync();
 
+        // ✅ PAID
         var paidExpBookings = experienceBookings
-            .Where(b => b.Status == ExperienceBookingStatus.Completed || b.Availability.Date <= today);
+            .Where(b => b.Status == ExperienceBookingStatus.Confirmed || b.Status == ExperienceBookingStatus.Completed);
 
-        var pendingExpBookings = experienceBookings
-            .Where(b => b.Status == ExperienceBookingStatus.Confirmed && b.Availability.Date > today);
+        // ✅ EXPECTED (Assuming pending means not confirmed/completed yet)
+        var expectedExpBookings = experienceBookings
+            .Where(b => b.Status != ExperienceBookingStatus.Confirmed && b.Status != ExperienceBookingStatus.Completed);
 
         var expTransactions = experienceBookings.Select(b => new TransactionDto
         {
@@ -67,7 +70,7 @@ public class EarningsService : IEarningsService
             Date = b.Availability.Date,
             Amount = b.TotalPrice,
             Type = "Experience",
-            Status = (b.Status == ExperienceBookingStatus.Completed || b.Availability.Date <= today) ? "Paid" : "Pending"
+            Status = (b.Status == ExperienceBookingStatus.Confirmed || b.Status == ExperienceBookingStatus.Completed) ? "Paid" : "Pending"
         }).ToList();
 
         // =========================================================
@@ -80,11 +83,13 @@ public class EarningsService : IEarningsService
                             b.Status != "Cancelled" && b.Status != "Rejected")
                 .ToListAsync();
 
+        // ✅ PAID
         var paidServiceBookings = serviceBookings
-            .Where(b => b.Status == "Completed" || b.BookingDate.Date <= today);
+            .Where(b => b.Status == "Confirmed" || b.Status == "Completed");
 
-        var pendingServiceBookings = serviceBookings
-            .Where(b => (b.Status == "Confirmed" || b.Status == "Pending") && b.BookingDate.Date > today);
+        // ✅ EXPECTED
+        var expectedServiceBookings = serviceBookings
+            .Where(b => b.Status == "Pending" || b.Status == "AwaitingPayment");
 
         var serviceTransactions = serviceBookings.Select(b => new TransactionDto
         {
@@ -94,7 +99,7 @@ public class EarningsService : IEarningsService
             Date = b.BookingDate,
             Amount = b.TotalPrice,
             Type = "Service",
-            Status = (b.BookingDate.Date <= today) ? "Paid" : "Pending"
+            Status = (b.Status == "Confirmed" || b.Status == "Completed") ? "Paid" : "Pending"
         }).ToList();
 
         // =========================================================
@@ -110,11 +115,11 @@ public class EarningsService : IEarningsService
 
         var grandTotalEarnings = paidBookings.Sum(b => b.TotalPrice)
                                + paidExpBookings.Sum(b => b.TotalPrice)
-                               + paidServiceBookings.Sum(b => b.TotalPrice); 
+                               + paidServiceBookings.Sum(b => b.TotalPrice);
 
-        var grandPendingPayouts = pendingBookings.Sum(b => b.TotalPrice)
-                                + pendingExpBookings.Sum(b => b.TotalPrice)
-                                + pendingServiceBookings.Sum(b => b.TotalPrice); 
+        var grandPendingPayouts = expectedBookings.Sum(b => b.TotalPrice)
+                               + expectedExpBookings.Sum(b => b.TotalPrice)
+                               + expectedServiceBookings.Sum(b => b.TotalPrice);
 
         var thisMonthTotal =
               paidBookings.Where(b => b.CheckInDate.Month == today.Month && b.CheckInDate.Year == today.Year).Sum(b => b.TotalPrice)
