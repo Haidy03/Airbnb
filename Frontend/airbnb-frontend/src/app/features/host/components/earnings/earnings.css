@@ -33,39 +33,101 @@
 /* Chart */
 .chart-section { margin-bottom: 48px; }
 .chart-section h2 { font-size: 22px; margin-bottom: 24px; }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.chart-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.nav-btn:hover { background: #f7f7f7; border-color: #222; }
+
+/* Scrollable Container */
+
+.bar-chart-container {
+  overflow-x: auto;
+  padding-bottom: 16px;
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+  width: 100%;
+  position: relative; 
+}
+.bar-chart-container::-webkit-scrollbar { display: none; }
 
 .bar-chart {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
+  gap: 12px;
   height: 250px;
-  padding-bottom: 24px;
+  padding: 0 10px 24px;
   border-bottom: 1px solid #EBEBEB;
+  width: 100%; 
 }
 
+@media (max-width: 992px) {
+  .bar-chart {
+    min-width: 800px; 
+  }
+}
 .bar-item {
-  flex: 1;
+  flex: 1; 
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100%;
   position: relative;
+  cursor: pointer;
+  min-width: 40px;
 }
 
 .bar-value {
-  width: 40px;
-  background-color: #222;
+  width: 100%; 
+  max-width: 60px; 
+  background-color: #DDDDDD;
   border-radius: 4px 4px 0 0;
   margin-top: auto; 
-  position: relative;
-  transition: height 0.5s ease;
-  min-height: 4px;
+  transition: all 0.3s ease;
 }
 
+.bar-item.empty .bar-value {
+  background-color: #F0F0F0;
+}
+
+.bar-item:hover .bar-value {
+  background-color: #717171;
+}
+
+.bar-item.active .bar-value {
+  background-color: #FF385C; 
+}
 .bar-value:hover { background-color: red; }
 
-.bar-label { margin-top: 12px; font-size: 14px; color: #717171; }
-
+.bar-label {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #717171;
+}
+.bar-item.active .bar-label {
+  font-weight: 700;
+  color: #222;
+}
 .tooltip {
   position: absolute;
   top: -30px;

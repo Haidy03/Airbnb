@@ -20,9 +20,21 @@
 
   <!-- Simple CSS Bar Chart -->
   <div class="chart-section">
+    <div class="section-header">
     <h2>Monthly earnings</h2>
+      <div class="chart-nav" *ngIf="showScrollButtons()">
+        <button class="nav-btn" (click)="scrollLeft()"><i class="bi bi-chevron-left"></i></button>
+        <button class="nav-btn" (click)="scrollRight()"><i class="bi bi-chevron-right"></i></button>
+      </div>
+    </div>
+    <div class="bar-chart-container" #chartScroll>
     <div class="bar-chart">
-      <div class="bar-item" *ngFor="let item of data()?.chartData">
+      <div class="bar-item" 
+             *ngFor="let item of fullChartData()"
+             (click)="selectMonth(item.month)"
+             [class.active]="selectedMonth() === item.month"
+             [class.empty]="item.amount === 0"> 
+
         <div class="bar-value" [style.height]="getBarHeight(item.amount)">
           <span class="tooltip">EGP{{ item.amount }}</span>
         </div>
@@ -30,10 +42,16 @@
       </div>
     </div>
   </div>
-
+</div>
   <!-- Transactions Table -->
   <div class="transactions-section">
-    <h2>Recent transactions</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>
+      Recent transactions
+      <span *ngIf="selectedMonth()" class="text-muted fs-6">({{ selectedMonth() }})</span>
+    </h2>
+    <button *ngIf="selectedMonth()" class="btn btn-link btn-sm" (click)="selectMonth(selectedMonth()!)">Clear filter</button>
+    </div>
     <div class="table-container">
       <table>
         <thead>
@@ -47,7 +65,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let trans of data()?.recentTransactions">
+          <tr *ngFor="let trans of filteredTransactions()">
             <td>{{ trans.date | date:'mediumDate' }}</td>
      
             <td>
@@ -70,6 +88,11 @@
             <td>{{ trans.guestName }}</td>
             <td>{{ trans.propertyTitle }}</td>
             <td class="text-right font-bold">EGP{{ trans.amount | number:'1.0-2' }}</td>
+          </tr>
+          <tr *ngIf="filteredTransactions().length === 0">
+            <td colspan="6" class="text-center py-4 text-muted">
+              No transactions found for this month.
+            </td>
           </tr>
         </tbody>
       </table>
