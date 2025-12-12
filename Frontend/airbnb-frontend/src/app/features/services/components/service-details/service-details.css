@@ -79,8 +79,8 @@
   width: 100%;
   height: 100%;
   background-color: white;
-  z-index: 1060; /* أعلى من أي حاجة تانية حتى المودال */
-  overflow-y: auto; /* يسمح بالسكرول داخل المعرض */
+  z-index: 1060; 
+  overflow-y: auto; 
   padding-bottom: 50px;
 }
 
@@ -94,7 +94,6 @@
   align-items: center;
 }
 
-/* حركة ظهور ناعمة */
 .fade-in {
   animation: fadeIn 0.3s ease-in-out;
 }
@@ -103,3 +102,9 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+.action-btn:hover {
+  background-color: #f7f7f7;
+  border-color: #000;
+}
+.text-danger { color: #FF385C !important; }
