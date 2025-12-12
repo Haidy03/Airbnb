@@ -34,7 +34,7 @@ namespace Airbnb.API.Services.Implementations
                 FirstName = registerDto.FirstName,
                 LastName = registerDto.LastName,
                 Email = registerDto.Email,
-                UserName = registerDto.Email,
+                UserName = registerDto.Email, 
                 CreatedAt = DateTime.UtcNow,
                 PhoneNumber = registerDto.PhoneNumber,
                 IsActive = true
@@ -42,9 +42,20 @@ namespace Airbnb.API.Services.Implementations
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
+           if (!result.Succeeded)
+            {
+                var errors = result.Errors.ToList();
+
+                if (errors.Any(e => e.Code == "DuplicateEmail"))
+                {
+                    errors.RemoveAll(e => e.Code == "DuplicateUserName");
+                }
+
+                return IdentityResult.Failed(errors.ToArray());
+            }
+
             if (result.Succeeded)
             {
-                // Assign the default "Guest" role upon registration
                 await _userManager.AddToRoleAsync(user, "Guest");
             }
 

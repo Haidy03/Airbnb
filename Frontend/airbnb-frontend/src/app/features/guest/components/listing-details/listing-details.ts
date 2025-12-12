@@ -12,7 +12,7 @@ import { HeaderComponent } from '../header/header';
 import { AuthService } from '../../../auth/services/auth.service';
 import { environment } from '../../../../../environments/environment.development';
 import { ReviewService } from '../../../reviews/services/review.service';
-
+import { NotificationService } from '../../../../core/services/notification.service';
 @Component({
   selector: 'app-listing-details',
   standalone: true,
@@ -49,7 +49,8 @@ export class ListingDetails implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private reviewService: ReviewService, 
-    public AuthService: AuthService
+    public AuthService: AuthService,
+    private notificationService: NotificationService 
   ) {}
 
   ngOnInit(): void {
@@ -188,11 +189,12 @@ export class ListingDetails implements OnInit {
 
   goToCheckout() {
     if (!this.selectedCheckIn || !this.selectedCheckOut) {
-      alert('Please select dates first!');
+      this.notificationService.showToast('warning', 'Please select dates first!');
       return;
     }
 
     if (!this.AuthService.isAuthenticated) {
+      this.notificationService.showToast('info', 'Please log in to continue booking.')
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url }});
       return;
     }
@@ -274,7 +276,18 @@ export class ListingDetails implements OnInit {
   onModalStateChange(isOpen: boolean) { this.isModalOpen = isOpen; }
   showAllAmenities() { this.showAmenitiesModal = true; }
   closeAmenitiesModal() { this.showAmenitiesModal = false; }
-  shareListing() { navigator.clipboard.writeText(window.location.href); alert('Copied!'); }
+   shareListing() { 
+    if (navigator.share) {
+        navigator.share({
+            title: this.listing?.title,
+            text: `Check out this place on Airbnb Clone: ${this.listing?.title}`,
+            url: window.location.href
+        }).catch(console.error);
+    } else {
+        navigator.clipboard.writeText(window.location.href); 
+        this.notificationService.showToast('success', 'Link copied to clipboard!'); // ✅ Toast
+    }
+  }
   
   contactHost() {
   

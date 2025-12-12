@@ -46,10 +46,14 @@ namespace Airbnb.API.Services.Implementations
             // Get bookings for this period
             var bookings = await _bookingRepository.GetByPropertyIdAsync(propertyId);
             var periodBookings = bookings.Where(b =>
-                (b.CheckInDate >= startDate && b.CheckInDate <= endDate) ||
-                (b.CheckOutDate >= startDate && b.CheckOutDate <= endDate) ||
-                (b.CheckInDate <= startDate && b.CheckOutDate >= endDate)
-            ).ToList();
+               b.Status != BookingStatus.Cancelled && 
+               b.Status != BookingStatus.Rejected &&  
+               (
+                   (b.CheckInDate >= startDate && b.CheckInDate <= endDate) ||
+                   (b.CheckOutDate >= startDate && b.CheckOutDate <= endDate) ||
+                   (b.CheckInDate <= startDate && b.CheckOutDate >= endDate)
+               )
+           ).ToList();
 
             // Get custom availability/pricing
             var availabilities = await _context.PropertyAvailabilities

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core'; // ✅ Added inject
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -6,6 +6,7 @@ import { ExperienceService } from '../../../../../shared/Services/experience.ser
 import { Experience, BookExperienceDto, ExperienceAvailability } from '../../../../../shared/models/experience.model';
 import { HeaderComponent } from "../../../../guest/components/header/header";
 import { environment } from '../../../../../../environments/environment';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-experience-booking',
@@ -19,16 +20,15 @@ export class ExperienceBookingComponent implements OnInit {
   isLoading = signal(true);
   isBooking = signal(false);
   error = signal<string | null>(null);
+  
+  private notificationService = inject(NotificationService);
+
   userBookingsIds: number[] = [];
   selectedDate: string = '';
   selectedTime: string = '';
   numberOfGuests: number = 1;
   specialRequests: string = '';
-  paymentDetails = {
-    cardNumber: '',
-    expiration: '',
-    cvv: ''
-  };
+  paymentDetails = { cardNumber: '', expiration: '', cvv: '' };
   
   allAvailabilities: ExperienceAvailability[] = [];
   availableDates: Date[] = [];
@@ -53,14 +53,11 @@ export class ExperienceBookingComponent implements OnInit {
     this.experienceService.getMyBookings().subscribe({
         next: (response: any) => {
             if (response.success) {
-                // بنجمع كل الـ AvailabilityIds اللي المستخدم حاجزها
-                // (السطر ده بيعتمد على إن الـ API بيرجع تفاصيل الحجز وفيها AvailabilityId)
-                // لو الـ DTO مش مرجع AvailabilityId، قوليلي نعدله في الباك اند
-                this.userBookingsIds = response.data.map((b: any) => b.availabilityId || 0); 
+              this.userBookingsIds = response.data.map((b: any) => b.availabilityId || 0); 
             }
         }
     });
-}
+  }
 
   loadExperience(id: number): void {
     this.isLoading.set(true);
@@ -82,13 +79,11 @@ export class ExperienceBookingComponent implements OnInit {
   loadAvailability(experienceId: number): void {
     const startDate = new Date();
     const endDate = new Date();
-    // ✅ التعديل 1: زودنا المدة لـ 180 يوم (6 شهور) عشان نجيب تواريخ فبراير ومارس براحتنا
     endDate.setDate(endDate.getDate() + 180); 
 
     this.experienceService.getAvailability(experienceId, startDate, endDate).subscribe({
       next: (response: any) => {
         if (response.success && response.data) {
-          console.log('✅ Dates loaded from Database:', response.data.length);
           this.allAvailabilities = response.data;
           this.generateAvailableDatesFromData();
         } else {
@@ -98,7 +93,6 @@ export class ExperienceBookingComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('API Error', error);
-        // ✅ التعديل 2: شيلنا الـ Mock Data تماماً عشان نعتمد عالداتا بيز بس
         this.allAvailabilities = []; 
         this.isLoading.set(false);
       }
@@ -110,7 +104,6 @@ export class ExperienceBookingComponent implements OnInit {
     this.availableDates = [];
 
     this.allAvailabilities.forEach(slot => {
-      // التأكد من أن الموعد متاح وفي المستقبل
       if (slot.isAvailable && slot.availableSpots > 0) {
         const dateObj = new Date(slot.date);
         const dateStr = dateObj.toDateString();
@@ -121,8 +114,6 @@ export class ExperienceBookingComponent implements OnInit {
         }
       }
     });
-
-    // ترتيب التواريخ تصاعدياً (من الأقرب للأبعد)
     this.availableDates.sort((a, b) => a.getTime() - b.getTime());
   }
 
@@ -136,14 +127,12 @@ export class ExperienceBookingComponent implements OnInit {
 
     const selectedDateStr = new Date(this.selectedDate).toDateString();
 
-    // الفلترة الصحيحة: التاريخ + الإتاحة + عدم الحجز المسبق
     const daySlots = this.allAvailabilities.filter(slot => {
       const slotDateStr = new Date(slot.date).toDateString();
-      
       return slotDateStr === selectedDateStr && 
              slot.isAvailable && 
              slot.availableSpots > 0 &&
-             !this.userBookingsIds.includes(slot.id); // استبعاد المواعيد المحجوزة
+             !this.userBookingsIds.includes(slot.id); 
     });
 
     this.availableTimes = daySlots.map(slot => ({
@@ -160,7 +149,7 @@ export class ExperienceBookingComponent implements OnInit {
   formatTime(time: string): string {
     if (!time) return '';
     const parts = time.split(':');
-    return `${parts[0]}:${parts[1]}`; // HH:mm
+    return `${parts[0]}:${parts[1]}`;
   }
 
   calculateTotalPrice(): number {
@@ -186,12 +175,12 @@ export class ExperienceBookingComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.selectedDate || !this.selectedTime) {
-      alert('Please select date and time');
+      this.notificationService.showError('Please select date and time'); 
       return;
     }
 
     if (!this.isPaymentValid()) {
-      alert('Please enter valid card details');
+      this.notificationService.showError('Please enter valid card details'); 
       return;
     }
 
@@ -199,14 +188,14 @@ export class ExperienceBookingComponent implements OnInit {
     if (!exp) return;
 
     if (this.numberOfGuests < exp.minGroupSize || this.numberOfGuests > exp.maxGroupSize) {
-      alert(`Group size must be between ${exp.minGroupSize} and ${exp.maxGroupSize}`);
+      this.notificationService.showError(`Group size must be between ${exp.minGroupSize} and ${exp.maxGroupSize}`);
       return;
     }
 
     const selectedTimeSlot = this.availableTimes.find(t => t.time === this.selectedTime);
     
     if (!selectedTimeSlot || !selectedTimeSlot.availabilityId) {
-      alert('Selected time slot is invalid or unavailable');
+      this.notificationService.showError('Selected time slot is invalid or unavailable'); 
       return;
     }
 
@@ -218,19 +207,19 @@ export class ExperienceBookingComponent implements OnInit {
       specialRequests: this.specialRequests || undefined
     };
 
-    // محاكاة وقت الدفع (1.5 ثانية) ثم الحجز الفعلي
     setTimeout(() => {
       this.experienceService.bookExperience(exp.id, dto).subscribe({
         next: (response: any) => {
           if (response.success) {
-            alert('Payment Successful! Booking Confirmed.');
+            this.notificationService.showSuccess('Booking Confirmed', 'Payment Successful! Your experience is booked.');
             this.router.navigate(['/']);
           }
           this.isBooking.set(false);
         },
         error: (error: any) => {
           console.error('Error booking experience:', error);
-          alert(error.error?.message || 'Transaction failed. Please try again.');
+          
+          this.notificationService.showError(error.error?.message || 'Transaction failed. Please try again.');
           this.isBooking.set(false);
         }
       });
@@ -244,13 +233,11 @@ export class ExperienceBookingComponent implements OnInit {
   formatDate(date: Date): string {
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
   }
+
   getImageUrl(imageUrl: string | undefined | null): string {
     if (!imageUrl) return 'assets/images/placeholder.jpg';
-
-    if (imageUrl.startsWith('http') || imageUrl.includes('assets/')) {
-      return imageUrl;
-    }
-    // هنا بنجيب رابط الباك اند ونشيل منه كلمة api لو موجودة
+    if (imageUrl.startsWith('http') || imageUrl.includes('assets/')) return imageUrl;
+  
     const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
     const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
     return `${baseUrl}${cleanPath}`;
