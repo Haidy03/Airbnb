@@ -115,6 +115,20 @@ namespace Airbnb.API.Repositories.Implementations
                 .Where(e => e.IsActive && e.Status == ExperienceStatus.Active)
                 .AsQueryable();
 
+            if (!string.IsNullOrEmpty(dto.SearchTerm))
+            {
+                var term = dto.SearchTerm.ToLower().Trim(); // تحويل لحروف صغيرة عشان البحث ميكونش حساس للحالة
+
+                query = query.Where(e =>
+                    e.Title.ToLower().Contains(term) ||  // البحث في العنوان
+                    (e.Description != null && e.Description.ToLower().Contains(term)) // البحث في الوصف (اختياري)
+                );
+            }
+            if (dto.Duration.HasValue)
+            {
+               query = query.Where(e => e.DurationHours == dto.Duration.Value);
+            }
+
             // Filter by location
             if (!string.IsNullOrEmpty(dto.Location))
             {

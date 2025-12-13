@@ -1,107 +1,163 @@
 <div class="search-wrapper d-flex flex-column align-items-center w-100">
 
-  <!-- ✅ Tabs Switcher (Only visible when expanded usually, or always) -->
+  <!-- Tabs Switcher -->
   <div class="search-tabs d-flex gap-4 mb-3">
     <button class="tab-btn" [class.active]="searchType === 'stays'" (click)="setSearchType('stays')">Stays</button>
+    <button class="tab-btn" [class.active]="searchType === 'experiences'" (click)="setSearchType('experiences')">Experiences</button>
     <button class="tab-btn" [class.active]="searchType === 'services'" (click)="setSearchType('services')">Services</button>
   </div>
 
   <div class="d-flex align-items-center gap-3 w-100 justify-content-center">
-
     <div class="search-bar-container flex-grow-1" style="max-width: 850px;">
       <div class="search-bar">
 
-        <!-- ==================== STAYS SEARCH UI ==================== -->
+        <!-- ==================== 1. STAYS UI ==================== -->
         <ng-container *ngIf="searchType === 'stays'">
-          <!-- 1. Location -->
-          <div class="search-input-wrapper location-input" [class.active]="activeInput === 'location'">
-            <label class="input-label">Where</label>
-            <input type="text" class="search-input" placeholder="Search destinations"
-                   [(ngModel)]="location" (focus)="onInputFocus('location')" (blur)="onInputBlur()">
-            <button *ngIf="location" class="clear-btn" (click)="clearLocation()" type="button"><i class="bi bi-x-circle-fill"></i></button>
-            
-            <div *ngIf="showLocationsDropdown && availableLocations.length > 0" class="locations-dropdown" (mousedown)="$event.preventDefault()">
+           <!-- Location -->
+           <div class="search-input-wrapper location-input" [class.active]="activeInput === 'location'">
+             <label class="input-label">Where</label>
+             <input type="text" class="search-input" placeholder="Search destinations" [(ngModel)]="location" (focus)="onInputFocus('location')" (blur)="onInputBlur()">
+             <button *ngIf="location" class="clear-btn" (click)="clearField('location', $event)"><i class="bi bi-x-circle-fill"></i></button>
+             <div *ngIf="showLocationsDropdown" class="locations-dropdown" (mousedown)="$event.preventDefault()">
                 <div class="location-item" *ngFor="let city of availableLocations" (click)="selectLocation(city)">
                     <div class="loc-icon-wrapper"><i class="bi bi-geo-alt-fill"></i></div>
                     <div class="loc-text">{{ city }}</div>
                 </div>
+             </div>
+           </div>
+           
+           <div class="search-divider"></div>
+           
+           <!-- Check In -->
+           <div class="search-input-wrapper date-input" [class.active]="activeInput === 'checkIn'" (click)="startDate.showPicker()">
+             <label class="input-label">Check in</label>
+             <input #startDate type="date" class="search-input" [(ngModel)]="checkIn" [min]="minDate" (focus)="onInputFocus('checkIn')" (blur)="onInputBlur()">
+             <button *ngIf="checkIn" class="clear-btn" (click)="clearField('checkIn', $event)"><i class="bi bi-x-circle-fill"></i></button>
+           </div>
+           
+           <div class="search-divider"></div>
+           
+           <!-- Check Out -->
+           <div class="search-input-wrapper date-input" [class.active]="activeInput === 'checkOut'" (click)="endDate.showPicker()">
+             <label class="input-label">Check out</label>
+             <input #endDate type="date" class="search-input" [(ngModel)]="checkOut" [min]="checkIn ? checkIn : minDate" (focus)="onInputFocus('checkOut')" (blur)="onInputBlur()">
+             <button *ngIf="checkOut" class="clear-btn" (click)="clearField('checkOut', $event)"><i class="bi bi-x-circle-fill"></i></button>
+           </div>
+           
+           <div class="search-divider"></div>
+           
+           <!-- Guests -->
+           <div class="search-input-wrapper guests-input" [class.active]="activeInput === 'guests'">
+             <label class="input-label">Who</label>
+             <input type="text" class="search-input" [value]="guestsText" readonly placeholder="Add guests" (focus)="onInputFocus('guests')" (blur)="onInputBlur()">
+             <div *ngIf="showGuestsDropdown" class="guests-dropdown" (mousedown)="$event.preventDefault()">
+               <div class="guest-row">
+                 <div class="guest-info">Adults</div>
+                 <div class="guest-controls">
+                   <button class="guest-btn" (click)="decrementGuests('adults')">-</button>
+                   <span class="guest-count">{{adultsCount}}</span>
+                   <button class="guest-btn" (click)="incrementGuests('adults')">+</button>
+                 </div>
+               </div>
+             </div>
+           </div>
+        </ng-container>
+
+        <!-- ==================== 2. EXPERIENCES UI ==================== -->
+        <ng-container *ngIf="searchType === 'experiences'">
+          
+          <!-- Experience Name -->
+          <div class="search-input-wrapper flex-grow-1" [class.active]="activeInput === 'expQuery'">
+            <label class="input-label">Experience</label>
+            <input type="text" class="search-input" placeholder="Search by name..."
+                   [(ngModel)]="experienceQuery" (focus)="onInputFocus('expQuery')" (blur)="onInputBlur()">
+          </div>
+
+          <div class="search-divider"></div>
+
+          <!-- Category (From Experience API) -->
+          <div class="search-input-wrapper flex-grow-1" [class.active]="activeInput === 'expCategory'">
+            <label class="input-label">Category</label>
+            <input type="text" class="search-input" placeholder="Select category" readonly
+                   [value]="selectedCategoryName" (focus)="onInputFocus('expCategory')" (blur)="onInputBlur()">
+            <button *ngIf="selectedCategoryName" class="clear-btn" (click)="clearField('category', $event)"><i class="bi bi-x-circle-fill"></i></button>
+            
+            <div *ngIf="showCategoriesDropdown" class="locations-dropdown" (mousedown)="$event.preventDefault()">
+               <!-- Iterate Experience Categories -->
+               <div class="location-item" *ngFor="let cat of experienceCategories" (click)="selectCategory(cat)">
+                 <div class="loc-text">{{ cat.name }}</div>
+               </div>
             </div>
           </div>
 
           <div class="search-divider"></div>
 
-          <!-- 2. Check In -->
-          <div class="search-input-wrapper date-input" [class.active]="activeInput === 'checkIn'" (click)="startDate.showPicker()">
-            <label class="input-label">Check in</label>
-            <input #startDate type="date" class="search-input" [(ngModel)]="checkIn" [min]="minDate" (focus)="onInputFocus('checkIn')" (blur)="onInputBlur()">
-            <button *ngIf="checkIn" class="clear-btn" (click)="clearDate('checkIn', $event)" type="button"><i class="bi bi-x-circle-fill"></i></button>
+          <!-- Duration -->
+          <div class="search-input-wrapper" [class.active]="activeInput === 'expDuration'" style="flex: 0.7;">
+            <label class="input-label">Duration</label>
+            <input type="text" class="search-input" placeholder="Any duration" readonly
+                   [value]="experienceDuration ? experienceDuration + ' hours' : ''" 
+                   (focus)="onInputFocus('expDuration')" (blur)="onInputBlur()">
+            <button *ngIf="experienceDuration" class="clear-btn" (click)="clearField('duration', $event)"><i class="bi bi-x-circle-fill"></i></button>
+
+            <div *ngIf="showDurationDropdown" class="locations-dropdown" (mousedown)="$event.preventDefault()">
+               <div class="location-item" *ngFor="let hour of durationOptions" (click)="selectDuration(hour)">
+                 <div class="loc-text">{{ hour }} hours</div>
+               </div>
+            </div>
           </div>
 
           <div class="search-divider"></div>
 
-          <!-- 3. Check Out -->
-          <div class="search-input-wrapper date-input" [class.active]="activeInput === 'checkOut'" (click)="endDate.showPicker()">
-            <label class="input-label">Check out</label>
-            <input #endDate type="date" class="search-input" [(ngModel)]="checkOut" [min]="checkIn ? checkIn : minDate" (focus)="onInputFocus('checkOut')" (blur)="onInputBlur()">
-            <button *ngIf="checkOut" class="clear-btn" (click)="clearDate('checkOut', $event)" type="button"><i class="bi bi-x-circle-fill"></i></button>
-          </div>
-
-          <div class="search-divider"></div>
-
-          <!-- 4. Who -->
-          <div class="search-input-wrapper guests-input" [class.active]="activeInput === 'guests'">
-            <label class="input-label">Who</label>
-            <input type="text" class="search-input" [value]="guestsText" readonly placeholder="Add guests" (focus)="onInputFocus('guests')" (blur)="onInputBlur()">
+          <!-- Guests -->
+          <div class="search-input-wrapper guests-input" [class.active]="activeInput === 'guests'" style="flex: 0.7;">
+            <label class="input-label">Guests</label>
+            <input type="text" class="search-input" [value]="guestsText" readonly placeholder="Add guests" 
+                   (focus)="onInputFocus('guests')" (blur)="onInputBlur()">
             
             <div *ngIf="showGuestsDropdown" class="guests-dropdown" (mousedown)="$event.preventDefault()">
-              <!-- Guests Rows (Same as before) -->
                <div class="guest-row">
-                  <div class="guest-info"><div>Adults</div><div class="guest-description fw-light">Ages 13+</div></div>
+                  <div class="guest-info"><div>Adults</div></div>
                   <div class="guest-controls">
-                    <button class="guest-btn" [disabled]="adultsCount<=0" (click)="decrementGuests('adults')">-</button>
+                    <button class="guest-btn" (click)="decrementGuests('adults')">-</button>
                     <span class="guest-count">{{adultsCount}}</span>
                     <button class="guest-btn" (click)="incrementGuests('adults')">+</button>
                   </div>
                </div>
-               <!-- Repeat for Children, Infants, Pets if needed -->
             </div>
           </div>
         </ng-container>
 
-        <!-- ==================== SERVICES SEARCH UI (NEW) ==================== -->
+        <!-- ==================== 3. SERVICES UI ==================== -->
         <ng-container *ngIf="searchType === 'services'">
-          
-          <!-- 1. Service Name (Query) -->
-          <div class="search-input-wrapper flex-grow-1" [class.active]="activeInput === 'serviceQuery'">
+           
+           <!-- Service Name -->
+           <div class="search-input-wrapper flex-grow-1" [class.active]="activeInput === 'serviceQuery'">
             <label class="input-label">Service</label>
-            <input type="text" class="search-input" placeholder="Chef, Cleaning, Beauty..."
-                   [(ngModel)]="serviceQuery" (focus)="onInputFocus('serviceQuery')" (blur)="onInputBlur()">
+            <input type="text" class="search-input" placeholder="Chef, Cleaning..." [(ngModel)]="serviceQuery" (focus)="onInputFocus('serviceQuery')" (blur)="onInputBlur()">
           </div>
-
+          
           <div class="search-divider"></div>
-
-          <!-- 2. Category Dropdown -->
+          
+          <!-- Category (From Service API) -->
           <div class="search-input-wrapper flex-grow-1" [class.active]="activeInput === 'serviceCategory'">
             <label class="input-label">Category</label>
-            <input type="text" class="search-input" placeholder="Select category" readonly
-                   [value]="selectedCategory" (focus)="onInputFocus('serviceCategory')" (blur)="onInputBlur()">
+            <input type="text" class="search-input" placeholder="Select category" readonly [value]="selectedCategoryName" (focus)="onInputFocus('serviceCategory')" (blur)="onInputBlur()">
+            <button *ngIf="selectedCategoryName" class="clear-btn" (click)="clearField('category', $event)"><i class="bi bi-x-circle-fill"></i></button>
             
-            <button *ngIf="selectedCategory" class="clear-btn" (click)="clearCategory($event)" type="button"><i class="bi bi-x-circle-fill"></i></button>
-
             <div *ngIf="showCategoriesDropdown" class="locations-dropdown" (mousedown)="$event.preventDefault()">
-                <div class="location-item" *ngFor="let cat of serviceCategories" (click)="selectCategory(cat.name)">
+                <!-- Iterate Service Categories -->
+                <div class="location-item" *ngFor="let cat of serviceCategories" (click)="selectCategory(cat)">
                     <div class="loc-icon-wrapper">
-                      <!-- عرض الأيقونة إذا كانت موجودة كرابط -->
-                      <img [src]="cat.icon" style="width: 20px; height: 20px;" onerror="this.style.display='none'">
+                        <img [src]="cat.icon" style="width:20px;" onerror="this.style.display='none'">
                     </div>
                     <div class="loc-text">{{ cat.name }}</div>
                 </div>
             </div>
           </div>
-
         </ng-container>
 
-        <!-- Search Button -->
+        <!-- Search Button (Shared) -->
         <button class="search-btn" (click)="onSearch()" type="button">
           <i class="bi bi-search"></i>
           <span class="search-btn-text">Search</span>
@@ -109,10 +165,8 @@
       </div>
     </div>
 
-    <button *ngIf="withFilterButton && searchType === 'stays'"
-            class="side-filter-btn d-flex align-items-center justify-content-center"
-            (click)="onFiltersClick()"
-            title="Filters">
+    <!-- Filter Button (Optional for Stays) -->
+    <button *ngIf="withFilterButton && searchType === 'stays'" class="side-filter-btn d-flex align-items-center justify-content-center" (click)="onFiltersClick()">
       <i class="bi bi-sliders2 fs-5"></i>
       <span class="ms-2 fw-semibold d-none d-xl-inline">Filters</span>
     </button>

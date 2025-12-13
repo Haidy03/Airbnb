@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SearchFilters } from '../../models/property.model';
 import { SearchService } from '../../services/search-service';
-import { ServicesService } from '../../../../../services/services/service'; 
-import { ServiceCategory } from '../../../../../services/models/service.model'; 
+import { ServicesService } from '../../../../../services/services/service'; // تأكد من المسار
+import { ExperienceService } from '../../../../../../shared/Services/experience.service'; // ✅ تأكد من المسار
 
 @Component({
   selector: 'app-search-bar',
@@ -16,149 +16,174 @@ import { ServiceCategory } from '../../../../../services/models/service.model';
 })
 export class SearchBarComponent implements OnInit {
   @Input() withFilterButton: boolean = false;
-
   @Output() search = new EventEmitter<SearchFilters>();
   @Output() filtersOpen = new EventEmitter<void>();
 
   private router = inject(Router);
   private servicesService = inject(ServicesService);
+  private searchService = inject(SearchService);
+  private experienceService = inject(ExperienceService); // ✅ حقن سيرفس التجارب
 
-  // ✅ Search Mode State
-  searchType: 'stays' | 'services' = 'stays';
+  // نوع البحث الحالي
+  searchType: 'stays' | 'experiences' | 'services' = 'stays';
 
-  // === Stays Data ===
+  // === Shared / Stays Data ===
   location: string = '';
   checkIn: string = '';
   checkOut: string = '';
-  guests: number = 0;
   minDate: string = '';
-  
+  guests: number = 0;
+
   // === Services Data ===
-  serviceQuery: string = '';
-  selectedCategory: string = '';
-  serviceCategories: ServiceCategory[] = [];
+  serviceQuery: string = ''; // البحث باسم الخدمة
+  
+  // === Experiences Data ===
+  experienceQuery: string = ''; // البحث باسم التجربة (searchTerm)
+  experienceDuration: number | null = null; // المدة بالساعات
+
+  // === Categories Handling ===
+  serviceCategories: any[] = [];
+  experienceCategories: any[] = [];
+  
+  // المتغيرات المختارة للعرض والإرسال
+  selectedCategoryName: string = ''; 
+  selectedCategoryId: number | null = null; 
 
   // === UI State ===
-  activeInput: 'location' | 'checkIn' | 'checkOut' | 'guests' | 'serviceQuery' | 'serviceCategory' | null = null;
-  
-  // Dropdowns
+  activeInput: string | null = null; // لتحديد الحقل النشط
   showGuestsDropdown = false;
   showLocationsDropdown = false;
-  showCategoriesDropdown = false; // New for services
+  showCategoriesDropdown = false;
+  showDurationDropdown = false;
 
-  // Data
   availableLocations: string[] = [];
+  
+  // خيارات المدة (ساعات)
+  durationOptions = [2, 3, 4, 5, 6, 8, 10, 12]; 
 
-  // Guest Counts
+  // Guest Counters
   adultsCount = 0;
   childrenCount = 0;
   infantsCount = 0;
   petsCount = 0;
 
-  constructor(private searchService: SearchService) {}
-
   ngOnInit() {
     const today = new Date();
     this.minDate = today.toISOString().split('T')[0];
 
-    // Load Locations
+    // تحميل المدن
     this.searchService.locations$.subscribe(locations => {
       this.availableLocations = locations;
     });
 
-    // Load Service Categories
+    // 1. تحميل تصنيفات الخدمات
     this.servicesService.getAllCategories().subscribe(res => {
-      if (res.success) {
-        this.serviceCategories = res.data;
-      }
+      if (res.success) this.serviceCategories = res.data;
+    });
+
+    // 2. تحميل تصنيفات التجارب
+    this.experienceService.getCategories().subscribe(res => {
+      if (res.success) this.experienceCategories = res.data;
     });
   }
 
-  // ✅ Switch Search Type
-  setSearchType(type: 'stays' | 'services') {
+  // التبديل بين التبويبات وتصفير البيانات
+  setSearchType(type: 'stays' | 'experiences' | 'services') {
     this.searchType = type;
-    this.activeInput = null; // Close any open dropdowns
+    this.activeInput = null;
+    this.resetFields();
   }
 
-  // ✅ Modified Focus Handler
-  onInputFocus(input: any): void {
+  resetFields() {
+    this.location = '';
+    this.checkIn = '';
+    this.checkOut = '';
+    this.selectedCategoryName = '';
+    this.selectedCategoryId = null;
+    this.experienceQuery = '';
+    this.serviceQuery = '';
+    this.experienceDuration = null;
+    this.adultsCount = 0;
+    this.childrenCount = 0;
+    this.guests = 0;
+  }
+
+  // إدارة التركيز (Focus) وعرض القوائم
+  onInputFocus(input: string): void {
     this.activeInput = input;
-    
     this.showGuestsDropdown = input === 'guests';
     this.showLocationsDropdown = input === 'location';
-    this.showCategoriesDropdown = input === 'serviceCategory';
+    // القائمة تفتح سواء كنا في Services أو Experiences
+    this.showCategoriesDropdown = (input === 'serviceCategory' || input === 'expCategory');
+    this.showDurationDropdown = input === 'expDuration';
   }
 
   onInputBlur(): void {
+    // تأخير بسيط للسماح بالضغط على العناصر
     setTimeout(() => {
       this.activeInput = null;
       this.showGuestsDropdown = false;
       this.showLocationsDropdown = false;
       this.showCategoriesDropdown = false;
+      this.showDurationDropdown = false;
     }, 200);
   }
 
-  // === Stays Logic ===
+  // --- Selection Helpers ---
   selectLocation(city: string) {
     this.location = city;
     this.showLocationsDropdown = false;
   }
-
-  clearLocation(): void { this.location = ''; }
   
-  clearDate(type: 'checkIn' | 'checkOut', event: Event): void {
-    event.stopPropagation();
-    if (type === 'checkIn') this.checkIn = '';
-    if (type === 'checkOut') this.checkOut = '';
-  }
-
-  incrementGuests(type: 'adults' | 'children' | 'infants' | 'pets'): void {
-    if (this.adultsCount === 0 && type === 'adults') { this.adultsCount = 1; this.updateGuestsCount(); return; }
-    switch (type) {
-      case 'adults': if (this.adultsCount < 16) this.adultsCount++; break;
-      case 'children': if (this.childrenCount < 15) this.childrenCount++; break;
-      case 'infants': if (this.infantsCount < 5) this.infantsCount++; break;
-      case 'pets': if (this.petsCount < 5) this.petsCount++; break;
-    }
-    this.updateGuestsCount();
-  }
-
-  decrementGuests(type: 'adults' | 'children' | 'infants' | 'pets'): void {
-    switch (type) {
-      case 'adults': if (this.adultsCount > 0) this.adultsCount--; break;
-      case 'children': if (this.childrenCount > 0) this.childrenCount--; break;
-      case 'infants': if (this.infantsCount > 0) this.infantsCount--; break;
-      case 'pets': if (this.petsCount > 0) this.petsCount--; break;
-    }
-    this.updateGuestsCount();
-  }
-
-  updateGuestsCount(): void {
-    this.guests = this.adultsCount + this.childrenCount;
-  }
-
-  get guestsText(): string {
-    const parts: string[] = [];
-    const totalGuests = this.adultsCount + this.childrenCount;
-    if (totalGuests > 0) parts.push(`${totalGuests} guest${totalGuests > 1 ? 's' : ''}`);
-    if (this.infantsCount > 0) parts.push(`${this.infantsCount} infant${this.infantsCount > 1 ? 's' : ''}`);
-    if (this.petsCount > 0) parts.push(`${this.petsCount} pet${this.petsCount > 1 ? 's' : ''}`);
-    return parts.length > 0 ? parts.join(', ') : 'Add guests';
-  }
-
-  // === Services Logic ===
-  selectCategory(catName: string) {
-    this.selectedCategory = catName;
+  // ✅ دالة اختيار التصنيف (تعمل للاثنين)
+  selectCategory(cat: any) {
+    this.selectedCategoryName = cat.name;
+    this.selectedCategoryId = cat.id; // نحتفظ بالـ ID للـ Experience
     this.showCategoriesDropdown = false;
   }
-  
-  clearCategory(event: Event) {
-    event.stopPropagation();
-    this.selectedCategory = '';
+
+  selectDuration(hours: number) {
+    this.experienceDuration = hours;
+    this.showDurationDropdown = false;
   }
 
-  // ✅ Unified Search Handler
+  clearField(field: string, event: Event) {
+    event.stopPropagation();
+    if (field === 'category') {
+        this.selectedCategoryName = '';
+        this.selectedCategoryId = null;
+    }
+    if (field === 'duration') this.experienceDuration = null;
+    if (field === 'location') this.location = '';
+    if (field === 'checkIn') this.checkIn = '';
+    if (field === 'checkOut') this.checkOut = '';
+  }
+
+  // --- Guest Logic ---
+  incrementGuests(type: string) { 
+     if (this.adultsCount === 0 && type === 'adults') { this.adultsCount = 1; this.updateGuestsCount(); return; }
+     if(type === 'adults' && this.adultsCount < 16) this.adultsCount++;
+     if(type === 'children' && this.childrenCount < 15) this.childrenCount++;
+     if(type === 'infants' && this.infantsCount < 5) this.infantsCount++;
+     if(type === 'pets' && this.petsCount < 5) this.petsCount++;
+     this.updateGuestsCount();
+  }
+  decrementGuests(type: string) {
+     if(type === 'adults' && this.adultsCount > 0) this.adultsCount--;
+     if(type === 'children' && this.childrenCount > 0) this.childrenCount--;
+     if(type === 'infants' && this.infantsCount > 0) this.infantsCount--;
+     if(type === 'pets' && this.petsCount > 0) this.petsCount--;
+     this.updateGuestsCount();
+  }
+  updateGuestsCount() { this.guests = this.adultsCount + this.childrenCount; }
+  get guestsText() { 
+    const total = this.guests;
+    return total > 0 ? `${total} guests` : 'Add guests';
+  }
+
+  // ✅ دالة البحث الرئيسية
   onSearch(): void {
+    // 1. Stays (Properties)
     if (this.searchType === 'stays') {
       const filters: SearchFilters = {
         location: this.location || undefined,
@@ -167,17 +192,38 @@ export class SearchBarComponent implements OnInit {
         guests: this.guests > 0 ? this.guests : undefined
       };
       this.search.emit(filters);
-    } else {
-      // Services Search
+    } 
+    // 2. Experiences (Update)
+    else if (this.searchType === 'experiences') {
+        const queryParams: any = {};
+        
+        // الاسم (SearchTerm)
+        if (this.experienceQuery) queryParams.searchTerm = this.experienceQuery;
+        
+        // التصنيف (ID)
+        if (this.selectedCategoryId) queryParams.category = this.selectedCategoryId;
+        
+        // المدة (ساعات)
+        if (this.experienceDuration) queryParams.duration = this.experienceDuration;
+        
+        // عدد الأشخاص
+        if (this.guests > 0) queryParams.guests = this.guests;
+        
+        // الموقع (اختياري لو أضفتيه للواجهة)
+        if (this.location) queryParams.location = this.location;
+
+        this.router.navigate(['/experiences'], { queryParams: queryParams });
+    } 
+    // 3. Services
+    else {
       const queryParams: any = {};
       if (this.serviceQuery) queryParams.q = this.serviceQuery;
-      if (this.selectedCategory) queryParams.category = this.selectedCategory;
+      // الخدمات حالياً تبحث باسم التصنيف (string)
+      if (this.selectedCategoryName) queryParams.category = this.selectedCategoryName; 
       
       this.router.navigate(['/services'], { queryParams: queryParams });
     }
   }
 
-  onFiltersClick(): void {
-    this.filtersOpen.emit();
-  }
+  onFiltersClick() { this.filtersOpen.emit(); }
 }

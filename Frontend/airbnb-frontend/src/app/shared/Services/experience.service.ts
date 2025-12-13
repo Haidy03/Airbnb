@@ -36,11 +36,26 @@ export class ExperienceService {
   // 1. PUBLIC ENDPOINTS
   // ==========================================
 
-  searchExperiences(filters: ExperienceSearchDto): Observable<any> {
+  searchExperiences(filters: any): Observable<any> {
     let params = new HttpParams();
+
+    // ✅ إضافة كل الفلاتر الممكنة
+    if (filters.searchTerm) params = params.set('searchTerm', filters.searchTerm);
     if (filters.location) params = params.set('location', filters.location);
-    // ... باقي الفلاتر ...
+    if (filters.category) params = params.set('categoryId', filters.category.toString()); // انتبهي للاسم في الباك إند (CategoryId)
+    if (filters.categoryId) params = params.set('categoryId', filters.categoryId.toString()); // احتياطي لو الاسم مختلف
+    if (filters.guests) params = params.set('guests', filters.guests.toString());
+    if (filters.duration) params = params.set('duration', filters.duration.toString());
+    
+    if (filters.minPrice) params = params.set('minPrice', filters.minPrice.toString());
+    if (filters.maxPrice) params = params.set('maxPrice', filters.maxPrice.toString());
+    if (filters.type) params = params.set('type', filters.type);
+    if (filters.language) params = params.set('language', filters.language);
     if (filters.sortBy) params = params.set('sortBy', filters.sortBy);
+    
+    // Pagination
+    if (filters.pageNumber) params = params.set('pageNumber', filters.pageNumber.toString());
+    if (filters.pageSize) params = params.set('pageSize', filters.pageSize.toString());
 
     return this.http.get<any>(`${this.apiUrl}/search`, { params });
   }

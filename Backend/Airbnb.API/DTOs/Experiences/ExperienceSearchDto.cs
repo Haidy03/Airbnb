@@ -14,7 +14,8 @@
 
         public string? Language { get; set; }
         public string? TimeOfDay { get; set; } // Morning, Afternoon, Evening
-
+        public string? SearchTerm { get; set; }
+        public int? Duration { get; set; }
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 20;
 
