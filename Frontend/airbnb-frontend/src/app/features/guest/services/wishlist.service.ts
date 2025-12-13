@@ -43,6 +43,10 @@ export class WishlistService {
     );
   }
 
+  getWishlist(): Observable<any[]> {
+  return this.http.get<any[]>(this.apiUrl);
+}
+
   removeFromWishlist(propertyId: number) {
     // دالة مساعدة للحذف السريع من الواجهة (Optimistic update)
     this.toggleWishlist(propertyId).subscribe();
