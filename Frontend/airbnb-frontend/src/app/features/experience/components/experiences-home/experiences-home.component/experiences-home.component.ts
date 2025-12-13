@@ -1,6 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ExperienceService } from '../../../../../shared/Services/experience.service';
 import { ExperienceSearchResult } from '../../../../../shared/models/experience.model';
@@ -21,45 +21,98 @@ export class ExperiencesHomeComponent implements OnInit {
   parisExperiences = signal<ExperienceSearchResult[]>([]);
   londonExperiences = signal<ExperienceSearchResult[]>([]);
   
+  private route = inject(ActivatedRoute);
+  
   isLoading = signal(true);
   error = signal<string | null>(null);
-  
-  // Set لتسريع البحث عن الـ IDs
+
+  isSearching = signal(false);
+
   private favoriteIds = new Set<number>();
 
   constructor(
     private experienceService: ExperienceService,
-    private wishlistService: WishlistService
+    private wishlistService: WishlistService 
   ) {}
 
   ngOnInit(): void {
-    // 1. تحميل بيانات التجارب أولاً
-    this.loadData();
+  
+    this.experienceService.getWishlist().subscribe({
+      next: (res: any) => {
+        if (res.success && Array.isArray(res.data)) {
+          res.data.forEach((item: any) => {
+             if (item.id) {
+               this.favoriteIds.add(Number(item.id));
+             }
+          });
+        
+          this.updateAllListsFavorites();
+        }
+      },
+      error: (err) => console.error('Error loading wishlist', err)
+    });
 
-    // 2. الاشتراك في "البث المباشر" للمفضلة
-    // أي تغيير يحصل في المفضلة (إضافة/حذف) في أي مكان، الكود ده هيشتغل ويحدث القلوب هنا
-    this.wishlistService.wishlist$.subscribe(wishlistItems => {
-      this.favoriteIds.clear();
-      wishlistItems.forEach(item => {
-  // التحقق إذا كانت experienceId موجودة في item
-  if ('experienceId' in item) {
-      this.favoriteIds.add((item as any).experienceId);
-  } else {
-      this.favoriteIds.add(Number(item.id));
-  }
-});
 
-      // إعادة تلوين القلوب في القوائم الموجودة حالياً
-      this.updateAllListsFavorites();
+    this.route.queryParams.subscribe(params => {
+   
+      if (Object.keys(params).length > 0) {
+        this.performSearch(params);
+      } else {
+      
+        this.isSearching.set(false);
+        this.loadData();
+      }
     });
   }
 
+  
+  performSearch(params: any) {
+    this.isLoading.set(true);
+    this.isSearching.set(true);
+    this.error.set(null);
+
+    const searchDto: any = {};
+    
+    if (params['searchTerm']) searchDto.searchTerm = params['searchTerm']; 
+    if (params['category']) searchDto.categoryId = Number(params['category']);
+    
+    if (params['duration']) searchDto.duration = Number(params['duration']);
+    if (params['guests']) searchDto.guests = Number(params['guests']);
+    if (params['location']) searchDto.location = params['location'];
+
+    console.log('Sending Search DTO:', searchDto);
+    this.experienceService.searchExperiences(searchDto).subscribe({
+      next: (res) => {
+        if (res.success) {
+          const mappedData = this.mapFavorites(res.data);
+          
+         
+          this.popularExperiences.set(mappedData);
+
+         
+          this.featuredExperiences.set([]);
+          this.parisExperiences.set([]);
+          this.londonExperiences.set([]);
+        } else {
+          this.popularExperiences.set([]);
+        }
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.error.set('Failed to search experiences.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+
   loadData(): void {
     this.isLoading.set(true);
+    this.isSearching.set(false);
     this.loadFromAPI();
   }
 
-  // دالة لتحديث خاصية isFavorite بناءً على القائمة الحالية للمفضلة
   private mapFavorites(experiences: ExperienceSearchResult[]): ExperienceSearchResult[] {
     return experiences.map(exp => ({
       ...exp,
@@ -67,7 +120,6 @@ export class ExperiencesHomeComponent implements OnInit {
     }));
   }
 
-  // دالة لتحديث القوائم المعروضة حالياً (تستخدم عند تحميل البيانات أو تغير المفضلة)
   private updateAllListsFavorites() {
     this.featuredExperiences.update(list => this.mapFavorites(list));
     this.popularExperiences.update(list => this.mapFavorites(list));
@@ -76,12 +128,12 @@ export class ExperiencesHomeComponent implements OnInit {
   }
 
   private loadFromAPI(): void {
-    // تحميل Featured
+    // 1. Featured Section
     this.experienceService.getFeaturedExperiences(8).subscribe({
       next: (res) => {
         if (res.success && res.data) {
-          // نمرر البيانات لدالة mapFavorites عشان تاخد اللون الصح من البداية
-          this.featuredExperiences.set(this.mapFavorites(res.data));
+          const mappedData = this.mapFavorites(res.data);
+          this.featuredExperiences.set(mappedData);
           this.isLoading.set(false);
         }
       },
@@ -91,13 +143,17 @@ export class ExperiencesHomeComponent implements OnInit {
       }
     });
 
-    // باقي الـ APIs (Popular, Paris, London)...
-    // فقط تأكدي من استخدام this.mapFavorites(res.data) قبل عمل set
-    this.experienceService.searchExperiences({ sortBy: 'popular', pageSize: 12 }).subscribe({
-      next: (res) => { if (res.success) this.popularExperiences.set(this.mapFavorites(res.data)); }
+    // 2. Popular Section (Default when not searching specific query)
+     this.experienceService.searchExperiences({ sortBy: 'popular', pageSize: 12 }).subscribe({
+      next: (res) => { 
+        if (res.success) {
+           const mappedData = this.mapFavorites(res.data);
+            this.popularExperiences.set(mappedData);
+        }
+      }
     });
     
-    // ... ونفس الشيء لباقي الدوال
+    
   }
 
   // Scroll functions...

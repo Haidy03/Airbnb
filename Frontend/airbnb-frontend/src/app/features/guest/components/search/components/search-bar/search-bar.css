@@ -29,7 +29,6 @@
 .search-input { border: none; outline: none; background: transparent; font-size: 14px; color: #717171; width: 100%; padding: 0; text-overflow: ellipsis; cursor: pointer; }
 .search-divider { width: 1px; height: 32px; background-color: #dddddd; }
 
-/* زر البحث */
 .search-btn {
   background-color: #FF385C; color: white; height: 48px; border-radius: 24px; border: none;
   padding: 0 16px; margin-right: 9px; display: flex; align-items: center; gap: 8px;
@@ -37,7 +36,7 @@
 }
 .search-btn:hover { background-color: #E00B41; }
 
-/* زر الفلتر */
+
 .side-filter-btn {
   height: 48px; min-width: 48px; padding: 0 16px; background-color: white;
   border: 1px solid #dddddd; border-radius: 24px; color: #222; cursor: pointer; transition: all 0.2s ease;
@@ -53,7 +52,7 @@
   top: 50%;
   transform: translateY(-50%);
   border: none;
-  background: #EBEBEB; /* لون خلفية رمادي فاتح */
+  background: #EBEBEB; 
   border-radius: 50%;
   width: 24px;
   height: 24px;
@@ -86,8 +85,43 @@ input[type="date"]::-webkit-clear-button {
   width: 100%; min-width: 300px; z-index: 100; margin-top: 12px;
 }
 
-/* تنسيق قائمة المدن */
-.locations-dropdown { padding: 16px 0; }
+
+.locations-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  padding: 10px 0; /* تقليل البادينج قليلاً */
+  border-radius: 24px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  width: 100%;
+  min-width: 300px;
+  z-index: 100;
+  margin-top: 12px;
+
+  /* ✅ الإضافات الجديدة لحل مشكلة السكرول */
+  max-height: 350px; /* تحديد أقصى ارتفاع للقائمة */
+  overflow-y: auto;  /* تفعيل السكرول العمودي عند الحاجة */
+  scrollbar-width: thin; /* لمتصفح فايرفوكس: سكرول رفيع */
+}
+
+.locations-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.locations-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 10px 0;
+}
+.locations-dropdown::-webkit-scrollbar-thumb {
+  background-color: #dddddd;
+  border-radius: 4px;
+  border: 2px solid white; 
+}
+
+.locations-dropdown::-webkit-scrollbar-thumb:hover {
+  background-color: #b0b0b0;
+}
 .location-item {
   display: flex; align-items: center; padding: 12px 24px; cursor: pointer; transition: background 0.2s;
 }
@@ -104,7 +138,7 @@ input[type="date"]::-webkit-clear-button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px; /* مسافة رأسية بين كل صف */
+  margin-bottom: 24px;
   padding-bottom: 24px;
   border-bottom: 1px solid #ebebeb;
 }
@@ -126,7 +160,7 @@ input[type="date"]::-webkit-clear-button {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid #b0b0b0; /* لون حدود أغمق قليلاً للوضوح */
+  border: 1px solid #b0b0b0;
   background: white;
   color: #717171;
   display: flex;
@@ -138,13 +172,56 @@ input[type="date"]::-webkit-clear-button {
 .guest-btn:hover:not([disabled]) { border-color: #222; color: #222; }
 .guest-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #ebebeb; }
 
-/* التعديل الأهم هنا (المسافة) */
+
 .guest-count {
- display: inline-block; /* بيخلي العنصر يحترم الأبعاد والمارجن */
-  margin: 0 30px;       /* مسافة خارجية يمين وشمال */
+ display: inline-block; 
+  margin: 0 30px;     
   width: 20px;
   text-align: center;
   font-size: 16px;
   font-weight: 600;
   color: #222;
+}
+
+
+/* Tabs Styling */
+.tab-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: #717171;
+  padding-bottom: 4px;
+  position: relative;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.tab-btn:hover {
+  color: #222;
+  background-color: #f7f7f7; 
+  border-radius: 20px;
+  padding: 8px 16px; 
+  margin: -8px -16px; 
+}
+
+.tab-btn.active {
+  color: #222;
+  font-weight: 600;
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%; 
+  height: 2px;
+  background-color: #222;
+}
+
+
+.flex-grow-1 {
+  flex: 1;
 }
