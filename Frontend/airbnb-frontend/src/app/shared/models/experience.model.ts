@@ -169,23 +169,17 @@ export interface ExperienceSearchResult {
   title: string;
   hostName: string;
   hostAvatar?: string;
-  
   categoryName: string;
   type: string;
-  
   city?: string;
   country?: string;
-  
   durationHours: number;
   durationMinutes?: number;
-  
   pricePerPerson: number;
-  
   averageRating: number;
   totalReviews: number;
-  
+  isFavorite?: boolean;
   primaryImage?: string;
-  
   isAvailable: boolean;
 }
 

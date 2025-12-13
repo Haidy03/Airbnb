@@ -115,27 +115,57 @@
       <div class="card-actions">
         <!-- Pending Actions -->
         <div *ngIf="service.status === 'PendingApproval'" class="action-row">
-          <button class="btn btn-approve" (click)="openApproveModal(service)">Approve</button>
-          <button class="btn btn-reject" (click)="openRejectModal(service)">Reject</button>
+          <button class="btn btn-approve" (click)="openApproveModal(service)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2"/>
+              <polyline points="22 4 12 14.01 9 11.01" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Approve</button>
+          <button class="btn btn-reject" (click)="openRejectModal(service)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2"/>
+              <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Reject</button>
         </div>
 
         <!-- Active Actions -->
         <div *ngIf="service.status === 'Active'" class="action-row">
-          <button class="btn btn-suspend" (click)="suspendService(service)">Suspend</button>
+          <button class="btn btn-suspend" (click)="suspendService(service)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="10" y1="15" x2="10" y2="9"></line>
+              <line x1="14" y1="15" x2="14" y2="9"></line>
+            </svg>
+            Suspend</button>
         </div>
         
         <!-- Suspended Actions -->
          <div *ngIf="service.status === 'Inactive'" class="action-row"> <!-- Assuming Inactive = Suspended for logic -->
-          <button class="btn btn-activate" (click)="activateService(service)">Activate</button>
+          <button class="btn btn-activate" (click)="activateService(service)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12l5 5l10 -10"></path>
+            </svg>
+            Activate</button>
         </div>
 
          <!-- Rejected Actions -->
         <div *ngIf="service.status === 'Rejected'" class="action-row">
-          <button class="btn btn-secondary" (click)="moveToPending(service)">Move to pending</button>
+          <button class="btn btn-secondary" (click)="moveToPending(service)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 3v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Move to pending</button>
         </div>
 
         <!-- Delete (Always available) -->
-        <button class="btn btn-delete" (click)="openDeleteModal(service)">Delete</button>
+        <button class="btn btn-delete" (click)="openDeleteModal(service)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Delete</button>
       </div>
     </div>
 
