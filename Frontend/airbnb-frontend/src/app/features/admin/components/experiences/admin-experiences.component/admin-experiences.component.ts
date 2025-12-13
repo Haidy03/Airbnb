@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../../../environments/environment';
 import { AdminService } from '../../../serevices/admin.service'; 
+import { NotificationService } from '../../../../../core/services/notification.service'; // تأكد من المسار
 
 interface AdminExperience {
   id: number;
@@ -47,7 +48,11 @@ export class AdminExperiencesComponent implements OnInit {
 
   private apiUrl = `${environment.apiUrl}/admin/experiences`;
 
-  constructor(private http: HttpClient, private adminService: AdminService) {}
+  constructor(
+    private http: HttpClient, 
+    private adminService: AdminService,
+    private notificationService: NotificationService // حقن الخدمة
+  ) {}
 
   ngOnInit(): void {
     this.loadExperiences();
@@ -111,16 +116,24 @@ export class AdminExperiencesComponent implements OnInit {
 
     this.http.post(`${this.apiUrl}/${exp.id}/approve`, {}).subscribe({
       next: () => {
-        this.loadExperiences();
+        exp.status = 'Active'; 
+        exp.rejectionReason = undefined;
+
         this.closeApproveModal();
-        this.showNotification('Experience approved successfully');
+        this.notificationService.showSuccess('Approved!', 'Experience approved and activated successfully');
+        this.loadExperiences(); 
       },
       error: () => this.showNotification('Error approving experience', 'error')
     });
   }
 
-  moveToPending(exp: AdminExperience): void {
-    if(!confirm('Are you sure you want to move this experience back to pending approval?')) return;
+  async moveToPending(exp: AdminExperience): Promise<void> {
+    const isConfirmed = await this.notificationService.confirmAction(
+      'Move to Pending?',
+      'Are you sure you want to move this experience back to pending approval?'
+    );
+
+    if (!isConfirmed) return;
 
     this.adminService.updateExperienceStatus(exp.id, 'PendingApproval').subscribe({
       next: () => {
@@ -191,9 +204,9 @@ export class AdminExperiencesComponent implements OnInit {
 
   // --- Helpers ---
 
+  // تم تحديث هذه الدالة لتستخدم التوست بدلاً من alert()
   private showNotification(message: string, type: 'success' | 'error' = 'success'): void {
-    console.log(`[${type.toUpperCase()}] ${message}`);
-    alert(message); // Simple alert for now, can be replaced with Toastr
+    this.notificationService.showToast(type, message);
   }
 
   getStatusBadgeClass(status: string): string {
@@ -226,19 +239,23 @@ export class AdminExperiencesComponent implements OnInit {
   previousPage() { if(this.pageNumber() > 1) { this.pageNumber.update(v => v - 1); this.loadExperiences(); } 
 }
 
-
-toggleSuspension(exp: AdminExperience): void {
-    // تحديد الحالة الجديدة بناءً على الحالة الحالية
+  async toggleSuspension(exp: AdminExperience): Promise<void> {
     const isSuspended = exp.status === 'Suspended';
     const newStatus = isSuspended ? 'Active' : 'Suspended';
     const actionText = isSuspended ? 'unsuspend' : 'suspend';
 
-    if (!confirm(`Are you sure you want to ${actionText} this experience?`)) return;
+    const isConfirmed = await this.notificationService.confirmAction(
+      `Confirm ${actionText}?`,
+      `Are you sure you want to ${actionText} this experience?`,
+      isSuspended ? 'Activate' : 'Suspend'
+    );
+
+    if (!isConfirmed) return;
 
     this.adminService.updateExperienceStatus(exp.id, newStatus).subscribe({
       next: () => {
         this.showNotification(`Experience ${actionText}ed successfully`);
-        this.loadExperiences(); // إعادة تحميل القائمة لتحديث الواجهة
+        this.loadExperiences(); 
       },
       error: (err: any) => {
         console.error(err);

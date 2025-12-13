@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AdminService } from '../../../serevices/admin.service';
+import { NotificationService } from '../../../../../core/services/notification.service';
 import { DashboardStats } from '../../../models/admin.models';
 
 @Component({
@@ -18,7 +19,8 @@ export class AdminDashboardComponent implements OnInit {
 
   constructor(
     private adminService: AdminService,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -36,6 +38,8 @@ export class AdminDashboardComponent implements OnInit {
         this.error = 'Failed to load dashboard statistics';
         this.loading = false;
         console.error('Error loading dashboard stats:', err);
+        // إظهار توست للمستخدم بالإضافة لرسالة الخطأ في الواجهة
+        this.notificationService.showToast('error', 'Failed to load dashboard data');
       }
     });
   }

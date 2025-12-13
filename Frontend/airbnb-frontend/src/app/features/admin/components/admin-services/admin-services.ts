@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../serevices/admin.service';
 import { AdminServiceItem } from '../../models/admin.models';
 import { environment } from '../../../../../environments/environment';
+// تأكد من أن هذا المسار يطابق مكان الخدمة في مشروعك
+import { NotificationService } from '../../../../core/services/notification.service'; 
 
 @Component({
   selector: 'app-admin-services',
@@ -32,7 +34,10 @@ export class AdminServicesComponent implements OnInit {
 
   private baseUrl = environment.apiUrl.replace('/api', '');
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private notificationService: NotificationService // حقن الخدمة
+  ) {}
 
   ngOnInit() {
     this.loadServices();
@@ -50,7 +55,7 @@ export class AdminServicesComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.error.set('Failed to load services');
+        this.notificationService.showToast('error', 'Failed to load services');
         this.loading.set(false);
       }
     });
@@ -112,11 +117,11 @@ export class AdminServicesComponent implements OnInit {
 
     this.adminService.approveService(service.id).subscribe({
       next: () => {
-        alert('Service approved successfully');
+        this.notificationService.showSuccess('Approved!', 'Service approved successfully');
         this.loadServices();
         this.closeApproveModal();
       },
-      error: () => alert('Failed to approve service')
+      error: () => this.notificationService.showToast('error', 'Failed to approve service')
     });
   }
 
@@ -134,15 +139,18 @@ export class AdminServicesComponent implements OnInit {
 
   rejectService() {
     const service = this.selectedService();
-    if (!service || !this.rejectionReason().trim()) return;
+    if (!service || !this.rejectionReason().trim()) {
+      this.notificationService.showToast('warning', 'Rejection reason is required');
+      return;
+    }
 
     this.adminService.rejectService(service.id, this.rejectionReason()).subscribe({
       next: () => {
-        alert('Service rejected');
+        this.notificationService.showSuccess('Rejected', 'Service rejected successfully');
         this.loadServices();
         this.closeRejectModal();
       },
-      error: () => alert('Failed to reject service')
+      error: () => this.notificationService.showToast('error', 'Failed to reject service')
     });
   }
 
@@ -164,33 +172,53 @@ export class AdminServicesComponent implements OnInit {
     this.adminService.deleteService(service.id).subscribe({
       next: () => {
         this.services.update(list => list.filter(s => s.id !== service.id));
+        this.notificationService.showSuccess('Deleted', 'Service deleted successfully');
         this.closeDeleteModal();
       },
-      error: () => alert('Failed to delete service')
+      error: () => this.notificationService.showToast('error', 'Failed to delete service')
     });
   }
 
-  // Other Status Changes
-  suspendService(service: AdminServiceItem) {
-    if(!confirm('Suspend this service?')) return;
+  // Other Status Changes - Async for confirmations
+  async suspendService(service: AdminServiceItem) {
+    const confirmed = await this.notificationService.confirmAction(
+      'Suspend Service?',
+      'Are you sure you want to suspend this service?'
+    );
+    if(!confirmed) return;
+
     this.adminService.updateServiceStatus(service.id, 'Inactive').subscribe({
-      next: () => this.loadServices(),
-      error: () => alert('Failed to suspend')
+      next: () => {
+        this.notificationService.showToast('success', 'Service suspended');
+        this.loadServices();
+      },
+      error: () => this.notificationService.showToast('error', 'Failed to suspend')
     });
   }
 
   activateService(service: AdminServiceItem) {
     this.adminService.updateServiceStatus(service.id, 'Active').subscribe({
-      next: () => this.loadServices(),
-      error: () => alert('Failed to activate')
+      next: () => {
+        this.notificationService.showToast('success', 'Service activated');
+        this.loadServices();
+      },
+      error: () => this.notificationService.showToast('error', 'Failed to activate')
     });
   }
 
-  moveToPending(service: AdminServiceItem) {
-    if(!confirm('Move back to Pending?')) return;
+  async moveToPending(service: AdminServiceItem) {
+    const confirmed = await this.notificationService.confirmAction(
+      'Move to Pending?',
+      'Are you sure you want to move this service back to pending?'
+    );
+    if(!confirmed) return;
+
     this.adminService.updateServiceStatus(service.id, 'PendingApproval').subscribe({
-      next: () => this.loadServices(),
-      error: () => alert('Failed to update status')
+      next: () => {
+        this.notificationService.showToast('success', 'Moved to pending successfully');
+        this.loadServices();
+      },
+      error: () => this.notificationService.showToast('error', 'Failed to update status')
     });
   }
 }

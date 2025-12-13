@@ -133,7 +133,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-.card-status {
+/* .card-status {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -172,6 +172,58 @@
 .card-status.inactive {
   background: #F5F5F5;
   color: #717171;
+}
+ */
+
+
+ /* Card Status Badge - Updated Design */
+.card-status {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: 20px; /* جعل الحواف دائرية أكثر مثل الخدمات */
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 10; /* لضمان ظهورها فوق الصورة */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* ظل خفيف للجمالية */
+  letter-spacing: 0.3px;
+}
+
+/* Pending Style (Orange) - Matching Services Design */
+/* لاحظ أننا أضفنا .pending ليتطابق مع الـ Typescript */
+.card-status.pending,
+.card-status.pendingapproval,
+.card-status.PendingApproval {
+  background-color: #FFF3E0; /* لون الخلفية (بيج/برتقالي فاتح) */
+  color: #E65100;            /* لون النص (برتقالي غامق) */
+  border: 1px solid #FFE0B2; /* حدود خفيفة جداً للوضوح */
+}
+
+/* باقي الحالات كما هي مع تحسينات طفيفة */
+.card-status.approved,
+.card-status.active {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
+}
+
+.card-status.rejected {
+  background-color: #FFEBEE;
+  color: #C62828;
+  border: 1px solid #FFCDD2;
+}
+
+.card-status.suspended {
+  background-color: #FFF3E0;
+  color: #EF6C00;
+  border: 1px solid #FFE0B2;
+}
+
+.card-status.inactive {
+  background-color: #F5F5F5;
+  color: #616161;
+  border: 1px solid #E0E0E0;
 }
 
 /* Property Header */
@@ -632,8 +684,9 @@
 .loading-state,
 .error-state,
 .empty-state {
-  padding: 80px 20px;
+  padding: 80px 20px; 
   text-align: center;
+  font-size: bold;
 }
 
 .spinner {

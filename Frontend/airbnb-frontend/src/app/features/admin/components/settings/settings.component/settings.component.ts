@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../serevices/admin.service';
+import { NotificationService } from '../../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-admin-settings',
@@ -36,7 +37,10 @@ export class AdminSettingsComponent implements OnInit {
 
   activeTab = signal<string>('general');
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -48,7 +52,10 @@ export class AdminSettingsComponent implements OnInit {
     // تحميل الإعدادات
     this.adminService.getSettings().subscribe({
       next: (res) => this.settings.set(res),
-      error: (err) => console.error(err)
+      error: (err) => {
+        console.error(err);
+        this.notificationService.showToast('error', 'Failed to load settings');
+      }
     });
 
     // تحميل البروفايل
@@ -65,6 +72,7 @@ export class AdminSettingsComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.loading.set(false);
+        this.notificationService.showToast('error', 'Failed to load profile');
       }
     });
   }
@@ -74,26 +82,25 @@ export class AdminSettingsComponent implements OnInit {
     this.adminService.updateSettings(this.settings()).subscribe({
       next: () => {
         this.saving.set(false);
-        alert('Settings saved successfully');
+        this.notificationService.showSuccess('Saved', 'Settings saved successfully');
       },
       error: () => {
         this.saving.set(false);
-        alert('Failed to save settings');
+        this.notificationService.showToast('error', 'Failed to save settings');
       }
     });
   }
-
 
   updateProfile(): void {
     this.saving.set(true);
     this.adminService.updateProfile(this.adminProfile()).subscribe({
       next: () => {
         this.saving.set(false);
-        alert('Profile updated successfully');
+        this.notificationService.showSuccess('Updated', 'Profile updated successfully');
       },
       error: () => {
         this.saving.set(false);
-        alert('Failed to update profile');
+        this.notificationService.showToast('error', 'Failed to update profile');
       }
     });
   }
@@ -102,12 +109,12 @@ export class AdminSettingsComponent implements OnInit {
     const form = this.passwordForm();
     
     if (!form.currentPassword || !form.newPassword) {
-      alert('Please fill required fields');
+      this.notificationService.showToast('warning', 'Please fill required fields');
       return;
     }
 
     if (form.newPassword !== form.confirmPassword) {
-      alert('Passwords do not match');
+      this.notificationService.showToast('warning', 'Passwords do not match');
       return;
     }
 
@@ -119,11 +126,11 @@ export class AdminSettingsComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.passwordForm.set({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        alert('Password changed successfully');
+        this.notificationService.showSuccess('Success', 'Password changed successfully');
       },
       error: (err) => {
         this.saving.set(false);
-        alert(err.error?.message || 'Failed to change password');
+        this.notificationService.showToast('error', err.error?.message || 'Failed to change password');
       }
     });
   }
@@ -133,14 +140,10 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   clearCache(): void {
-    this.showNotification('Cache cleared successfully');
+    this.notificationService.showSuccess('Success', 'Cache cleared successfully');
   }
 
   exportData(): void {
-    this.showNotification('Data export initiated');
-  }
-
-  private showNotification(message: string, type: 'success' | 'error' = 'success'): void {
-    console.log(`${type}: ${message}`);
+    this.notificationService.showToast('info', 'Data export initiated');
   }
 }

@@ -572,7 +572,10 @@ namespace Airbnb.API.Services.Implementations
             var experience = await _experienceRepository.GetByIdAsync(id);
             if (experience == null) return false;
 
-            experience.Status = ExperienceStatus.Approved;
+            experience.Status = ExperienceStatus.Active;
+            experience.IsActive = true;
+            experience.RejectionReason = null;
+
             experience.ApprovedAt = DateTime.UtcNow;
             await _experienceRepository.UpdateAsync(experience);
             return true;

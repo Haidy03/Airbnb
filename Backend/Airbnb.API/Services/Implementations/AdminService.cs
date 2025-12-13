@@ -119,18 +119,21 @@ namespace Airbnb.API.Services.Implementations
         private async Task<List<PropertyTypeStatsDto>> GetPropertyTypeStatsAsync()
         {
             var properties = await _adminRepository.GetAllPropertiesAsync(null, null, 1, 10000);
+
             if (properties == null || !properties.Any()) return new List<PropertyTypeStatsDto>();
 
             return properties
                 .Where(p => p.PropertyType != null && !string.IsNullOrEmpty(p.PropertyType.Name))
-                .GroupBy(p => p.PropertyType.Name)
+                .GroupBy(p => p.PropertyType.Name) 
                 .Select(g => new PropertyTypeStatsDto
                 {
                     PropertyType = g.Key,
+
                     Count = g.Count(),
+
                     TotalRevenue = g.SelectMany(p => p.Bookings ?? Enumerable.Empty<Booking>())
                         .Where(b => b.Status == BookingStatus.Completed || b.Status == BookingStatus.Confirmed)
-                        .Sum(b => b.TotalPrice)
+                        .Sum(b => b.TotalPrice) 
                 })
                 .OrderByDescending(x => x.TotalRevenue)
                 .ToList();

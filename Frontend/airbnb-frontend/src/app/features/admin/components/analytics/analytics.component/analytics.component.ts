@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../serevices/admin.service';
+import { NotificationService } from '../../../../../core/services/notification.service';
 import { RevenueReport, UserActivityReport, OccupancyReport } from '../../../models/admin.models';
 
 @Component({
@@ -25,7 +26,10 @@ export class AdminAnalyticsComponent implements OnInit {
   endDate = signal<string>('');
   selectedReport = signal<string>('revenue');
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.setDefaultDates();
@@ -35,10 +39,8 @@ export class AdminAnalyticsComponent implements OnInit {
   setDefaultDates(): void {
     const start = new Date();
     const end = new Date();
-
     start.setMonth(0);
     start.setDate(1);
-    
     end.setFullYear(end.getFullYear() + 1);
 
     this.startDate.set(start.toISOString().split('T')[0]);
@@ -52,7 +54,6 @@ export class AdminAnalyticsComponent implements OnInit {
     const start = new Date(this.startDate());
     const end = new Date(this.endDate());
 
-    // Load all reports
     this.loadRevenueReport(start, end);
     this.loadUserActivityReport(start, end);
     this.loadOccupancyReport();
@@ -66,6 +67,7 @@ export class AdminAnalyticsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading revenue report:', err);
+        this.notificationService.showToast('error', 'Failed to load revenue report');
         this.loading.set(false);
       }
     });
@@ -77,7 +79,8 @@ export class AdminAnalyticsComponent implements OnInit {
         this.userActivityReport.set(data);
       },
       error: (err) => {
-        console.error('Error loading user activity report:', err);
+        console.error(err);
+        this.notificationService.showToast('error', 'Failed to load user activity report');
       }
     });
   }
@@ -88,7 +91,8 @@ export class AdminAnalyticsComponent implements OnInit {
         this.occupancyReport.set(data);
       },
       error: (err) => {
-        console.error('Error loading occupancy report:', err);
+        console.error(err);
+        this.notificationService.showToast('error', 'Failed to load occupancy report');
       }
     });
   }
@@ -99,6 +103,7 @@ export class AdminAnalyticsComponent implements OnInit {
 
   applyDateFilter(): void {
     this.loadReports();
+    this.notificationService.showToast('info', 'Filters applied');
   }
 
   formatCurrency(amount: number): string {
@@ -124,15 +129,10 @@ export class AdminAnalyticsComponent implements OnInit {
 
   exportToCSV(): void {
     // Implement CSV export functionality
-    console.log('Exporting to CSV...');
-    this.showNotification('Export functionality coming soon');
+    this.notificationService.showToast('info', 'Export functionality coming soon');
   }
 
   printReport(): void {
     window.print();
-  }
-
-  private showNotification(message: string, type: 'success' | 'error' = 'success'): void {
-    console.log(`${type}: ${message}`);
   }
 }
