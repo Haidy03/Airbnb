@@ -199,3 +199,45 @@
     width: 240px;
   }
 }
+
+
+/* Empty State Styling */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px; /* عشان تاخد مساحة ومتبقاش لازقة فوق */
+  text-align: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.empty-state h3 {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: #222;
+}
+
+.empty-state p {
+  color: #717171;
+  font-size: 16px;
+  max-width: 400px;
+  margin: 0 auto 24px auto;
+}
+
+.btn-dark {
+  background-color: #222;
+  color: white;
+  border: 1px solid #222;
+  transition: all 0.2s;
+}
+
+.btn-dark:hover {
+  background-color: black;
+  transform: scale(1.02);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

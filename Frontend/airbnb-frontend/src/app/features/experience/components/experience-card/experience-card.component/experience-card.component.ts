@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ExperienceSearchResult } from '../../../../../shared/models/experience.model';
@@ -13,7 +13,7 @@ import { environment } from '../../../../../../environments/environment.developm
   styleUrls: ['./experience-card.component.css']
 })
 
-export class ExperienceCardComponent {
+export class ExperienceCardComponent implements OnChanges{
   constructor(private experienceService: ExperienceService) {}
   @Input() experience!: any;
   @Input() showBadge: boolean = false;
@@ -22,23 +22,20 @@ export class ExperienceCardComponent {
   @Input() isWishlisted: boolean = false; 
 
   getImageUrl(imageUrl?: string): string {
-    // 1. لو مفيش رابط خالص، رجع صورة افتراضية
+   
     if (!imageUrl) {
       return 'assets/images/placeholder.jpg'; 
     }
 
-    // 2. لو الرابط خارجي (https://...) رجعه زي ما هو
     if (imageUrl.startsWith('http')) {
       return imageUrl;
     }
 
-    // ✅ 3. التعديل الجديد: لو الرابط بيشاور على assets داخلية في الأنجولار
-    // (عشان نعالج الحالة اللي في الداتا بيز عندك)
     if (imageUrl.includes('assets/')) {
-      return imageUrl; // رجعه زي ما هو عشان الأنجولار يفتحه
+      return imageUrl; 
     }
 
-    // 4. لو صورة مرفوعة على السيرفر (uploads)، ركب قبلها رابط الباك اند
+   
     const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
     let cleanPath = imageUrl;
     
@@ -49,6 +46,13 @@ export class ExperienceCardComponent {
     return `${baseUrl}${cleanPath}`;
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['experience']) {
+       if (this.experience && this.experience.isFavorite !== undefined) {
+           this.isWishlisted = this.experience.isFavorite;
+       }
+    }
+  }
   toggleWishlist(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
@@ -56,14 +60,15 @@ export class ExperienceCardComponent {
     this.experienceService.toggleWishlist(this.experience.id).subscribe({
         next: (res) => {
             this.isWishlisted = res.isWishlisted;
+            
         },
         error: (err) => console.error(err)
     });
-}
+  }
 
 get cardLink(): any[] {
     if (this.experience.type === 'Home' || this.experience.type === 'Property') {
-      return ['/listing', this.experience.id]; // الرابط الصحيح للبيوت
+      return ['/listing', this.experience.id]; 
     }
     return ['/experiences', this.experience.id];
   }

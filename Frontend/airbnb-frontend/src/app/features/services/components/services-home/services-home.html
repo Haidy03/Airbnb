@@ -1,19 +1,36 @@
 <div class="container-fluid px-4 px-md-5 pb-5" style="margin-top: 30px;">
   
-  <h1 class="h2 fw-bold text-dark mb-5">Discover Services</h1>
 
-  <!-- Loading Spinner -->
+  <h1 class="h2 fw-bold text-dark mb-5">
+    {{ (activeCategory || activeQuery) ? 'Search Results' : 'Discover Services' }}
+  </h1>
+
+  <!-- 1. Loading Spinner -->
   <div *ngIf="isLoading" class="d-flex justify-content-center py-5">
     <div class="spinner-border text-danger" role="status"></div>
   </div>
 
-  <!-- Empty State -->
-  <div *ngIf="!isLoading && categorySections.length === 0" class="text-center py-5">
-    <h3>No services available yet</h3>
-    <p class="text-muted">Check back later.</p>
+ 
+  <div *ngIf="!isLoading && categorySections.length === 0" class="empty-state text-center py-5">
+    
+    <div class="mb-4">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#dddddd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </div>
+    
+    <h3 class="fw-bold text-dark mb-2">No services found</h3>
+    <p class="text-muted mb-4">Try adjusting your search or category to find what you're looking for.</p>
+    
+
+    <button (click)="resetSearch()" class="btn btn-dark px-4 py-2 rounded-pill fw-semibold">
+      Show all services
+    </button>
   </div>
 
-  <!-- Sections Loop -->
+  <!-- 3. Sections Loop (Results) -->
   <div *ngIf="!isLoading && categorySections.length > 0">
     
     <div *ngFor="let section of categorySections" class="category-section mb-5 border-bottom pb-4">
@@ -21,7 +38,8 @@
       <!-- Category Header with Arrows -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center gap-3">
-          <img [src]="section.category.icon" class="cat-icon" alt="" onerror="this.style.display='none'">
+         
+          <img *ngIf="section.category.icon" [src]="section.category.icon" class="cat-icon" alt="" onerror="this.style.display='none'">
           <h2 class="h4 fw-bold mb-0">{{ section.category.name }}</h2>
         </div>
 
