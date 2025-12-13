@@ -41,9 +41,11 @@
       </div>
       
       <div class="cards-scroll" id="featured">
+       
         <app-experience-card 
           *ngFor="let exp of featuredExperiences()" 
           [experience]="exp"
+          [isWishlisted]="!!exp.isFavorite" 
           [badgeText]="'Original'"
           [showBadge]="true">
         </app-experience-card>
@@ -72,9 +74,11 @@
       </div>  
       
       <div class="cards-scroll" id="popular">
+ 
         <app-experience-card 
           *ngFor="let exp of popularExperiences()" 
           [experience]="exp"
+          [isWishlisted]="!!exp.isFavorite"
           [badgeText]="'Popular'"
           [showBadge]="true">
         </app-experience-card>
@@ -105,9 +109,11 @@
       </div>
       
       <div class="cards-scroll" id="paris">
+ 
         <app-experience-card 
           *ngFor="let exp of parisExperiences()" 
           [experience]="exp"
+          [isWishlisted]="!!exp.isFavorite"
           [badgeText]="'Popular'"
           [showBadge]="true">
         </app-experience-card>
@@ -138,9 +144,11 @@
       </div>
       
       <div class="cards-scroll" id="london">
+  
         <app-experience-card 
           *ngFor="let exp of londonExperiences()" 
           [experience]="exp"
+          [isWishlisted]="!!exp.isFavorite"
           [badgeText]="'Popular'"
           [showBadge]="true">
         </app-experience-card>

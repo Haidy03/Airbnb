@@ -24,33 +24,30 @@ export class ExperiencesHomeComponent implements OnInit {
   isLoading = signal(true);
   error = signal<string | null>(null);
   
-  // Set لتسريع البحث عن الـ IDs
+
   private favoriteIds = new Set<number>();
 
   constructor(
     private experienceService: ExperienceService,
-    private wishlistService: WishlistService
+    private wishlistService: WishlistService 
   ) {}
 
-  ngOnInit(): void {
-    // 1. تحميل بيانات التجارب أولاً
+    ngOnInit(): void {
     this.loadData();
 
-    // 2. الاشتراك في "البث المباشر" للمفضلة
-    // أي تغيير يحصل في المفضلة (إضافة/حذف) في أي مكان، الكود ده هيشتغل ويحدث القلوب هنا
-    this.wishlistService.wishlist$.subscribe(wishlistItems => {
-      this.favoriteIds.clear();
-      wishlistItems.forEach(item => {
-  // التحقق إذا كانت experienceId موجودة في item
-  if ('experienceId' in item) {
-      this.favoriteIds.add((item as any).experienceId);
-  } else {
-      this.favoriteIds.add(Number(item.id));
-  }
-});
-
-      // إعادة تلوين القلوب في القوائم الموجودة حالياً
-      this.updateAllListsFavorites();
+    this.experienceService.getWishlist().subscribe({
+      next: (res: any) => {
+        if (res.success && Array.isArray(res.data)) {
+          res.data.forEach((item: any) => {
+             if (item.id) {
+               this.favoriteIds.add(Number(item.id));
+             }
+          });
+          
+          this.updateAllListsFavorites();
+        }
+      },
+      error: (err) => console.error('Error loading wishlist', err)
     });
   }
 
@@ -59,15 +56,15 @@ export class ExperiencesHomeComponent implements OnInit {
     this.loadFromAPI();
   }
 
-  // دالة لتحديث خاصية isFavorite بناءً على القائمة الحالية للمفضلة
+ 
   private mapFavorites(experiences: ExperienceSearchResult[]): ExperienceSearchResult[] {
     return experiences.map(exp => ({
       ...exp,
+  
       isFavorite: this.favoriteIds.has(exp.id)
     }));
   }
 
-  // دالة لتحديث القوائم المعروضة حالياً (تستخدم عند تحميل البيانات أو تغير المفضلة)
   private updateAllListsFavorites() {
     this.featuredExperiences.update(list => this.mapFavorites(list));
     this.popularExperiences.update(list => this.mapFavorites(list));
@@ -76,12 +73,13 @@ export class ExperiencesHomeComponent implements OnInit {
   }
 
   private loadFromAPI(): void {
-    // تحميل Featured
+ 
     this.experienceService.getFeaturedExperiences(8).subscribe({
       next: (res) => {
         if (res.success && res.data) {
-          // نمرر البيانات لدالة mapFavorites عشان تاخد اللون الصح من البداية
-          this.featuredExperiences.set(this.mapFavorites(res.data));
+    
+          const mappedData = this.mapFavorites(res.data);
+          this.featuredExperiences.set(mappedData);
           this.isLoading.set(false);
         }
       },
@@ -91,13 +89,16 @@ export class ExperiencesHomeComponent implements OnInit {
       }
     });
 
-    // باقي الـ APIs (Popular, Paris, London)...
-    // فقط تأكدي من استخدام this.mapFavorites(res.data) قبل عمل set
-    this.experienceService.searchExperiences({ sortBy: 'popular', pageSize: 12 }).subscribe({
-      next: (res) => { if (res.success) this.popularExperiences.set(this.mapFavorites(res.data)); }
+  
+     this.experienceService.searchExperiences({ sortBy: 'popular', pageSize: 12 }).subscribe({
+      next: (res) => { 
+        if (res.success) {
+           const mappedData = this.mapFavorites(res.data);
+            this.popularExperiences.set(mappedData);
+        }
+      }
     });
-    
-    // ... ونفس الشيء لباقي الدوال
+  
   }
 
   // Scroll functions...
