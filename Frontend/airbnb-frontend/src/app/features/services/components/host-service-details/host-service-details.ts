@@ -1,9 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router,RouterModule  } from '@angular/router';
 import { ServicesService } from '../../services/service';
 import { environment } from '../../../../../environments/environment';
-
+import { NotificationService } from '../../../../core/services/notification.service';
 @Component({
   selector: 'app-host-service-details',
   standalone: true,
@@ -17,7 +17,8 @@ export class HostServiceDetailsComponent implements OnInit {
   isToggling = signal(false);
   
   private baseUrl = environment.apiUrl.replace('/api', '');
-
+  private notificationService = inject(NotificationService);
+  
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -35,7 +36,10 @@ export class HostServiceDetailsComponent implements OnInit {
         this.service = res.data;
         this.isLoading.set(false);
       },
-      error: () => this.router.navigate(['/host/services'])
+      error: () => {
+        this.notificationService.showError('Failed to load service details.'); // ✅
+        this.router.navigate(['/host/services']);
+      }
     });
   }
 
@@ -65,7 +69,7 @@ export class HostServiceDetailsComponent implements OnInit {
     
     
     if (this.service.status === 'PendingApproval' || this.service.status === 'Rejected') {
-      alert('Cannot change status while Pending or Rejected.');
+      this.notificationService.showError('Cannot change status while Pending or Rejected.');
       return;
     }
 
@@ -75,25 +79,32 @@ export class HostServiceDetailsComponent implements OnInit {
         
         this.service.status = this.service.status === 'Active' ? 'Inactive' : 'Active';
         this.isToggling.set(false);
+        this.notificationService.showToast('success', `Status updated to ${this.service.status}`); 
       },
       error: () => {
-        alert('Failed to update status');
+        this.notificationService.showError('Failed to update status');
         this.isToggling.set(false);
       }
     });
   }
 
   // Delete Logic
-  deleteService() {
-    if (confirm('Are you sure you want to delete this service? This cannot be undone.')) {
-      this.servicesService.deleteService(this.service.id).subscribe({
-        next: () => {
-          alert('Service deleted.');
-          this.router.navigate(['/host/services']);
-        },
-        error: () => alert('Failed to delete service.')
-      });
-    }
+  async deleteService(): Promise<void> {
+    const confirmed = await this.notificationService.confirmAction(
+      'Delete Service?', 
+      'Are you sure you want to delete this service? This cannot be undone.',
+      'Yes, delete'
+    );
+
+    if (!confirmed) return;
+
+    this.servicesService.deleteService(this.service.id).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Deleted', 'Service deleted successfully.'); // ✅
+        this.router.navigate(['/host/services']);
+      },
+      error: () => this.notificationService.showError('Failed to delete service.') // ✅
+    });
   }
 
   goBack() {

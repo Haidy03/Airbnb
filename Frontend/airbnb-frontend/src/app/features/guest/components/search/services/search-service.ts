@@ -42,7 +42,7 @@ export class SearchService {
   searchProperties(query: SearchQuery): Observable<SearchResponse> {
 
     // 1. Property Type (String)
-    let selectedType: string | undefined = undefined;
+    let selectedType: string | null = null;
     if (query.filters.propertyTypes && query.filters.propertyTypes.length > 0) {
       selectedType = query.filters.propertyTypes[0].toString();
     }
@@ -59,7 +59,7 @@ export class SearchService {
     const requestBody = {
       pageIndex: query.page,
       pageSize: query.pageSize,
-
+      
       location: query.filters.location || null,
       checkInDate: query.filters.checkIn ? new Date(query.filters.checkIn).toISOString() : null,
       checkOutDate: query.filters.checkOut ? new Date(query.filters.checkOut).toISOString() : null,
@@ -68,15 +68,15 @@ export class SearchService {
       minPrice: query.filters.priceMin || null,
       maxPrice: (query.filters.priceMax && query.filters.priceMax < 50000) ? query.filters.priceMax : null,
 
-      propertyType: selectedType || null, // "Apartment"
+      propertyType: selectedType || null,
       amenityIds: (selectedAmenityIds && selectedAmenityIds.length > 0) ? selectedAmenityIds : null,
 
       // Rooms
       bedrooms: query.filters.bedrooms || null,
       beds: query.filters.beds || null,
       bathrooms: query.filters.bathrooms || null,
-      isInstantBook: query.filters.instantBook || null,
-
+      isInstantBook: query.filters.instantBook !== undefined ? query.filters.instantBook : null,
+      rating: query.filters.rating || null,
       sortBy: query.sortBy || "popular"
     };
 

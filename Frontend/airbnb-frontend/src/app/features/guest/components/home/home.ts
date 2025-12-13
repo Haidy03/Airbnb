@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from '../header/header';
 import { SearchService } from '../search/services/search-service';
-// تأكدي إن SearchQuery و SearchResponse و Property موجودين في الاستيراد
 import { Property, SearchQuery, SearchResponse } from '../search/models/property.model';
 import { WishlistService } from '../../services/wishlist.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -57,7 +56,7 @@ export class HomeComponent implements OnInit {
         bedrooms: undefined,
         beds: undefined,
         bathrooms: undefined,
-        instantBook: false
+        instantBook: undefined
       }
     }as any;
   

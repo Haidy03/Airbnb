@@ -22,6 +22,14 @@ namespace Airbnb.API.DTOs.Search
         public decimal? MaxPrice { get; set; }
         public string? PropertyType { get; set; }
 
+        public int? Bedrooms { get; set; }
+        public int? Beds { get; set; }
+        public int? Bathrooms { get; set; }
+
+        public bool? IsInstantBook { get; set; }
+
+        public double? Rating { get; set; }
+
         // List of Amenity IDs (e.g., user wants Wifi [1] and Pool [5])
         public List<int>? AmenityIds { get; set; }
 
