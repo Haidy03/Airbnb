@@ -97,9 +97,18 @@
     </section>
 
     <!-- Empty State -->
-    <div *ngIf="propertyBookings().length === 0 && experienceBookings().length === 0 && serviceBookings().length === 0" class="text-center mt-5">
+    <!-- <div *ngIf="propertyBookings().length === 0 && experienceBookings().length === 0 && serviceBookings().length === 0" class="text-center mt-5">
       <h3>No bookings found</h3>
       <a routerLink="/" class="btn btn-dark mt-3">Start Exploring</a>
+    </div> -->
+
+    <div *ngIf="!loading() && propertyBookings().length === 0 && experienceBookings().length === 0 && serviceBookings().length === 0" class="empty-state">
+      <div class="mb-4 icon-wrapper">
+        <i class="fa-solid fa-suitcase-rolling"></i>
+      </div>
+      <h3 class="fw-bold text-dark mb-2">No bookings found</h3>
+      <p class="text-muted mb-4">You don't have any bookings.</p>
+      <a routerLink="/" class="btn btn-airbnb">Start searching</a>
     </div>
 
   </div>

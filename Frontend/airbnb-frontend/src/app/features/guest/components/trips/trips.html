@@ -26,16 +26,13 @@
         
         <!-- Image -->
         <div class="trip-image">
-          <!-- استخدمنا الـ pipe أو الدالة للصورة -->
           <img [src]="getImageUrl(trip.imageUrl || trip.propertyImage)" alt="Listing">
           
           <div class="status-overlay d-flex flex-column gap-1 align-items-start">
-            <!-- ✅ 1. إضافة Badge للنوع (جديد) -->
             <span class="type-badge" [class.service]="trip.type === 'Service'">
               {{ trip.type === 'Property' ? 'Home' : trip.type }}
             </span>
 
-            <!-- Status Badge (موجود سابقاً) -->
             <span class="status-badge" [class]="trip.status?.toLowerCase()">
               {{ trip.status === 'AwaitingPayment' ? 'Payment Needed' : trip.status }}
             </span>
@@ -53,14 +50,11 @@
             <div class="date-row">
               <i class="fa-regular fa-calendar"></i>
               
-              <!-- ✅ 2. عرض التاريخ حسب النوع (جديد) -->
               
-              <!-- لو عقار أو تجربة: عرض فترة (من - إلى) -->
               <span *ngIf="trip.type !== 'Service'">
                 {{ trip.checkInDate | date:'MMM d' }} - {{ trip.checkOutDate | date:'MMM d, y' }}
               </span>
 
-              <!-- لو خدمة: عرض التاريخ + الساعة -->
               <span *ngIf="trip.type === 'Service'">
                 {{ trip.checkInDate | date:'MMM d, y • h:mm a' }}
               </span>
