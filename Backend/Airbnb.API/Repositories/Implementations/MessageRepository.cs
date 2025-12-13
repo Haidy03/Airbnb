@@ -18,6 +18,10 @@ namespace Airbnb.API.Repositories.Implementations
             return await _context.Conversations
                 .Include(c => c.Property)
                     .ThenInclude(p => p.Images)
+                    .Include(c => c.Service)
+                    .ThenInclude(s => s.Images)
+                    .Include(c => c.Experience)
+                    .ThenInclude(e => e.Images)
                 .Include(c => c.Host)
                 .Include(c => c.Guest)
 
@@ -32,6 +36,10 @@ namespace Airbnb.API.Repositories.Implementations
             return await _context.Conversations
                 .Include(c => c.Property)
                     .ThenInclude(p => p.Images)
+                    .Include(c => c.Service)
+                    .ThenInclude(s => s.Images)
+                .Include(c => c.Experience)
+                    .ThenInclude(e => e.Images)
                 .Include(c => c.Host)
                 .Include(c => c.Guest)
                 .Include(c => c.Messages)
