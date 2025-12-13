@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../serevices/admin.service';
+import { NotificationService } from '../../../../../core/services/notification.service'; // تأكد من المسار الصحيح
 import { AdminProperty } from '../../../models/admin.models';
 import { environment } from '../../../../../../environments/environment.development';
 
@@ -29,7 +30,10 @@ export class AdminPropertiesComponent implements OnInit {
   showDeleteModal = signal(false);
   rejectionReason = signal('');
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private notificationService: NotificationService // حقن الخدمة الجديدة
+  ) {}
 
   ngOnInit(): void {
     this.loadProperties();
@@ -55,13 +59,19 @@ export class AdminPropertiesComponent implements OnInit {
         }
       });
   }
-  moveToPending(property: AdminProperty): void {
-    if(!confirm('Are you sure you want to move this property back to pending approval?')) return;
 
-    // نستخدم دالة updatePropertyStatus الموجودة بالفعل في السيرفس
+  // تم تحويل الدالة لـ async لاستخدام await مع الـ SweetAlert
+  async moveToPending(property: AdminProperty): Promise<void> {
+    const isConfirmed = await this.notificationService.confirmAction(
+      'Move to Pending?',
+      'Are you sure you want to move this property back to pending approval?'
+    );
+
+    if (!isConfirmed) return;
+
     this.adminService.updatePropertyStatus(property.id, 'PendingApproval').subscribe({
       next: () => {
-        this.loadProperties(); // تحديث القائمة
+        this.loadProperties();
         this.showNotification('Property moved to pending successfully');
       },
       error: (err) => {
@@ -100,7 +110,8 @@ export class AdminPropertiesComponent implements OnInit {
       next: () => {
         this.loadProperties();
         this.closeApproveModal();
-        this.showNotification('Property approved successfully');
+        // استخدام دالة التنبيه الجديدة
+        this.notificationService.showSuccess('Approved!', 'Property approved successfully');
       },
       error: (err) => {
         console.error('Error approving property:', err);
@@ -124,7 +135,7 @@ export class AdminPropertiesComponent implements OnInit {
   rejectProperty(): void {
     const property = this.selectedProperty();
     if (!property || !this.rejectionReason().trim()) {
-      this.showNotification('Please provide a rejection reason', 'error');
+      this.showNotification('Please provide a rejection reason', 'warning');
       return;
     }
 
@@ -155,12 +166,10 @@ export class AdminPropertiesComponent implements OnInit {
   }
 
   activateProperty(property: AdminProperty): void {
-    // نرسل Approved للسيرفر ليكون اللون أزرق
     this.adminService.updatePropertyStatus(property.id, 'Approved').subscribe({
       next: () => {
-        // نحدث الواجهة فوراً
-        property.status = 'Approved'; 
-        property.rejectionReason = ""; // نمسح السبب من الذاكرة
+        property.status = 'Approved';
+        property.rejectionReason = "";
         this.showNotification('Property activated successfully');
       },
       error: (err) => {
@@ -168,7 +177,7 @@ export class AdminPropertiesComponent implements OnInit {
         this.showNotification('Failed to activate property', 'error');
       }
     });
-}
+  }
 
   openDeleteModal(property: AdminProperty): void {
     this.selectedProperty.set(property);
@@ -197,15 +206,14 @@ export class AdminPropertiesComponent implements OnInit {
       }
     });
   }
+
   getImageUrl(url: string | undefined): string {
     if (!url) return 'assets/images/placeholder-property.jpg';
-    
     if (url.startsWith('http') || url.includes('assets/')) {
       return url;
     }
     const baseUrl = environment.apiUrl.replace('/api', '').replace(/\/$/, '');
     let cleanPath = url.startsWith('/') ? url : `/${url}`;
-    
     return `${baseUrl}${cleanPath}`;
   }
 
@@ -245,7 +253,14 @@ export class AdminPropertiesComponent implements OnInit {
     }
   }
 
-  private showNotification(message: string, type: 'success' | 'error' = 'success'): void {
-    console.log(`${type}: ${message}`);
+  // تم تحديث هذه الدالة لتستخدم NotificationService بدلاً من console.log
+  private showNotification(message: string, type: 'success' | 'error' | 'warning' = 'success'): void {
+    if (type === 'error') {
+      this.notificationService.showToast('error', message);
+    } else if (type === 'warning') {
+      this.notificationService.showToast('warning', message);
+    } else {
+      this.notificationService.showToast('success', message);
+    }
   }
 }

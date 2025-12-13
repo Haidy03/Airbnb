@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../serevices/admin.service';
+import { NotificationService } from '../../../../../core/services/notification.service';
 import { AdminUser } from '../../../models/admin.models';
 
 @Component({
@@ -28,7 +29,10 @@ export class AdminUsersComponent implements OnInit {
   showDeleteModal = signal(false);
   blockReason = signal('');
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -51,6 +55,7 @@ export class AdminUsersComponent implements OnInit {
           this.error.set('Failed to load users');
           this.loading.set(false);
           console.error('Error loading users:', err);
+          this.notificationService.showToast('error', 'Failed to load users');
         }
       });
   }
@@ -72,11 +77,12 @@ export class AdminUsersComponent implements OnInit {
       .subscribe({
         next: () => {
           user.isActive = newStatus;
-          this.showNotification(`User ${newStatus ? 'activated' : 'deactivated'} successfully`);
+          const msg = `User ${newStatus ? 'activated' : 'deactivated'} successfully`;
+          this.notificationService.showToast('success', msg);
         },
         error: (err) => {
           console.error('Error updating user status:', err);
-          this.showNotification('Failed to update user status', 'error');
+          this.notificationService.showToast('error', 'Failed to update user status');
         }
       });
   }
@@ -95,56 +101,47 @@ export class AdminUsersComponent implements OnInit {
 
   blockUser(): void {
     const user = this.selectedUser();
-    
-    // تأكد أن المستخدم موجود
     if (!user) return;
 
     if (user.isBlocked) {
-      // =================================================
-      // حالة فك الحظر (Unblock)
-      // لا نحتاج للتحقق من السبب هنا
-      // =================================================
+      // Unblock Logic
       this.adminService.unblockUser(user.id).subscribe({
         next: () => {
-          // 1. تحديث حالة المستخدم محلياً
           user.isBlocked = false;
-          user.isActive = true; // تفعيل المستخدم ليتمكن من الدخول
-          user.blockReason = undefined; // مسح سبب الحظر القديم
-          
-          // 2. إغلاق المودال مباشرة
+          user.isActive = true;
+          user.blockReason = undefined;
           this.closeBlockModal();
-          
-          // (تم إزالة التنبيه notification كما طلبتِ)
+          this.notificationService.showSuccess('Unblocked', 'User unblocked successfully');
         },
         error: (err) => {
           console.error('Error unblocking user:', err);
+          this.notificationService.showToast('error', 'Failed to unblock user');
         }
       });
 
     } else {
-      // =================================================
-      // حالة الحظر (Block)
-      // هنا يجب التحقق من كتابة السبب
-      // =================================================
+      // Block Logic
       if (!this.blockReason().trim()) {
-        this.showNotification('Please provide a reason for blocking', 'error');
+        this.notificationService.showToast('warning', 'Please provide a reason for blocking');
         return;
       }
 
       this.adminService.blockUser(user.id, this.blockReason()).subscribe({
         next: () => {
           user.isBlocked = true;
-          user.isActive = false; // إلغاء تفعيل المستخدم
+          user.isActive = false;
           user.blockReason = this.blockReason();
-          
           this.closeBlockModal();
+          this.notificationService.showSuccess('Blocked', 'User blocked successfully');
         },
         error: (err) => {
           console.error('Error blocking user:', err);
+          this.notificationService.showToast('error', 'Failed to block user');
         }
       });
     }
   }
+
   openDeleteModal(user: AdminUser): void {
     this.selectedUser.set(user);
     this.showDeleteModal.set(true);
@@ -164,11 +161,11 @@ export class AdminUsersComponent implements OnInit {
         const currentUsers = this.users();
         this.users.set(currentUsers.filter(u => u.id !== user.id));
         this.closeDeleteModal();
-        this.showNotification('User deleted successfully');
+        this.notificationService.showSuccess('Deleted', 'User deleted successfully');
       },
       error: (err) => {
         console.error('Error deleting user:', err);
-        this.showNotification('Failed to delete user', 'error');
+        this.notificationService.showToast('error', 'Failed to delete user');
       }
     });
   }
@@ -209,10 +206,5 @@ export class AdminUsersComponent implements OnInit {
       this.pageNumber.set(this.pageNumber() - 1);
       this.loadUsers();
     }
-  }
-
-  private showNotification(message: string, type: 'success' | 'error' = 'success'): void {
-    // You can implement a toast notification service here
-    console.log(`${type}: ${message}`);
   }
 }

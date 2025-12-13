@@ -631,7 +631,7 @@
 .loading-state,
 .error-state,
 .empty-state {
-  padding: 80px 20px;
+  padding: 80px 20px; 
   text-align: center;
 }
 

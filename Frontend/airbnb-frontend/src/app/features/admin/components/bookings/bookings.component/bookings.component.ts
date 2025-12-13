@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../serevices/admin.service';
+import { NotificationService } from '../../../../../core/services/notification.service';
 import { AdminBooking } from '../../../models/admin.models';
 
 @Component({
@@ -30,7 +31,10 @@ export class AdminBookingsComponent implements OnInit {
   refundAmount = signal<number>(0);
   refundReason = signal('');
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.loadBookings();
@@ -54,6 +58,7 @@ export class AdminBookingsComponent implements OnInit {
           this.error.set('Failed to load bookings');
           this.loading.set(false);
           console.error('Error loading bookings:', err);
+          this.notificationService.showToast('error', 'Failed to load bookings');
         }
       });
   }
@@ -90,7 +95,7 @@ export class AdminBookingsComponent implements OnInit {
   cancelBooking(): void {
     const booking = this.selectedBooking();
     if (!booking || !this.cancelReason().trim()) {
-      this.showNotification('Please provide a cancellation reason', 'error');
+      this.notificationService.showToast('warning', 'Please provide a cancellation reason');
       return;
     }
 
@@ -98,11 +103,11 @@ export class AdminBookingsComponent implements OnInit {
       next: () => {
         this.loadBookings();
         this.closeCancelModal();
-        this.showNotification('Booking cancelled successfully');
+        this.notificationService.showSuccess('Cancelled', 'Booking cancelled successfully');
       },
       error: (err) => {
         console.error('Error cancelling booking:', err);
-        this.showNotification('Failed to cancel booking', 'error');
+        this.notificationService.showToast('error', 'Failed to cancel booking');
       }
     });
   }
@@ -124,12 +129,12 @@ export class AdminBookingsComponent implements OnInit {
   processRefund(): void {
     const booking = this.selectedBooking();
     if (!booking || !this.refundReason().trim()) {
-      this.showNotification('Please provide a refund reason', 'error');
+      this.notificationService.showToast('warning', 'Please provide a refund reason');
       return;
     }
 
     if (this.refundAmount() <= 0 || this.refundAmount() > booking.totalPrice) {
-      this.showNotification('Invalid refund amount', 'error');
+      this.notificationService.showToast('error', 'Invalid refund amount');
       return;
     }
 
@@ -137,11 +142,11 @@ export class AdminBookingsComponent implements OnInit {
       next: () => {
         this.loadBookings();
         this.closeRefundModal();
-        this.showNotification('Refund processed successfully');
+        this.notificationService.showSuccess('Refunded', 'Refund processed successfully');
       },
       error: (err) => {
         console.error('Error processing refund:', err);
-        this.showNotification('Failed to process refund', 'error');
+        this.notificationService.showToast('error', 'Failed to process refund');
       }
     });
   }
@@ -183,9 +188,5 @@ export class AdminBookingsComponent implements OnInit {
       this.pageNumber.set(this.pageNumber() - 1);
       this.loadBookings();
     }
-  }
-
-  private showNotification(message: string, type: 'success' | 'error' = 'success'): void {
-    console.log(`${type}: ${message}`);
   }
 }
