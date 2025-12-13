@@ -103,7 +103,7 @@ export class SearchService {
       reviewsCount: dto.totalReviews || dto.TotalReviews || 0,
       isGuestFavorite: dto.isGuestFavorite || dto.IsGuestFavorite,
       isFavorite: this.isFavorite((dto.id || dto.Id).toString()),
-      type: PropertyType.APARTMENT,
+      type: dto.propertyType || dto.PropertyType || 'Home', 
       description: '',
       location: {
         city: dto.city || dto.City,

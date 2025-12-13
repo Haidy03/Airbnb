@@ -2,7 +2,7 @@
 export interface Property {
   id: string;
   title: string;
-  type: PropertyType;
+  type: string;
   description: string;
   price: number;
   currency: string;

@@ -96,19 +96,27 @@ export class UserService {
   uploadProfileImage(file: File): Observable<{url: string}> {
     const formData = new FormData();
     formData.append('file', file); 
-    const headers = this.getAuthHeaders();
+
+    const token = this.authService.getToken();
+    
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+    });
 
     return this.http.post<{url: string, message: string}>(
       `${this.apiUrl}/Auth/upload-photo`, 
       formData,
-      { headers } // لا تضيفي Content-Type: multipart/form-data، المتصفح بيضيفه لوحده
+      { headers }
     ).pipe(
        map(response => {
-        // ✅ المهم هنا: بنرجع الرابط الكامل عشان الكومبوننت يبعته للـ AuthService صح
         return { 
           url: this.transformUrl(response.url) 
         };
-       })
+       }),
+      catchError(error => {
+        console.error('Error uploading image:', error);
+        return throwError(() => error);
+      })
     );
   }
 
