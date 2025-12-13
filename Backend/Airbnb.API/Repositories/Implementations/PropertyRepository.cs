@@ -183,6 +183,7 @@ namespace Airbnb.API.Repositories.Implementations
                     Title = p.Title,
                     City = p.City,
                     Country = p.Country,
+                    PropertyType = p.PropertyType.Name,
                     PricePerNight = p.PricePerNight,
                     Rating = p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0,
                     TotalReviews = p.Reviews.Count,

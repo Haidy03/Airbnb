@@ -13,6 +13,7 @@
         public bool IsGuestFavorite { get; set; } // Bonus: If rating > 4.8
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+        public string PropertyType { get; set; }
     }
 
     // Wrapper for pagination metadata
