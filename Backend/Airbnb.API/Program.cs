@@ -1,5 +1,6 @@
 ﻿using Airbnb.API.Data;
 using Airbnb.API.Data;
+using Airbnb.API.Hubs;
 using Airbnb.API.Models;
 using Airbnb.API.Repositories.Implementations;
 using Airbnb.API.Repositories.Interfaces;
@@ -15,8 +16,8 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 using System.IO;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -143,7 +144,7 @@ builder.Services.AddControllers()
 
 
 builder.Services.AddAutoMapper(typeof(PropertyProfile));
-
+builder.Services.AddSignalR();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -282,6 +283,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/chathub");
 
 app.Run();
 
