@@ -1,8 +1,11 @@
-import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { SearchFilters } from '../../models/property.model';
-import { SearchService } from '../../services/search-service'; // استيراد السيرفس
+import { SearchService } from '../../services/search-service';
+import { ServicesService } from '../../../../../services/services/service'; 
+import { ServiceCategory } from '../../../../../services/models/service.model'; 
 
 @Component({
   selector: 'app-search-bar',
@@ -17,19 +20,33 @@ export class SearchBarComponent implements OnInit {
   @Output() search = new EventEmitter<SearchFilters>();
   @Output() filtersOpen = new EventEmitter<void>();
 
+  private router = inject(Router);
+  private servicesService = inject(ServicesService);
+
+  // ✅ Search Mode State
+  searchType: 'stays' | 'services' = 'stays';
+
+  // === Stays Data ===
   location: string = '';
   checkIn: string = '';
   checkOut: string = '';
   guests: number = 0;
   minDate: string = '';
+  
+  // === Services Data ===
+  serviceQuery: string = '';
+  selectedCategory: string = '';
+  serviceCategories: ServiceCategory[] = [];
 
-  activeInput: 'location' | 'checkIn' | 'checkOut' | 'guests' | null = null;
-
-  // Dropdowns control
+  // === UI State ===
+  activeInput: 'location' | 'checkIn' | 'checkOut' | 'guests' | 'serviceQuery' | 'serviceCategory' | null = null;
+  
+  // Dropdowns
   showGuestsDropdown = false;
   showLocationsDropdown = false;
+  showCategoriesDropdown = false; // New for services
 
-  // Data from Service
+  // Data
   availableLocations: string[] = [];
 
   // Guest Counts
@@ -44,37 +61,55 @@ export class SearchBarComponent implements OnInit {
     const today = new Date();
     this.minDate = today.toISOString().split('T')[0];
 
-    // الاشتراك في قائمة المدن المتاحة
+    // Load Locations
     this.searchService.locations$.subscribe(locations => {
       this.availableLocations = locations;
     });
+
+    // Load Service Categories
+    this.servicesService.getAllCategories().subscribe(res => {
+      if (res.success) {
+        this.serviceCategories = res.data;
+      }
+    });
   }
 
-  onInputFocus(input: 'location' | 'checkIn' | 'checkOut' | 'guests'): void {
+  // ✅ Switch Search Type
+  setSearchType(type: 'stays' | 'services') {
+    this.searchType = type;
+    this.activeInput = null; // Close any open dropdowns
+  }
+
+  // ✅ Modified Focus Handler
+  onInputFocus(input: any): void {
     this.activeInput = input;
-
-    if (input === 'guests') this.showGuestsDropdown = true;
-    else this.showGuestsDropdown = false;
-
-    if (input === 'location') this.showLocationsDropdown = true;
-    else this.showLocationsDropdown = false;
+    
+    this.showGuestsDropdown = input === 'guests';
+    this.showLocationsDropdown = input === 'location';
+    this.showCategoriesDropdown = input === 'serviceCategory';
   }
 
   onInputBlur(): void {
-    // تأخير بسيط عشان يسمح بالضغط على العناصر قبل ما القائمة تختفي
     setTimeout(() => {
       this.activeInput = null;
       this.showGuestsDropdown = false;
       this.showLocationsDropdown = false;
+      this.showCategoriesDropdown = false;
     }, 200);
   }
 
-  // اختيار مكان من القائمة
+  // === Stays Logic ===
   selectLocation(city: string) {
     this.location = city;
     this.showLocationsDropdown = false;
-    // نقل التركيز للخانة التالية تلقائياً (اختياري بس حركة شيك)
-    // document.getElementById('checkInInput')?.focus();
+  }
+
+  clearLocation(): void { this.location = ''; }
+  
+  clearDate(type: 'checkIn' | 'checkOut', event: Event): void {
+    event.stopPropagation();
+    if (type === 'checkIn') this.checkIn = '';
+    if (type === 'checkOut') this.checkOut = '';
   }
 
   incrementGuests(type: 'adults' | 'children' | 'infants' | 'pets'): void {
@@ -111,25 +146,38 @@ export class SearchBarComponent implements OnInit {
     return parts.length > 0 ? parts.join(', ') : 'Add guests';
   }
 
+  // === Services Logic ===
+  selectCategory(catName: string) {
+    this.selectedCategory = catName;
+    this.showCategoriesDropdown = false;
+  }
+  
+  clearCategory(event: Event) {
+    event.stopPropagation();
+    this.selectedCategory = '';
+  }
+
+  // ✅ Unified Search Handler
   onSearch(): void {
-    const filters: SearchFilters = {
-      location: this.location || undefined,
-      checkIn: this.checkIn ? new Date(this.checkIn) : undefined,
-      checkOut: this.checkOut ? new Date(this.checkOut) : undefined,
-      guests: this.guests > 0 ? this.guests : undefined
-    };
-    this.search.emit(filters);
+    if (this.searchType === 'stays') {
+      const filters: SearchFilters = {
+        location: this.location || undefined,
+        checkIn: this.checkIn ? new Date(this.checkIn) : undefined,
+        checkOut: this.checkOut ? new Date(this.checkOut) : undefined,
+        guests: this.guests > 0 ? this.guests : undefined
+      };
+      this.search.emit(filters);
+    } else {
+      // Services Search
+      const queryParams: any = {};
+      if (this.serviceQuery) queryParams.q = this.serviceQuery;
+      if (this.selectedCategory) queryParams.category = this.selectedCategory;
+      
+      this.router.navigate(['/services'], { queryParams: queryParams });
+    }
   }
 
   onFiltersClick(): void {
     this.filtersOpen.emit();
-  }
-
-  clearLocation(): void { this.location = ''; }
-
-  clearDate(type: 'checkIn' | 'checkOut', event: Event): void {
-    event.stopPropagation(); // منع فتح التقويم عند مسح التاريخ
-    if (type === 'checkIn') this.checkIn = '';
-    if (type === 'checkOut') this.checkOut = '';
   }
 }
