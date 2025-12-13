@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router'; // ✅ Import ActivatedRoute
+import { ActivatedRoute, Router } from '@angular/router'; // ✅ Added Router
 import { ServicesService } from '../../services/service';
 import { ServiceCard, ServiceCategory } from '../../models/service.model';
 import { ServiceCardComponent } from '../../components/service-card/service-card';
@@ -22,20 +22,21 @@ export class ServicesHomeComponent implements OnInit {
 
   categorySections: CategorySection[] = [];
   isLoading = true;
-  
-  // ✅ فلاتر البحث الحالية
+
+
   activeCategory: string | null = null;
   activeQuery: string | null = null;
 
   private servicesService = inject(ServicesService);
-  private route = inject(ActivatedRoute); // ✅ Inject Route
+  private route = inject(ActivatedRoute);
+  private router = inject(Router); 
 
   ngOnInit() {
-    // ✅ الاستماع لتغييرات الـ URL
+
     this.route.queryParams.subscribe(params => {
       this.activeCategory = params['category'];
       this.activeQuery = params['q'];
-      
+
       if (this.activeCategory || this.activeQuery) {
         this.loadFilteredData();
       } else {
@@ -44,13 +45,13 @@ export class ServicesHomeComponent implements OnInit {
     });
   }
 
-  // ✅ تحميل كل البيانات (الوضع الافتراضي)
   loadAllData() {
     this.isLoading = true;
     this.servicesService.getAllCategories().subscribe({
       next: (res) => {
         if (res.success) {
           const categories = res.data;
+    
           const requests = categories.map(cat => 
             this.servicesService.getServicesByCategory(cat.name).pipe(
               map(serviceRes => ({
@@ -62,6 +63,7 @@ export class ServicesHomeComponent implements OnInit {
 
           forkJoin(requests).subscribe({
             next: (results) => {
+             
               this.categorySections = results.filter(section => section.services.length > 0);
               this.isLoading = false;
             },
@@ -75,18 +77,17 @@ export class ServicesHomeComponent implements OnInit {
     });
   }
 
-  // ✅ تحميل البيانات المفلترة (بحث)
+  
   loadFilteredData() {
     this.isLoading = true;
     this.categorySections = [];
 
-    // إذا تم تحديد فئة، نستخدم الـ Endpoint الخاص بها
+   
     if (this.activeCategory) {
       this.servicesService.getServicesByCategory(this.activeCategory).subscribe({
         next: (res) => {
           let services = res.data || [];
-          
-          // تصفية إضافية بالاسم لو موجود
+       
           if (this.activeQuery) {
             services = services.filter(s => 
               s.title.toLowerCase().includes(this.activeQuery!.toLowerCase())
@@ -103,15 +104,14 @@ export class ServicesHomeComponent implements OnInit {
         },
         error: () => this.isLoading = false
       });
-    } else {
-      // إذا كان البحث بالاسم فقط، نحتاج لجلب كل الخدمات ثم الفلترة
-      // (أو استخدام endpoint بحث مخصصة لو موجودة في الباك اند)
-      // هنا سنستخدم الطريقة البسيطة: جلب الكل ثم الفلترة
+    } 
+   
+    else {
       this.loadAllDataWithFilter();
     }
   }
-  
-  // دالة مساعدة للبحث بالاسم فقط عبر كل الفئات
+
+ 
   private loadAllDataWithFilter() {
     this.servicesService.getAllCategories().subscribe({
       next: (res) => {
@@ -120,7 +120,7 @@ export class ServicesHomeComponent implements OnInit {
           const requests = categories.map(cat => 
             this.servicesService.getServicesByCategory(cat.name).pipe(
               map(serviceRes => {
-                // فلترة الخدمات بالاسم
+            
                 const filteredServices = (serviceRes.data || []).filter(s => 
                   s.title.toLowerCase().includes(this.activeQuery!.toLowerCase())
                 );
@@ -140,9 +140,26 @@ export class ServicesHomeComponent implements OnInit {
             error: () => this.isLoading = false
           });
         }
-      }
+      },
+      error: () => this.isLoading = false
     });
   }
+
+  resetSearch() {
+  
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { category: null, q: null },
+      queryParamsHandling: 'merge'
+    });
+    
+    
+    this.activeCategory = null;
+    this.activeQuery = null;
+    
+    this.loadAllData();
+  }
+
 
   scroll(container: HTMLElement, direction: 'left' | 'right') {
     const scrollAmount = container.clientWidth * 0.8;
