@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SearchBarComponent } from './features/guest/components/search/components/search-bar/search-bar';
 import { SearchResultsComponent } from './features/guest/components/search/components/search-results/search-results';
@@ -6,7 +6,7 @@ import { ProfileComponent } from './features/profile/components/profile.componen
 import { ToastComponent } from './shared/components/toast/toast';
 import { FooterComponent } from './shared/components/footer/footer';
 import { HeaderComponent } from './features/guest/components/header/header';
-import { AuthService } from './core/services/auth.service';
+
 
 @Component({
   selector: 'app-root',
@@ -22,11 +22,7 @@ import { AuthService } from './core/services/auth.service';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit{
-  constructor(private authService: AuthService) {}
-  protected readonly title = signal('Airbnb Frontend');
 
-  ngOnInit() {
-   this.authService.logout(); 
-  }
+export class App {
+  protected readonly title = signal('Airbnb Frontend');
 }
