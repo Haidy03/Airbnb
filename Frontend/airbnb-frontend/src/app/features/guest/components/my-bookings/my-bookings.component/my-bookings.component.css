@@ -7,6 +7,31 @@
   gap: 24px;
 }
 
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.btn-airbnb {
+  background-color: #FF385C;
+  color: white;
+  border-radius: 8px;
+  padding: 12px 24px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.btn-airbnb:hover {
+  background-color: #E31C5F;
+}
+
+.icon-wrapper {
+  font-size: 48px;
+  color: #ddd;
+  margin-bottom: 16px;
+}
+
 .booking-card {
   border: 1px solid #ddd;
   border-radius: 12px;
