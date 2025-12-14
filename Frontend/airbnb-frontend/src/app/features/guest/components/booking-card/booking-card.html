@@ -59,7 +59,7 @@
 
        <div class="guests-dropdown" *ngIf="isGuestMenuOpen">
           <div class="guest-row">
-             <div class="info">Adults</div>
+             <div class="info">Guests</div>
              <div class="controls">
                <button class="round-btn" [disabled]="guests.adults <= 1" (click)="updateCount('adults', -1)">-</button>
                <span>{{ guests.adults }}</span>
@@ -67,7 +67,7 @@
              </div>
           </div>
       
-           <div class="guest-row">
+           <!-- <div class="guest-row">
           <div class="info">
             <div class="type">Children</div>
             <div class="sub">Ages 2–12</div>
@@ -79,7 +79,6 @@
           </div>
         </div>
 
-        <!-- 3. Infants -->
         <div class="guest-row">
           <div class="info">
             <div class="type">Infants</div>
@@ -92,7 +91,7 @@
           </div>
         </div>
 
-        <!-- 4. Pets -->
+       
         <div class="guest-row">
           <div class="info">
             <div class="type">Pets</div>
@@ -103,11 +102,11 @@
             <span class="count">{{ guests.pets }}</span>
             <button class="round-btn" (click)="updateCount('pets', 1)">+</button>
           </div>
-        </div>
+        </div> -->
 
         <p class="disclaimer">
-          This place has a maximum of 2 guests, not including infants. If you're bringing more than 2 pets, please let your host know.
-        </p>
+             This place has a maximum of {{ maxGuests }} guests.
+          </p>
           <div class="dropdown-footer">
              <button class="close-link" (click)="toggleGuestMenu()">Close</button>
           </div>

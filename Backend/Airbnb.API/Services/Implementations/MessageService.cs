@@ -4,6 +4,9 @@ using Airbnb.API.Repositories.Implementations;
 using Airbnb.API.Repositories.Interfaces;
 using Airbnb.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using Airbnb.API.Hubs;
+
 
 namespace Airbnb.API.Services.Implementations
 {
@@ -14,18 +17,20 @@ namespace Airbnb.API.Services.Implementations
         private readonly IExperienceRepository _experienceRepository;
         private readonly IServiceRepository _serviceRepository;
         private readonly ILogger<MessageService> _logger;
-
+        private readonly IHubContext<ChatHub> _hubContext;
         public MessageService(
             IMessageRepository messageRepository,
             IPropertyRepository propertyRepository,
             IServiceRepository serviceRepository,
             IExperienceRepository experienceRepository,
+            IHubContext<ChatHub> hubContext,
         ILogger<MessageService> logger)
         {
             _messageRepository = messageRepository;
             _propertyRepository = propertyRepository;
             _serviceRepository = serviceRepository;
             _experienceRepository = experienceRepository;
+            _hubContext = hubContext;
             _logger = logger;
         }
 
@@ -175,6 +180,9 @@ namespace Airbnb.API.Services.Implementations
             };
 
             message = await _messageRepository.SendMessageAsync(message);
+            var messageDto = MapToMessageDto(message);
+            await _hubContext.Clients.Group(dto.ConversationId.ToString())
+                             .SendAsync("ReceiveMessage", messageDto);
 
             return MapToMessageDto(message);
         }

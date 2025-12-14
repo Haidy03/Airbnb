@@ -59,7 +59,8 @@
             formControlName="cleaningFee"
             min="0"
             placeholder="0"
-            class="number-input">
+            class="number-input"
+            oninput="validity.valid||(value='');">
         </div>
         <p class="fee-hint">This fee applies to every reservation.</p>
       </div>
@@ -75,7 +76,8 @@
             formControlName="pricePerNight"
             min="10"
             max="1000000"
-            class="number-input">
+            class="number-input"
+            (keydown)="preventNegativeInput($event)">
           <!-- <span class="per-night">/night</span> -->
         </div>
       </div>
@@ -104,14 +106,29 @@
 
     <div class="map-info-panel">
       <h3>Compare similar listings</h3>
-      <p class="info-subtitle">Entire home/apt · 1 - 2 bedrooms<br>Nov 21, 2024 – Nov 21, 2025</p>
+      
+      <!-- ✅ Dynamic Subtitle -->
+      <p class="info-subtitle">
+        Entire home/apt · {{ currentDraft?.numberOfBedrooms || 1 }} bedrooms<br>
+        {{ dateRange() }}
+      </p>
       
       <div class="divider"></div>
       
-      <h4>Booked listings</h4>
-      <p class="booking-info">Most listings with reservations during these dates were an average of EGP 15 - EGP 100 per night.</p>
+      <h4>{{ similarListingsCount() }} similar listings</h4>
       
-      <a href="#" class="learn-more-link">Learn more</a>
+      <!-- ✅ Dynamic Booking Info -->
+      <p class="booking-info" *ngIf="similarListingsCount() > 0">
+        Listings in this area have an average price of 
+        <b>EGP {{ averagePrice() }}</b> per night, ranging from 
+        <b>EGP {{ minPrice() }}</b> to <b>EGP {{ maxPrice() }}</b>.
+      </p>
+
+      <p class="booking-info" *ngIf="similarListingsCount() === 0">
+        No similar listings found in this area yet. You have a great opportunity to set a competitive price!
+      </p>
+      
+      <a href="#" class="learn-more-link" (click)="$event.preventDefault()">Learn more about pricing</a>
     </div>
   </div>
 </div>
