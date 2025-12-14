@@ -18,6 +18,14 @@ import Swal from 'sweetalert2';
 export class PricingComponent implements OnInit, AfterViewInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
 
+
+  similarListingsCount = signal(0);
+  averagePrice = signal(0);
+  minPrice = signal(0);
+  maxPrice = signal(0);
+  dateRange = signal('');
+
+
   pricingForm!: FormGroup;
   isLoading = signal(false);
   showMap = signal(false);
@@ -137,7 +145,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
         );
 
         console.log('✅ Found similar listings:', realListings.length);
-
+        this.updateStats(realListings);
         realListings.forEach(prop => {
           const pLat = prop.location.coordinates.lat;
           const pLng = prop.location.coordinates.lng;
@@ -163,6 +171,36 @@ export class PricingComponent implements OnInit, AfterViewInit {
       this.map.invalidateSize();
     }, 300);
   }
+
+
+   private updateStats(listings: any[]): void {
+    this.similarListingsCount.set(listings.length);
+
+    if (listings.length > 0) {
+      const prices = listings.map(p => p.pricing?.basePrice || p.pricePerNight || 0);
+      
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
+
+      this.minPrice.set(min);
+      this.maxPrice.set(max);
+      this.averagePrice.set(avg);
+    } else {
+      this.minPrice.set(0);
+      this.maxPrice.set(0);
+      this.averagePrice.set(0);
+    }
+
+   
+    const today = new Date();
+    const nextYear = new Date();
+    nextYear.setFullYear(today.getFullYear() + 1);
+    
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+    this.dateRange.set(`${today.toLocaleDateString('en-US', options)} – ${nextYear.toLocaleDateString('en-US', options)}`);
+  }
+
 
   toggleCleaningFee(): void {
     this.showCleaningFee.update(v => !v);
@@ -215,7 +253,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
       event.preventDefault();
     }
   }
-  
+
   private saveData(onSuccess: () => void): void {
     this.isLoading.set(true);
 
