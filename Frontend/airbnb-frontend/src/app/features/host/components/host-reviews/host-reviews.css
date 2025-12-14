@@ -207,3 +207,9 @@
   .reviews-layout { grid-template-columns: 1fr; gap: 48px; }
   .rating-breakdown { padding-right: 0; }
 }
+
+.tag-property {
+  background-color: #E6F7FF; /* خلفية زرقاء فاتحة جداً */
+  color: #006494;            /* أزرق داكن للنص */
+  border: 1px solid #BAE7FF; /* إطار أزرق فاتح */
+}

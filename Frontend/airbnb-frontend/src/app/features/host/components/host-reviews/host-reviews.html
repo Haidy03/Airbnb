@@ -94,6 +94,10 @@
               <span class="tag tag-service" *ngIf="review.reviewType === 'Service'">
                 <i class="bi bi-bell-fill"></i> Service
               </span>
+               <span class="tag tag-property" 
+      *ngIf="review.reviewType === 'GuestToProperty' || review.reviewType === 'Property'">
+  <i class="bi bi-house-door-fill"></i> Property
+</span>
             </div>
 
             <!-- اسم العقار أو الخدمة -->

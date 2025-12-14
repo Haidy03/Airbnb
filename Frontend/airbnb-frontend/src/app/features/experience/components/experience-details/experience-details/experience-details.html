@@ -92,7 +92,16 @@
             </div>
           </div>
         </div>
-        <button class="contact-host-btn" (click)="contactHost()">Message Host</button>
+        <!-- <button class="contact-host-btn" (click)="contactHost()">Message Host</button> -->
+         <button 
+    class="contact-host-btn" 
+    (click)="contactHost()"
+    [disabled]="isOwner()"
+    [style.opacity]="isOwner() ? '0.5' : '1'"
+    [style.cursor]="isOwner() ? 'not-allowed' : 'pointer'"
+    [title]="isOwner() ? 'You cannot message yourself' : 'Contact Host'">
+    {{ isOwner() ? 'You are the Host' : 'Message Host' }}
+  </button>
       </div>
 
       <!-- About -->

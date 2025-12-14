@@ -21,6 +21,12 @@
   color: #222;
 }
 
+.contact-host-btn:disabled {
+  background-color: #f7f7f7;
+  color: #a0a0a0;
+  border-color: #ddd;
+}
+
 .header-meta {
   display: flex;
   align-items: center;
