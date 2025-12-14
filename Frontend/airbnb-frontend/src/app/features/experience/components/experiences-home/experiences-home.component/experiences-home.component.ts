@@ -7,11 +7,13 @@ import { ExperienceSearchResult } from '../../../../../shared/models/experience.
 import { ExperienceCardComponent } from '../../experience-card/experience-card.component/experience-card.component';
 import { HeaderComponent } from "../../../../guest/components/header/header";
 import { WishlistService } from '../../../../guest/services/wishlist.service';
+import { ChatbotComponent } from '../../../../../shared/components/chatbot/chatbot.component';  // Add this import
+
 
 @Component({
   selector: 'app-experiences-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ExperienceCardComponent, HeaderComponent],
+  imports: [CommonModule, RouterModule, FormsModule, ExperienceCardComponent, HeaderComponent, ChatbotComponent],
   templateUrl: './experiences-home.component.html',
   styleUrls: ['./experiences-home.component.css']
 })

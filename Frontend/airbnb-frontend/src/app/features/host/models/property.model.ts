@@ -3,10 +3,6 @@ export interface SafetyDetails {
   noiseMonitor: boolean;
   weapons: boolean;
 }
-
-// ==========================================
-// MAIN PROPERTY INTERFACE (The Source of Truth)
-// ==========================================
 export interface Property {
   id: string;
   hostId: string;
@@ -23,7 +19,6 @@ export interface Property {
   propertyTypeId?: number;
   roomType: string;
   
-  // ✅ Hybrid Fields (Both Flat & Nested support to fix errors)
   address?: string;
   city?: string;
   state?: string;
@@ -33,11 +28,9 @@ export interface Property {
   longitude?: number;
   currentStep?: string;
   
-  // Pricing Fields (Flat)
   pricePerNight?: number;
   cleaningFee?: number;
 
-  // Location Object
   location: PropertyLocation;
   
   // Capacity Object
@@ -45,7 +38,7 @@ export interface Property {
   
   // Amenities
   amenities: number[]; 
-  amenityIds?: number[]; // ✅ Alias for compatibility
+  amenityIds?: number[]; 
   
   // Images
   images: PropertyImage[];
@@ -88,7 +81,6 @@ export interface Property {
   };
 }
 
-// ✅ Alias PropertyDraft to Property to avoid type conflicts
 export type PropertyDraft = Property;
 
 export interface PropertyLocation {

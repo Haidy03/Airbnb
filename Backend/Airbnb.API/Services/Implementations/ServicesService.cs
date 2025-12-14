@@ -324,6 +324,7 @@ namespace Airbnb.API.Services.Implementations
                 City = service.City,
                 CoveredAreas = service.CoveredAreas,
                 Status = service.Status.ToString(),
+                RejectionReason = service.RejectionReason,
                 Images = service.Images.Select(i => new ServiceImageDto
                 {
                     Id = i.Id,

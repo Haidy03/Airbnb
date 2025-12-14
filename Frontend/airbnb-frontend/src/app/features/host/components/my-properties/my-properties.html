@@ -55,9 +55,18 @@
         <div class="listing-details">
           <h3 class="listing-title">{{ property.title || 'Untitled listing' }}</h3>
           <p class="listing-location">{{ getLocation(property) }}</p>
-          <div *ngIf="isRejected(property) && property.rejectionReason" class="rejection-box-mini" (click)="$event.stopPropagation()">
-            <strong>Rejected:</strong> {{ property.rejectionReason }}
-          </div>
+          <div *ngIf="property.rejectionReason" class="rejection-alert">
+  <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <strong>Rejection reason:</strong>
+  </div>
+  <p>{{ property.rejectionReason }}</p>
+</div>
+          
         </div>
       </div>
     </div>

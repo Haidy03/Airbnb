@@ -348,3 +348,40 @@
     justify-content: center;
   }
 }
+
+
+.rejection-message {
+  background-color: #FFF8F6;
+  border: 1px solid #C13515; /* لون أحمر */
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.rejection-message .icon {
+  color: #C13515;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.rejection-message .content {
+  flex: 1;
+}
+
+.rejection-message strong {
+  display: block;
+  color: #C13515;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.rejection-message p {
+  color: #222222;
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
+}

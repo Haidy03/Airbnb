@@ -136,6 +136,11 @@ background: #E31C5F;
   position: relative;
   background: transparent;
   border: none; /* إلغاء أي حدود خارجية */
+
+  height: auto; /* السماح بتمدد الطول */
+  min-height: 300px; /* طول مبدئي */
+  display: flex;
+  flex-direction: column;
 }
 
 /* --- Image Styling --- */
@@ -202,7 +207,46 @@ background: #E31C5F;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 12px;
+  flex: 1; 
 }
+
+.rejection-alert {
+  background-color: #FFF8F6;
+  border: 1px solid #C13515;
+  color: #C13515;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  
+  /* لمنع النص من الخروج */
+  word-break: break-word; 
+}
+
+.rejection-alert strong {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+/* (اختياري) علامة تعجب على الصورة */
+.rejected-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
 
 .listing-title {
   font-size: 16px;

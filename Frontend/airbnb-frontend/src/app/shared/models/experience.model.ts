@@ -41,7 +41,7 @@ export interface Experience {
   
   status: ExperienceStatus;
   isActive: boolean;
-  
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt?: Date;
 }

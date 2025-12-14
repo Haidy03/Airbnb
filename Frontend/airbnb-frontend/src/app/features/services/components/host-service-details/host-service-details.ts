@@ -28,6 +28,8 @@ export class HostServiceDetailsComponent implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) this.loadDetails(Number(id));
+
+    
   }
 
   loadDetails(id: number) {
@@ -40,6 +42,8 @@ export class HostServiceDetailsComponent implements OnInit {
         this.notificationService.showError('Failed to load service details.'); // ✅
         this.router.navigate(['/host/services']);
       }
+
+      
     });
   }
 
