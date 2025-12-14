@@ -59,7 +59,8 @@
             formControlName="cleaningFee"
             min="0"
             placeholder="0"
-            class="number-input">
+            class="number-input"
+            oninput="validity.valid||(value='');">
         </div>
         <p class="fee-hint">This fee applies to every reservation.</p>
       </div>
@@ -75,7 +76,8 @@
             formControlName="pricePerNight"
             min="10"
             max="1000000"
-            class="number-input">
+            class="number-input"
+            (keydown)="preventNegativeInput($event)">
           <!-- <span class="per-night">/night</span> -->
         </div>
       </div>

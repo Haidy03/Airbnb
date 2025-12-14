@@ -52,11 +52,13 @@ export class PricingComponent implements OnInit, AfterViewInit {
         Validators.min(10),
         Validators.max(1000000)
       ]],
-      cleaningFee: [null] 
+      cleaningFee: [null, [
+        Validators.min(0)
+      ]] 
     });
 
     
-    this.pricingForm.get('pricePerNight')?.valueChanges.subscribe(() => {
+    this.pricingForm.valueChanges.subscribe(() => {
       this.pricingForm.updateValueAndValidity();
     });
   }
@@ -185,16 +187,35 @@ export class PricingComponent implements OnInit, AfterViewInit {
     this.saveData(() => this.router.navigate(['/host/properties']));
   }
 
-  goNext(): void {
-    if (!this.pricingForm.valid) {
-      this.notificationService.showError('Please enter a valid price (between 10 and 1,000,000 EGP)');
-      return;
+   goNext(): void {
+   
+    if (this.pricingForm.invalid) {
+        const priceErrors = this.pricingForm.get('pricePerNight')?.errors;
+        const cleaningErrors = this.pricingForm.get('cleaningFee')?.errors;
+
+        if (priceErrors?.['min']) {
+            this.notificationService.showError('Base price cannot be less than 10 EGP.');
+            return;
+        }
+
+        if (cleaningErrors?.['min']) {
+            this.notificationService.showError('Cleaning fee cannot be negative.');
+            return;
+        }
+
+        this.notificationService.showError('Please check your pricing details.');
+        return;
     }
    
     this.saveData(() => this.router.navigate(['/host/properties/house-rules']));
   }
 
-
+   preventNegativeInput(event: KeyboardEvent): void {
+    if (event.key === '-' || event.key === 'e') {
+      event.preventDefault();
+    }
+  }
+  
   private saveData(onSuccess: () => void): void {
     this.isLoading.set(true);
 
