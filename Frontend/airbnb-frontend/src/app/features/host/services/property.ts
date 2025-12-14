@@ -296,6 +296,7 @@ export class PropertyService {
       
       createdAt: new Date(apiData.createdAt || Date.now()),
       updatedAt: new Date(apiData.updatedAt || Date.now()),
+      rejectionReason : apiData.rejectionReason,
       
       stats: {
          totalBookings: 0,

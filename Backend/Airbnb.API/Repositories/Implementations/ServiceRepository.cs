@@ -85,6 +85,15 @@ namespace Airbnb.API.Repositories.Implementations
             if (service == null) return false;
 
             service.Status = status;
+            if (status == ServiceStatus.Rejected)
+            {
+                service.RejectionReason = rejectionReason;
+            }
+            else if (status == ServiceStatus.Active)
+            {
+                service.RejectionReason = null; // مسح السبب عند الموافقة
+                service.ApprovedAt = DateTime.UtcNow;
+            }
             await _context.SaveChangesAsync();
             return true;
         }

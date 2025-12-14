@@ -9,6 +9,7 @@ export interface ServiceCard {
   minimumCost: number | null; 
   rating: number;
   categoryName: string;
+  rejectionReason?: string;
 }
 
 export interface ApiResponse<T> {
@@ -55,7 +56,8 @@ export interface ServiceDetails {
   
   cancellationPolicy?: string;
   guestRequirements?: string;
-  
+  status: string; 
+  rejectionReason?: string; 
   qualifications: ServiceQualification[];
   packages: ServicePackage[];
   categoryName: string;

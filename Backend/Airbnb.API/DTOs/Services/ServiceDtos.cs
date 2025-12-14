@@ -17,6 +17,7 @@ namespace Airbnb.API.DTOs.Services
         public decimal? MinimumCost { get; set; } // To show "Minimum X to book"
         public double Rating { get; set; }
         public string CategoryName { get; set; }
+        public string? RejectionReason { get; set; }
     }
 
 
