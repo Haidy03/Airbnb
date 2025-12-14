@@ -51,15 +51,15 @@ export class AdminAnalyticsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    const start = new Date(this.startDate());
-    const end = new Date(this.endDate());
+    const start = this.startDate();
+    const end = this.endDate();
 
     this.loadRevenueReport(start, end);
     this.loadUserActivityReport(start, end);
     this.loadOccupancyReport();
   }
 
-  loadRevenueReport(start: Date, end: Date): void {
+  loadRevenueReport(start: string, end: string): void {
     this.adminService.getRevenueReport(start, end).subscribe({
       next: (data) => {
         this.revenueReport.set(data);
@@ -73,14 +73,13 @@ export class AdminAnalyticsComponent implements OnInit {
     });
   }
 
-  loadUserActivityReport(start: Date, end: Date): void {
+  loadUserActivityReport(start: string, end: string): void {
     this.adminService.getUserActivityReport(start, end).subscribe({
       next: (data) => {
         this.userActivityReport.set(data);
       },
       error: (err) => {
         console.error(err);
-        this.notificationService.showToast('error', 'Failed to load user activity report');
       }
     });
   }
