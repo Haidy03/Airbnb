@@ -1,6 +1,4 @@
-// features/messages/Components/messages-inbox.ts
-
-import { Component, OnInit, signal, inject, computed, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, signal, inject, computed, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,6 +7,8 @@ import { Conversation, ConversationParticipant, Message } from '../models/messag
 import { AuthService } from '../../auth/services/auth.service';
 import { AvatarComponent } from "../../../shared/components/avatar/avatar";
 
+import { SignalRService } from '../../../core/services/signalr.service';
+
 @Component({
   selector: 'app-messages-inbox',
   standalone: true,
@@ -16,13 +16,13 @@ import { AvatarComponent } from "../../../shared/components/avatar/avatar";
   templateUrl: './messages-inbox.html',
   styleUrls: ['./messages-inbox.css']
 })
-export class MessagesInboxComponent implements OnInit {
+export class MessagesInboxComponent implements OnInit, OnDestroy {
   private messageService = inject(MessageService);
   private authService = inject(AuthService);
+  private signalRService = inject(SignalRService); // 2. حقن الخدمة
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   
-  // ✅ متغيرات لتحديد نوع المحادثة الجديدة
   private isServiceDraft = false;
   private isExperienceDraft = false;
 
@@ -40,16 +40,13 @@ export class MessagesInboxComponent implements OnInit {
   newMessageText = signal('');
   activeFilter = signal<'all' | 'unread'>('all');
 
-  // ✅ Computed property للترتيب والفلترة
   filteredConversations = computed(() => {
     let all = this.conversations();
     
-    // الفلترة
     if (this.activeFilter() === 'unread') {
       all = all.filter(c => c.unreadCount > 0);
     }
 
-    // الترتيب: المحادثات الجديدة (ID=0) في الأعلى، ثم الأحدث
     return all.sort((a, b) => {
       if (a.id === 0) return -1;
       if (b.id === 0) return 1;
@@ -62,13 +59,54 @@ export class MessagesInboxComponent implements OnInit {
     this.currentMode.set(url.includes('/host/') ? 'host' : 'guest');
     this.currentUserId = this.authService.currentUser?.id;
 
-    // ✅ التقاط النوع من الرابط
+    // 3. بدء اتصال SignalR
+    this.signalRService.startConnection();
+
+    // 4. الاستماع للرسائل الجديدة لحظياً
+    this.signalRService.messageReceived$.subscribe((newMessage: any) => {
+      this.handleRealTimeMessage(newMessage);
+    });
+
     this.route.queryParams.subscribe(params => {
        this.isServiceDraft = params['type'] === 'service';
        this.isExperienceDraft = params['type'] === 'experience';
     });
 
     this.loadAndSelectConversation();
+  }
+
+  // 5. التعامل مع الرسالة الواردة (تحديث الشات أو القائمة)
+  private handleRealTimeMessage(newMessage: any) {
+    const currentConv = this.selectedConversation();
+
+    // أ. لو الرسالة تبع المحادثة المفتوحة حالياً -> ضيفها في الشات
+    if (currentConv && currentConv.id === newMessage.conversationId) {
+      this.messages.update(msgs => [...msgs, newMessage]);
+      this.scrollToBottom();
+      
+      // نعتبرها مقروءة فوراً لو أنا فاتح الشات
+      if (newMessage.senderId !== this.currentUserId) {
+        this.messageService.markConversationAsRead(currentConv.id.toString()).subscribe();
+      }
+    } 
+    
+    // ب. تحديث القائمة الجانبية (آخر رسالة + وقت + unread)
+    this.conversations.update(list => list.map(c => {
+      if (c.id === newMessage.conversationId) {
+        return {
+          ...c,
+          lastMessage: newMessage,
+          updatedAt: new Date(), // عشان تطلع فوق في الترتيب
+          unreadCount: (currentConv?.id === c.id) ? 0 : c.unreadCount + 1
+        };
+      }
+      return c;
+    }));
+  }
+
+  ngOnDestroy() {
+    // 6. إغلاق الاتصال عند الخروج (اختياري، أو تركه مفتوحاً لو التطبيق كله محتاج شات)
+    // this.signalRService.stopConnection(); 
   }
 
   loadAndSelectConversation() {
@@ -90,16 +128,30 @@ export class MessagesInboxComponent implements OnInit {
   checkAutoOpen(conversations: Conversation[]) {
     this.route.queryParams.subscribe(params => {
       const guestId = params['guestId'];
-      const contextId = params['contextId'] || params['propertyId']; // قد يأتي باسم contextId للتجارب
+      const contextId = params['contextId'] || params['propertyId']; 
       const hostId = params['hostId'];
+      const type = params['type']; // ✅ قراءة النوع من الرابط
 
       if ((guestId || hostId) && contextId) {
         
-        // البحث عن محادثة موجودة
         const targetConv = conversations.find(c => {
-          // التحقق من الـ ID (سواء كان Property أو Service أو Experience)
-          // ملاحظة: في الموديل الحالي propertyId يحمل الـ ID العام
-          const matchId = c.propertyId == contextId; 
+          
+          let matchId = false;
+
+          // ✅ التحقق بناءً على نوع الخدمة
+          if (type === 'service') {
+             // نفترض أن الباك إند بيرجع serviceId في الـ conversation object
+             // لو مش بيرجعه، لازم تتأكدي من الـ DTO
+             matchId = (c as any).serviceId == contextId;
+          } 
+          else if (type === 'experience') {
+             matchId = (c as any).experienceId == contextId;
+          } 
+          else {
+             // Default: Property
+             // التأكد إنه مش service ولا experience عشان ميتلخبطش
+             matchId = c.propertyId == contextId && !(c as any).serviceId && !(c as any).experienceId;
+          }
           
           if (this.currentMode() === 'host') {
              return c.guest.userId == guestId && matchId;
@@ -111,8 +163,6 @@ export class MessagesInboxComponent implements OnInit {
         if (targetConv) {
           this.selectConversation(targetConv);
         } else {
-          // إنشاء محادثة جديدة (Draft)
-          // توحيد اسم الـ ID في الـ params
           const draftParams = { ...params, propertyId: contextId };
           this.createDraftConversation(draftParams);
         }
@@ -142,7 +192,6 @@ export class MessagesInboxComponent implements OnInit {
 
     const draftConv: Conversation = {
       id: 0, 
-      // نخزن الـ ID هنا مؤقتاً للعرض، وعند الإرسال سنحدد نوعه
       propertyId: Number(params['propertyId']),
       propertyTitle: params['propertyTitle'] || params['title'] || 'New Conversation',
       propertyImage: params['propertyImage'] || 'assets/images/placeholder-property.jpg',
@@ -156,7 +205,6 @@ export class MessagesInboxComponent implements OnInit {
       lastMessage: undefined 
     };
 
-    // ✅ تخزين النوع داخل الكائن لاستخدامه عند الإرسال
     (draftConv as any).isService = this.isServiceDraft;
     (draftConv as any).isExperience = this.isExperienceDraft;
 
@@ -169,6 +217,9 @@ export class MessagesInboxComponent implements OnInit {
     this.messages.set([]); 
 
     if (conv.id !== 0) {
+      // 7. انضمام لغرفة المحادثة في SignalR
+      this.signalRService.joinConversation(conv.id.toString());
+
       if (conv.unreadCount > 0) {
         this.messageService.decrementUnreadCount(conv.unreadCount);
         this.conversations.update(list => list.map(c => 
@@ -202,7 +253,6 @@ export class MessagesInboxComponent implements OnInit {
             initialMessage: this.newMessageText()
         };
         
-        // ✅ تحديد الحقل الصحيح للإرسال
         if (isService) {
           createPayload.serviceId = Number(selected.propertyId);
           createPayload.propertyId = null;
@@ -210,7 +260,6 @@ export class MessagesInboxComponent implements OnInit {
           createPayload.experienceId = Number(selected.propertyId);
           createPayload.propertyId = null;
         } else {
-           // Property (Default)
            createPayload.propertyId = Number(selected.propertyId);
         }
 
@@ -224,6 +273,9 @@ export class MessagesInboxComponent implements OnInit {
                     list.map(c => c.id === 0 ? realConv : c)
                 );
                 
+                // الانضمام للمحادثة الجديدة فور إنشائها
+                this.signalRService.joinConversation(realConv.id.toString());
+
                 this.selectConversation(realConv);
                 this.newMessageText.set('');
                 this.isSending.set(false);
@@ -236,7 +288,10 @@ export class MessagesInboxComponent implements OnInit {
         });
 
     } else {
-        // حالة محادثة موجودة
+        // حالة محادثة موجودة - إرسال عبر SignalR + API
+        // ملاحظة: لو الباك إند بيوزع الرسالة بعد الـ API، مش محتاجين نستخدم invoke('SendMessage') هنا
+        // لكن لو عايزين نستخدم الـ Hub مباشرة للإرسال:
+        
         const payload = {
             conversationId: selected.id, 
             content: this.newMessageText(),
@@ -249,7 +304,11 @@ export class MessagesInboxComponent implements OnInit {
                 if (!newMsg.senderId) newMsg.senderId = this.currentUserId;
                 if (!newMsg.sentAt) newMsg.sentAt = new Date();
 
+                // 8. تحديث الواجهة فوراً (Optimistic UI)
+                // الرسالة هتيجي تاني من SignalR لو السيرفر بعتها لنفس الشخص، لازم نهندل التكرار
+                // أو نعتمد فقط على SignalR للاستقبال
                 this.messages.update(msgs => [...msgs, newMsg]);
+                
                 this.newMessageText.set('');
                 this.isSending.set(false);
                 this.scrollToBottom();
@@ -265,9 +324,6 @@ export class MessagesInboxComponent implements OnInit {
   isMyMessage(msg: any): boolean {
     const conv = this.selectedConversation();
     if (!conv) return false;
-
-    // التحقق من المرسل (قد يكون أنا أو الطرف الآخر)
-    // الطريقة الأضمن هي مقارنة الـ SenderId بالـ CurrentUserId
     return msg.senderId === this.currentUserId;
   }
 

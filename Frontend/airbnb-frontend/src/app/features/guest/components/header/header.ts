@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, inject, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, inject, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,11 +11,13 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { ModalService } from '../../../auth/services/modal.service';
 import { LoginComponent } from '../../../auth/components/login.component/login.component';
 import { SearchService } from '../search/services/search-service';
+import { ListingTypeModalComponent } from '../../../host/components/listing-type-modal/listing-type-modal'; 
+import { PropertyService } from '../../../host/services/property';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, SearchBarComponent],
+  imports: [CommonModule, RouterModule, FormsModule, SearchBarComponent,ListingTypeModalComponent],
   templateUrl: './header.html',
   styleUrls: ['./header.css']
 })
@@ -24,6 +26,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   private modalService = inject(ModalService);
   private searchService = inject(SearchService);
+  private propertyService = inject(PropertyService);
   public router = inject(Router);
   user = this.authService.user; 
   
@@ -35,7 +38,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   showExpandedSearch = false;
   isSearchEnabled = true;
   showFiltersButton = false; // ✅ Added missing property
+  isCreationModalOpen = signal(false);
 
+  
   ngOnInit() {
     this.checkCurrentRoute();
     this.router.events.pipe(
@@ -140,9 +145,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   onBecomeHostClick() {
     if (!this.authService.isAuthenticated) {
-      this.router.navigate(['/login'], { 
-        queryParams: { returnUrl: '/host/properties/intro' } 
-      });
+      this.openLoginModal();
       return;
     }
 
@@ -156,7 +159,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   upgradeToHost() {
     this.authService.becomeHost().subscribe({
       next: () => {
-        this.router.navigate(['/host/properties/intro']);
+        this.isCreationModalOpen.set(true);
       },
       error: () => {
         alert('Something went wrong while setting up your host account.');
@@ -195,5 +198,33 @@ export class HeaderComponent implements OnInit, OnDestroy {
     } else {
       console.warn('LoginComponent does not expose a closed EventEmitter.');
     }
+  }
+
+  closeCreationModal(): void {
+    this.isCreationModalOpen.set(false);
+  }
+
+  handleCreationType(type: 'home' | 'experience' | 'service'): void {
+    this.closeCreationModal(); 
+
+    if (type === 'home') {
+      this.createNewHomeListing();
+    } else if (type === 'experience') {
+      this.router.navigate(['/host/experiences/create']);
+    } else if (type === 'service') {
+      this.router.navigate(['/host/services/create']); 
+    }
+  }
+
+  private createNewHomeListing(): void {
+    // ✅ نستخدم PropertyService لإنشاء المسودة والتوجيه
+    this.propertyService.createPropertyDraft().subscribe({
+      next: (draft) => {
+        if (draft.id) {
+          localStorage.setItem('currentDraftId', draft.id);
+          this.router.navigate(['/host/properties/intro']);
+        }
+      }
+    });
   }
 }
