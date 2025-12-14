@@ -18,6 +18,14 @@ import Swal from 'sweetalert2';
 export class PricingComponent implements OnInit, AfterViewInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
 
+
+  similarListingsCount = signal(0);
+  averagePrice = signal(0);
+  minPrice = signal(0);
+  maxPrice = signal(0);
+  dateRange = signal('');
+
+
   pricingForm!: FormGroup;
   isLoading = signal(false);
   showMap = signal(false);
@@ -52,11 +60,13 @@ export class PricingComponent implements OnInit, AfterViewInit {
         Validators.min(10),
         Validators.max(1000000)
       ]],
-      cleaningFee: [null] 
+      cleaningFee: [null, [
+        Validators.min(0)
+      ]] 
     });
 
     
-    this.pricingForm.get('pricePerNight')?.valueChanges.subscribe(() => {
+    this.pricingForm.valueChanges.subscribe(() => {
       this.pricingForm.updateValueAndValidity();
     });
   }
@@ -135,7 +145,7 @@ export class PricingComponent implements OnInit, AfterViewInit {
         );
 
         console.log('✅ Found similar listings:', realListings.length);
-
+        this.updateStats(realListings);
         realListings.forEach(prop => {
           const pLat = prop.location.coordinates.lat;
           const pLng = prop.location.coordinates.lng;
@@ -162,6 +172,36 @@ export class PricingComponent implements OnInit, AfterViewInit {
     }, 300);
   }
 
+
+   private updateStats(listings: any[]): void {
+    this.similarListingsCount.set(listings.length);
+
+    if (listings.length > 0) {
+      const prices = listings.map(p => p.pricing?.basePrice || p.pricePerNight || 0);
+      
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
+
+      this.minPrice.set(min);
+      this.maxPrice.set(max);
+      this.averagePrice.set(avg);
+    } else {
+      this.minPrice.set(0);
+      this.maxPrice.set(0);
+      this.averagePrice.set(0);
+    }
+
+   
+    const today = new Date();
+    const nextYear = new Date();
+    nextYear.setFullYear(today.getFullYear() + 1);
+    
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+    this.dateRange.set(`${today.toLocaleDateString('en-US', options)} – ${nextYear.toLocaleDateString('en-US', options)}`);
+  }
+
+
   toggleCleaningFee(): void {
     this.showCleaningFee.update(v => !v);
     if (!this.showCleaningFee()) {
@@ -185,15 +225,34 @@ export class PricingComponent implements OnInit, AfterViewInit {
     this.saveData(() => this.router.navigate(['/host/properties']));
   }
 
-  goNext(): void {
-    if (!this.pricingForm.valid) {
-      this.notificationService.showError('Please enter a valid price (between 10 and 1,000,000 EGP)');
-      return;
+   goNext(): void {
+   
+    if (this.pricingForm.invalid) {
+        const priceErrors = this.pricingForm.get('pricePerNight')?.errors;
+        const cleaningErrors = this.pricingForm.get('cleaningFee')?.errors;
+
+        if (priceErrors?.['min']) {
+            this.notificationService.showError('Base price cannot be less than 10 EGP.');
+            return;
+        }
+
+        if (cleaningErrors?.['min']) {
+            this.notificationService.showError('Cleaning fee cannot be negative.');
+            return;
+        }
+
+        this.notificationService.showError('Please check your pricing details.');
+        return;
     }
    
     this.saveData(() => this.router.navigate(['/host/properties/house-rules']));
   }
 
+   preventNegativeInput(event: KeyboardEvent): void {
+    if (event.key === '-' || event.key === 'e') {
+      event.preventDefault();
+    }
+  }
 
   private saveData(onSuccess: () => void): void {
     this.isLoading.set(true);
