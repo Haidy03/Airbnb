@@ -28,18 +28,20 @@ export class AdminService {
     return this.http.get<DashboardStats>(`${this.apiUrl}/dashboard/stats`);
   }
 
-  getRevenueReport(startDate: Date, endDate: Date): Observable<RevenueReport> {
+  getRevenueReport(startDate: string, endDate: string): Observable<RevenueReport> {
     const params = new HttpParams()
-      .set('startDate', startDate.toISOString())
-      .set('endDate', endDate.toISOString());
+      .set('startDate', startDate)
+      .set('endDate', endDate);
+
     return this.http.get<RevenueReport>(`${this.apiUrl}/analytics/revenue`, { params });
   }
 
-  getUserActivityReport(startDate: Date, endDate: Date): Observable<UserActivityReport> {
+  getUserActivityReport(startDate: string, endDate: string): Observable<UserActivityReport> {
     const params = new HttpParams()
-      .set('startDate', startDate.toISOString())
-      .set('endDate', endDate.toISOString());
-    return this.http.get<UserActivityReport>(`${this.apiUrl}/analytics/user-activity`, { params });
+      .set('startDate', startDate)
+      .set('endDate', endDate);
+
+    return this.http.get<UserActivityReport>(`${this.apiUrl}/analytics/activity`, { params });
   }
 
   getOccupancyReport(): Observable<OccupancyReport> {

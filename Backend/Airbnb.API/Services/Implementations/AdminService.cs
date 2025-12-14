@@ -160,6 +160,10 @@ namespace Airbnb.API.Services.Implementations
 
         public async Task<RevenueReportDto> GetRevenueReportAsync(DateTime startDate, DateTime endDate)
         {
+            if (endDate.TimeOfDay == TimeSpan.Zero)
+            {
+                endDate = endDate.Date.AddDays(1).AddTicks(-1); // Becomes 2024-01-31 23:59:59.999
+            }
             var bookings = await _adminRepository.GetUnifiedBookingsAsync(null, startDate, endDate, 1, 100000);
 
             var revenueBookings = bookings
