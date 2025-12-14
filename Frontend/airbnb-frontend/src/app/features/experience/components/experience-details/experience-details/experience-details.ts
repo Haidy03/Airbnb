@@ -22,7 +22,6 @@ export class ExperienceDetailsComponent implements OnInit {
   isOwner = signal(false); 
   isWishlisted = signal(false);
   reviews = signal<ExperienceReview[]>([]);
-  
   selectedImageIndex = 0;
 
   constructor(
@@ -116,6 +115,9 @@ export class ExperienceDetailsComponent implements OnInit {
   }
 
  contactHost(): void {
+  if (this.isOwner()) {
+      return; 
+    }
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
